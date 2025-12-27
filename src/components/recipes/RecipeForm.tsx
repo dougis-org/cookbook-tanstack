@@ -1,6 +1,8 @@
+import { Recipe } from '@/types/recipe'
+
 interface RecipeFormProps {
-  initialData?: any
-  onSubmit?: (data: any) => void
+  initialData?: Partial<Recipe>
+  onSubmit?: (data: Partial<Recipe>) => void
 }
 
 export default function RecipeForm({ initialData, onSubmit }: RecipeFormProps) {

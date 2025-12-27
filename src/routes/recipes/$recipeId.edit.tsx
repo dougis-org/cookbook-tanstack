@@ -19,7 +19,7 @@ function EditRecipePage() {
     prepTime: 15,
     cookTime: 20,
     servings: 4,
-    difficulty: 'medium',
+    difficulty: 'medium' as const,
   }
 
   return (
