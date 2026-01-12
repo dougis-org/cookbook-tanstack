@@ -14,20 +14,31 @@ Migrate all existing data from the Laravel MySQL/PostgreSQL database to the new 
 
 ### Tasks
 
-- [ ] Analyze Laravel database schema
-- [ ] Document all tables and relationships
-- [ ] Create Laravel export command
-- [ ] Export users table
-- [ ] Export recipes table
-- [ ] Export classifications table
-- [ ] Export sources table
-- [ ] Export meals, courses, preparations tables
-- [ ] Export cookbooks table
-- [ ] Export cookbook_recipes junction table
-- [ ] Export all junction tables
-- [ ] Export images/files
-- [ ] Verify export completeness
-- [ ] Create export validation script
+1. [ ] Analyze Laravel database schema structure
+2. [ ] Document all tables with field names and types
+3. [ ] Document all table relationships and foreign keys
+4. [ ] Create Laravel Artisan export command
+5. [ ] Export users table to JSON
+6. [ ] Export recipes table to JSON
+7. [ ] Export classifications table to JSON
+8. [ ] Export sources table to JSON
+9. [ ] Export meals table to JSON
+10. [ ] Export courses table to JSON
+11. [ ] Export preparations table to JSON
+12. [ ] Export cookbooks table to JSON
+13. [ ] Export recipe_meals junction table to JSON
+14. [ ] Export recipe_courses junction table to JSON
+15. [ ] Export recipe_preparations junction table to JSON
+16. [ ] Export cookbook_recipes junction table to JSON
+17. [ ] Export to CSV as backup
+18. [ ] Export all recipe images with metadata
+19. [ ] Organize images by recipe ID
+20. [ ] Create export validation script
+21. [ ] Verify export row counts match database
+22. [ ] Verify foreign key references intact
+23. [ ] Verify date formats consistent
+24. [ ] Verify text encoding (UTF-8)
+25. [ ] Document any export issues
 
 ### Acceptance Criteria
 
@@ -81,18 +92,33 @@ Migrate all existing data from the Laravel MySQL/PostgreSQL database to the new 
 
 ### Tasks
 
-- [ ] Create transformation scripts
-- [ ] Map Laravel schema to new schema
-- [ ] Transform user data
-- [ ] Transform recipe data
-- [ ] Transform taxonomy data
-- [ ] Transform cookbook data
-- [ ] Transform junction data
-- [ ] Handle password hashes (bcrypt compatibility)
-- [ ] Handle timestamps (format conversion)
-- [ ] Clean/sanitize data
-- [ ] Validate transformed data
-- [ ] Create data mapping documentation
+26. [ ] Create transformation scripts
+27. [ ] Create field mapping document (Laravel → New DB)
+28. [ ] Transform user data (email, name, password)
+29. [ ] Handle password hash compatibility
+30. [ ] Transform user created_at timestamps
+31. [ ] Transform recipe data (all fields)
+32. [ ] Format ingredients properly for new schema
+33. [ ] Format instructions properly for new schema
+34. [ ] Transform recipe timestamps
+35. [ ] Transform nutritional data
+36. [ ] Transform classifications data
+37. [ ] Transform sources data
+38. [ ] Transform meals taxonomy data
+39. [ ] Transform courses taxonomy data
+40. [ ] Transform preparations taxonomy data
+41. [ ] Transform cookbook data
+42. [ ] Transform recipe_meals junction data
+43. [ ] Transform recipe_courses junction data
+44. [ ] Transform recipe_preparations junction data
+45. [ ] Transform cookbook_recipes junction with order
+46. [ ] Clean/sanitize text data (remove invalid chars)
+47. [ ] Handle null values appropriately
+48. [ ] Validate transformed data structure
+49. [ ] Check for orphaned records
+50. [ ] Check for duplicate entries
+51. [ ] Verify all foreign keys valid
+52. [ ] Create transformation validation report
 
 ### Acceptance Criteria
 
@@ -151,16 +177,32 @@ Migrate all existing data from the Laravel MySQL/PostgreSQL database to the new 
 
 ### Tasks
 
-- [ ] Create import scripts
-- [ ] Import users first
-- [ ] Import taxonomy tables (classifications, sources, meals, courses, preparations)
-- [ ] Import recipes
-- [ ] Import cookbooks
-- [ ] Import junction tables (recipe relationships)
-- [ ] Import cookbook recipes
-- [ ] Handle import errors
-- [ ] Verify import success
-- [ ] Generate import report
+53. [ ] Create import scripts with error handling
+54. [ ] Back up new database before import
+55. [ ] Import users table first
+56. [ ] Verify user import count
+57. [ ] Import classifications table
+58. [ ] Import sources table
+59. [ ] Import meals table
+60. [ ] Import courses table
+61. [ ] Import preparations table
+62. [ ] Import recipes table
+63. [ ] Verify recipe import count
+64. [ ] Import cookbooks table
+65. [ ] Verify cookbook import count
+66. [ ] Import recipe_meals junction table
+67. [ ] Import recipe_courses junction table
+68. [ ] Import recipe_preparations junction table
+69. [ ] Import cookbook_recipes junction table with order
+70. [ ] Handle duplicate detection
+71. [ ] Handle foreign key validation errors
+72. [ ] Handle constraint violations
+73. [ ] Log failed imports
+74. [ ] Implement rollback on critical errors
+75. [ ] Verify row counts match export
+76. [ ] Verify all relationships intact
+77. [ ] Run sample queries to test data
+78. [ ] Generate import summary report
 
 ### Acceptance Criteria
 
@@ -205,15 +247,24 @@ Migrate all existing data from the Laravel MySQL/PostgreSQL database to the new 
 
 ### Tasks
 
-- [ ] Inventory all recipe images
-- [ ] Upload images to Cloudinary/S3
-- [ ] Maintain folder structure
-- [ ] Update image URLs in database
-- [ ] Generate thumbnails
-- [ ] Verify all images accessible
-- [ ] Update image references in recipes
-- [ ] Remove broken image links
-- [ ] Document missing images
+79. [ ] Create image inventory script
+80. [ ] List all recipe images from Laravel storage
+81. [ ] Document original file paths
+82. [ ] Create image upload script
+83. [ ] Upload images to Cloudinary/S3 in batches
+84. [ ] Organize by recipe ID or structure
+85. [ ] Preserve original filenames or create mapping
+86. [ ] Generate thumbnails automatically
+87. [ ] Create recipe_images records in database
+88. [ ] Set primary image for each recipe
+89. [ ] Set image order correctly
+90. [ ] Update image URLs in database
+91. [ ] Verify all uploaded images accessible
+92. [ ] Test image URLs (no 404s)
+93. [ ] Verify thumbnails work
+94. [ ] Remove broken image links from database
+95. [ ] Document missing images list
+96. [ ] Create image migration statistics report
 
 ### Acceptance Criteria
 
@@ -255,21 +306,37 @@ Migrate all existing data from the Laravel MySQL/PostgreSQL database to the new 
 
 ### Tasks
 
-- [ ] Create verification test suite
-- [ ] Verify user count matches
-- [ ] Verify recipe count matches
-- [ ] Verify cookbook count matches
-- [ ] Test user authentication
-- [ ] Test recipe queries
-- [ ] Test search functionality
-- [ ] Test filtering
-- [ ] Test relationships (meals, courses, etc.)
-- [ ] Test cookbook functionality
-- [ ] Test image loading
-- [ ] Perform sample user workflows
-- [ ] Document discrepancies
-- [ ] Fix critical issues
-- [ ] Generate final verification report
+97. [ ] Create automated verification test suite
+98. [ ] Verify user count (Laravel = New DB)
+99. [ ] Verify recipe count (Laravel = New DB)
+100. [ ] Verify cookbook count (Laravel = New DB)
+101. [ ] Verify classification count matches
+102. [ ] Verify source count matches
+103. [ ] Verify taxonomy counts match
+104. [ ] Verify junction record counts match
+105. [ ] Test user authentication with migrated accounts
+106. [ ] Test recipe queries return expected results
+107. [ ] Test search functionality works correctly
+108. [ ] Test filter functionality works correctly
+109. [ ] Test meal relationships intact
+110. [ ] Test course relationships intact
+111. [ ] Test preparation relationships intact
+112. [ ] Test cookbook functionality works
+113. [ ] Test cookbook recipe order preserved
+114. [ ] Test image loading and display
+115. [ ] View 10 random recipes (verify all render)
+116. [ ] Open 5 random cookbooks (verify all work)
+117. [ ] Search for common terms (verify results)
+118. [ ] Filter by various criteria (verify works)
+119. [ ] Check 10 random user profiles
+120. [ ] Test queries performant (< 500ms)
+121. [ ] Check for N+1 query issues
+122. [ ] Monitor for memory leaks
+123. [ ] Document all discrepancies found
+124. [ ] Fix critical issues immediately
+125. [ ] Track low-priority issues for later
+126. [ ] Generate final verification report
+127. [ ] Obtain sign-off from stakeholders
 
 ### Acceptance Criteria
 
