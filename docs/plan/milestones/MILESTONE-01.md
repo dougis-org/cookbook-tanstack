@@ -14,15 +14,21 @@ Establish the technical foundation for the CookBook-TanStack application includi
 
 ### Tasks
 
-- [ ] Install and configure Drizzle ORM
-  ```bash
-  npm install drizzle-orm postgres
-  npm install -D drizzle-kit
-  ```
-- [ ] Set up database connection
-- [ ] Configure environment variables (.env.local, .env.production)
-- [ ] Set up Drizzle config file
-- [ ] Create database instance (local + staging + production)
+1. [ ] Install Drizzle ORM packages
+   ```bash
+   npm install drizzle-orm postgres
+   npm install -D drizzle-kit
+   ```
+2. [ ] Create `.env.example` file with all required database variables documented
+3. [ ] Configure environment variables for local environment (`.env.local`)
+4. [ ] Set up Drizzle config file (`drizzle.config.ts`)
+5. [ ] Create local database instance
+6. [ ] Set up database connection and test connectivity
+7. [ ] Configure environment variables for staging environment
+8. [ ] Create staging database instance
+9. [ ] Configure environment variables for production environment
+10. [ ] Create production database instance
+11. [ ] Verify `drizzle-kit` commands work correctly
 
 ### Acceptance Criteria
 
@@ -83,12 +89,36 @@ Establish the technical foundation for the CookBook-TanStack application includi
 
 ### Tasks
 
-- [ ] Create Drizzle schema files in `src/db/schema/`
-- [ ] Define all table schemas with proper types
-- [ ] Set up foreign key relationships
-- [ ] Create indexes for performance
-- [ ] Write initial migration
-- [ ] Run migration to create tables
+12. [ ] Create directory structure `src/db/schema/`
+13. [ ] Define `users` table schema with all fields and types
+14. [ ] Define `recipes` table schema with all fields and types
+15. [ ] Define `classifications` table schema with all fields and types
+16. [ ] Define `sources` table schema with all fields and types
+17. [ ] Define `cookbooks` table schema with all fields and types
+18. [ ] Define `meals` taxonomy table schema
+19. [ ] Define `courses` taxonomy table schema
+20. [ ] Define `preparations` taxonomy table schema
+21. [ ] Define `recipe_meals` junction table schema
+22. [ ] Define `recipe_courses` junction table schema
+23. [ ] Define `recipe_preparations` junction table schema
+24. [ ] Define `cookbook_recipes` junction table schema
+25. [ ] Define `recipe_images` table schema
+26. [ ] Define `recipe_likes` table schema
+27. [ ] Define `cookbook_followers` table schema
+28. [ ] Set up all primary key constraints
+29. [ ] Set up foreign key relationships with proper ON DELETE/UPDATE cascades
+30. [ ] Create indexes on all foreign key columns
+31. [ ] Create indexes on recipe name and ingredients for search
+32. [ ] Create indexes on user email and username for auth
+33. [ ] Create indexes on classification, source, meal, course, preparation slugs
+34. [ ] Generate initial migration file using `drizzle-kit generate`
+35. [ ] Run migration on local database
+36. [ ] Verify all tables created with correct structure
+37. [ ] Create seeder script for meals taxonomy data
+38. [ ] Create seeder script for courses taxonomy data
+39. [ ] Create seeder script for preparations taxonomy data
+40. [ ] Test foreign key constraints with sample data
+41. [ ] Create database documentation file
 
 ### Acceptance Criteria
 
@@ -139,24 +169,56 @@ Establish the technical foundation for the CookBook-TanStack application includi
 
 ### Tasks
 
-- [ ] Install Better-Auth
-  ```bash
-  npm install better-auth
-  ```
-- [ ] Configure auth with email/password + OAuth (Google, GitHub optional)
-- [ ] Create auth configuration file
-- [ ] Set up auth routes and handlers
-- [ ] Create auth middleware for protected routes
-- [ ] Implement session management
-- [ ] Create auth context/hooks for React
-- [ ] Create user registration flow
-- [ ] Create login flow with email/password
-- [ ] Implement "Remember me" functionality
-- [ ] Create password reset flow
-- [ ] Set up session storage and management
-- [ ] Create protected route wrapper components
-- [ ] Build user profile page
-- [ ] Create auth context hooks (`useAuth`, `useUser`)
+42. [ ] Install Better-Auth package
+    ```bash
+    npm install better-auth
+    ```
+43. [ ] Create auth configuration file with database and session settings
+44. [ ] Set up environment variables for auth secrets
+45. [ ] Run migration to create auth-related database tables (sessions, verification_tokens)
+46. [ ] Create auth API route handlers (login, register, logout)
+47. [ ] Create auth context provider component
+48. [ ] Create `useAuth()` hook for auth state and methods
+49. [ ] Create `useUser()` hook for current user data
+50. [ ] Set up session storage configuration (httpOnly cookies)
+51. [ ] Implement session expiration and refresh logic
+52. [ ] Create registration page UI (`/auth/register`)
+53. [ ] Create registration form with validation (email, username, password)
+54. [ ] Implement username uniqueness check
+55. [ ] Implement email validation
+56. [ ] Implement password strength requirements
+57. [ ] Add auto-login after successful registration
+58. [ ] Add error handling and display for registration flow
+59. [ ] Create login page UI (`/auth/login`)
+60. [ ] Create login form with email/username and password fields
+61. [ ] Implement "Remember me" checkbox functionality
+62. [ ] Add session persistence for "Remember me" feature
+63. [ ] Add error handling for invalid credentials
+64. [ ] Implement successful login redirect logic
+65. [ ] Create logout handler route
+66. [ ] Implement session destruction on logout
+67. [ ] Create forgot password page UI (`/auth/forgot-password`)
+68. [ ] Implement password reset token generation
+69. [ ] Implement reset email sending functionality
+70. [ ] Set up token expiration (1 hour)
+71. [ ] Create reset password page UI (`/auth/reset-password`)
+72. [ ] Implement password reset with valid token
+73. [ ] Implement token invalidation after successful reset
+74. [ ] Create `ProtectedRoute` wrapper component
+75. [ ] Implement redirect to login for unauthenticated users
+76. [ ] Implement return URL preservation for post-login redirect
+77. [ ] Add loading state while checking auth status
+78. [ ] Create user profile page (`/profile` or `/user/[username]`)
+79. [ ] Display user information on profile page
+80. [ ] Protect profile page from unauthenticated access
+81. [ ] Test complete registration flow manually
+82. [ ] Test login flow with email and password
+83. [ ] Test login flow with username and password
+84. [ ] Test "Remember me" functionality
+85. [ ] Test logout functionality
+86. [ ] Test password reset complete flow
+87. [ ] Test protected route access when authenticated
+88. [ ] Test protected route redirect when not authenticated
 
 ### Acceptance Criteria
 
@@ -274,16 +336,45 @@ src/server/trpc/
 
 ### Tasks
 
-- [ ] Install tRPC
-  ```bash
-  npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query
-  ```
-- [ ] Create tRPC router structure
-- [ ] Set up tRPC context with user session
-- [ ] Configure tRPC with Drizzle
-- [ ] Create base queries and mutations
-- [ ] Set up React Query integration
-- [ ] Create tRPC client hooks
+89. [ ] Install tRPC packages
+    ```bash
+    npm install @trpc/server @trpc/client @trpc/react-query @tanstack/react-query
+    ```
+90. [ ] Create directory structure `src/server/trpc/`
+91. [ ] Create base tRPC setup file (`trpc.ts`)
+92. [ ] Create tRPC context file (`context.ts`) with database connection
+93. [ ] Add user session to tRPC context
+94. [ ] Add proper TypeScript types to context
+95. [ ] Create public procedure (no auth required)
+96. [ ] Create protected procedure (requires authentication)
+97. [ ] Create authentication middleware
+98. [ ] Create authorization middleware (ownership checks)
+99. [ ] Integrate Zod validation into procedures
+100. [ ] Create error handling middleware
+101. [ ] Create router directory structure `src/server/trpc/routers/`
+102. [ ] Create empty `recipes.ts` router file
+103. [ ] Create empty `cookbooks.ts` router file
+104. [ ] Create empty `classifications.ts` router file
+105. [ ] Create empty `sources.ts` router file
+106. [ ] Create empty `meals.ts` router file
+107. [ ] Create empty `courses.ts` router file
+108. [ ] Create empty `preparations.ts` router file
+109. [ ] Create empty `users.ts` router file
+110. [ ] Create root router (`root.ts`) combining all routers
+111. [ ] Export app router for client use
+112. [ ] Set up React Query provider in app root
+113. [ ] Create tRPC client configuration
+114. [ ] Create tRPC client hooks for React components
+115. [ ] Add type safety configuration (end-to-end types)
+116. [ ] Test calling public procedure from client
+117. [ ] Test calling protected procedure when authenticated
+118. [ ] Test protected procedure rejection when not authenticated
+119. [ ] Test Zod validation errors return correctly
+120. [ ] Test React Query caching with tRPC
+121. [ ] Test loading and error states in components
+122. [ ] Test optimistic updates functionality
+123. [ ] Verify type inference works on client side
+124. [ ] Create documentation for adding new procedures
 
 ### Core Procedures
 
