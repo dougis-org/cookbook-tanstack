@@ -14,16 +14,33 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Create /contact route
-- [ ] Build contact page
-- [ ] Create contact form
-- [ ] Add field validation
-- [ ] Implement email service (Resend/SendGrid)
-- [ ] Create contact email template
-- [ ] Send email on form submission
-- [ ] Add confirmation message
-- [ ] Implement rate limiting
-- [ ] Add CAPTCHA (optional)
+1. [ ] Create `/contact` page route
+2. [ ] Build ContactPage component
+3. [ ] Create contact form
+4. [ ] Add name input field (required)
+5. [ ] Add email input field (required, validated)
+6. [ ] Add subject input field (optional)
+7. [ ] Add message textarea (required, min 10 chars)
+8. [ ] Add character counter for message
+9. [ ] Add Zod validation schema
+10. [ ] Add form validation on submit
+11. [ ] Display validation errors inline
+12. [ ] Choose email service (Resend recommended)
+13. [ ] Install email service SDK
+14. [ ] Configure API credentials
+15. [ ] Create `contact.send` tRPC mutation
+16. [ ] Create contact email template
+17. [ ] Format email with form data
+18. [ ] Set reply-to to user's email
+19. [ ] Send email to configured admin
+20. [ ] Add success confirmation message
+21. [ ] Clear form after success
+22. [ ] Handle email sending errors
+23. [ ] Implement rate limiting (max 3/hour per user)
+24. [ ] Add CAPTCHA integration (optional)
+25. [ ] Test contact form submission
+26. [ ] Test email delivery
+27. [ ] Make contact form responsive
 
 ### Acceptance Criteria
 
@@ -64,16 +81,32 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Create print stylesheet
-- [ ] Add print styles to recipe detail
-- [ ] Add print styles to recipe list
-- [ ] Optimize for A4/Letter paper
-- [ ] Remove navigation in print
-- [ ] Remove unnecessary UI elements
-- [ ] Adjust font sizes for print
-- [ ] Ensure images print correctly
-- [ ] Add page breaks appropriately
-- [ ] Test across browsers
+28. [ ] Create dedicated print stylesheet file
+29. [ ] Import print styles with `@media print`
+30. [ ] Set page size to A4/Letter
+31. [ ] Set print margins (appropriate for paper)
+32. [ ] Adjust font sizes for print readability
+33. [ ] Hide navigation bar in print
+34. [ ] Hide sidebar in print
+35. [ ] Hide buttons and UI controls in print
+36. [ ] Hide footer in print
+37. [ ] Add print-specific styles to recipe detail
+38. [ ] Format recipe title for print
+39. [ ] Format ingredients list for print
+40. [ ] Format instructions for print
+41. [ ] Optimize images for print (max width, grayscale optional)
+42. [ ] Add page breaks before recipes (if multiple)
+43. [ ] Prevent page breaks mid-recipe
+44. [ ] Add print styles to recipe list
+45. [ ] Format recipe cards for print
+46. [ ] Remove filters/sidebar from print
+47. [ ] Ensure black and white friendly
+48. [ ] Test print preview in Chrome
+49. [ ] Test print preview in Firefox
+50. [ ] Test print preview in Safari
+51. [ ] Test print preview in Edge
+52. [ ] Test print to PDF
+53. [ ] Test actual printer output
 
 ### Acceptance Criteria
 
@@ -111,14 +144,28 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Create export tRPC query
-- [ ] Implement JSON export
-- [ ] Implement PDF export (optional)
-- [ ] Add "Export" button to recipe detail
-- [ ] Build export options modal
-- [ ] Implement download functionality
-- [ ] Add export history tracking (optional)
-- [ ] Support bulk export (optional)
+54. [ ] Create `recipes.export` tRPC query
+55. [ ] Implement JSON export format
+56. [ ] Include all recipe fields in export
+57. [ ] Include metadata (created_at, updated_at)
+58. [ ] Format JSON properly
+59. [ ] Add "Export" button to recipe detail page
+60. [ ] Create export modal component
+61. [ ] Add format selection (JSON, PDF)
+62. [ ] Wire JSON export to download
+63. [ ] Generate filename: recipe-name.json
+64. [ ] Implement PDF export (optional)
+65. [ ] Install PDF generation library (optional)
+66. [ ] Create PDF template (optional)
+67. [ ] Include recipe image in PDF (optional)
+68. [ ] Format PDF layout professionally (optional)
+69. [ ] Wire PDF export to download (optional)
+70. [ ] Generate filename: recipe-name.pdf (optional)
+71. [ ] Add export history tracking (optional)
+72. [ ] Support bulk export of multiple recipes (optional)
+73. [ ] Test JSON export
+74. [ ] Test PDF export (optional)
+75. [ ] Test download functionality
 
 ### Acceptance Criteria
 
@@ -158,16 +205,32 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Create import tRPC mutation
-- [ ] Build import page
-- [ ] Support JSON import
-- [ ] Support recipe URL import (optional)
-- [ ] Implement file upload
-- [ ] Parse and validate imported data
-- [ ] Map fields correctly
-- [ ] Create recipe from import
-- [ ] Handle import errors
-- [ ] Show import preview
+76. [ ] Create `/import` page route
+77. [ ] Build ImportPage component
+78. [ ] Create `recipes.import` tRPC mutation
+79. [ ] Add Zod validation for import data
+80. [ ] Create file upload component
+81. [ ] Support drag-and-drop for file upload
+82. [ ] Accept .json files only
+83. [ ] Read file contents
+84. [ ] Parse JSON data
+85. [ ] Validate data structure
+86. [ ] Check required fields present
+87. [ ] Create import preview modal
+88. [ ] Display parsed recipe data
+89. [ ] Allow editing preview data
+90. [ ] Wire confirm button to import mutation
+91. [ ] Create recipe from imported data
+92. [ ] Handle mapping of fields
+93. [ ] Handle import errors gracefully
+94. [ ] Display clear error messages
+95. [ ] Add URL import field (optional)
+96. [ ] Implement URL scraping (optional)
+97. [ ] Parse common recipe formats (optional)
+98. [ ] Extract ingredients and instructions (optional)
+99. [ ] Test JSON import
+100. [ ] Test URL import (optional)
+101. [ ] Make import page responsive
 
 ### Acceptance Criteria
 
@@ -216,15 +279,33 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Set up email service (Resend/SendGrid)
-- [ ] Create email templates
-- [ ] Implement welcome email
-- [ ] Implement password reset email
-- [ ] Implement cookbook share email (optional)
-- [ ] Implement follower notification (optional)
-- [ ] Add email preferences page
-- [ ] Implement unsubscribe functionality
-- [ ] Test email delivery
+102. [ ] Set up email service (Resend recommended)
+103. [ ] Install email service SDK
+104. [ ] Configure API credentials
+105. [ ] Set up sender email domain
+106. [ ] Create email template utility
+107. [ ] Create welcome email template
+108. [ ] Add getting started links to welcome email
+109. [ ] Wire welcome email to registration
+110. [ ] Test welcome email delivery
+111. [ ] Create password reset email template
+112. [ ] Add secure reset link to email
+113. [ ] Add expiration notice (1 hour)
+114. [ ] Wire password reset email to forgot password
+115. [ ] Test password reset email delivery
+116. [ ] Create cookbook share email template (optional)
+117. [ ] Create follower notification email template (optional)
+118. [ ] Create `/settings/email` page route
+119. [ ] Build email preferences form
+120. [ ] Add notification toggles
+121. [ ] Add unsubscribe option
+122. [ ] Save preferences to database
+123. [ ] Create unsubscribe handler route
+124. [ ] Process unsubscribe requests
+125. [ ] Add unsubscribe link to all emails
+126. [ ] Test email preferences saving
+127. [ ] Test unsubscribe functionality
+128. [ ] Verify emails not marked as spam
 
 ### Acceptance Criteria
 
@@ -265,14 +346,34 @@ Implement additional features including contact form, print styles, recipe expor
 
 ### Tasks
 
-- [ ] Add recipe nutritional calculator (optional)
-- [ ] Implement serving size adjuster
-- [ ] Add ingredient scaling
-- [ ] Implement recipe notes/comments
-- [ ] Add recipe tags
-- [ ] Build shopping list generator (optional)
-- [ ] Add recipe timer (optional)
-- [ ] Implement voice commands (optional)
+129. [ ] Create ServingSizeAdjuster component
+130. [ ] Display current servings
+131. [ ] Add increase button (+)
+132. [ ] Add decrease button (-)
+133. [ ] Calculate ingredient quantity scaling
+134. [ ] Update ingredient display with scaled values
+135. [ ] Scale nutritional info (if present)
+136. [ ] Add visual feedback for changes
+137. [ ] Add reset to original servings button
+138. [ ] Integrate adjuster into recipe detail page
+139. [ ] Create recipe_notes table schema (user_id, recipe_id, text)
+140. [ ] Generate migration for recipe_notes
+141. [ ] Run migration
+142. [ ] Create `recipes.addNote` mutation
+143. [ ] Create `recipes.updateNote` mutation
+144. [ ] Create `recipes.deleteNote` mutation
+145. [ ] Create RecipeNotes component
+146. [ ] Display user's notes on recipe detail
+147. [ ] Add "Add Note" button
+148. [ ] Create note editing textarea
+149. [ ] Wire save to mutation
+150. [ ] Add delete button for notes
+151. [ ] Add nutritional calculator (optional)
+152. [ ] Create shopping list feature (optional)
+153. [ ] Create recipe timer feature (optional)
+154. [ ] Test serving size adjuster
+155. [ ] Test recipe notes functionality
+156. [ ] Make enhancements responsive
 
 ### Acceptance Criteria
 

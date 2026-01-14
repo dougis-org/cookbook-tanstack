@@ -14,18 +14,56 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-- [ ] Create cookbooks table migration
-- [ ] Create cookbook_recipes junction table migration
-- [ ] Add order field to junction table for recipe ordering
-- [ ] Create cookbooks tRPC router
-- [ ] Implement createCookbook mutation
-- [ ] Implement updateCookbook mutation
-- [ ] Implement deleteCookbook mutation
-- [ ] Implement getCookbook query with recipes
-- [ ] Implement listCookbooks query
-- [ ] Implement addRecipeToCookbook mutation
-- [ ] Implement removeRecipeFromCookbook mutation
-- [ ] Implement reorderRecipes mutation
+1. [ ] Create cookbooks table schema in Drizzle
+2. [ ] Add id, user_id, name, description fields to cookbooks table
+3. [ ] Add is_public, image_url fields to cookbooks table
+4. [ ] Add created_at, updated_at timestamps to cookbooks table
+5. [ ] Create cookbook_recipes junction table schema
+6. [ ] Add cookbook_id, recipe_id to junction table
+7. [ ] Add order_index field to junction table for ordering
+8. [ ] Set up primary key on junction table (cookbook_id, recipe_id)
+9. [ ] Add foreign key constraint for cookbook_id
+10. [ ] Add foreign key constraint for recipe_id
+11. [ ] Configure cascade delete for cookbooks
+12. [ ] Configure cascade delete for cookbook_recipes
+13. [ ] Add index on cookbook_id in junction table
+14. [ ] Add index on recipe_id in junction table
+15. [ ] Add index on order_index in junction table
+16. [ ] Generate migration for cookbooks and cookbook_recipes tables
+17. [ ] Run migration on local database
+18. [ ] Verify tables created correctly
+19. [ ] Create cookbooks tRPC router file
+20. [ ] Create Zod validation schema for cookbook creation
+21. [ ] Create Zod validation schema for cookbook updates
+22. [ ] Create Zod validation schema for recipe management
+23. [ ] Implement `cookbooks.create` mutation
+24. [ ] Add user association to created cookbook
+25. [ ] Add slug generation for cookbook name
+26. [ ] Implement `cookbooks.update` mutation
+27. [ ] Add ownership check for updates
+28. [ ] Implement `cookbooks.delete` mutation
+29. [ ] Add ownership check for deletion
+30. [ ] Verify cascade delete removes cookbook_recipes
+31. [ ] Implement `cookbooks.getById` query
+32. [ ] Load all recipes with cookbook in order
+33. [ ] Add recipe count to cookbook response
+34. [ ] Implement `cookbooks.getBySlug` query
+35. [ ] Implement `cookbooks.list` query (user's cookbooks)
+36. [ ] Implement `cookbooks.listPublic` query (all public cookbooks)
+37. [ ] Implement `cookbooks.addRecipe` mutation
+38. [ ] Calculate order_index for new recipe (append to end)
+39. [ ] Add ownership check for adding recipes
+40. [ ] Implement `cookbooks.removeRecipe` mutation
+41. [ ] Add ownership check for removing recipes
+42. [ ] Implement `cookbooks.reorderRecipes` mutation
+43. [ ] Update order_index for all affected recipes
+44. [ ] Add ownership check for reordering
+45. [ ] Test cookbook creation with valid data
+46. [ ] Test cookbook update with ownership
+47. [ ] Test cookbook deletion with cascade
+48. [ ] Test adding recipes to cookbook
+49. [ ] Test removing recipes from cookbook
+50. [ ] Test reordering recipes persists correctly
 
 ### Acceptance Criteria
 
@@ -66,14 +104,48 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-- [ ] Create /cookbooks route
-- [ ] Build cookbooks list page
-- [ ] Create CookbookCard component
-- [ ] Add "Create Cookbook" button
-- [ ] Build cookbook creation modal/page
-- [ ] Create cookbook form with validation
-- [ ] Implement cookbook creation
-- [ ] Add success/error handling
+51. [ ] Create `/cookbooks` page route
+52. [ ] Create tRPC cookbooks list query hook
+53. [ ] Build CookbooksGrid component layout
+54. [ ] Create CookbookCard component base structure
+55. [ ] Add cookbook name to CookbookCard
+56. [ ] Add cookbook description to CookbookCard (truncated)
+57. [ ] Add recipe count to CookbookCard
+58. [ ] Add thumbnail image to CookbookCard (from first recipe)
+59. [ ] Add fallback image if no recipes in cookbook
+60. [ ] Make CookbookCard clickable to detail page
+61. [ ] Add hover effects to CookbookCard
+62. [ ] Add "Created on" date to CookbookCard
+63. [ ] Create empty state component for no cookbooks
+64. [ ] Add "Create Cookbook" button to list page
+65. [ ] Position button prominently (authenticated users only)
+66. [ ] Create cookbook creation modal component
+67. [ ] Add modal open/close functionality
+68. [ ] Create cookbook form in modal
+69. [ ] Add cookbook name input field (required)
+70. [ ] Add name validation (min 3 characters)
+71. [ ] Add cookbook description textarea (optional)
+72. [ ] Add description validation (max 500 characters)
+73. [ ] Add "Is public" checkbox to form
+74. [ ] Set default value for "Is public" (false)
+75. [ ] Add form validation error display
+76. [ ] Wire form submit to `cookbooks.create` mutation
+77. [ ] Add loading state during submission
+78. [ ] Disable form inputs during submission
+79. [ ] Show spinner on submit button
+80. [ ] Handle successful creation
+81. [ ] Show success toast notification
+82. [ ] Close modal after success
+83. [ ] Redirect to new cookbook detail page
+84. [ ] Handle creation errors
+85. [ ] Show error toast notification
+86. [ ] Display validation errors inline
+87. [ ] Make CookbooksGrid responsive (1 col mobile, 2 col tablet, 3+ col desktop)
+88. [ ] Test cookbook list page displays all user cookbooks
+89. [ ] Test empty state shown when no cookbooks
+90. [ ] Test create cookbook button opens modal
+91. [ ] Test form validation works correctly
+92. [ ] Test successful cookbook creation
 
 ### Acceptance Criteria
 
@@ -108,20 +180,96 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-- [ ] Create /cookbooks/[id] route
-- [ ] Build cookbook detail page
-- [ ] Display cookbook title and description
-- [ ] Show list of recipes in order
-- [ ] Add "Add Recipe" button
-- [ ] Build recipe selector modal
-- [ ] Implement add recipe functionality
-- [ ] Add remove recipe buttons
-- [ ] Implement remove recipe functionality
-- [ ] Add drag-and-drop reordering
-- [ ] Implement reorder persistence
-- [ ] Add edit cookbook button
-- [ ] Build edit cookbook modal
-- [ ] Add delete cookbook button with confirmation
+93. [ ] Create `/cookbooks/[id]` dynamic route
+94. [ ] Create tRPC cookbook detail query hook
+95. [ ] Add 404 handling for invalid cookbook IDs
+96. [ ] Add ownership/visibility check for private cookbooks
+97. [ ] Create CookbookHeader component
+98. [ ] Display cookbook name in header
+99. [ ] Display cookbook description in header
+100. [ ] Add cookbook image/cover to header
+101. [ ] Display recipe count in header
+102. [ ] Display "Created by" author information
+103. [ ] Create CookbookRecipeList component
+104. [ ] Display recipes in order_index order
+105. [ ] Create CookbookRecipeCard component (smaller than full RecipeCard)
+106. [ ] Add recipe thumbnail to card
+107. [ ] Add recipe name to card
+108. [ ] Add recipe servings to card
+109. [ ] Add recipe prep/cook time to card
+110. [ ] Make recipe card clickable to recipe detail
+111. [ ] Add drag handle icon to recipe card
+112. [ ] Add remove button to each recipe card (owner only)
+113. [ ] Create empty state for cookbook with no recipes
+114. [ ] Add "Add Recipe" button (owner only)
+115. [ ] Position "Add Recipe" button prominently
+116. [ ] Create recipe selector modal component
+117. [ ] Add modal open/close functionality
+118. [ ] Create recipe search in modal
+119. [ ] Add debounced search input (300ms)
+120. [ ] Display user's recipes in modal
+121. [ ] Add recipe thumbnails in modal list
+122. [ ] Exclude already-added recipes from modal list
+123. [ ] Add "Add" button to each recipe in modal
+124. [ ] Wire "Add" button to `cookbooks.addRecipe` mutation
+125. [ ] Show loading state during add operation
+126. [ ] Close modal after successful add
+127. [ ] Show success toast notification
+128. [ ] Update recipe list immediately (optimistic update)
+129. [ ] Handle add recipe errors
+130. [ ] Show error toast notification
+131. [ ] Create remove recipe confirmation modal
+132. [ ] Show recipe name in confirmation
+133. [ ] Add "Cancel" and "Remove" buttons to confirmation
+134. [ ] Wire "Remove" button to `cookbooks.removeRecipe` mutation
+135. [ ] Show loading state during remove operation
+136. [ ] Update recipe list immediately (optimistic update)
+137. [ ] Show success toast notification
+138. [ ] Handle remove recipe errors
+139. [ ] Install drag-and-drop library (e.g., @dnd-kit/core)
+140. [ ] Set up drag-and-drop context
+141. [ ] Make CookbookRecipeList draggable container
+142. [ ] Make each CookbookRecipeCard draggable item
+143. [ ] Add visual feedback during drag (dragging state)
+144. [ ] Add drop zones between recipes
+145. [ ] Handle drop event to calculate new order
+146. [ ] Wire reorder to `cookbooks.reorderRecipes` mutation
+147. [ ] Show loading indicator during reorder
+148. [ ] Update recipe list with new order
+149. [ ] Handle reorder errors
+150. [ ] Add touch support for mobile drag-and-drop
+151. [ ] Test drag-and-drop on mobile devices
+152. [ ] Add "Edit Cookbook" button to header (owner only)
+153. [ ] Create edit cookbook modal component
+154. [ ] Pre-populate form with existing cookbook data
+155. [ ] Add cookbook name input (required)
+156. [ ] Add cookbook description textarea (optional)
+157. [ ] Add "Is public" checkbox
+158. [ ] Add form validation
+159. [ ] Wire form submit to `cookbooks.update` mutation
+160. [ ] Show loading state during update
+161. [ ] Show success toast notification
+162. [ ] Close modal after success
+163. [ ] Update header with new data
+164. [ ] Handle update errors
+165. [ ] Add "Delete Cookbook" button to header (owner only)
+166. [ ] Style delete button as danger action
+167. [ ] Create delete confirmation modal
+168. [ ] Show cookbook name in confirmation
+169. [ ] Add warning text about permanent deletion
+170. [ ] Add "Cancel" and "Delete" buttons
+171. [ ] Wire "Delete" button to `cookbooks.delete` mutation
+172. [ ] Show loading state during deletion
+173. [ ] Redirect to cookbooks list after deletion
+174. [ ] Show success toast notification
+175. [ ] Handle deletion errors
+176. [ ] Test complete cookbook detail page functionality
+177. [ ] Test adding recipes
+178. [ ] Test removing recipes
+179. [ ] Test reordering recipes
+180. [ ] Test editing cookbook
+181. [ ] Test deleting cookbook
+182. [ ] Make page responsive for all devices
 
 ### Acceptance Criteria
 
@@ -183,12 +331,23 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-- [ ] Add "Table of Contents" view toggle
-- [ ] Build TOC layout component
-- [ ] Display recipe names as links
-- [ ] Add page numbers (for print)
-- [ ] Style for print media
-- [ ] Add chapter/section support (optional)
+183. [ ] Add "View Table of Contents" button to cookbook detail page
+184. [ ] Create `/cookbooks/[id]/toc` route (or modal)
+185. [ ] Create TableOfContents component
+186. [ ] Display cookbook title at top of TOC
+187. [ ] Create numbered list of all recipes
+188. [ ] Display recipe names as clickable links
+189. [ ] Link each recipe to its detail page
+190. [ ] Calculate page numbers for print view
+191. [ ] Display page numbers next to recipe names
+192. [ ] Add TOC styling (clean, professional)
+193. [ ] Create print-specific TOC styles
+194. [ ] Add chapter/section headers (optional)
+195. [ ] Group recipes by classification (optional)
+196. [ ] Make TOC responsive for all devices
+197. [ ] Test TOC displays all recipes correctly
+198. [ ] Test TOC links navigate properly
+199. [ ] Test TOC renders correctly in print preview
 
 ### Acceptance Criteria
 
@@ -210,15 +369,40 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-- [ ] Add "Print Cookbook" button
-- [ ] Create print layout stylesheet
-- [ ] Format for A4/Letter paper
-- [ ] Add page breaks between recipes
-- [ ] Include TOC at start
-- [ ] Add cookbook title on each page
-- [ ] Remove navigation/UI elements
-- [ ] Optimize images for print
-- [ ] Test print preview
+200. [ ] Add "Print Cookbook" button to cookbook detail page
+201. [ ] Create dedicated print stylesheet file
+202. [ ] Import print styles with `@media print`
+203. [ ] Set page size to A4/Letter format
+204. [ ] Set appropriate margins for print
+205. [ ] Set readable font sizes for print
+206. [ ] Hide navigation bar in print view
+207. [ ] Hide sidebar in print view
+208. [ ] Hide action buttons in print view
+209. [ ] Hide UI controls in print view
+210. [ ] Show table of contents on first page(s)
+211. [ ] Add page break after TOC
+212. [ ] Add page break before each recipe
+213. [ ] Prevent page breaks mid-recipe (avoid orphans)
+214. [ ] Add cookbook title to page header
+215. [ ] Add page numbers to page footer
+216. [ ] Format recipe titles as print headings
+217. [ ] Format ingredients list for print
+218. [ ] Format instructions for print
+219. [ ] Optimize recipe images for print
+220. [ ] Set max image width for print
+221. [ ] Convert images to grayscale (optional)
+222. [ ] Ensure print layout is black and white friendly
+223. [ ] Test print preview in Chrome
+224. [ ] Test print preview in Firefox
+225. [ ] Test print preview in Safari
+226. [ ] Test print to PDF functionality
+227. [ ] Test actual print to printer
+228. [ ] Verify multi-page cookbooks render correctly
+229. [ ] Verify page breaks occur in correct places
+230. [ ] Test print layout with different cookbook sizes (5, 10, 20 recipes)
+231. [ ] Make print button trigger browser print dialog
+232. [ ] Add loading state while preparing print view (optional)
+233. [ ] Consider adding PDF export option (optional)
 
 ### Acceptance Criteria
 

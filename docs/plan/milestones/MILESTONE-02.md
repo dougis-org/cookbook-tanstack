@@ -41,25 +41,66 @@ recipes.updateImage(id, imageUrl) // Protected
 
 ### Tasks
 
-- [ ] Implement `recipes.list` query with all filters
-- [ ] Implement `recipes.getById` query
-- [ ] Implement `recipes.getBySlug` query
-- [ ] Implement `recipes.getUserRecipes` query
-- [ ] Implement `recipes.getPublicRecipes` query
-- [ ] Implement `recipes.getMarked` query
-- [ ] Implement `recipes.create` mutation
-- [ ] Implement `recipes.update` mutation
-- [ ] Implement `recipes.delete` mutation
-- [ ] Implement `recipes.toggleMarked` mutation
-- [ ] Implement `recipes.updateImage` mutation
-- [ ] Add ownership validation middleware
-- [ ] Implement PostgreSQL full-text search
-- [ ] Add pagination logic
-- [ ] Add sorting logic
-- [ ] Create recipe validation schemas with Zod
-- [ ] Handle recipe relationships (meals, courses, preparations)
-- [ ] Optimize queries with proper JOINs
-- [ ] Add query performance monitoring
+1. [ ] Create Zod validation schema for recipe creation
+2. [ ] Create Zod validation schema for recipe updates
+3. [ ] Create Zod validation schema for recipe filters
+4. [ ] Create Zod validation schema for recipe search
+5. [ ] Implement `recipes.list` query base structure
+6. [ ] Add classification filter to `recipes.list`
+7. [ ] Add source filter to `recipes.list`
+8. [ ] Add meal IDs filter to `recipes.list`
+9. [ ] Add course IDs filter to `recipes.list`
+10. [ ] Add preparation IDs filter to `recipes.list`
+11. [ ] Add marked filter to `recipes.list`
+12. [ ] Add user ID filter to `recipes.list`
+13. [ ] Implement full-text search on recipe name
+14. [ ] Implement full-text search on ingredients
+15. [ ] Add sorting by name (ascending)
+16. [ ] Add sorting by name (descending)
+17. [ ] Add sorting by date_added (newest first)
+18. [ ] Add sorting by date_added (oldest first)
+19. [ ] Implement pagination offset calculation
+20. [ ] Implement pagination limit
+21. [ ] Add total count query for pagination
+22. [ ] Optimize `recipes.list` with JOINs for relationships
+23. [ ] Test `recipes.list` with various filter combinations
+24. [ ] Implement `recipes.getById` query
+25. [ ] Add relationship loading to `recipes.getById` (classification, source, etc.)
+26. [ ] Implement `recipes.getBySlug` query
+27. [ ] Add slug uniqueness check
+28. [ ] Implement `recipes.getUserRecipes` query
+29. [ ] Implement `recipes.getPublicRecipes` query
+30. [ ] Implement `recipes.getMarked` query for authenticated user
+31. [ ] Implement `recipes.create` mutation base structure
+32. [ ] Add slug auto-generation from recipe name
+33. [ ] Add user association to created recipe
+34. [ ] Add many-to-many relationship saving for meals
+35. [ ] Add many-to-many relationship saving for courses
+36. [ ] Add many-to-many relationship saving for preparations
+37. [ ] Test recipe creation with all fields
+38. [ ] Implement `recipes.update` mutation base structure
+39. [ ] Add ownership check middleware for updates
+40. [ ] Add slug regeneration on name change (optional)
+41. [ ] Add relationship updates for meals
+42. [ ] Add relationship updates for courses
+43. [ ] Add relationship updates for preparations
+44. [ ] Test recipe updates with ownership validation
+45. [ ] Implement `recipes.delete` mutation
+46. [ ] Add ownership check middleware for deletion
+47. [ ] Add cascade delete for recipe_meals
+48. [ ] Add cascade delete for recipe_courses
+49. [ ] Add cascade delete for recipe_preparations
+50. [ ] Add cascade delete for cookbook_recipes
+51. [ ] Add cascade delete for recipe_images
+52. [ ] Add cascade delete for recipe_likes
+53. [ ] Test deletion with cascade
+54. [ ] Implement `recipes.toggleMarked` mutation
+55. [ ] Add user-specific marking logic
+56. [ ] Test toggle functionality
+57. [ ] Implement `recipes.updateImage` mutation placeholder
+58. [ ] Add database indexes for recipe search performance
+59. [ ] Test query performance with large dataset
+60. [ ] Add query performance monitoring/logging
 
 ### Acceptance Criteria
 
@@ -139,36 +180,74 @@ recipes.updateImage(id, imageUrl) // Protected
 
 ### Tasks
 
-- [ ] Create `/recipes` route
-- [ ] Create recipe list query hook using tRPC
-- [ ] Build RecipeGrid component
-- [ ] Build RecipeCard component
-  - Show recipe image or placeholder
-  - Show recipe name
-  - Show classification badge
-  - Show prep/cook time
-  - Show difficulty badge
-  - Show favorite indicator
-- [ ] Create SearchBar component with debouncing
-- [ ] Build FilterSidebar component
-  - Classification filter
-  - Meal filter (multi-select)
-  - Course filter (multi-select)
-  - Preparation filter (multi-select)
-  - Source filter
-  - Show marked only (toggle)
-  - Show my recipes only (toggle, protected)
-- [ ] Create SortDropdown component
-- [ ] Build Pagination component
-  - Page size selector
-  - Page number display ("Page X of Y")
-  - Previous/Next buttons
-  - Total count display
-- [ ] Implement URL state management for filters/sort/pagination
-- [ ] Add loading skeletons
-- [ ] Add error states
-- [ ] Make responsive for mobile
-- [ ] Add empty state illustration and message
+61. [ ] Create `/recipes` page route
+62. [ ] Create tRPC recipe list query hook
+63. [ ] Create RecipeGrid component layout (responsive grid)
+64. [ ] Create RecipeCard component base structure
+65. [ ] Add recipe image display to RecipeCard (with placeholder)
+66. [ ] Add recipe name to RecipeCard
+67. [ ] Add classification badge to RecipeCard
+68. [ ] Add prep time display to RecipeCard
+69. [ ] Add cook time display to RecipeCard
+70. [ ] Add difficulty badge to RecipeCard (easy/medium/hard)
+71. [ ] Add favorite indicator icon to RecipeCard
+72. [ ] Add hover effect to RecipeCard
+73. [ ] Make RecipeCard clickable to recipe detail
+74. [ ] Create SearchBar component
+75. [ ] Add debouncing to SearchBar (300ms delay)
+76. [ ] Add search input styling
+77. [ ] Add clear search button
+78. [ ] Add search loading indicator
+79. [ ] Create FilterSidebar component base structure
+80. [ ] Add classification filter dropdown to FilterSidebar
+81. [ ] Create multi-select component for meals
+82. [ ] Add meals filter to FilterSidebar
+83. [ ] Create multi-select component for courses
+84. [ ] Add courses filter to FilterSidebar
+85. [ ] Create multi-select component for preparations
+86. [ ] Add preparations filter to FilterSidebar
+87. [ ] Add source filter dropdown to FilterSidebar
+88. [ ] Add "Show marked only" toggle to FilterSidebar (protected)
+89. [ ] Add "Show my recipes" toggle to FilterSidebar (protected)
+90. [ ] Add active filter count badge to FilterSidebar
+91. [ ] Add "Clear all filters" button to FilterSidebar
+92. [ ] Make FilterSidebar collapsible on mobile
+93. [ ] Create SortDropdown component
+94. [ ] Add "Name A-Z" sort option
+95. [ ] Add "Name Z-A" sort option
+96. [ ] Add "Newest first" sort option
+97. [ ] Add "Oldest first" sort option
+98. [ ] Create Pagination component
+99. [ ] Add page size selector (20, 30, 40, All)
+100. [ ] Add "Page X of Y" display
+101. [ ] Add "Showing X-Y of Z recipes" display
+102. [ ] Add Previous button with disabled state
+103. [ ] Add Next button with disabled state
+104. [ ] Implement scroll to top on page change
+105. [ ] Implement URL query parameters for filters
+106. [ ] Implement URL query parameters for sort
+107. [ ] Implement URL query parameters for pagination
+108. [ ] Implement URL query parameters for search term
+109. [ ] Sync URL state with component state
+110. [ ] Create loading skeleton for RecipeCard
+111. [ ] Show loading skeletons during data fetch
+112. [ ] Create error state component
+113. [ ] Show error message on query failure
+114. [ ] Create empty state component
+115. [ ] Add empty state illustration
+116. [ ] Add empty state helpful message
+117. [ ] Add "Clear filters" suggestion in empty state
+118. [ ] Create "Create Recipe" button (authenticated users only)
+119. [ ] Position "Create Recipe" button prominently
+120. [ ] Make RecipeGrid responsive (1 col mobile)
+121. [ ] Make RecipeGrid responsive (2 col tablet)
+122. [ ] Make RecipeGrid responsive (3+ col desktop)
+123. [ ] Make FilterSidebar drawer on mobile
+124. [ ] Test touch interactions on mobile
+125. [ ] Test all filters work correctly
+126. [ ] Test pagination navigation
+127. [ ] Test search functionality
+128. [ ] Test responsive layouts on all screen sizes
 
 ### Acceptance Criteria
 
@@ -283,66 +362,98 @@ recipes.updateImage(id, imageUrl) // Protected
 
 ### Tasks
 
-- [ ] Create `/recipes/[slug]` route
-- [ ] Create recipe detail query hook
-- [ ] Build RecipeHeader component
-  - Recipe image
-  - Recipe title
-  - Author info with avatar
-  - Date added
-  - Classification badge
-- [ ] Build RecipeMetadata component
-  - Servings
-  - Prep time
-  - Cook time
-  - Difficulty
-  - Source link
-- [ ] Build IngredientsList component
-  - Parse ingredients by line
-  - Format display
-  - Print-friendly
-- [ ] Build InstructionsList component
-  - Parse instructions by line
-  - Number steps
-  - Format display
-  - Print-friendly
-- [ ] Build NutritionPanel component
-  - Calories
-  - Fat
-  - Cholesterol
-  - Sodium
-  - Protein
-- [ ] Build RecipeMetadata component
-  - Show meals badges
-  - Show courses badges
-  - Show preparations badges
-- [ ] Build RecipeActions component
-  - "Mark as Favorite" button
-  - "Edit Recipe" button (owner only)
-  - "Delete Recipe" button (owner only)
-  - "Share" button
-  - "Print" button
-- [ ] Build ImageGallery component
-  - Show primary image large
-  - Show additional images as thumbnails
-  - Click to expand
-  - Swipe on mobile
-- [ ] Implement delete confirmation modal
-- [ ] Add share functionality
-  - Copy link button
-  - Social share buttons (optional)
-- [ ] Build RelatedRecipes component
-  - Show 3-6 related recipes
-  - Based on classification
-  - Exclude current recipe
-- [ ] Build NotesSection component
-  - Format multi-line notes
-  - Collapsible if long
-- [ ] Add print-friendly CSS
-  - Hide navigation
-  - Optimize for A4/Letter
-  - Page break handling
-- [ ] Make responsive for all devices
+129. [ ] Create `/recipes/[slug]` dynamic route
+130. [ ] Create tRPC recipe detail query hook
+131. [ ] Add 404 handling for invalid slugs
+132. [ ] Create RecipeHeader component
+133. [ ] Add large recipe image to RecipeHeader (with placeholder)
+134. [ ] Add recipe title to RecipeHeader
+135. [ ] Add author name and avatar to RecipeHeader
+136. [ ] Add date added to RecipeHeader (formatted)
+137. [ ] Add classification badge to RecipeHeader
+138. [ ] Create breadcrumb navigation component
+139. [ ] Create RecipeMetadata component
+140. [ ] Add servings display to RecipeMetadata
+141. [ ] Add prep time display with formatting
+142. [ ] Add cook time display with formatting
+143. [ ] Add total time calculation and display
+144. [ ] Add difficulty badge to RecipeMetadata
+145. [ ] Add source display (as link if external)
+146. [ ] Add source display (as text if internal)
+147. [ ] Create IngredientsList component
+148. [ ] Parse ingredients by line in IngredientsList
+149. [ ] Format ingredients with proper styling
+150. [ ] Preserve empty lines for ingredient sections
+151. [ ] Add print-friendly styles to IngredientsList
+152. [ ] Create InstructionsList component
+153. [ ] Parse instructions by line in InstructionsList
+154. [ ] Auto-number instruction steps
+155. [ ] Format instructions with proper styling
+156. [ ] Preserve empty lines for instruction sections
+157. [ ] Add print-friendly styles to InstructionsList
+158. [ ] Create NutritionPanel component
+159. [ ] Display calories in NutritionPanel
+160. [ ] Display fat in NutritionPanel
+161. [ ] Display cholesterol in NutritionPanel
+162. [ ] Display sodium in NutritionPanel
+163. [ ] Display protein in NutritionPanel
+164. [ ] Show units for all nutritional values
+165. [ ] Hide NutritionPanel if no data exists
+166. [ ] Create RecipeTags component
+167. [ ] Display meal badges in RecipeTags
+168. [ ] Display course badges in RecipeTags
+169. [ ] Display preparation badges in RecipeTags
+170. [ ] Make tag badges clickable to filter
+171. [ ] Style badges consistently
+172. [ ] Create RecipeActions component
+173. [ ] Add "Mark as Favorite" button (authenticated only)
+174. [ ] Show current marked state in button
+175. [ ] Add toggle functionality to favorite button
+176. [ ] Add optimistic update for favorite toggle
+177. [ ] Add "Edit Recipe" button (owner only)
+178. [ ] Make "Edit" button navigate to edit page
+179. [ ] Add "Delete Recipe" button (owner only)
+180. [ ] Style "Delete" button as danger action
+181. [ ] Add "Share" button with copy link functionality
+182. [ ] Show success message after link copied
+183. [ ] Add "Print" button to open print dialog
+184. [ ] Create ImageGallery component
+185. [ ] Display primary image large in ImageGallery
+186. [ ] Display additional images as thumbnails
+187. [ ] Add click to expand thumbnail functionality
+188. [ ] Add swipe gesture support for mobile
+189. [ ] Add lightbox view for full-screen (optional)
+190. [ ] Create NotesSection component
+191. [ ] Format multi-line notes with proper spacing
+192. [ ] Make NotesSection collapsible if very long
+193. [ ] Hide NotesSection if no notes exist
+194. [ ] Create DeleteConfirmationModal component
+195. [ ] Show recipe name in confirmation modal
+196. [ ] Add "Cancel" button to modal
+197. [ ] Add "Delete" button to modal (danger styled)
+198. [ ] Add modal close on outside click
+199. [ ] Add modal close on Escape key
+200. [ ] Implement focus trap in modal
+201. [ ] Create RelatedRecipes component
+202. [ ] Query 3-6 related recipes by classification
+203. [ ] Exclude current recipe from related recipes
+204. [ ] Display related recipes as cards
+205. [ ] Make related recipe cards clickable
+206. [ ] Create print-specific CSS file
+207. [ ] Hide navigation in print styles
+208. [ ] Optimize layout for A4/Letter in print
+209. [ ] Handle page breaks in print
+210. [ ] Optimize images for print
+211. [ ] Make RecipeHeader responsive for mobile
+212. [ ] Make RecipeMetadata responsive for tablet
+213. [ ] Make IngredientsList responsive for all devices
+214. [ ] Make InstructionsList responsive for all devices
+215. [ ] Make ImageGallery responsive with touch support
+216. [ ] Test complete recipe detail page on mobile
+217. [ ] Test complete recipe detail page on tablet
+218. [ ] Test complete recipe detail page on desktop
+219. [ ] Test print functionality
+220. [ ] Test share functionality
 
 ### Acceptance Criteria
 
@@ -470,61 +581,113 @@ recipes.updateImage(id, imageUrl) // Protected
 
 ### Tasks
 
-- [ ] Install React Hook Form
-  ```bash
-  npm install react-hook-form @hookform/resolvers zod
-  ```
-- [ ] Create recipe form schema with Zod validation
-- [ ] Create `/recipes/new` route
-- [ ] Create `/recipes/[slug]/edit` route (protected)
-- [ ] Build RecipeForm component
-- [ ] Build BasicInfoSection component
-  - Recipe name input
-  - Description textarea
-  - Classification dropdown
-  - Source selector (autocomplete)
-  - Is public checkbox
-- [ ] Build TimingsServingsSection component
-  - Prep time input
-  - Cook time input
-  - Servings input
-  - Difficulty selector
-- [ ] Build DynamicIngredientList component
-  - List of ingredient inputs
-  - Add ingredient button
-  - Remove ingredient button
-  - Drag to reorder
-  - Simple text area option
-- [ ] Build DynamicInstructionList component
-  - List of instruction inputs
-  - Add step button
-  - Remove step button
-  - Drag to reorder
-  - Auto-numbering
-- [ ] Build TaxonomySelector components
-  - Meals multi-select
-  - Courses multi-select
-  - Preparations multi-select
-- [ ] Build NutritionInputs component
-  - Calories input
-  - Fat input
-  - Cholesterol input
-  - Sodium input
-  - Protein input
-- [ ] Build ImageUploader component (basic placeholder for now)
-- [ ] Implement form validation with error display
-- [ ] Add autosave to localStorage (draft)
-- [ ] Implement submit handler
-  - Call tRPC create/update mutation
-  - Handle loading state
-  - Handle success (redirect)
-  - Handle errors (display)
-- [ ] Add loading states during save
-- [ ] Add success/error notifications
-- [ ] Handle edit mode (pre-populate form)
-- [ ] Implement cancel with unsaved changes warning
-- [ ] Add form progress indicator
-- [ ] Add keyboard shortcuts (Ctrl+S to save)
+221. [ ] Install React Hook Form packages
+     ```bash
+     npm install react-hook-form @hookform/resolvers zod
+     ```
+222. [ ] Create Zod schema for recipe form validation
+223. [ ] Add recipe name validation rules (required, min 3, max 100)
+224. [ ] Add classification validation rule (required)
+225. [ ] Add servings validation rule (positive number)
+226. [ ] Add time validation rules (positive numbers)
+227. [ ] Add nutrition validation rules (optional, positive numbers)
+228. [ ] Add ingredients validation rule (minimum 1 required)
+229. [ ] Add instructions validation rule (minimum 1 required)
+230. [ ] Create `/recipes/new` route
+231. [ ] Create `/recipes/[slug]/edit` route
+232. [ ] Add authentication check to `/recipes/new`
+233. [ ] Add ownership check to `/recipes/[slug]/edit`
+234. [ ] Create RecipeForm component base structure
+235. [ ] Initialize React Hook Form with Zod resolver
+236. [ ] Create BasicInfoSection component
+237. [ ] Add recipe name input field
+238. [ ] Add name input validation and error display
+239. [ ] Add description textarea
+240. [ ] Create classification dropdown
+241. [ ] Populate classification dropdown from database
+242. [ ] Add classification validation and error display
+243. [ ] Create source selector with autocomplete
+244. [ ] Load existing sources for autocomplete
+245. [ ] Add "Create new source" functionality inline
+246. [ ] Add "Is public" checkbox with label
+247. [ ] Set "Is public" default to true
+248. [ ] Create TimingsServingsSection component
+249. [ ] Add prep time input (minutes)
+250. [ ] Add cook time input (minutes)
+251. [ ] Calculate and display total time
+252. [ ] Add servings input with validation
+253. [ ] Create difficulty selector (easy/medium/hard)
+254. [ ] Create DynamicIngredientList component
+255. [ ] Set up field array for ingredients using React Hook Form
+256. [ ] Add "Add Ingredient" button
+257. [ ] Add "Remove Ingredient" button for each item
+258. [ ] Add ingredient text input for each item
+259. [ ] Implement drag-to-reorder functionality for ingredients
+260. [ ] Add validation for minimum 1 ingredient
+261. [ ] Create simple textarea mode toggle for ingredients
+262. [ ] Create DynamicInstructionList component
+263. [ ] Set up field array for instructions using React Hook Form
+264. [ ] Add "Add Step" button
+265. [ ] Add "Remove Step" button for each item
+266. [ ] Add instruction textarea for each item
+267. [ ] Implement auto-numbering for instruction steps
+268. [ ] Implement drag-to-reorder functionality for instructions
+269. [ ] Add validation for minimum 1 instruction
+270. [ ] Create TaxonomySelectors component
+271. [ ] Create meals multi-select component
+272. [ ] Populate meals from database
+273. [ ] Create courses multi-select component
+274. [ ] Populate courses from database
+275. [ ] Create preparations multi-select component
+276. [ ] Populate preparations from database
+277. [ ] Display selected items as removable badges
+278. [ ] Create NutritionInputs component
+279. [ ] Add calories input field (optional)
+280. [ ] Add fat input field (optional)
+281. [ ] Add cholesterol input field (optional)
+282. [ ] Add sodium input field (optional)
+283. [ ] Add protein input field (optional)
+284. [ ] Add unit labels to all nutrition inputs
+285. [ ] Add number-only validation to nutrition inputs
+286. [ ] Create ImageUploader component (basic placeholder)
+287. [ ] Add file input for image upload
+288. [ ] Add image preview functionality
+289. [ ] Display inline validation errors for all fields
+290. [ ] Implement autosave to localStorage
+291. [ ] Set autosave interval to 30 seconds
+292. [ ] Restore draft from localStorage on page load
+293. [ ] Add "Draft saved" indicator
+294. [ ] Clear localStorage draft after successful submit
+295. [ ] Implement form submit handler
+296. [ ] Call tRPC create mutation for new recipes
+297. [ ] Call tRPC update mutation for edit mode
+298. [ ] Add loading state during submission
+299. [ ] Disable form inputs during submission
+300. [ ] Show spinner on submit button
+301. [ ] Handle successful creation (redirect to detail page)
+302. [ ] Handle successful update (show success message)
+303. [ ] Handle submission errors (display to user)
+304. [ ] Add success notification toast
+305. [ ] Add error notification toast
+306. [ ] Implement edit mode data loading
+307. [ ] Pre-populate all form fields in edit mode
+308. [ ] Load and display existing relationships (meals, courses, preparations)
+309. [ ] Create "Cancel" button
+310. [ ] Add navigation to previous page on cancel
+311. [ ] Implement unsaved changes detection
+312. [ ] Show warning modal on cancel if unsaved changes
+313. [ ] Show warning on browser back if unsaved changes
+314. [ ] Show warning on page unload if unsaved changes
+315. [ ] Create form progress indicator (optional)
+316. [ ] Add keyboard shortcut for save (Ctrl+S / Cmd+S)
+317. [ ] Prevent default browser save dialog
+318. [ ] Make form sections responsive for mobile
+319. [ ] Make form sections responsive for tablet
+320. [ ] Test complete form submission (create)
+321. [ ] Test complete form submission (update)
+322. [ ] Test form validation errors
+323. [ ] Test autosave and draft restoration
+324. [ ] Test unsaved changes warnings
 
 ### Acceptance Criteria
 
@@ -658,21 +821,31 @@ recipes.updateImage(id, imageUrl) // Protected
 
 ### Tasks
 
-- [ ] Create delete mutation in tRPC (already done in 2.1)
-- [ ] Build DeleteConfirmationModal component
-- [ ] Add delete button to recipe detail page
-- [ ] Implement cascade delete
-  - Remove from cookbook_recipes
-  - Remove from recipe_meals
-  - Remove from recipe_courses
-  - Remove from recipe_preparations
-  - Remove recipe_images
-  - Remove recipe_likes
-  - Remove recipe itself
-- [ ] Add loading state during delete
-- [ ] Redirect to recipe list after successful delete
-- [ ] Show error message if delete fails
-- [ ] Check ownership before allowing delete
+325. [ ] Verify delete mutation exists in tRPC router (from task 45)
+326. [ ] Create DeleteConfirmationModal component (if not done in task 194)
+327. [ ] Add delete button to recipe detail page RecipeActions
+328. [ ] Wire delete button to open confirmation modal
+329. [ ] Add recipe name display in modal
+330. [ ] Add "Action is permanent" warning text to modal
+331. [ ] Wire modal "Cancel" button to close modal
+332. [ ] Wire modal "Delete" button to trigger delete mutation
+333. [ ] Verify cascade delete for cookbook_recipes (database level)
+334. [ ] Verify cascade delete for recipe_meals (database level)
+335. [ ] Verify cascade delete for recipe_courses (database level)
+336. [ ] Verify cascade delete for recipe_preparations (database level)
+337. [ ] Verify cascade delete for recipe_images (database level)
+338. [ ] Verify cascade delete for recipe_likes (database level)
+339. [ ] Add loading spinner during delete operation
+340. [ ] Disable modal buttons during delete
+341. [ ] Add success toast notification after delete
+342. [ ] Redirect to `/recipes` after successful delete
+343. [ ] Add error toast notification if delete fails
+344. [ ] Keep user on page if delete fails
+345. [ ] Verify ownership check in tRPC delete mutation
+346. [ ] Test delete with owned recipe
+347. [ ] Test delete rejection with non-owned recipe
+348. [ ] Test cascade delete verifies all relationships removed
+349. [ ] Test error handling for network failures
 
 ### Acceptance Criteria
 
