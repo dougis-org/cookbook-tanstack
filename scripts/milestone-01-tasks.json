@@ -1,0 +1,79 @@
+[
+  {
+    "number": 1,
+    "title": "Install Drizzle ORM packages",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Install drizzle-orm, postgres, and drizzle-kit packages\n\n```bash\nnpm install drizzle-orm postgres\nnpm install -D drizzle-kit\n```"
+  },
+  {
+    "number": 2,
+    "title": "Create .env.example file",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "config"],
+    "body": "Create `.env.example` file with all required database variables documented"
+  },
+  {
+    "number": 3,
+    "title": "Configure environment variables for local",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "config"],
+    "body": "Configure environment variables for local environment (`.env.local`)"
+  },
+  {
+    "number": 4,
+    "title": "Set up Drizzle config file",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Set up Drizzle config file (`drizzle.config.ts`)"
+  },
+  {
+    "number": 5,
+    "title": "Create local database instance",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Create local database instance"
+  },
+  {
+    "number": 6,
+    "title": "Set up database connection and test",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Set up database connection and test connectivity"
+  },
+  {
+    "number": 7,
+    "title": "Configure environment for staging",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "config"],
+    "body": "Configure environment variables for staging environment"
+  },
+  {
+    "number": 8,
+    "title": "Create staging database instance",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Create staging database instance"
+  },
+  {
+    "number": 9,
+    "title": "Configure environment for production",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "config"],
+    "body": "Configure environment variables for production environment"
+  },
+  {
+    "number": 10,
+    "title": "Create production database instance",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Create production database instance"
+  },
+  {
+    "number": 11,
+    "title": "Verify drizzle-kit commands",
+    "section": "1.1 Project Setup & Configuration",
+    "labels": ["milestone-01", "setup", "database"],
+    "body": "Verify `drizzle-kit` commands work correctly"
+  }
+]
