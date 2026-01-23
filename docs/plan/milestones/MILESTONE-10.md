@@ -14,16 +14,16 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Set up Vitest test environment
-- [ ] Write tests for tRPC routers
-- [ ] Write tests for database queries
-- [ ] Write tests for validation functions
-- [ ] Write tests for utility functions
-- [ ] Write tests for authentication logic
-- [ ] Write tests for authorization logic
-- [ ] Write tests for data transformations
-- [ ] Achieve 80%+ code coverage
-- [ ] Fix failing tests
+1. [ ] Set up Vitest test environment
+2. [ ] Write tests for tRPC routers
+3. [ ] Write tests for database queries
+4. [ ] Write tests for validation functions
+5. [ ] Write tests for utility functions
+6. [ ] Write tests for authentication logic
+7. [ ] Write tests for authorization logic
+8. [ ] Write tests for data transformations
+9. [ ] Achieve 80%+ code coverage
+10. [ ] Fix failing tests
 
 ### Acceptance Criteria
 
@@ -67,16 +67,16 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Set up React Testing Library
-- [ ] Write tests for form components
-- [ ] Write tests for card components
-- [ ] Write tests for list components
-- [ ] Write tests for modal components
-- [ ] Write tests for navigation components
-- [ ] Test user interactions
-- [ ] Test accessibility (a11y)
-- [ ] Test responsive behavior
-- [ ] Achieve 70%+ component coverage
+11. [ ] Set up React Testing Library
+12. [ ] Write tests for form components
+13. [ ] Write tests for card components
+14. [ ] Write tests for list components
+15. [ ] Write tests for modal components
+16. [ ] Write tests for navigation components
+17. [ ] Test user interactions
+18. [ ] Test accessibility (a11y)
+19. [ ] Test responsive behavior
+20. [ ] Achieve 70%+ component coverage
 
 ### Acceptance Criteria
 
@@ -119,16 +119,16 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Set up integration test environment
-- [ ] Test database operations
-- [ ] Test API endpoints (tRPC procedures)
-- [ ] Test authentication flow
-- [ ] Test recipe workflows
-- [ ] Test cookbook workflows
-- [ ] Test search and filter
-- [ ] Test image upload/storage
-- [ ] Test email sending
-- [ ] Test permissions
+21. [ ] Set up integration test environment
+22. [ ] Test database operations
+23. [ ] Test API endpoints (tRPC procedures)
+24. [ ] Test authentication flow
+25. [ ] Test recipe workflows
+26. [ ] Test cookbook workflows
+27. [ ] Test search and filter
+28. [ ] Test image upload/storage
+29. [ ] Test email sending
+30. [ ] Test permissions
 
 ### Acceptance Criteria
 
@@ -172,17 +172,17 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Set up Playwright
-- [ ] Write E2E test for user registration
-- [ ] Write E2E test for login flow
-- [ ] Write E2E test for recipe creation
-- [ ] Write E2E test for recipe editing
-- [ ] Write E2E test for recipe search
-- [ ] Write E2E test for cookbook creation
-- [ ] Write E2E test for image upload
-- [ ] Write E2E test for contact form
-- [ ] Test across browsers (Chrome, Firefox, Safari)
-- [ ] Test on mobile viewports
+31. [ ] Set up Playwright
+32. [ ] Write E2E test for user registration
+33. [ ] Write E2E test for login flow
+34. [ ] Write E2E test for recipe creation
+35. [ ] Write E2E test for recipe editing
+36. [ ] Write E2E test for recipe search
+37. [ ] Write E2E test for cookbook creation
+38. [ ] Write E2E test for image upload
+39. [ ] Write E2E test for contact form
+40. [ ] Test across browsers (Chrome, Firefox, Safari)
+41. [ ] Test on mobile viewports
 
 ### Acceptance Criteria
 
@@ -224,16 +224,16 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Set up Lighthouse CI
-- [ ] Test homepage performance
-- [ ] Test recipes list performance
-- [ ] Test recipe detail performance
-- [ ] Test search performance
-- [ ] Optimize slow queries
-- [ ] Implement caching where needed
-- [ ] Optimize images
-- [ ] Optimize bundle size
-- [ ] Test under load (optional)
+42. [ ] Set up Lighthouse CI
+43. [ ] Test homepage performance
+44. [ ] Test recipes list performance
+45. [ ] Test recipe detail performance
+46. [ ] Test search performance
+47. [ ] Optimize slow queries
+48. [ ] Implement caching where needed
+49. [ ] Optimize images
+50. [ ] Optimize bundle size
+51. [ ] Test under load (optional)
 
 ### Acceptance Criteria
 
@@ -275,16 +275,16 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 
 ### Tasks
 
-- [ ] Review authentication implementation
-- [ ] Test authorization rules
-- [ ] Test SQL injection protection
-- [ ] Test XSS protection
-- [ ] Test CSRF protection
-- [ ] Review API security
-- [ ] Test rate limiting
-- [ ] Check for exposed secrets
-- [ ] Review CORS settings
-- [ ] Security audit checklist
+52. [ ] Review authentication implementation
+53. [ ] Test authorization rules
+54. [ ] Test SQL injection protection
+55. [ ] Test XSS protection
+56. [ ] Test CSRF protection
+57. [ ] Review API security
+58. [ ] Test rate limiting
+59. [ ] Check for exposed secrets
+60. [ ] Review CORS settings
+61. [ ] Security audit checklist
 
 ### Acceptance Criteria
 
@@ -331,61 +331,61 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 ### Test Scenarios
 
 #### Recipe Management
-- [ ] Create new recipe with all fields
-- [ ] Create recipe with minimal fields
-- [ ] Edit recipe
-- [ ] Delete recipe
-- [ ] View recipe detail
-- [ ] Upload multiple images
-- [ ] Reorder images
-- [ ] Set primary image
+62. [ ] Create new recipe with all fields
+63. [ ] Create recipe with minimal fields
+64. [ ] Edit recipe
+65. [ ] Delete recipe
+66. [ ] View recipe detail
+67. [ ] Upload multiple images
+68. [ ] Reorder images
+69. [ ] Set primary image
 
 #### Search & Discovery
-- [ ] Search by recipe name
-- [ ] Search by ingredient
-- [ ] Apply multiple filters
-- [ ] Sort recipes
-- [ ] Paginate through results
-- [ ] View classifications
-- [ ] Filter by source
+70. [ ] Search by recipe name
+71. [ ] Search by ingredient
+72. [ ] Apply multiple filters
+73. [ ] Sort recipes
+74. [ ] Paginate through results
+75. [ ] View classifications
+76. [ ] Filter by source
 
 #### Cookbooks
-- [ ] Create cookbook
-- [ ] Add recipes to cookbook
-- [ ] Reorder recipes (drag-drop)
-- [ ] Remove recipes
-- [ ] Edit cookbook
-- [ ] Delete cookbook
-- [ ] Print cookbook
-- [ ] View table of contents
+77. [ ] Create cookbook
+78. [ ] Add recipes to cookbook
+79. [ ] Reorder recipes (drag-drop)
+80. [ ] Remove recipes
+81. [ ] Edit cookbook
+82. [ ] Delete cookbook
+83. [ ] Print cookbook
+84. [ ] View table of contents
 
 #### User Features
-- [ ] Register new account
-- [ ] Log in
-- [ ] Log out
-- [ ] Reset password
-- [ ] Update profile
-- [ ] Upload avatar
-- [ ] Favorite recipes
-- [ ] Follow cookbooks
-- [ ] Submit rating
-- [ ] Write review
+85. [ ] Register new account
+86. [ ] Log in
+87. [ ] Log out
+88. [ ] Reset password
+89. [ ] Update profile
+90. [ ] Upload avatar
+91. [ ] Favorite recipes
+92. [ ] Follow cookbooks
+93. [ ] Submit rating
+94. [ ] Write review
 
 #### Responsive Design
-- [ ] Test on desktop (1920px)
-- [ ] Test on laptop (1366px)
-- [ ] Test on tablet (768px)
-- [ ] Test on mobile (375px)
-- [ ] Test landscape orientation
-- [ ] Test portrait orientation
+95. [ ] Test on desktop (1920px)
+96. [ ] Test on laptop (1366px)
+97. [ ] Test on tablet (768px)
+98. [ ] Test on mobile (375px)
+99. [ ] Test landscape orientation
+100. [ ] Test portrait orientation
 
 #### Browsers
-- [ ] Chrome (latest)
-- [ ] Firefox (latest)
-- [ ] Safari (latest)
-- [ ] Edge (latest)
-- [ ] Chrome Mobile
-- [ ] Safari Mobile
+101. [ ] Chrome (latest)
+102. [ ] Firefox (latest)
+103. [ ] Safari (latest)
+104. [ ] Edge (latest)
+105. [ ] Chrome Mobile
+106. [ ] Safari Mobile
 
 ### Acceptance Criteria
 
