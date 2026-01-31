@@ -10,6 +10,7 @@ import re
 import json
 import time
 import requests
+import argparse
 from pathlib import Path
 
 REPO_OWNER = "dougis-org"
@@ -150,12 +151,13 @@ def create_github_issue(token, task):
         return False
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: GITHUB_TOKEN=your_token python3 create-milestone-issues.py <milestone-file.md>")
-        print("Example: GITHUB_TOKEN=xxx python3 create-milestone-issues.py ../docs/plan/milestones/MILESTONE-01.md")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description='Create GitHub issues from milestone markdown files.')
+    parser.add_argument('milestone_file', help='Path to milestone markdown file (e.g., MILESTONE-01.md)')
+    parser.add_argument('-y', '--yes', action='store_true', help='Skip confirmation prompt')
 
-    milestone_file = Path(sys.argv[1])
+    args = parser.parse_args()
+    milestone_file = Path(args.milestone_file)
+
     if not milestone_file.exists():
         print(f"Error: File not found: {milestone_file}")
         sys.exit(1)
@@ -171,10 +173,11 @@ def main():
         sys.exit(1)
 
     # Confirm before creating issues
-    response = input(f"Create {len(tasks)} GitHub issues? (yes/no): ")
-    if response.lower() not in ['yes', 'y']:
-        print("Aborted.")
-        sys.exit(0)
+    if not args.yes:
+        response = input(f"Create {len(tasks)} GitHub issues? (yes/no): ")
+        if response.lower() not in ['yes', 'y']:
+            print("Aborted.")
+            sys.exit(0)
 
     created = 0
     failed = 0
