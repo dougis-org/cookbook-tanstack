@@ -1,0 +1,71 @@
+{
+    "scenarios": [
+        {
+            "id": "clean-repo-all-new-files",
+            "name": "Clean repository with all new files",
+            "description": "Base repo has no .github folder; all files from agent-templates should auto-copy",
+            "baseRepoFiles": [],
+            "templateFiles": [
+                ".github/prompts/plan-ticket.prompt.md",
+                ".github/prompts/work-ticket.prompt.md",
+                ".github/agents/work-ticket.agent.md"
+            ],
+            "expectedAutoCopy": 3,
+            "expectedConflicts": 0,
+            "expectedMergeOutcome": "N/A"
+        },
+        {
+            "id": "partial-overlap-one-conflict",
+            "name": "Partial overlap with one conflict file",
+            "description": "Base repo has one matching file; other files are new",
+            "baseRepoFiles": [
+                ".github/prompts/plan-ticket.prompt.md"
+            ],
+            "templateFiles": [
+                ".github/prompts/plan-ticket.prompt.md",
+                ".github/prompts/work-ticket.prompt.md",
+                ".github/agents/work-ticket.agent.md"
+            ],
+            "expectedAutoCopy": 2,
+            "expectedConflicts": 1,
+            "expectedMergeOutcome": "Template version takes priority"
+        },
+        {
+            "id": "full-conflict-all-exist",
+            "name": "Full conflict - all files exist in both repos",
+            "description": "Every file exists in both base and template repos",
+            "baseRepoFiles": [
+                ".github/prompts/plan-ticket.prompt.md",
+                ".github/prompts/work-ticket.prompt.md",
+                ".github/agents/work-ticket.agent.md"
+            ],
+            "templateFiles": [
+                ".github/prompts/plan-ticket.prompt.md",
+                ".github/prompts/work-ticket.prompt.md",
+                ".github/agents/work-ticket.agent.md"
+            ],
+            "expectedAutoCopy": 0,
+            "expectedConflicts": 3,
+            "expectedMergeOutcome": "User must select strategy"
+        },
+        {
+            "id": "deep-nested-structure",
+            "name": "Deep nested directory structure",
+            "description": "Tests handling of nested directories and multiple levels",
+            "baseRepoFiles": [
+                ".github/workflows/ci.yml",
+                ".github/ISSUE_TEMPLATE/bug_report.md"
+            ],
+            "templateFiles": [
+                ".github/workflows/ci.yml",
+                ".github/workflows/cd.yml",
+                ".github/ISSUE_TEMPLATE/bug_report.md",
+                ".github/ISSUE_TEMPLATE/feature_request.md",
+                ".github/instructions/coding-standards.md"
+            ],
+            "expectedAutoCopy": 3,
+            "expectedConflicts": 2,
+            "expectedMergeOutcome": "Mixed auto-copy and conflict"
+        }
+    ]
+}

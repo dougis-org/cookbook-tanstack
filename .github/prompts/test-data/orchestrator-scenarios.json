@@ -1,0 +1,340 @@
+{
+  "scenarios": {
+    "happy-path": [
+      {
+        "id": "github-issue-complete-workflow",
+        "description": "Complete workflow with GitHub issue approval at both checkpoints",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "expectedPhases": [
+          "DISCOVERY",
+          "PLANNING",
+          "ANALYSIS",
+          "PLAN_CHECKPOINT",
+          "IMPLEMENTATION",
+          "LOCAL_REVIEW",
+          "PR_CREATION",
+          "PR_CHECKPOINT",
+          "CODE_REVIEW",
+          "DONE"
+        ],
+        "checkpointActions": [
+          {
+            "phase": "PLAN_CHECKPOINT",
+            "action": "approve",
+            "feedback": null
+          },
+          {
+            "phase": "PR_CHECKPOINT",
+            "action": "approve",
+            "feedback": null
+          }
+        ],
+        "expectedOutcome": "DONE"
+      },
+      {
+        "id": "jira-ticket-complete-workflow",
+        "description": "Complete workflow with Jira ticket approval at both checkpoints",
+        "inputs": {
+          "ticketId": "PROJ-123",
+          "maxRetries": 2
+        },
+        "expectedPhases": [
+          "DISCOVERY",
+          "PLANNING",
+          "ANALYSIS",
+          "PLAN_CHECKPOINT",
+          "IMPLEMENTATION",
+          "LOCAL_REVIEW",
+          "PR_CREATION",
+          "PR_CHECKPOINT",
+          "CODE_REVIEW",
+          "DONE"
+        ],
+        "checkpointActions": [
+          {
+            "phase": "PLAN_CHECKPOINT",
+            "action": "approve",
+            "feedback": null
+          },
+          {
+            "phase": "PR_CHECKPOINT",
+            "action": "approve",
+            "feedback": null
+          }
+        ],
+        "expectedOutcome": "DONE"
+      }
+    ],
+    "edge-cases": [
+      {
+        "id": "plan-rejection-with-scope-feedback",
+        "description": "Plan rejected due to scope issues, routed to plan-ticket for revision",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "checkpointActions": [
+          {
+            "phase": "PLAN_CHECKPOINT",
+            "action": "reject",
+            "feedback": "Scope too large, AC #5 overlaps with existing feature"
+          }
+        ],
+        "expectedRouting": "plan-ticket",
+        "expectedPhaseAfterReroute": "PLANNING",
+        "expectedOutcome": "PLAN_CHECKPOINT"
+      },
+      {
+        "id": "pr-rejection-with-quality-feedback",
+        "description": "PR rejected due to test coverage, routed to work-ticket for remediation",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "checkpointActions": [
+          {
+            "phase": "PLAN_CHECKPOINT",
+            "action": "approve",
+            "feedback": null
+          },
+          {
+            "phase": "PR_CHECKPOINT",
+            "action": "reject",
+            "feedback": "Code coverage dropped 5% below baseline. Add unit tests for error paths."
+          }
+        ],
+        "expectedRouting": "work-ticket",
+        "expectedPhaseAfterReroute": "IMPLEMENTATION",
+        "expectedOutcome": "PR_CHECKPOINT"
+      },
+      {
+        "id": "retry-on-subagent-failure",
+        "description": "Sub-agent fails, orchestrator retries automatically",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "subAgentResponses": [
+          {
+            "phase": "PLANNING",
+            "attemptNumber": 1,
+            "status": "failure",
+            "error": "Unable to parse acceptance criteria"
+          },
+          {
+            "phase": "PLANNING",
+            "attemptNumber": 2,
+            "status": "success",
+            "summary": "Plan created successfully"
+          }
+        ],
+        "expectedRetryCount": 2,
+        "expectedOutcome": "ANALYSIS"
+      },
+      {
+        "id": "max-retries-exceeded",
+        "description": "Sub-agent fails repeatedly, orchestrator escalates to human",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "subAgentResponses": [
+          {
+            "phase": "IMPLEMENTATION",
+            "attemptNumber": 1,
+            "status": "failure",
+            "error": "Build failure"
+          },
+          {
+            "phase": "IMPLEMENTATION",
+            "attemptNumber": 2,
+            "status": "failure",
+            "error": "Build failure"
+          },
+          {
+            "phase": "IMPLEMENTATION",
+            "attemptNumber": 3,
+            "status": "blocked"
+          }
+        ],
+        "expectedRetryCount": 2,
+        "expectedEscalation": true,
+        "expectedOutcome": "IMPLEMENTATION"
+      }
+    ],
+    "error-cases": [
+      {
+        "id": "invalid-ticket-id",
+        "description": "Orchestrator rejects invalid ticket ID format",
+        "inputs": {
+          "ticketId": "invalid-ticket",
+          "maxRetries": 2
+        },
+        "expectedError": "Invalid ticket ID format",
+        "expectedRecovery": "User prompted to provide valid GitHub issue (e.g., '#7') or Jira key (e.g., 'PROJ-123')"
+      },
+      {
+        "id": "ticket-not-found",
+        "description": "Orchestrator fails to find ticket in GitHub/Jira",
+        "inputs": {
+          "ticketId": "#99999",
+          "maxRetries": 2
+        },
+        "expectedError": "Ticket not found",
+        "expectedRecovery": "User prompted to verify ticket ID and retry"
+      },
+      {
+        "id": "subagent-timeout",
+        "description": "Sub-agent times out during execution",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "subAgentResponses": [
+          {
+            "phase": "ANALYSIS",
+            "attemptNumber": 1,
+            "status": "timeout"
+          }
+        ],
+        "expectedRetryCount": 1,
+        "expectedTimeout": true
+      },
+      {
+        "id": "state-file-corruption",
+        "description": "Orchestrator detects corrupted state file on load",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "stateFileIssue": "invalid_json",
+        "expectedError": "State file corrupted",
+        "expectedRecovery": "Orchestrator prompts user to reset state or manually specify recovery phase"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "plan-checkpoint-presentation",
+        "description": "Plan checkpoint presents correct information",
+        "phase": "PLAN_CHECKPOINT",
+        "expectedPresentation": {
+          "sections": ["Summary", "Risk Assessment", "Decomposition Recommendation"],
+          "fields": ["ticketId", "ticketUrl", "planSummary", "risks", "recommendation"]
+        },
+        "expectedApprovalPrompt": "Approve plan and proceed to implementation? (yes/no/details)"
+      },
+      {
+        "id": "pr-checkpoint-presentation",
+        "description": "PR checkpoint presents correct information",
+        "phase": "PR_CHECKPOINT",
+        "expectedPresentation": {
+          "sections": ["PR URL & Title", "AC Coverage", "Test Results", "Quality Gate Status"],
+          "fields": ["prUrl", "acCoverage", "testsPassed", "testsFailed", "qualityGateStatus"]
+        },
+        "expectedApprovalPrompt": "Approve PR for merge? (yes/no/details)"
+      }
+    ],
+    "feedback-routing": [
+      {
+        "id": "route-planning-feedback-to-plan-ticket",
+        "description": "Feedback about plan scope routed to plan-ticket",
+        "checkpointPhase": "PLAN_CHECKPOINT",
+        "userFeedback": "Scope too large, need to decompose further",
+        "keywordMatches": ["scope", "decompose", "large"],
+        "expectedTarget": "plan-ticket",
+        "expectedPrompt": "User feedback on plan: Scope too large, need to decompose further. Please revise the plan to address these concerns."
+      },
+      {
+        "id": "route-implementation-feedback-to-work-ticket",
+        "description": "Feedback about implementation quality routed to work-ticket",
+        "checkpointPhase": "PR_CHECKPOINT",
+        "userFeedback": "Code coverage dropped 5%. Add tests for error paths.",
+        "keywordMatches": ["coverage", "tests", "quality"],
+        "expectedTarget": "work-ticket",
+        "expectedPrompt": "User feedback on implementation: Code coverage dropped 5%. Add tests for error paths. Please address these issues."
+      },
+      {
+        "id": "route-pr-feedback-to-cut-pr",
+        "description": "Feedback about PR format/description routed to cut-pr",
+        "checkpointPhase": "PR_CHECKPOINT",
+        "userFeedback": "PR description missing rollback steps",
+        "keywordMatches": ["description", "rollback", "pr"],
+        "expectedTarget": "cut-pr",
+        "expectedPrompt": "User feedback on PR: PR description missing rollback steps. Please update the PR."
+      }
+    ],
+    "state-tracking": [
+      {
+        "id": "initialize-state",
+        "description": "Orchestrator initializes state correctly",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "expectedState": {
+          "ticketId": "#7",
+          "platform": "github",
+          "currentPhase": "DISCOVERY",
+          "checkpoints": {
+            "planApproved": false,
+            "prApproved": false
+          },
+          "retryCount": {},
+          "maxRetries": 2,
+          "phaseHistory": []
+        }
+      },
+      {
+        "id": "advance-phase-updates-state",
+        "description": "State updates correctly as workflow advances",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "phaseTransitions": [
+          {
+            "from": "DISCOVERY",
+            "to": "PLANNING",
+            "expectedStateUpdate": {
+              "currentPhase": "PLANNING",
+              "phaseHistoryLength": 1
+            }
+          },
+          {
+            "from": "PLANNING",
+            "to": "ANALYSIS",
+            "expectedStateUpdate": {
+              "currentPhase": "ANALYSIS",
+              "phaseHistoryLength": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "checkpoint-approval-updates-state",
+        "description": "Checkpoint approval flag updates correctly",
+        "inputs": {
+          "ticketId": "#7",
+          "maxRetries": 2
+        },
+        "action": "approve_at_PLAN_CHECKPOINT",
+        "expectedStateUpdate": {
+          "checkpoints.planApproved": true,
+          "currentPhase": "IMPLEMENTATION"
+        }
+      },
+      {
+        "id": "resume-from-saved-phase",
+        "description": "Orchestrator resumes from saved phase state",
+        "inputs": {
+          "ticketId": "#7",
+          "resumeFromPhase": "IMPLEMENTATION"
+        },
+        "expectedBehavior": "Load state from file, start at IMPLEMENTATION phase, skip prior phases"
+      }
+    ]
+  }
+}
