@@ -1,0 +1,33 @@
+# Codacy configuration for Cookbook TanStack project
+# Configured for PostgreSQL 16 - SQL Server patterns are disabled
+
+exclude_patterns:
+  - docs/**
+  - build/**
+  - dist/**
+  - .next/**
+  - node_modules/**
+  - .codacy/**
+
+# Exclude SQL migration files from SQL Server-specific analysis
+exclude_paths:
+  - drizzle/**
+
+# Pattern exclusions: disable SQL Server T-SQL specific checks
+# These patterns do not apply to PostgreSQL 16
+exclude:
+  # SQL Server: "table must use data compression" - PostgreSQL doesn't have this feature
+  - pattern: .*[Tt]able.*[Cc]ompression.*
+  # SQL Server: "must set QUOTED_IDENTIFIER" - PostgreSQL specific quoting is different
+  - pattern: .*[Qq]uoted.*[Ii]dentifier.*
+
+engines:
+  # Enable code quality tools for the project
+  eslint:
+    enabled: true
+  pylint:
+    enabled: true
+  trivy:
+    enabled: true
+  semgrep:
+    enabled: true

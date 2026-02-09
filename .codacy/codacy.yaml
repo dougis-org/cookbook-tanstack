@@ -1,3 +1,8 @@
+exclude_paths:
+    - drizzle/.*\.sql$
+exclude_patterns:
+    - drizzle/**
+    - .codacy/**
 runtimes:
     - dart@3.7.2
     - go@1.22.3

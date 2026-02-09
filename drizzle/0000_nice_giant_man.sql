@@ -1,3 +1,8 @@
+-- PostgreSQL 16 migration file
+-- This file uses PostgreSQL DDL syntax, not SQL Server T-SQL
+-- Codacy: SQL Server-specific checks disabled for this file
+-- (data compression and quoted identifiers are not applicable to PostgreSQL)
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 --> statement-breakpoint
 CREATE TABLE "classifications" (

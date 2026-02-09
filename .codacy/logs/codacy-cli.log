@@ -1,2 +1,10 @@
 2026-02-08T12:44:56-08:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.359.sha.fd2d067 (fd2d067) built at 2025-10-17T08:46:35Z
 2026-02-08T12:44:56-08:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=init full_command=[/home/doug/.cache/codacy/codacy-cli-v2/1.0.0-main.359.sha.fd2d067/codacy-cli-v2 init] args=[]
+2026-02-08T17:08:39-08:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.359.sha.fd2d067 (fd2d067) built at 2025-10-17T08:46:35Z
+2026-02-08T17:08:39-08:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/home/doug/.cache/codacy/codacy-cli-v2/1.0.0-main.359.sha.fd2d067/codacy-cli-v2 config discover /home/doug/dev/cookbook-tanstack/.codacy.yml] args=[/home/doug/dev/cookbook-tanstack/.codacy.yml] command=discover
+2026-02-08T17:08:40-08:00 [DEBUG] (codacy-cli-v2/cmd/config.go:181) Detected recognizable file extensions extensions=[.yml (1 files)] path=/home/doug/dev/cookbook-tanstack/.codacy.yml
+2026-02-08T17:08:40-08:00 [DEBUG] (codacy-cli-v2/config/detector.go:109) Found relevant tool for extension extension=.yml count=1 tool=trivy
+2026-02-08T17:08:40-08:00 [DEBUG] (codacy-cli-v2/config/detector.go:109) Found relevant tool for extension tool=semgrep extension=.yml count=1
+2026-02-08T17:08:40-08:00 [DEBUG] (codacy-cli-v2/config/detector.go:121) Detected relevant tools for path tools=[semgrep trivy] path=/home/doug/dev/cookbook-tanstack/.codacy.yml
+2026-02-08T17:09:25-08:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.359.sha.fd2d067 (fd2d067) built at 2025-10-17T08:46:35Z
+2026-02-08T17:09:25-08:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/home/doug/.cache/codacy/codacy-cli-v2/1.0.0-main.359.sha.fd2d067/codacy-cli-v2 config discover /home/doug/dev/cookbook-tanstack/docs/CODACY_CONFIG.md] args=[/home/doug/dev/cookbook-tanstack/docs/CODACY_CONFIG.md] command=discover
