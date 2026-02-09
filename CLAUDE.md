@@ -88,7 +88,7 @@ Shared TypeScript interfaces live in `src/types/recipe.ts` (Recipe, Ingredient, 
 - **Seeds:** `src/db/seeds/` — idempotent taxonomy seed scripts for meals, courses, preparations
 - **Config:** `drizzle.config.ts` at project root with environment variable validation
 - **15 tables:** users, recipes, classifications, sources, cookbooks, meals, courses, preparations, plus junction and social tables
-- **Timestamp tracking:** All tables use `createdAt` (insert-only) and `updatedAt` (auto-updated via database trigger on every modification)
+- **Timestamp tracking:** All tables use `createdAt` (insert-only) and `updatedAt` (auto-updated via Drizzle ORM's `.$onUpdate(() => new Date())` on every record modification)
 - **Environment:** Requires `DATABASE_URL` set in `.env.local` or `.env` (default: PostgreSQL on localhost using docker-compose credentials)
 - See `docs/database.md` for full schema documentation
 
