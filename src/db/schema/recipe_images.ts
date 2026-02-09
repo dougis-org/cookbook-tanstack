@@ -13,7 +13,10 @@ export const recipeImages = pgTable(
     orderIndex: integer('order_index').default(0).notNull(),
     isPrimary: boolean('is_primary').default(false).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [index('recipe_images_recipe_id_idx').on(table.recipeId)],
 )

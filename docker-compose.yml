@@ -6,9 +6,9 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: cookbook_user
-      POSTGRES_PASSWORD: cookbook_pass
-      POSTGRES_DB: cookbook_db
+      POSTGRES_USER: ${POSTGRES_USER:-cookbook_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cookbook_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-cookbook_db}
     volumes:
       - pgdata:/var/lib/postgresql/data
 

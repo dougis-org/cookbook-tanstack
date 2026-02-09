@@ -13,7 +13,10 @@ export const cookbooks = pgTable(
     isPublic: boolean('is_public').default(true).notNull(),
     imageUrl: text('image_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [index('cookbooks_user_id_idx').on(table.userId)],
 )

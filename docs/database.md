@@ -5,11 +5,13 @@ CookBook uses PostgreSQL 16 with Drizzle ORM for type-safe database access.
 ## Quick Start
 
 ```bash
-docker compose up -d          # Start PostgreSQL
+docker compose up -d          # Start PostgreSQL (enables pgcrypto extension)
 npm run db:push               # Apply schema to database
 npm run db:seed               # Seed taxonomy data
 npm run db:studio             # Browse data in Drizzle Studio
 ```
+
+> **Note:** The PostgreSQL server automatically enables the `pgcrypto` extension during initialization, which is required for UUID generation (`gen_random_uuid()`). This is handled by Drizzle's migration system.
 
 ## Schema Overview
 
@@ -64,16 +66,16 @@ Junction tables use composite primary keys (no surrogate ID). All foreign keys c
 
 ## Indexing Strategy
 
-- **Primary keys**: All tables have UUID primary keys with `gen_random_uuid()`
+- **Primary keys**: All tables have UUID primary keys with `gen_random_uuid()` (requires `pgcrypto` extension)
 - **Unique constraints**: `users.email`, `users.username`, plus `slug` on all taxonomy tables
 - **Foreign key indexes**: Every FK column is explicitly indexed for JOIN performance
-- **Search indexes**: `recipes.name` is indexed for name-based searches
+- **Search indexes**: `recipes.name` is indexed for basic name-based lookups. The `ingredients` field is not indexed—use `recipes.name` for search queries or implement full-text search (GIN index) in a future milestone for ingredient-based queries.
 
 ## Column Conventions
 
 - **Snake case**: All DB column names use `snake_case` (e.g., `user_id`, `created_at`)
 - **Camel case**: TypeScript field names use `camelCase` (Drizzle maps between them)
-- **Timestamps**: All tables include `created_at` and `updated_at` (default `now()`)
+- **Timestamps**: All tables include `created_at` (set at insert) and `updated_at` (set at insert and automatically updated on every record modification via database triggers)
 - **UUIDs**: All primary keys use UUID v4 generated at the database level
 - **Booleans**: Default to explicit values (`false` for `marked`, `true` for `is_public`)
 

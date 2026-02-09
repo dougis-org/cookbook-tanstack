@@ -42,7 +42,10 @@ export const recipes = pgTable(
     imageUrl: text('image_url'),
     isPublic: boolean('is_public').default(true).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => [
     index('recipes_user_id_idx').on(table.userId),

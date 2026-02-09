@@ -5,5 +5,8 @@ export const sources = pgTable('sources', {
   name: varchar({ length: 255 }).notNull(),
   url: text(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 })

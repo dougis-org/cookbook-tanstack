@@ -6,5 +6,8 @@ export const courses = pgTable('courses', {
   description: text(),
   slug: varchar({ length: 255 }).unique().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 })

@@ -8,5 +8,8 @@ export const users = pgTable('users', {
   name: varchar({ length: 255 }),
   avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
 })
