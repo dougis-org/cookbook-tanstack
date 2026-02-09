@@ -1,13 +1,10 @@
-import { pgTable, uuid, varchar, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text } from "drizzle-orm/pg-core";
+import { primaryId, timestamps } from "./columns";
 
-export const courses = pgTable('courses', {
-  id: uuid().defaultRandom().primaryKey(),
+export const courses = pgTable("courses", {
+  id: primaryId(),
   name: varchar({ length: 255 }).notNull(),
   description: text(),
   slug: varchar({ length: 255 }).unique().notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at')
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
-})
+  ...timestamps(),
+});
