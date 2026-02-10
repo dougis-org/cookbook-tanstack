@@ -8,25 +8,76 @@ import {
   Plus,
   Search,
   X,
+  LogIn,
+  UserPlus,
+  LogOut,
+  User,
 } from 'lucide-react'
+import { useSession, signOut } from '@/lib/auth-client'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const { data: session, isPending } = useSession()
+
+  async function handleSignOut() {
+    await signOut()
+    setIsOpen(false)
+  }
 
   return (
     <>
-      <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-          aria-label="Open menu"
-        >
-          <Menu size={24} />
-        </button>
-        <Link to="/" className="ml-4 flex items-center gap-3">
-          <ChefHat className="w-8 h-8 text-cyan-400" />
-          <h1 className="text-xl font-semibold">CookBook</h1>
-        </Link>
+      <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+          <Link to="/" className="ml-4 flex items-center gap-3">
+            <ChefHat className="w-8 h-8 text-cyan-400" />
+            <h1 className="text-xl font-semibold">CookBook</h1>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isPending ? null : session ? (
+            <>
+              <Link
+                to="/auth/profile"
+                className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors"
+              >
+                <User size={18} />
+                <span className="hidden sm:inline">{session.user.name || session.user.email}</span>
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-700"
+              >
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/auth/login"
+                className="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-700"
+              >
+                <LogIn size={16} />
+                <span className="hidden sm:inline">Login</span>
+              </Link>
+              <Link
+                to="/auth/register"
+                className="flex items-center gap-1.5 text-sm bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <UserPlus size={16} />
+                <span className="hidden sm:inline">Register</span>
+              </Link>
+            </>
+          )}
+        </div>
       </header>
 
       <aside

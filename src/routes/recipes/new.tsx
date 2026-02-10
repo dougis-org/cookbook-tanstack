@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
+import { authMiddleware } from '@/lib/middleware'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
 
 export const Route = createFileRoute('/recipes/new')({
   component: NewRecipePage,
+  server: {
+    middleware: [authMiddleware],
+  },
 })
 
 function NewRecipePage() {
