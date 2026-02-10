@@ -46,6 +46,7 @@ describe("ProfileInfo", () => {
     expect(screen.getByText("Test User")).toBeInTheDocument()
     expect(screen.getByText("test@example.com")).toBeInTheDocument()
     expect(screen.getByText("testuser")).toBeInTheDocument()
+    expect(screen.getByText(/Member since 2026-01-01/)).toBeInTheDocument()
   })
 
   it("displays avatar when image is available", () => {

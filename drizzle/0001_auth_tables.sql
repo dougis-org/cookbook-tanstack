@@ -1,16 +1,19 @@
 -- Auth system tables for Better-Auth integration
 -- Applied as part of Milestone 01: Authentication System
+-- Note: password_hash drop is intentional — this is a greenfield migration
+-- with no existing user data. Better-Auth stores credentials in the accounts table.
 
 -- Adapt users table for Better-Auth compatibility
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verified" boolean NOT NULL DEFAULT false;
+--> statement-breakpoint
 ALTER TABLE "users" DROP COLUMN IF EXISTS "password_hash";
-
+--> statement-breakpoint
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='avatar_url') THEN
     ALTER TABLE "users" RENAME COLUMN "avatar_url" TO "image";
   END IF;
 END $$;
-
+--> statement-breakpoint
 -- Session table (managed by Better-Auth)
 CREATE TABLE IF NOT EXISTS "sessions" (
   "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -22,7 +25,7 @@ CREATE TABLE IF NOT EXISTS "sessions" (
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
-
+--> statement-breakpoint
 -- Account table (managed by Better-Auth — stores provider credentials)
 CREATE TABLE IF NOT EXISTS "accounts" (
   "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -39,13 +42,13 @@ CREATE TABLE IF NOT EXISTS "accounts" (
   "created_at" timestamp DEFAULT now() NOT NULL,
   "updated_at" timestamp DEFAULT now() NOT NULL
 );
-
+--> statement-breakpoint
 -- Verification table (managed by Better-Auth — email verification, password reset tokens)
 CREATE TABLE IF NOT EXISTS "verifications" (
   "id" uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   "identifier" text NOT NULL,
   "value" text NOT NULL,
   "expires_at" timestamp NOT NULL,
-  "created_at" timestamp DEFAULT now(),
-  "updated_at" timestamp DEFAULT now()
+  "created_at" timestamp DEFAULT now() NOT NULL,
+  "updated_at" timestamp DEFAULT now() NOT NULL
 );

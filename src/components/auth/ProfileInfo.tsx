@@ -34,7 +34,7 @@ export default function ProfileInfo() {
         )}
         <div>
           <h3 className="text-xl font-semibold text-white">{user.name || "No name set"}</h3>
-          <p className="text-gray-400 text-sm">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
+          <p className="text-gray-400 text-sm">Member since {new Date(user.createdAt).toISOString().split("T")[0]}</p>
         </div>
       </div>
 
