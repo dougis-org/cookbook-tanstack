@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { primaryId } from "./columns";
+import { primaryId, timestamps } from "./columns";
 import { users } from "./users";
 
 export const accounts = pgTable("accounts", {
@@ -16,9 +16,5 @@ export const accounts = pgTable("accounts", {
   refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
   scope: text(),
   password: text(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
+  ...timestamps(),
 });

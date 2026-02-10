@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { mockAuthError } from "@/lib/__tests__/test-helpers"
 
 const mockNavigate = vi.fn()
 const mockSignInEmail = vi.fn()
@@ -12,11 +13,7 @@ vi.mock("@tanstack/react-router", () => ({
 }))
 
 vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    signIn: {
-      email: (...args: unknown[]) => mockSignInEmail(...args),
-    },
-  },
+  authClient: { signIn: { email: (...args: unknown[]) => mockSignInEmail(...args) } },
 }))
 
 import LoginForm from "@/components/auth/LoginForm"
@@ -88,10 +85,7 @@ describe("LoginForm", () => {
   })
 
   it("shows server error messages", async () => {
-    mockSignInEmail.mockImplementation((_data: unknown, callbacks: { onError: (ctx: { error: { message: string } }) => void }) => {
-      callbacks.onError({ error: { message: "Invalid credentials" } })
-    })
-
+    mockAuthError(mockSignInEmail, "Invalid credentials")
     render(<LoginForm />)
 
     fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: "test@example.com" } })

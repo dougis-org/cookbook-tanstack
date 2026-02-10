@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string; [key: string]: unknown }) => (
-    <a href={to} {...props}>{children}</a>
+  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+    <a href={to}>{children}</a>
   ),
 }))
 
