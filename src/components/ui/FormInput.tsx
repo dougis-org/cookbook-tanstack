@@ -32,9 +32,11 @@ export default function FormInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
         className="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
       />
-      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
+      {error && <p id={`${id}-error`} className="mt-1 text-sm text-red-400">{error}</p>}
     </div>
   )
 }

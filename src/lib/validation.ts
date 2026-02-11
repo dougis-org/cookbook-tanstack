@@ -1,6 +1,7 @@
 export function validateEmail(email: string): string | undefined {
-  if (!email.trim()) return "Email is required"
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Please enter a valid email"
+  const trimmed = email.trim()
+  if (!trimmed) return "Email is required"
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return "Please enter a valid email"
 }
 
 export function validatePassword(password: string): string | undefined {
@@ -9,6 +10,7 @@ export function validatePassword(password: string): string | undefined {
 }
 
 export function validateUsername(username: string): string | undefined {
-  if (!username.trim()) return "Username is required"
-  if (username.length < 3) return "Username must be at least 3 characters"
+  const trimmed = username.trim()
+  if (!trimmed) return "Username is required"
+  if (trimmed.length < 3) return "Username must be at least 3 characters"
 }
