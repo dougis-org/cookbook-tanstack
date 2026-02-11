@@ -1,4 +1,7 @@
 export { users } from './users'
+export { sessions } from './sessions'
+export { accounts } from './accounts'
+export { verifications } from './verifications'
 export { recipes } from './recipes'
 export { classifications } from './classifications'
 export { sources } from './sources'

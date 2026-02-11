@@ -7,6 +7,7 @@ import {
   real,
   boolean,
   index,
+  timestamp,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { sources } from "./sources";
