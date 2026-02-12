@@ -8,6 +8,20 @@
       "when": 1770572846305,
       "tag": "0000_nice_giant_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1707763157000,
+      "tag": "0001_auth_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1707763200000,
+      "tag": "0002_add_display_username",
+      "breakpoints": true
     }
   ]
 }

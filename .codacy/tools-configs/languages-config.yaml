@@ -1,4 +1,8 @@
 tools:
+    - name: dartanalyzer
+      languages: [Dart]
+      extensions: [.dart]
+      files: []
     - name: eslint
       languages: [Javascript, TypeScript]
       extensions: [.js, .jsm, .jsx, .mjs, .ts, .tsx, .vue]
@@ -6,6 +10,18 @@ tools:
     - name: lizard
       languages: [C, CPP, CSharp, Erlang, Fortran, Go, Java, Javascript, Kotlin, Lua, Objective C, PHP, Python, Ruby, Rust, Scala, Solidity, Swift, TypeScript]
       extensions: [.c, .cc, .cpp, .cs, .cxx, .gemspec, .go, .h, .hpp, .ino, .java, .jbuilder, .js, .jsm, .jsx, .kt, .kts, .m, .mjs, .opal, .php, .podspec, .py, .rake, .rb, .rlib, .rs, .scala, .swift, .ts, .tsx, .vue]
+      files: []
+    - name: pmd
+      languages: [Apex, JSP, Java, Javascript, PLSQL, SQL, Velocity, VisualForce, XML]
+      extensions: [.cls, .component, .fnc, .java, .js, .jsm, .jsp, .jsx, .mjs, .page, .pck, .pkb, .pkh, .pks, .plb, .pld, .plh, .pls, .pom, .prc, .sql, .tpb, .tps, .trg, .trigger, .tyb, .typ, .vm, .vue, .wsdl, .xml, .xsl]
+      files: []
+    - name: pylint
+      languages: [Python]
+      extensions: [.py]
+      files: []
+    - name: revive
+      languages: [Go]
+      extensions: [.go]
       files: []
     - name: semgrep
       languages: [Apex, C, CPP, CSharp, Dockerfile, Go, Java, Javascript, Kotlin, PHP, PLSQL, Python, Ruby, Rust, SQL, Scala, Shell, Swift, Terraform, TypeScript, YAML]
