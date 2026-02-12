@@ -1,8 +1,4 @@
-import { publicProcedure, router } from "../init"
+import { createTaxonomyRouter } from "./_helpers"
 import { meals } from "@/db/schema"
 
-export const mealsRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(meals)
-  }),
-})
+export const mealsRouter = createTaxonomyRouter(meals)

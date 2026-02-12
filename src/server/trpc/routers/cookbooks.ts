@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { eq } from "drizzle-orm"
-import { TRPCError } from "@trpc/server"
 import { publicProcedure, protectedProcedure, router } from "../init"
+import { verifyOwnership } from "./_helpers"
 import { cookbooks, cookbookRecipes } from "@/db/schema"
 
 export const cookbooksRouter = router({
@@ -61,17 +61,11 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const [existing] = await ctx.db
-        .select()
-        .from(cookbooks)
-        .where(eq(cookbooks.id, input.id))
-
-      if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cookbook not found" })
-      }
-      if (existing.userId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not your cookbook" })
-      }
+      await verifyOwnership(
+        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
+        ctx.user.id,
+        "Cookbook",
+      )
 
       const { id: _, ...data } = input
       const [updated] = await ctx.db
@@ -85,18 +79,11 @@ export const cookbooksRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const [existing] = await ctx.db
-        .select()
-        .from(cookbooks)
-        .where(eq(cookbooks.id, input.id))
-
-      if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cookbook not found" })
-      }
-      if (existing.userId !== ctx.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Not your cookbook" })
-      }
-
+      await verifyOwnership(
+        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
+        ctx.user.id,
+        "Cookbook",
+      )
       await ctx.db.delete(cookbooks).where(eq(cookbooks.id, input.id))
       return { success: true }
     }),
