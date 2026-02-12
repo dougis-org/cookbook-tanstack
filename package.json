@@ -16,11 +16,15 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-router-ssr-query": "^1.131.7",
     "@tanstack/react-start": "^1.132.0",
     "@tanstack/router-plugin": "^1.132.0",
+    "@trpc/client": "^11.10.0",
+    "@trpc/server": "^11.10.0",
+    "@trpc/tanstack-react-query": "^11.10.0",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.561.0",
@@ -28,8 +32,10 @@
     "pg": "^8.18.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "superjson": "^2.2.6",
     "tailwindcss": "^4.0.6",
-    "vite-tsconfig-paths": "^6.0.2"
+    "vite-tsconfig-paths": "^6.0.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "^0.3.11",

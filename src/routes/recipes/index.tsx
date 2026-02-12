@@ -1,38 +1,14 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
+import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 
 export const Route = createFileRoute('/recipes/')({ component: RecipesPage })
 
 function RecipesPage() {
-  // Placeholder data - will be replaced with actual data fetching
-  const recipes = [
-    {
-      id: '1',
-      title: 'Classic Spaghetti Carbonara',
-      description: 'A traditional Italian pasta dish with eggs, cheese, and pancetta',
-      prepTime: 15,
-      cookTime: 20,
-      difficulty: 'medium' as const,
-    },
-    {
-      id: '2',
-      title: 'Chocolate Chip Cookies',
-      description: 'Soft and chewy cookies loaded with chocolate chips',
-      prepTime: 15,
-      cookTime: 12,
-      difficulty: 'easy' as const,
-    },
-    {
-      id: '3',
-      title: 'Grilled Salmon with Herbs',
-      description: 'Fresh salmon fillet with a herb and lemon marinade',
-      prepTime: 10,
-      cookTime: 15,
-      difficulty: 'medium' as const,
-    },
-  ]
+  const { data: recipes, isLoading } = useQuery(trpc.recipes.list.queryOptions())
 
   return (
     <PageLayout
@@ -59,26 +35,32 @@ function RecipesPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recipes.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-gray-400 mb-4">No recipes found</p>
-            <Link
-              to="/recipes/new"
-              className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              Create your first recipe
-            </Link>
-          </div>
-        ) : (
-          recipes.map((recipe) => (
-            <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
-              <RecipeCard recipe={recipe} />
-            </Link>
-          ))
-        )}
-      </div>
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading recipes...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {!recipes?.length ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-400 mb-4">No recipes found</p>
+              <Link
+                to="/recipes/new"
+                className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                Create your first recipe
+              </Link>
+            </div>
+          ) : (
+            recipes.map((recipe) => (
+              <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
+                <RecipeCard recipe={{ ...recipe, title: recipe.name }} />
+              </Link>
+            ))
+          )}
+        </div>
+      )}
     </PageLayout>
   )
 }

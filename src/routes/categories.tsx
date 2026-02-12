@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CategoryCard from '@/components/categories/CategoryCard'
 
@@ -7,62 +9,39 @@ export const Route = createFileRoute('/categories')({
 })
 
 function CategoriesPage() {
-  // Placeholder data - will be replaced with actual data fetching
-  const categories = [
-    {
-      id: '1',
-      name: 'Appetizers',
-      description: 'Start your meal with delicious starters',
-      recipeCount: 15,
-    },
-    {
-      id: '2',
-      name: 'Main Courses',
-      description: 'Hearty and satisfying main dishes',
-      recipeCount: 32,
-    },
-    {
-      id: '3',
-      name: 'Desserts',
-      description: 'Sweet treats to end your meal',
-      recipeCount: 24,
-    },
-    {
-      id: '4',
-      name: 'Salads',
-      description: 'Fresh and healthy salad recipes',
-      recipeCount: 18,
-    },
-    {
-      id: '5',
-      name: 'Soups',
-      description: 'Warming soups and stews',
-      recipeCount: 12,
-    },
-    {
-      id: '6',
-      name: 'Beverages',
-      description: 'Refreshing drinks and cocktails',
-      recipeCount: 10,
-    },
-  ]
+  const { data: classifications, isLoading } = useQuery(
+    trpc.classifications.list.queryOptions(),
+  )
 
   return (
     <PageLayout
       title="Categories"
       description="Explore recipes by category"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <Link
-            key={category.id}
-            to="/categories/$categoryId"
-            params={{ categoryId: category.id }}
-          >
-            <CategoryCard category={category} />
-          </Link>
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading categories...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {classifications?.map((classification) => (
+            <Link
+              key={classification.id}
+              to="/categories/$categoryId"
+              params={{ categoryId: classification.id }}
+            >
+              <CategoryCard
+                category={{
+                  id: classification.id,
+                  name: classification.name,
+                  description: classification.description ?? '',
+                  recipeCount: 0,
+                }}
+              />
+            </Link>
+          ))}
+        </div>
+      )}
     </PageLayout>
   )
 }
