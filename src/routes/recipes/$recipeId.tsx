@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
+import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 
@@ -55,10 +56,13 @@ function RecipeDetailPage() {
 
       <RecipeDetail
         recipe={{
-          ...recipe,
-          title: recipe.name,
+          ...toRecipeProps(recipe),
           description: recipe.notes ?? '',
           servings: recipe.servings ?? undefined,
+          // DB stores as text; RecipeDetail expects Ingredient[]/string[]
+          // Pass undefined until structured editing is implemented
+          ingredients: undefined,
+          instructions: undefined,
         }}
       />
 

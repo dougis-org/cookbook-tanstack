@@ -79,6 +79,16 @@ describe("tRPC integration", () => {
       const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
       await expect(caller.sources.create({ name: "Test", url: "not-a-url" })).rejects.toThrow()
     })
+
+    it("rejects empty users.updateProfile input", async () => {
+      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      await expect(caller.users.updateProfile({})).rejects.toThrow()
+    })
+
+    it("rejects cookbooks.update with only an id", async () => {
+      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      await expect(caller.cookbooks.update({ id: VALID_UUID })).rejects.toThrow()
+    })
   })
 
   describe("public access", () => {

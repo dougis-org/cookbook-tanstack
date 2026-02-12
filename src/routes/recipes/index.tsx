@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
+import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 
@@ -55,7 +56,7 @@ function RecipesPage() {
           ) : (
             recipes.map((recipe) => (
               <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
-                <RecipeCard recipe={{ ...recipe, title: recipe.name }} />
+                <RecipeCard recipe={toRecipeProps(recipe)} />
               </Link>
             ))
           )}

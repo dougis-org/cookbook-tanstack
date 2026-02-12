@@ -1,12 +1,16 @@
 import { z } from "zod"
-import { eq } from "drizzle-orm"
+import { eq, or, and } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { verifyOwnership } from "./_helpers"
 import { cookbooks, cookbookRecipes } from "@/db/schema"
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(cookbooks)
+    // Enforce visibility: anonymous see public only; authenticated see public + own
+    const visibility = ctx.user
+      ? or(eq(cookbooks.isPublic, true), eq(cookbooks.userId, ctx.user.id))
+      : eq(cookbooks.isPublic, true)
+    return ctx.db.select().from(cookbooks).where(visibility)
   }),
 
   byId: publicProcedure
@@ -18,6 +22,11 @@ export const cookbooksRouter = router({
         .where(eq(cookbooks.id, input.id))
 
       if (!cookbook) return null
+
+      // Enforce visibility: private cookbooks only visible to their owner
+      if (!cookbook.isPublic && (!ctx.user || ctx.user.id !== cookbook.userId)) {
+        return null
+      }
 
       const recipes = await ctx.db
         .select()
@@ -52,13 +61,21 @@ export const cookbooksRouter = router({
 
   update: protectedProcedure
     .input(
-      z.object({
-        id: z.string().uuid(),
-        name: z.string().min(1).max(255).optional(),
-        description: z.string().optional(),
-        isPublic: z.boolean().optional(),
-        imageUrl: z.string().url().optional(),
-      }),
+      z
+        .object({
+          id: z.string().uuid(),
+          name: z.string().min(1).max(255).optional(),
+          description: z.string().optional(),
+          isPublic: z.boolean().optional(),
+          imageUrl: z.string().url().optional(),
+        })
+        .refine(
+          (data) => {
+            const { id: _, ...rest } = data
+            return Object.keys(rest).length > 0
+          },
+          { message: "At least one field to update must be provided" },
+        ),
     )
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(

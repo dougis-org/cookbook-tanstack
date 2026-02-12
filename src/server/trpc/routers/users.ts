@@ -14,10 +14,14 @@ export const usersRouter = router({
 
   updateProfile: protectedProcedure
     .input(
-      z.object({
-        name: z.string().min(1).max(255).optional(),
-        image: z.string().url().optional(),
-      }),
+      z
+        .object({
+          name: z.string().min(1).max(255).optional(),
+          image: z.string().url().optional(),
+        })
+        .refine((data) => Object.keys(data).length > 0, {
+          message: "At least one field must be provided",
+        }),
     )
     .mutation(async ({ ctx, input }) => {
       const [updated] = await ctx.db

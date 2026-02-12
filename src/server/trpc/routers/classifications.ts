@@ -1,11 +1,23 @@
 import { z } from "zod"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { publicProcedure, router } from "../init"
-import { classifications } from "@/db/schema"
+import { classifications, recipes } from "@/db/schema"
 
 export const classificationsRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(classifications)
+    return ctx.db
+      .select({
+        id: classifications.id,
+        name: classifications.name,
+        slug: classifications.slug,
+        description: classifications.description,
+        createdAt: classifications.createdAt,
+        updatedAt: classifications.updatedAt,
+        recipeCount: sql<number>`cast(count(${recipes.id}) as int)`,
+      })
+      .from(classifications)
+      .leftJoin(recipes, eq(recipes.classificationId, classifications.id))
+      .groupBy(classifications.id)
   }),
 
   byId: publicProcedure

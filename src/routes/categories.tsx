@@ -35,7 +35,7 @@ function CategoriesPage() {
                   id: classification.id,
                   name: classification.name,
                   description: classification.description ?? '',
-                  recipeCount: 0,
+                  recipeCount: classification.recipeCount,
                 }}
               />
             </Link>

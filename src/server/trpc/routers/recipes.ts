@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { eq, and, ilike } from "drizzle-orm"
+import { eq, and, or, ilike } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { verifyOwnership, syncJunction } from "./_helpers"
 import {
@@ -56,12 +56,22 @@ export const recipesRouter = router({
     )
     .query(async ({ ctx, input }) => {
       const conditions = []
+
+      // Enforce visibility: anonymous users only see public recipes;
+      // authenticated users see public + their own private recipes
+      if (input?.isPublic !== undefined) {
+        conditions.push(eq(recipes.isPublic, input.isPublic))
+      } else if (ctx.user) {
+        conditions.push(or(eq(recipes.isPublic, true), eq(recipes.userId, ctx.user.id)))
+      } else {
+        conditions.push(eq(recipes.isPublic, true))
+      }
+
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
-      if (input?.isPublic !== undefined) conditions.push(eq(recipes.isPublic, input.isPublic))
       if (input?.search) conditions.push(ilike(recipes.name, `%${input.search}%`))
 
-      return ctx.db.select().from(recipes).where(conditions.length ? and(...conditions) : undefined)
+      return ctx.db.select().from(recipes).where(and(...conditions))
     }),
 
   byId: publicProcedure
@@ -69,6 +79,11 @@ export const recipesRouter = router({
     .query(async ({ ctx, input }) => {
       const [recipe] = await ctx.db.select().from(recipes).where(eq(recipes.id, input.id))
       if (!recipe) return null
+
+      // Enforce visibility: private recipes only visible to their owner
+      if (!recipe.isPublic && (!ctx.user || ctx.user.id !== recipe.userId)) {
+        return null
+      }
 
       const [meals, courses, preparations, images] = await Promise.all([
         ctx.db.select().from(recipeMeals).where(eq(recipeMeals.recipeId, input.id)),
@@ -84,28 +99,30 @@ export const recipesRouter = router({
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       const { mealIds, courseIds, preparationIds, ...fields } = input
-      const [recipe] = await ctx.db
-        .insert(recipes)
-        .values({
-          ...fields,
-          userId: ctx.user.id,
-          ingredients: fields.ingredients ?? null,
-          instructions: fields.instructions ?? null,
-          notes: fields.notes ?? null,
-          servings: fields.servings ?? null,
-          sourceId: fields.sourceId ?? null,
-          classificationId: fields.classificationId ?? null,
-          calories: fields.calories ?? null,
-          fat: fields.fat ?? null,
-          cholesterol: fields.cholesterol ?? null,
-          sodium: fields.sodium ?? null,
-          protein: fields.protein ?? null,
-          imageUrl: fields.imageUrl ?? null,
-        })
-        .returning()
+      return ctx.db.transaction(async (tx) => {
+        const [recipe] = await tx
+          .insert(recipes)
+          .values({
+            ...fields,
+            userId: ctx.user.id,
+            ingredients: fields.ingredients ?? null,
+            instructions: fields.instructions ?? null,
+            notes: fields.notes ?? null,
+            servings: fields.servings ?? null,
+            sourceId: fields.sourceId ?? null,
+            classificationId: fields.classificationId ?? null,
+            calories: fields.calories ?? null,
+            fat: fields.fat ?? null,
+            cholesterol: fields.cholesterol ?? null,
+            sodium: fields.sodium ?? null,
+            protein: fields.protein ?? null,
+            imageUrl: fields.imageUrl ?? null,
+          })
+          .returning()
 
-      await syncTaxonomy(ctx.db, recipe.id, { mealIds, courseIds, preparationIds })
-      return recipe
+        await syncTaxonomy(tx, recipe.id, { mealIds, courseIds, preparationIds })
+        return recipe
+      })
     }),
 
   update: protectedProcedure
@@ -118,9 +135,16 @@ export const recipesRouter = router({
       )
 
       const { id, mealIds, courseIds, preparationIds, ...data } = input
-      const [updated] = await ctx.db.update(recipes).set(data).where(eq(recipes.id, id)).returning()
-      await syncTaxonomy(ctx.db, id, { mealIds, courseIds, preparationIds })
-      return updated
+      return ctx.db.transaction(async (tx) => {
+        // Only issue UPDATE if there are scalar fields to set
+        const hasScalarFields = Object.keys(data).length > 0
+        const [updated] = hasScalarFields
+          ? await tx.update(recipes).set(data).where(eq(recipes.id, id)).returning()
+          : await tx.select().from(recipes).where(eq(recipes.id, id))
+
+        await syncTaxonomy(tx, id, { mealIds, courseIds, preparationIds })
+        return updated
+      })
     }),
 
   delete: protectedProcedure

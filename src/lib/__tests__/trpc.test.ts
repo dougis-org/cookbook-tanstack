@@ -5,10 +5,11 @@ vi.mock("@/db/schema", () => ({ users: {}, sessions: {}, accounts: {}, verificat
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
 describe("tRPC client setup", () => {
-  it("exports queryClient", async () => {
-    const { queryClient } = await import("@/lib/trpc")
-    expect(queryClient).toBeDefined()
-    expect(typeof queryClient.fetchQuery).toBe("function")
+  it("exports getQueryClient factory", async () => {
+    const { getQueryClient } = await import("@/lib/trpc")
+    expect(getQueryClient).toBeDefined()
+    const qc = getQueryClient()
+    expect(typeof qc.fetchQuery).toBe("function")
   })
 
   it("exports trpc proxy", async () => {
