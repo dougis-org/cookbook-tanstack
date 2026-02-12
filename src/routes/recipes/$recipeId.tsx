@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
+import { trpc } from '@/lib/trpc'
+import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 
@@ -9,37 +12,34 @@ export const Route = createFileRoute('/recipes/$recipeId')({
 
 function RecipeDetailPage() {
   const { recipeId } = Route.useParams()
+  const { data: recipe, isLoading } = useQuery(
+    trpc.recipes.byId.queryOptions({ id: recipeId }),
+  )
 
-  // Placeholder data - will be replaced with actual data fetching
-  const recipe = {
-    id: recipeId,
-    title: 'Classic Spaghetti Carbonara',
-    description:
-      'A traditional Italian pasta dish with eggs, cheese, and pancetta. This authentic recipe creates a creamy sauce without cream!',
-    prepTime: 15,
-    cookTime: 20,
-    servings: 4,
-    difficulty: 'medium' as const,
-    categoryId: '1',
-    tags: ['Italian', 'Pasta', 'Quick'],
-    ingredients: [
-      { id: '1', name: 'Spaghetti', quantity: 400, unit: 'g' },
-      { id: '2', name: 'Pancetta', quantity: 200, unit: 'g' },
-      { id: '3', name: 'Eggs', quantity: 4, unit: 'large' },
-      { id: '4', name: 'Parmesan cheese', quantity: 100, unit: 'g' },
-      { id: '5', name: 'Black pepper', quantity: 1, unit: 'tsp' },
-    ],
-    instructions: [
-      'Bring a large pot of salted water to boil and cook the spaghetti according to package directions.',
-      'While the pasta cooks, cut the pancetta into small cubes and fry in a large pan over medium heat until crispy.',
-      'In a bowl, whisk together the eggs and grated Parmesan cheese. Season generously with black pepper.',
-      'When the pasta is ready, reserve 1 cup of pasta water and drain the rest.',
-      'Remove the pan from heat and add the hot pasta to the pancetta.',
-      'Quickly pour in the egg mixture while tossing the pasta constantly. Add reserved pasta water as needed to create a creamy sauce.',
-      'Serve immediately with extra Parmesan and black pepper.',
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading recipe...</p>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!recipe) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400 mb-4">Recipe not found</p>
+          <Link
+            to="/recipes"
+            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            Back to Recipes
+          </Link>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (
@@ -54,7 +54,17 @@ function RecipeDetailPage() {
         </Link>
       </div>
 
-      <RecipeDetail recipe={recipe} />
+      <RecipeDetail
+        recipe={{
+          ...toRecipeProps(recipe),
+          description: recipe.notes ?? '',
+          servings: recipe.servings ?? undefined,
+          // DB stores as text; RecipeDetail expects Ingredient[]/string[]
+          // Pass undefined until structured editing is implemented
+          ingredients: undefined,
+          instructions: undefined,
+        }}
+      />
 
       <div className="mt-8 flex justify-center gap-4">
         <Link

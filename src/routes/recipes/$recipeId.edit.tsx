@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { authMiddleware } from '@/lib/middleware'
+import { trpc } from '@/lib/trpc'
+import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
 
@@ -13,17 +16,34 @@ export const Route = createFileRoute('/recipes/$recipeId/edit')({
 
 function EditRecipePage() {
   const { recipeId } = Route.useParams()
+  const { data: recipe, isLoading } = useQuery(
+    trpc.recipes.byId.queryOptions({ id: recipeId }),
+  )
 
-  // Placeholder data - will be replaced with actual data fetching
-  const recipe = {
-    id: recipeId,
-    title: 'Classic Spaghetti Carbonara',
-    description:
-      'A traditional Italian pasta dish with eggs, cheese, and pancetta',
-    prepTime: 15,
-    cookTime: 20,
-    servings: 4,
-    difficulty: 'medium' as const,
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading recipe...</p>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!recipe) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400 mb-4">Recipe not found</p>
+          <Link
+            to="/recipes"
+            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            Back to Recipes
+          </Link>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (
@@ -39,7 +59,12 @@ function EditRecipePage() {
         </Link>
       </div>
 
-      <RecipeForm initialData={recipe} />
+      <RecipeForm
+        initialData={{
+          ...toRecipeProps(recipe),
+          servings: recipe.servings ?? undefined,
+        }}
+      />
     </PageLayout>
   )
 }

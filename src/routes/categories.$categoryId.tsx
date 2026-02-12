@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
+import { trpc } from '@/lib/trpc'
+import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 
@@ -10,40 +13,41 @@ export const Route = createFileRoute('/categories/$categoryId')({
 function CategoryDetailPage() {
   const { categoryId } = Route.useParams()
 
-  // Placeholder data - will be replaced with actual data fetching
-  const category = {
-    id: categoryId,
-    name: 'Main Courses',
-    description: 'Hearty and satisfying main dishes for any occasion',
-    recipeCount: 32,
+  const { data: classification, isLoading: loadingClassification } = useQuery(
+    trpc.classifications.byId.queryOptions({ id: categoryId }),
+  )
+
+  const { data: recipes, isLoading: loadingRecipes } = useQuery(
+    trpc.recipes.list.queryOptions({ classificationId: categoryId }),
+  )
+
+  const isLoading = loadingClassification || loadingRecipes
+
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading category...</p>
+        </div>
+      </PageLayout>
+    )
   }
 
-  const recipes = [
-    {
-      id: '1',
-      title: 'Classic Spaghetti Carbonara',
-      description: 'A traditional Italian pasta dish',
-      prepTime: 15,
-      cookTime: 20,
-      difficulty: 'medium' as const,
-    },
-    {
-      id: '2',
-      title: 'Grilled Salmon with Herbs',
-      description: 'Fresh salmon with herb marinade',
-      prepTime: 10,
-      cookTime: 15,
-      difficulty: 'medium' as const,
-    },
-    {
-      id: '3',
-      title: 'Beef Stir Fry',
-      description: 'Quick and flavorful Asian-inspired dish',
-      prepTime: 20,
-      cookTime: 10,
-      difficulty: 'easy' as const,
-    },
-  ]
+  if (!classification) {
+    return (
+      <PageLayout>
+        <div className="text-center py-12">
+          <p className="text-gray-400 mb-4">Category not found</p>
+          <Link
+            to="/categories"
+            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+          >
+            Back to Categories
+          </Link>
+        </div>
+      </PageLayout>
+    )
+  }
 
   return (
     <PageLayout>
@@ -58,16 +62,16 @@ function CategoryDetailPage() {
       </div>
 
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 mb-8">
-        <h1 className="text-4xl font-bold text-white mb-4">{category.name}</h1>
-        <p className="text-gray-400 text-lg mb-2">{category.description}</p>
-        <p className="text-gray-500">{category.recipeCount} recipes</p>
+        <h1 className="text-4xl font-bold text-white mb-4">{classification.name}</h1>
+        <p className="text-gray-400 text-lg mb-2">{classification.description}</p>
+        <p className="text-gray-500">{recipes?.length ?? 0} recipes</p>
       </div>
 
       <h2 className="text-2xl font-bold text-white mb-6">Recipes in this category</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recipes.map((recipe) => (
+        {recipes?.map((recipe) => (
           <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
-            <RecipeCard recipe={recipe} />
+            <RecipeCard recipe={toRecipeProps(recipe)} />
           </Link>
         ))}
       </div>
