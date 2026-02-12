@@ -33,6 +33,17 @@ const taxonomyIds = z.object({
   preparationIds: z.array(z.string().uuid()).optional(),
 })
 
+/**
+ * Returns a SQL condition enforcing recipe visibility for the current user.
+ * Public recipes are always visible; private recipes only visible to their owner.
+ */
+function visibilityFilter(user: { id: string } | null) {
+  if (user) {
+    return or(eq(recipes.isPublic, true), eq(recipes.userId, user.id))!
+  }
+  return eq(recipes.isPublic, true)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncTaxonomy(db: any, recipeId: string, input: z.infer<typeof taxonomyIds>) {
   await Promise.all([
@@ -57,14 +68,10 @@ export const recipesRouter = router({
     .query(async ({ ctx, input }) => {
       const conditions = []
 
-      // Enforce visibility: anonymous users only see public recipes;
-      // authenticated users see public + their own private recipes
       if (input?.isPublic !== undefined) {
         conditions.push(eq(recipes.isPublic, input.isPublic))
-      } else if (ctx.user) {
-        conditions.push(or(eq(recipes.isPublic, true), eq(recipes.userId, ctx.user.id)))
       } else {
-        conditions.push(eq(recipes.isPublic, true))
+        conditions.push(visibilityFilter(ctx.user))
       }
 
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
@@ -77,13 +84,11 @@ export const recipesRouter = router({
   byId: publicProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
-      const [recipe] = await ctx.db.select().from(recipes).where(eq(recipes.id, input.id))
+      const [recipe] = await ctx.db
+        .select()
+        .from(recipes)
+        .where(and(eq(recipes.id, input.id), visibilityFilter(ctx.user)))
       if (!recipe) return null
-
-      // Enforce visibility: private recipes only visible to their owner
-      if (!recipe.isPublic && (!ctx.user || ctx.user.id !== recipe.userId)) {
-        return null
-      }
 
       const [meals, courses, preparations, images] = await Promise.all([
         ctx.db.select().from(recipeMeals).where(eq(recipeMeals.recipeId, input.id)),
