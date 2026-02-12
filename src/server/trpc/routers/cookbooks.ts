@@ -1,16 +1,15 @@
 import { z } from "zod"
-import { eq, or, and } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
-import { verifyOwnership } from "./_helpers"
+import { visibilityFilter, verifyOwnership } from "./_helpers"
 import { cookbooks, cookbookRecipes } from "@/db/schema"
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    // Enforce visibility: anonymous see public only; authenticated see public + own
-    const visibility = ctx.user
-      ? or(eq(cookbooks.isPublic, true), eq(cookbooks.userId, ctx.user.id))
-      : eq(cookbooks.isPublic, true)
-    return ctx.db.select().from(cookbooks).where(visibility)
+    return ctx.db
+      .select()
+      .from(cookbooks)
+      .where(visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user))
   }),
 
   byId: publicProcedure
@@ -19,14 +18,14 @@ export const cookbooksRouter = router({
       const [cookbook] = await ctx.db
         .select()
         .from(cookbooks)
-        .where(eq(cookbooks.id, input.id))
+        .where(
+          and(
+            eq(cookbooks.id, input.id),
+            visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user),
+          ),
+        )
 
       if (!cookbook) return null
-
-      // Enforce visibility: private cookbooks only visible to their owner
-      if (!cookbook.isPublic && (!ctx.user || ctx.user.id !== cookbook.userId)) {
-        return null
-      }
 
       const recipes = await ctx.db
         .select()

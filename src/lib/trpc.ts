@@ -24,7 +24,23 @@ const trpcClient = createTRPCClient<AppRouter>({
   ],
 })
 
-export const trpc = createTRPCOptionsProxy<AppRouter>({
-  client: trpcClient,
-  queryClient: getQueryClient(),
+// Lazy proxy: caches on the client, creates fresh per-access on the server
+// so each SSR request gets its own QueryClient (via getQueryClient()).
+function createTrpcProxy() {
+  return createTRPCOptionsProxy<AppRouter>({
+    client: trpcClient,
+    queryClient: getQueryClient(),
+  })
+}
+
+let cachedProxy: ReturnType<typeof createTrpcProxy> | undefined
+
+export const trpc = new Proxy({} as ReturnType<typeof createTrpcProxy>, {
+  get(_, prop) {
+    if (typeof window === "undefined") {
+      return Reflect.get(createTrpcProxy(), prop)
+    }
+    if (!cachedProxy) cachedProxy = createTrpcProxy()
+    return Reflect.get(cachedProxy, prop)
+  },
 })

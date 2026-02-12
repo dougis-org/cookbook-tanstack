@@ -1,6 +1,22 @@
-import { eq } from "drizzle-orm"
+import { eq, or } from "drizzle-orm"
+import type { Column } from "drizzle-orm"
 import { TRPCError } from "@trpc/server"
 import { publicProcedure, router } from "../init"
+
+/**
+ * Returns a SQL condition enforcing visibility for user-owned content.
+ * Public rows are always visible; private rows only visible to their owner.
+ */
+export function visibilityFilter(
+  isPublicCol: Column,
+  userIdCol: Column,
+  user: { id: string } | null,
+) {
+  if (user) {
+    return or(eq(isPublicCol, true), eq(userIdCol, user.id))!
+  }
+  return eq(isPublicCol, true)
+}
 
 /**
  * Fetch a record and verify the current user owns it.
@@ -39,11 +55,12 @@ export async function syncJunction(
   foreignKey: string,
 ) {
   if (ids === undefined) return
+  const uniqueIds = [...new Set(ids)]
   await db.delete(table).where(eq(recipeIdCol, recipeId))
-  if (ids.length) {
+  if (uniqueIds.length) {
     await db
       .insert(table)
-      .values(ids.map((id: string) => ({ recipeId, [foreignKey]: id })))
+      .values(uniqueIds.map((id: string) => ({ recipeId, [foreignKey]: id })))
   }
 }
 

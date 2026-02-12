@@ -29,6 +29,6 @@ export const usersRouter = router({
         .set(input)
         .where(eq(users.id, ctx.user.id))
         .returning()
-      return updated
+      return updated ?? null
     }),
 })

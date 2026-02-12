@@ -1,7 +1,7 @@
 import { z } from "zod"
-import { eq, and, or, ilike } from "drizzle-orm"
+import { eq, and, ilike } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
-import { verifyOwnership, syncJunction } from "./_helpers"
+import { visibilityFilter, verifyOwnership, syncJunction } from "./_helpers"
 import {
   recipes,
   recipeMeals,
@@ -33,17 +33,6 @@ const taxonomyIds = z.object({
   preparationIds: z.array(z.string().uuid()).optional(),
 })
 
-/**
- * Returns a SQL condition enforcing recipe visibility for the current user.
- * Public recipes are always visible; private recipes only visible to their owner.
- */
-function visibilityFilter(user: { id: string } | null) {
-  if (user) {
-    return or(eq(recipes.isPublic, true), eq(recipes.userId, user.id))!
-  }
-  return eq(recipes.isPublic, true)
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function syncTaxonomy(db: any, recipeId: string, input: z.infer<typeof taxonomyIds>) {
   await Promise.all([
@@ -71,7 +60,7 @@ export const recipesRouter = router({
       if (input?.isPublic !== undefined) {
         conditions.push(eq(recipes.isPublic, input.isPublic))
       } else {
-        conditions.push(visibilityFilter(ctx.user))
+        conditions.push(visibilityFilter(recipes.isPublic, recipes.userId, ctx.user))
       }
 
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
@@ -87,7 +76,7 @@ export const recipesRouter = router({
       const [recipe] = await ctx.db
         .select()
         .from(recipes)
-        .where(and(eq(recipes.id, input.id), visibilityFilter(ctx.user)))
+        .where(and(eq(recipes.id, input.id), visibilityFilter(recipes.isPublic, recipes.userId, ctx.user)))
       if (!recipe) return null
 
       const [meals, courses, preparations, images] = await Promise.all([
