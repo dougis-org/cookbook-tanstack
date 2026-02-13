@@ -37,7 +37,7 @@ export default function RegisterForm() {
     setIsLoading(true)
 
     await authClient.signUp.email(
-      { email, password, name: name || username, username },
+      { email, password, name: name || username, username, displayUsername: username },
       {
         onSuccess: () => navigate({ to: "/" }),
         onError: (ctx) => setError(ctx.error.message || "Registration failed"),
