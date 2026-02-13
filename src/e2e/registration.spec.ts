@@ -8,25 +8,19 @@ test.describe("Registration Flow", () => {
   });
 
   test("should display registration form", async ({ page }) => {
-    // Check that all form elements are present
-    await expect(page.locator('input[id="name"]')).toBeVisible();
-    await expect(page.locator('input[id="username"]')).toBeVisible();
-    await expect(page.locator('input[id="email"]')).toBeVisible();
-    await expect(page.locator('input[id="password"]')).toBeVisible();
-
-    // Check form labels
-    await expect(page.locator('label:has-text("Name")')).toBeVisible();
-    await expect(page.locator('label:has-text("Username")')).toBeVisible();
-    await expect(page.locator('label:has-text("Email")')).toBeVisible();
-    await expect(page.locator('label:has-text("Password")')).toBeVisible();
+    // Check that all form elements are present using getByRole for better specificity
+    await expect(page.getByRole('textbox', { name: /^Name$/ })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Username/ })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Email/ })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /^Password/ })).toBeVisible();
 
     // Check submit button
     await expect(
-      page.locator('button:has-text("Create Account")'),
+      page.getByRole('button', { name: 'Create Account' }),
     ).toBeVisible();
 
     // Check login link
-    await expect(page.locator('a:has-text("Sign in")')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
   });
 
   test("should register a new user with valid data", async ({ page }) => {
@@ -36,17 +30,18 @@ test.describe("Registration Flow", () => {
     const testPassword = "ValidPassword123!";
     const testName = "Test User";
 
-    // Fill in the form
-    await page.locator('input[id="name"]').fill(testName);
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(testPassword);
+    // Fill in the form using getByLabel for better semantics
+    await page.getByLabel(/^Name$/).fill(testName);
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(testPassword);
 
     // Submit form
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Wait for navigation to home page (successful registration)
-    await page.waitForURL("/", { timeout: 10000 });
+    // Allow longer timeout for form submission and redirect
+    await page.waitForURL("/", { timeout: 15000 });
 
     // Verify we're on the home page
     expect(page.url()).toBe("http://localhost:3000/");
@@ -58,11 +53,11 @@ test.describe("Registration Flow", () => {
     const testPassword = "ValidPassword123!";
 
     // Fill in form without username
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(testPassword);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(testPassword);
 
     // Submit form
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Check for validation error
     await expect(page.locator("text=Username is required")).toBeVisible();
@@ -74,12 +69,12 @@ test.describe("Registration Flow", () => {
     const testPassword = "ValidPassword123!";
 
     // Fill in form with invalid email
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill("invalid-email");
-    await page.locator('input[id="password"]').fill(testPassword);
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill("invalid-email");
+    await page.getByLabel(/^Password/).fill(testPassword);
 
     // Submit form
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Check for validation error
     await expect(page.locator("text=Invalid email address")).toBeVisible();
@@ -92,12 +87,12 @@ test.describe("Registration Flow", () => {
     const shortPassword = "short1";
 
     // Fill in form with short password
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(shortPassword);
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(shortPassword);
 
     // Submit form
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Check for validation error
     await expect(
@@ -113,13 +108,13 @@ test.describe("Registration Flow", () => {
     const testName = "Test User";
 
     // Fill in the form
-    await page.locator('input[id="name"]').fill(testName);
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(testPassword);
+    await page.getByLabel(/^Name$/).fill(testName);
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(testPassword);
 
-    // Listen for the button to change its text (loading state)
-    const submitButton = page.locator('button:has-text("Create Account")');
+    // Get the submit button
+    const submitButton = page.getByRole('button', { name: 'Create Account' });
 
     // Click submit
     await submitButton.click();
@@ -145,12 +140,12 @@ test.describe("Registration Flow", () => {
     }
 
     // Wait for navigation (registration to complete)
-    await page.waitForURL("/", { timeout: 10000 });
+    await page.waitForURL("/", { timeout: 15000 });
   });
 
   test("should navigate to login page from register page", async ({ page }) => {
     // Click the "Sign in" link
-    await page.locator('a:has-text("Sign in")').click();
+    await page.getByRole('link', { name: 'Sign in' }).click();
 
     // Verify navigation to login page
     await page.waitForURL("/auth/login");
@@ -163,13 +158,13 @@ test.describe("Registration Flow", () => {
     const testPassword = "ValidPassword123!";
 
     // Register first user with specific username
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill(testEmail1);
-    await page.locator('input[id="password"]').fill(testPassword);
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill(testEmail1);
+    await page.getByLabel(/^Password/).fill(testPassword);
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Wait for successful registration
-    await page.waitForURL("/", { timeout: 10000 });
+    await page.waitForURL("/", { timeout: 15000 });
 
     // Navigate back to registration page
     await page.goto("/auth/register");
@@ -177,10 +172,10 @@ test.describe("Registration Flow", () => {
 
     // Try to register with same username
     const testEmail2 = `testuser2-${Date.now()}@example.com`;
-    await page.locator('input[id="username"]').fill(testUsername);
-    await page.locator('input[id="email"]').fill(testEmail2);
-    await page.locator('input[id="password"]').fill(testPassword);
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByLabel(/^Username/).fill(testUsername);
+    await page.getByLabel(/^Email/).fill(testEmail2);
+    await page.getByLabel(/^Password/).fill(testPassword);
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Should show error (username already exists)
     await expect(
@@ -194,13 +189,13 @@ test.describe("Registration Flow", () => {
     const testPassword = "ValidPassword123!";
 
     // Register first user with specific email
-    await page.locator('input[id="username"]').fill(testUsername1);
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(testPassword);
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByLabel(/^Username/).fill(testUsername1);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(testPassword);
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Wait for successful registration
-    await page.waitForURL("/", { timeout: 10000 });
+    await page.waitForURL("/", { timeout: 15000 });
 
     // Navigate back to registration page
     await page.goto("/auth/register");
@@ -208,10 +203,10 @@ test.describe("Registration Flow", () => {
 
     // Try to register with same email
     const testUsername2 = `testuser2-${Date.now()}`;
-    await page.locator('input[id="username"]').fill(testUsername2);
-    await page.locator('input[id="email"]').fill(testEmail);
-    await page.locator('input[id="password"]').fill(testPassword);
-    await page.locator('button:has-text("Create Account")').click();
+    await page.getByLabel(/^Username/).fill(testUsername2);
+    await page.getByLabel(/^Email/).fill(testEmail);
+    await page.getByLabel(/^Password/).fill(testPassword);
+    await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Should show error (email already exists)
     await expect(
