@@ -77,7 +77,7 @@ test.describe("Registration Flow", () => {
     await page.getByRole('button', { name: 'Create Account' }).click();
 
     // Check for validation error
-    await expect(page.locator("text=Invalid email address")).toBeVisible();
+    await expect(page.locator("text=Please enter a valid email")).toBeVisible();
   });
 
   test("should show validation error for short password", async ({ page }) => {
