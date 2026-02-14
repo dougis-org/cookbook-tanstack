@@ -1,6 +1,8 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) when working with the CookBook repository.
+
+**🔬 For testing requirements and TDD workflow, see [AGENTS.md](./AGENTS.md).**
 
 ## Project Overview
 
@@ -19,8 +21,12 @@ CookBook is a full-stack recipe management application being migrated from Larav
 ```bash
 npm run dev          # Start dev server on port 3000
 npm run build        # Production build
-npm run test         # Run tests (vitest run)
-npx vitest run src/path/to/file.test.ts  # Run a single test file
+
+# Testing (see AGENTS.md for detailed testing strategy)
+npm run test         # Run unit & integration tests (Vitest)
+npm run test:e2e     # Run E2E tests (Playwright)
+npx vitest run src/path/to/file.test.ts     # Run single Vitest file
+npx playwright test --headed                 # Run E2E tests with browser visible
 
 # Database commands (requires Docker: docker compose up -d)
 npm run db:generate  # Generate migration SQL from schema changes
@@ -39,7 +45,7 @@ npm run db:seed      # Seed taxonomy data (meals, courses, preparations) — ide
 - **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 - **Icons:** Lucide React
 - **Build:** Vite 7
-- **Testing:** Vitest + React Testing Library + jsdom
+- **Testing:** Vitest + React Testing Library (units) + Playwright (E2E)
 - **TypeScript:** Strict mode with `noUnusedLocals` and `noUnusedParameters`
 
 ### Path Alias
@@ -106,16 +112,17 @@ Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. For typ
 ### Vite Plugin Order
 The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPaths → tailwindcss → tanstackStart → react.
 
-## Quality & Workflow
+## Development Workflow
 
-### TDD Enforcement
-The project enforces a TDD workflow via agent specifications in `.github/agents/`: write failing tests first (RED), implement minimal code to pass (GREEN), then refactor.
+**Testing & TDD:** All code changes must follow Test-Driven Development (write tests first). See [AGENTS.md](./AGENTS.md) for comprehensive testing strategy, including:
+- Vitest + React Testing Library for unit/integration tests
+- Playwright for E2E and UI interaction tests
+- Test coverage requirements and best practices
 
-### Security Scanning
-GitHub instructions (`.github/instructions/`) configure Codacy and Snyk MCP integrations. Run security scans on new code when those tools are available.
+**Security:** GitHub instructions (`.github/instructions/`) configure Codacy and Snyk MCP integrations. Run security scans on new code when those tools are available.
 
-### Markdown Linting
-When editing `.md` files, use `fix_markdown` then `lint_markdown` tools if available (configured in `.github/instructions/markdown.instructions.md`).
+**Markdown:** When editing `.md` files, use `fix_markdown` then `lint_markdown` tools if available.
 
 ## Planned Architecture (Not Yet Implemented)
+
 Per the migration plan, future milestones will add: Better-Auth (authentication), tRPC (type-safe API), and Cloudinary/S3 (image storage).
