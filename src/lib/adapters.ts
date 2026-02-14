@@ -1,6 +1,10 @@
 /**
- * Adapt a DB recipe row (uses `name`) to the component prop shape (uses `title`).
+ * Adapters between data layers.
+ *
+ * After the type-alignment refactor the DB column names (e.g. `name`,
+ * `classificationId`) are used directly in components. This module is
+ * kept as a placeholder for any future transformation helpers.
  */
-export function toRecipeProps<T extends { name: string }>(recipe: T) {
-  return { ...recipe, title: recipe.name }
-}
+
+// Placeholder export — prevents TS "not a module" errors in tests.
+export {}

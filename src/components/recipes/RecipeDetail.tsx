@@ -1,10 +1,25 @@
-import { Recipe } from '@/types/recipe'
+import type { Recipe } from '@/types/recipe'
 
 interface RecipeDetailProps {
-  recipe: Partial<Recipe>
+  recipe: Recipe
+}
+
+/** Split a text blob into non-empty lines for display. */
+function splitLines(text: string | null): string[] {
+  if (!text) return []
+  return text.split('\n').filter((line) => line.trim().length > 0)
 }
 
 export default function RecipeDetail({ recipe }: RecipeDetailProps) {
+  const ingredientLines = splitLines(recipe.ingredients)
+  const instructionLines = splitLines(recipe.instructions)
+  const hasNutrition =
+    recipe.calories != null ||
+    recipe.fat != null ||
+    recipe.cholesterol != null ||
+    recipe.sodium != null ||
+    recipe.protein != null
+
   return (
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
@@ -13,7 +28,7 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
           {recipe.imageUrl ? (
             <img
               src={recipe.imageUrl}
-              alt={recipe.title}
+              alt={recipe.name}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -26,12 +41,14 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
         {/* Recipe Content */}
         <div className="p-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            {recipe.title || 'Recipe Title'}
+            {recipe.name}
           </h1>
-          
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {recipe.description || 'No description available'}
-          </p>
+
+          {recipe.notes && (
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              {recipe.notes}
+            </p>
+          )}
 
           {/* Recipe Meta */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
@@ -50,13 +67,13 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Servings</p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.servings || 'N/A'}
+                {recipe.servings ?? 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Difficulty</p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                {recipe.difficulty || 'N/A'}
+                {recipe.difficulty ?? 'N/A'}
               </p>
             </div>
           </div>
@@ -66,33 +83,33 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Ingredients
             </h2>
-            <ul className="space-y-2">
-              {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                recipe.ingredients.map((ingredient) => (
+            {ingredientLines.length > 0 ? (
+              <ul className="space-y-2">
+                {ingredientLines.map((line, i) => (
                   <li
-                    key={ingredient.id}
+                    key={i}
                     className="flex items-center text-gray-700 dark:text-gray-300"
                   >
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3"></span>
-                    {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 flex-shrink-0"></span>
+                    {line}
                   </li>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">
-                  No ingredients listed
-                </p>
-              )}
-            </ul>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">
+                No ingredients listed
+              </p>
+            )}
           </section>
 
           {/* Instructions Section */}
-          <section>
+          <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Instructions
             </h2>
-            <ol className="space-y-4">
-              {recipe.instructions && recipe.instructions.length > 0 ? (
-                recipe.instructions.map((instruction, index) => (
+            {instructionLines.length > 0 ? (
+              <ol className="space-y-4">
+                {instructionLines.map((step, index) => (
                   <li
                     key={index}
                     className="flex gap-4 text-gray-700 dark:text-gray-300"
@@ -100,16 +117,57 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
                     <span className="flex-shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
                       {index + 1}
                     </span>
-                    <p className="flex-1 pt-1">{instruction}</p>
+                    <p className="flex-1 pt-1">{step}</p>
                   </li>
-                ))
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">
-                  No instructions provided
-                </p>
-              )}
-            </ol>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">
+                No instructions provided
+              </p>
+            )}
           </section>
+
+          {/* Nutrition Panel */}
+          {hasNutrition && (
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Nutrition
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                {recipe.calories != null && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{recipe.calories}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Calories</p>
+                  </div>
+                )}
+                {recipe.fat != null && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{recipe.fat}g</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Fat</p>
+                  </div>
+                )}
+                {recipe.cholesterol != null && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{recipe.cholesterol}mg</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Cholesterol</p>
+                  </div>
+                )}
+                {recipe.sodium != null && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{recipe.sodium}mg</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Sodium</p>
+                  </div>
+                )}
+                {recipe.protein != null && (
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-cyan-400">{recipe.protein}g</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Protein</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

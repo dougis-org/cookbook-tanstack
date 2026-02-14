@@ -26,6 +26,9 @@ export const recipes = pgTable(
     instructions: text(),
     notes: text(),
     servings: integer(),
+    prepTime: integer("prep_time"),
+    cookTime: integer("cook_time"),
+    difficulty: varchar({ length: 20 }),
     sourceId: uuid("source_id").references(() => sources.id, {
       onDelete: "set null",
     }),

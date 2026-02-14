@@ -1,7 +1,7 @@
-import { Recipe } from '@/types/recipe'
+import type { Recipe } from '@/types/recipe'
 
 interface RecipeCardProps {
-  recipe: Partial<Recipe>
+  recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes'>
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
@@ -11,7 +11,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         {recipe.imageUrl ? (
           <img
             src={recipe.imageUrl}
-            alt={recipe.title}
+            alt={recipe.name}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -22,11 +22,13 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
       </div>
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          {recipe.title || 'Untitled Recipe'}
+          {recipe.name}
         </h3>
-        <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
-          {recipe.description || 'No description available'}
-        </p>
+        {recipe.notes && (
+          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
+            {recipe.notes}
+          </p>
+        )}
         <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
           <div className="flex gap-3">
             {recipe.prepTime && (

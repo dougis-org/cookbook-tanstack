@@ -22,7 +22,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
     it("returns all rows via public access", async () => {
       const { appRouter } = await import("@/server/trpc/router")
       const db = createMockDb(sampleRows)
-      const caller = appRouter.createCaller({ db, session: null, user: null })
+      const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
 
       const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
 

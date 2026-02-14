@@ -22,11 +22,12 @@ export default function ForgotPasswordForm() {
     setError("")
     setIsLoading(true)
 
-    await authClient.forgetPassword(
+    await authClient.requestPasswordReset(
       { email, redirectTo: "/auth/reset-password" },
       {
         onSuccess: () => setIsSubmitted(true),
-        onError: (ctx) => setError(ctx.error.message || "Something went wrong"),
+        onError: (ctx: { error: { message?: string } }) =>
+          setError(ctx.error.message || "Something went wrong"),
       },
     )
 
