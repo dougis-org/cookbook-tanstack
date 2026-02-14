@@ -84,7 +84,7 @@ describe("RegisterForm", () => {
     fireEvent.click(screen.getByRole("button", { name: /create account/i }))
     await waitFor(() => {
       expect(mockSignUpEmail).toHaveBeenCalledWith(
-        { email: "test@example.com", password: "password123", name: "Test User", username: "testuser" },
+        { email: "test@example.com", password: "password123", name: "Test User", username: "testuser", displayUsername: "testuser" },
         expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
       )
     })

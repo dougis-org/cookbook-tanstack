@@ -1,7 +1,7 @@
-import { Recipe } from '@/types/recipe'
+import type { Recipe } from '@/types/recipe'
 
 interface RecipeListProps {
-  recipes: Partial<Recipe>[]
+  recipes: Recipe[]
 }
 
 export default function RecipeList({ recipes }: RecipeListProps) {
@@ -14,10 +14,9 @@ export default function RecipeList({ recipes }: RecipeListProps) {
       ) : (
         recipes.map((recipe) => (
           <div key={recipe.id} className="recipe-card-placeholder">
-            {/* Recipe cards will be rendered here */}
             <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.title || 'Recipe'}
+                {recipe.name}
               </h3>
             </div>
           </div>

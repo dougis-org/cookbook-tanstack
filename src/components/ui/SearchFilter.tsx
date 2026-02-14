@@ -1,4 +1,4 @@
-import { RecipeFilters } from '@/types/recipe'
+import type { RecipeFilters } from '@/types/recipe'
 
 interface SearchFilterProps {
   filters: RecipeFilters
@@ -22,24 +22,9 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
             type="text"
             placeholder="Search by name or ingredients..."
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
-            value={filters.searchTerm || ''}
-            onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
+            value={filters.search ?? ''}
+            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           />
-        </div>
-
-        {/* Category Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Category
-          </label>
-          <select
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
-            value={filters.category || ''}
-            onChange={(e) => onFiltersChange({ ...filters, category: e.target.value })}
-          >
-            <option value="">All Categories</option>
-            {/* Categories will be populated here */}
-          </select>
         </div>
 
         {/* Difficulty Filter */}
@@ -49,8 +34,13 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
           </label>
           <select
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
-            value={filters.difficulty || ''}
-            onChange={(e) => onFiltersChange({ ...filters, difficulty: (e.target.value || undefined) as Recipe['difficulty'] | undefined })}
+            value={filters.difficulty ?? ''}
+            onChange={(e) =>
+              onFiltersChange({
+                ...filters,
+                difficulty: (e.target.value || undefined) as RecipeFilters['difficulty'],
+              })
+            }
           >
             <option value="">All Difficulties</option>
             <option value="easy">Easy</option>
@@ -69,8 +59,10 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
               type="number"
               placeholder="Minutes"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
-              value={filters.maxPrepTime || ''}
-              onChange={(e) => onFiltersChange({ ...filters, maxPrepTime: Number(e.target.value) })}
+              value={filters.maxPrepTime ?? ''}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, maxPrepTime: Number(e.target.value) || undefined })
+              }
             />
           </div>
           <div>
@@ -81,8 +73,10 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
               type="number"
               placeholder="Minutes"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
-              value={filters.maxCookTime || ''}
-              onChange={(e) => onFiltersChange({ ...filters, maxCookTime: Number(e.target.value) })}
+              value={filters.maxCookTime ?? ''}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, maxCookTime: Number(e.target.value) || undefined })
+              }
             />
           </div>
         </div>

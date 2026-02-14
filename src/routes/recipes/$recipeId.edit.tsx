@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { authMiddleware } from '@/lib/middleware'
 import { trpc } from '@/lib/trpc'
-import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
 
@@ -59,12 +58,7 @@ function EditRecipePage() {
         </Link>
       </div>
 
-      <RecipeForm
-        initialData={{
-          ...toRecipeProps(recipe),
-          servings: recipe.servings ?? undefined,
-        }}
-      />
+      <RecipeForm initialData={recipe} />
     </PageLayout>
   )
 }
