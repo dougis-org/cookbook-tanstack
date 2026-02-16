@@ -64,12 +64,9 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   }) => {
     await page.goto("/recipes")
 
-    // Wait for filter chips to load
-    const filtersSection = page.locator("text=Filters").locator("..")
-
-    // Find a meal filter chip (if taxonomy data is seeded)
-    const mealChips = filtersSection
-      .locator("..")
+    // Find a filter chip (if taxonomy data is seeded)
+    const mealChips = page
+      .locator(".flex.flex-wrap.gap-3")
       .locator("button")
       .filter({ hasNotText: /Clear|New|Create/ })
     const chipCount = await mealChips.count()
@@ -132,9 +129,10 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     if (hasPagination) {
       await expect(paginationText).toBeVisible()
 
-      // Verify navigation buttons exist
-      const prevButton = page.locator("button").filter({ has: page.locator("svg") }).nth(-2)
-      const nextButton = page.locator("button").filter({ has: page.locator("svg") }).last()
+      // Verify navigation buttons exist within the pagination container
+      const paginationControls = page.getByText(/^Page \d+ of \d+$/).locator("..")
+      const prevButton = paginationControls.locator("button").first()
+      const nextButton = paginationControls.locator("button").last()
 
       // At least one pagination button should be visible
       expect(

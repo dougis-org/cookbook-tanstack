@@ -29,52 +29,29 @@ export function getUniqueRecipeName(prefix = "Test Recipe") {
 export async function createRecipeViaUI(page: Page, data: RecipeData) {
   await page.getByLabel("Recipe Name").fill(data.name)
 
-  if (data.notes) {
-    await page.getByLabel("Notes").fill(data.notes)
+  const fieldsToFill: Partial<Record<keyof RecipeData, string>> = {
+    notes: "Notes",
+    prepTime: "Prep Time (minutes)",
+    cookTime: "Cook Time (minutes)",
+    servings: "Servings",
+    ingredients: "Ingredients",
+    instructions: "Instructions",
+    calories: "Calories",
+    fat: "Fat (g)",
+    cholesterol: "Cholesterol (mg)",
+    sodium: "Sodium (mg)",
+    protein: "Protein (g)",
   }
 
-  if (data.prepTime) {
-    await page.getByLabel("Prep Time (minutes)").fill(data.prepTime)
-  }
-
-  if (data.cookTime) {
-    await page.getByLabel("Cook Time (minutes)").fill(data.cookTime)
-  }
-
-  if (data.servings) {
-    await page.getByLabel("Servings").fill(data.servings)
+  for (const key in fieldsToFill) {
+    const value = data[key as keyof RecipeData]
+    if (value) {
+      await page.getByLabel(fieldsToFill[key as keyof RecipeData]!).fill(String(value))
+    }
   }
 
   if (data.difficulty) {
     await page.getByLabel("Difficulty").selectOption(data.difficulty)
-  }
-
-  if (data.ingredients) {
-    await page.getByLabel("Ingredients").fill(data.ingredients)
-  }
-
-  if (data.instructions) {
-    await page.getByLabel("Instructions").fill(data.instructions)
-  }
-
-  if (data.calories) {
-    await page.getByLabel("Calories").fill(data.calories)
-  }
-
-  if (data.fat) {
-    await page.getByLabel("Fat (g)").fill(data.fat)
-  }
-
-  if (data.cholesterol) {
-    await page.getByLabel("Cholesterol (mg)").fill(data.cholesterol)
-  }
-
-  if (data.sodium) {
-    await page.getByLabel("Sodium (mg)").fill(data.sodium)
-  }
-
-  if (data.protein) {
-    await page.getByLabel("Protein (g)").fill(data.protein)
   }
 
   // isPublic checkbox is checked by default; uncheck if explicitly false
