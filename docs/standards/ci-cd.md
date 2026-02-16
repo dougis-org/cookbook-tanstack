@@ -97,14 +97,14 @@ Once the PR auto-merges:
 
 ## What CI/CD Checks
 
-Standard CI/CD pipeline runs:
+Standard CI/CD pipeline (Build and Test workflow) runs:
 
+- **Build:** Vite build succeeds, assets generated
 - **TypeScript:** Type checking with strict mode
-- **Tests:** Unit tests (Vitest) + E2E tests (Playwright)
+- **Tests:** Unit tests (Vitest) + Integration tests + E2E tests (Playwright)
+- **Coverage:** Test coverage consolidated and reported to Codacy
 - **Security:** Dependency scanning (Snyk) + container scanning (Trivy)
 - **Code Quality:** Issue detection (Codacy) + linting
-- **Build:** Vite build succeeds, assets generated
-- **Deployment:** (if applicable) Build artifact generated, deployment test
 
 ## What CI/CD Does NOT Check
 
