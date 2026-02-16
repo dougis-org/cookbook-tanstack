@@ -90,8 +90,10 @@ Two mandatory checkpoints for explicit user approval:
 
 - **Checkpoint 2 (PR_CHECKPOINT):** After PR creation complete
   - Present PR details, AC coverage, test results, quality gate status
-  - Require explicit approval before code review/merge
-  - Accept approval or rejection with feedback
+  - Auto-merge is already enabled on the PR
+  - Create initial comment tagging reviewer for review
+  - When reviewer approves, they resolve the comment
+  - PR will auto-merge when all checks pass and comments are resolved
 
 **Enforcement:** Do not bypass checkpoints. Session pauses indefinitely waiting for user decision.
 
@@ -133,7 +135,26 @@ When user rejects at checkpoint:
 - **Parallel execution:** Sequential workflow only; no concurrent phase execution
 - **Modification of sub-agents:** Invoke as-is; do not modify existing agent behaviors
 - **External notifications:** No Slack, email, or third-party integration
-- **Automatic PR merging:** Merge only after explicit user approval at PR checkpoint
+
+## Pull Request & Auto-Merge
+
+When PR creation phase completes:
+
+1. **Verify PR Created** with complete description:
+   - Clear summary of changes
+   - Reference to ticket/issue
+   - Test coverage summary
+   - Quality gate results
+
+2. **Enable Auto-Merge** on the PR:
+   - Configure auto-merge to trigger when all conditions met
+   - Set merge method to squash commit
+   - Ensures PR merges automatically after approval + checks pass
+
+3. **Monitor Until Merge**:
+   - Track review comments and feedback
+   - Route feedback to appropriate sub-agents for fixes
+   - PR auto-merges when all comments addressed and checks green
 
 ---
 
@@ -148,9 +169,9 @@ Full workflow phases (per TICKET_FLOW.md, enforced by orchestrator):
 4. PLAN_CHECKPOINT    → Present plan; await user approval
 5. IMPLEMENTATION     → Invoke work-ticket sub-agent
 6. LOCAL_REVIEW       → Invoke review-ticket-work sub-agent
-7. PR_CREATION        → Invoke cut-pr sub-agent
-8. PR_CHECKPOINT      → Present PR; await user approval
-9. CODE_REVIEW        → Invoke review-pr sub-agent (final review & merge)
+7. PR_CREATION        → Invoke cut-pr sub-agent & enable auto-merge
+8. PR_REVIEW_REQUEST  → Create PR comment tagging reviewer; auto-merge enabled, CI gates PR
+9. AUTO_MERGE_MONITOR → Monitor PR until auto-merge completes or needs intervention
 10. DONE              → Workflow complete; generate summary
 ```
 

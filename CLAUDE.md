@@ -123,6 +123,8 @@ The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPat
 
 **Markdown:** When editing `.md` files, use `fix_markdown` then `lint_markdown` tools if available.
 
+**Pull Requests & Auto-Merge:** When creating PRs, enable auto-merge to allow automatic merging once all quality gates pass and comments are addressed. See [CI/CD Workflow Standards](./docs/standards/ci-cd.md) for merge requirements.
+
 ## Planned Architecture (Not Yet Implemented)
 
 Per the migration plan, future milestones will add: Better-Auth (authentication), tRPC (type-safe API), and Cloudinary/S3 (image storage).

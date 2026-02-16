@@ -58,6 +58,7 @@ npx tsc --noEmit          # TypeScript type check
 - [ ] **No unused variables/imports:** Check with TypeScript strict mode
 - [ ] **Code follows patterns:** See [AGENTS.md](./AGENTS.md#architecture-guidelines)
 - [ ] **TDD workflow followed:** Start with tests, implement, refactor
+- [ ] **Auto-merge enabled:** Enable auto-merge on PR for automatic merging when ready
 
 ## Workflow Overview
 
@@ -85,6 +86,10 @@ Review the relevant standards in `docs/standards/` for your task type.
 - Leave a clear description of what changed and why
 - Reference related issues if applicable
 - Ensure all CI/CD checks can pass
+- **Enable auto-merge** to allow the PR to merge automatically once:
+  - All quality gates pass (tests, linting, security scans)
+  - All review comments are addressed and resolved
+  - Required approvals are obtained
 
 ## Testing Essentials
 
