@@ -1,282 +1,21 @@
 # AGENTS.md
 
-Agent specifications for working with the CookBook repository. This file enforces testing practices and development workflow for all code contributions.
+Agent and contributor specifications for working with the CookBook repository.
 
-## TDD Workflow (RED → GREEN → REFACTOR)
+## Repository Standards
 
-**All code changes must follow strict Test-Driven Development:**
+All development work must follow the repository-wide standards. See **[docs/standards/](./docs/standards/)** for comprehensive guidelines:
 
-1. **RED:** Write failing tests first (never implement features before tests exist)
-2. **GREEN:** Write minimal code to pass tests (no over-engineering)
-3. **REFACTOR:** Improve code quality while keeping tests passing
+- **[Code Quality](./docs/standards/code-quality.md)** — TDD workflow (RED → GREEN → REFACTOR), testing strategy, coverage requirements, test-first workflow examples
+- **[Analysis & Security](./docs/standards/analysis-and-security.md)** — When to run code analysis, security scanning, remediation workflow
+- **[Tooling](./docs/standards/tooling.md)** — Working with analysis tools, error handling, graceful fallbacks
+- **[CI/CD Workflow](./docs/standards/ci-cd.md)** — Local vs CI/CD validation, merge readiness
 
-**This applies to:**
-- New features (component implementations, API routes, utilities)
-- Bug fixes (write a test that reproduces the bug first)
-- Refactoring (tests protect against regressions)
-
-**Exception:** Architectural scaffolding (directory structure, tsconfig, vite plugins) doesn't require tests, but all functional code does.
+Use [CONTRIBUTING.md](./CONTRIBUTING.md) as a quick reference for getting started.
 
 ---
 
-## Testing Strategy
-
-### Unit & Integration Tests (Vitest + React Testing Library)
-
-**When to write Vitest tests:**
-- Business logic (utilities, hooks, calculations)
-- Component rendering and state management
-- Database operations (with mocked DB)
-- API handlers
-- Type guards and validation functions
-
-**Test file location:** Co-locate with implementation file
-```
-src/utils/recipe.ts
-src/utils/recipe.test.ts
-
-src/components/RecipeCard.tsx
-src/components/RecipeCard.test.tsx
-
-src/routes/recipes/index.tsx
-src/routes/recipes/index.test.tsx
-```
-
-**Running tests:**
-```bash
-npm run test                                    # All tests
-npx vitest run src/path/to/file.test.ts        # Single file
-npx vitest watch src/path/to/file.test.ts      # Watch mode
-```
-
-### E2E + UI Tests (Playwright)
-
-**When to write Playwright tests:**
-- **All user interactions** that touch the UI: form submissions, button clicks, navigation, filtering, sorting
-- **Page flows:** Multi-step workflows (create recipe → view → edit → delete)
-- **Responsive behavior:** Mobile/tablet/desktop interactions
-- **Error states:** Invalid form inputs, network failures, edge cases
-- **Accessibility:** Keyboard navigation, screen reader compatibility
-
-**Critical:** If code changes how users interact with the UI, it needs a Playwright test.
-
-**Test file location:**
-```
-e2e/
-├── recipes.spec.ts           # Recipe CRUD and interactions
-├── filtering.spec.ts         # Recipe filtering and search
-├── navigation.spec.ts        # Page navigation and header
-├── responsive.spec.ts        # Mobile/tablet/desktop views
-└── auth.spec.ts              # Authentication flows (once implemented)
-```
-
-**Running tests:**
-```bash
-npm run test:e2e                      # All E2E tests
-npm run test:e2e -- recipes.spec.ts   # Single E2E file
-npx playwright test --headed          # Run with browser visible
-npx playwright test --debug           # Run in debug mode
-```
-
-### Test Structure Template
-
-**Vitest (unit/integration):**
-```typescript
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { recipeToRecipeDTO } from '@/utils/recipe'
-
-describe('recipeToRecipeDTO', () => {
-  it('converts a database recipe to a DTO', () => {
-    const recipe = { id: '1', title: 'Pasta', difficulty: 'easy' as const }
-    const dto = recipeToRecipeDTO(recipe)
-    expect(dto.title).toBe('Pasta')
-    expect(dto.difficulty).toBe('easy')
-  })
-
-  it('handles missing optional fields', () => {
-    const recipe = { id: '1', title: 'Soup', difficulty: undefined }
-    expect(() => recipeToRecipeDTO(recipe)).not.toThrow()
-  })
-})
-```
-
-**Playwright (E2E/UI):**
-```typescript
-import { test, expect } from '@playwright/test'
-
-test.describe('Recipe CRUD', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3000/recipes')
-  })
-
-  test('user can create a new recipe', async ({ page }) => {
-    // 1. Click "New Recipe" button
-    await page.click('button:has-text("New Recipe")')
-
-    // 2. Fill form fields
-    await page.fill('input[name="title"]', 'Spaghetti Carbonara')
-    await page.selectOption('select[name="difficulty"]', 'medium')
-
-    // 3. Submit form
-    await page.click('button[type="submit"]')
-
-    // 4. Assert success state
-    await expect(page.locator('text=Recipe created successfully')).toBeVisible()
-    await expect(page).toHaveURL(/\/recipes\/[\w-]+$/)
-  })
-
-  test('displays validation errors for invalid input', async ({ page }) => {
-    await page.click('button:has-text("New Recipe")')
-    await page.click('button[type="submit"]')
-
-    // Title is required
-    await expect(page.locator('text=Title is required')).toBeVisible()
-  })
-
-  test('user can edit an existing recipe', async ({ page }) => {
-    // Navigate to a specific recipe
-    await page.goto('http://localhost:3000/recipes/existing-recipe-id')
-    await page.click('button:has-text("Edit")')
-
-    // Change fields
-    const titleField = page.locator('input[name="title"]')
-    await titleField.clear()
-    await titleField.fill('Updated Title')
-
-    await page.click('button[type="submit"]')
-    await expect(page.locator('text=Recipe updated successfully')).toBeVisible()
-  })
-
-  test('user can delete a recipe with confirmation', async ({ page }) => {
-    await page.goto('http://localhost:3000/recipes/existing-recipe-id')
-
-    // Trigger delete
-    await page.click('button:has-text("Delete")')
-
-    // Confirm in modal
-    await page.click('button:has-text("Confirm Delete")')
-
-    // Assert redirect to recipes list
-    await expect(page).toHaveURL('http://localhost:3000/recipes')
-  })
-})
-```
-
----
-
-## Test-First Workflow for Features
-
-When implementing a new feature (e.g., "Add recipe filtering"):
-
-### Step 1: Write Vitest Tests (Business Logic)
-```typescript
-// src/utils/filterRecipes.test.ts
-describe('filterRecipes', () => {
-  it('filters recipes by difficulty', () => {
-    const recipes = [
-      { id: '1', difficulty: 'easy' },
-      { id: '2', difficulty: 'hard' },
-    ]
-    const result = filterRecipes(recipes, { difficulty: 'easy' })
-    expect(result).toHaveLength(1)
-    expect(result[0].id).toBe('1')
-  })
-
-  it('returns all recipes when no filters applied', () => {
-    const recipes = [/* ... */]
-    const result = filterRecipes(recipes, {})
-    expect(result).toEqual(recipes)
-  })
-})
-```
-
-### Step 2: Implement Minimal Code (GREEN)
-```typescript
-// src/utils/filterRecipes.ts
-export function filterRecipes(recipes: Recipe[], filters: RecipeFilters): Recipe[] {
-  if (!filters.difficulty) return recipes
-  return recipes.filter(r => r.difficulty === filters.difficulty)
-}
-```
-
-### Step 3: Write Playwright Tests (UI Integration)
-```typescript
-// e2e/filtering.spec.ts
-test('user can filter recipes by difficulty', async ({ page }) => {
-  await page.goto('http://localhost:3000/recipes')
-
-  // Click filter button and select "Easy"
-  await page.click('button:has-text("Difficulty")')
-  await page.click('label:has-text("Easy")')
-
-  // Assert only easy recipes shown
-  const recipes = page.locator('[data-testid="recipe-card"]')
-  await expect(recipes).toHaveCount(3) // Your test data has 3 easy recipes
-
-  // Verify recipe content
-  await expect(page.locator('text="Easy Pasta"')).toBeVisible()
-})
-```
-
-### Step 4: Refactor (Code Quality)
-Once tests pass, improve code readability, performance, or structure without breaking tests.
-
----
-
-## Playwright Best Practices
-
-### Selectors (Priority Order)
-1. **Data attributes** (most stable): `page.locator('[data-testid="recipe-card"]')`
-2. **Accessible selectors**: `page.getByRole('button', { name: 'Save' })`
-3. **Text matchers**: `page.locator('text=Recipe Title')`
-4. **CSS/XPath** (least stable): `page.locator('div.recipe-card')`
-
-### Test Data
-- Seed the database with known test data in `beforeEach` hooks
-- Use fixtures to reset state between tests
-- Never rely on test execution order
-
-### Async/Wait Patterns
-```typescript
-// Good: Wait for element to be visible
-await expect(page.locator('text=Success')).toBeVisible()
-
-// Good: Use page navigation waits
-await page.goto('http://localhost:3000/recipes')
-
-// Avoid: Hard-coded sleeps
-// ❌ await page.waitForTimeout(1000)
-```
-
-### API Mocking (if needed)
-```typescript
-test('handles API errors gracefully', async ({ page }) => {
-  // Mock failed API response
-  await page.route('**/api/recipes', route => {
-    route.abort('failed')
-  })
-
-  await page.goto('http://localhost:3000/recipes')
-  await expect(page.locator('text=Failed to load recipes')).toBeVisible()
-})
-```
-
----
-
-## Coverage Requirements
-
-- **Vitest:** Minimum 80% coverage for business logic and utilities
-- **Playwright:** All user-facing features must have E2E test coverage
-- **Routes/Components:** If touched by a user, it needs a test
-
-**Check coverage:**
-```bash
-npx vitest run --coverage
-```
-
----
-
-## Architecture Guidelines (from CLAUDE.md)
+## Architecture Guidelines
 
 Agents working with this codebase should follow these architectural patterns:
 
@@ -332,32 +71,61 @@ The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPat
 
 ---
 
-## Security & Quality
-
-### Security Scanning
-GitHub instructions (`.github/instructions/`) configure Codacy and Snyk MCP integrations. Run security scans on new code when those tools are available.
+## Code Quality & Security
 
 ### TypeScript Strictness
 - Strict mode enabled with `noUnusedLocals` and `noUnusedParameters`
 - No `any` types without justification
 - Proper type narrowing and exhaustive checks
 
-### Markdown Linting
-When editing `.md` files, use `fix_markdown` then `lint_markdown` tools if available (configured in `.github/instructions/markdown.instructions.md`).
+### Security & Code Analysis
+See [Analysis & Security Standards](./docs/standards/analysis-and-security.md) for:
+- When to run code analysis (Codacy)
+- Security scanning (Snyk)
+- Vulnerability remediation workflow
+
+Tool-specific configurations are in `.github/instructions/`:
+- [Codacy integration](./github/instructions/codacy.instructions.md)
+- [Snyk integration](./github/instructions/snyk_rules.instructions.md)
+
+### Markdown Quality
+When editing `.md` files:
+1. Run `fix_markdown` tool on the file
+2. Run `lint_markdown` to check for issues
+3. Fix remaining issues (see [Tooling Standards](./docs/standards/tooling.md) if tools unavailable)
 
 ---
 
-## Implementation Checklist
+## Implementation Workflow
 
-When implementing a feature:
-- [ ] Write failing Vitest tests (RED)
-- [ ] Implement minimal code to pass (GREEN)
-- [ ] Write Playwright E2E tests for UI interactions
-- [ ] Refactor for clarity and maintainability
-- [ ] Run all tests: `npm run test && npm run test:e2e`
-- [ ] Run security scans if tools available
-- [ ] Verify TypeScript compliance: `npx tsc --noEmit`
-- [ ] Check no unused imports/variables
+When implementing a feature, follow this checklist:
+
+1. **Start with tests (RED phase)**
+   - [ ] Write failing Vitest tests for business logic
+   - [ ] Write Playwright tests for UI interactions
+
+2. **Implement code (GREEN phase)**
+   - [ ] Write minimal code to pass tests
+   - [ ] Co-locate test files with implementation
+
+3. **Quality checks (REFACTOR phase)**
+   - [ ] Improve code readability and structure
+   - [ ] Keep all tests passing
+   - [ ] Run all tests: `npm run test && npm run test:e2e`
+   - [ ] Verify TypeScript: `npx tsc --noEmit`
+   - [ ] Check for unused imports/variables
+
+4. **Security & Analysis**
+   - [ ] Run Codacy analysis if available (see [Analysis Standards](./docs/standards/analysis-and-security.md))
+   - [ ] Run Snyk scan if new dependencies added
+   - [ ] Fix critical/high severity issues before merge
+
+5. **Create pull request**
+   - [ ] All tests pass locally
+   - [ ] TypeScript compilation succeeds
+   - [ ] Ready for CI/CD validation
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
 
 ---
 

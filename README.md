@@ -23,6 +23,15 @@ npm run dev
 
 The application will be available at `http://localhost:3000`
 
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+- Quick start guide
+- Development workflow
+- Repository standards and conventions
+
+For comprehensive guidelines on code quality, testing, analysis, and CI/CD, see [docs/standards/](./docs/standards/).
+
 ## Building For Production
 
 To build this application for production:
