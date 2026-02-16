@@ -68,8 +68,8 @@ A PR is ready to merge when:
 
 When creating a PR:
 1. Create the PR as normal with clear description and context
-2. Enable auto-merge on the PR (via GitHub UI or API)
-3. Select merge method (typically "squash and merge" or "merge commit")
+2. Enable auto-merge on the PR (preferably via GitHub MCP tools, or GitHub UI/API as fallback)
+3. Select merge method: "squash and merge"
 
 ### Auto-Merge Conditions
 

@@ -90,10 +90,10 @@ Two mandatory checkpoints for explicit user approval:
 
 - **Checkpoint 2 (PR_CHECKPOINT):** After PR creation complete
   - Present PR details, AC coverage, test results, quality gate status
-  - **Verify auto-merge is enabled** on the PR
-  - Require explicit approval before allowing auto-merge to proceed
-  - Accept approval or rejection with feedback
-  - Once approved, PR will auto-merge when all checks pass and comments resolved
+  - Auto-merge is already enabled on the PR
+  - Create initial comment tagging reviewer for review
+  - When reviewer approves, they resolve the comment
+  - PR will auto-merge when all checks pass and comments are resolved
 
 **Enforcement:** Do not bypass checkpoints. Session pauses indefinitely waiting for user decision.
 
@@ -148,7 +148,7 @@ When PR creation phase completes:
 
 2. **Enable Auto-Merge** on the PR:
    - Configure auto-merge to trigger when all conditions met
-   - Set appropriate merge method (squash/merge commit)
+   - Set merge method to squash commit
    - Ensures PR merges automatically after approval + checks pass
 
 3. **Monitor Until Merge**:
@@ -170,7 +170,7 @@ Full workflow phases (per TICKET_FLOW.md, enforced by orchestrator):
 5. IMPLEMENTATION     → Invoke work-ticket sub-agent
 6. LOCAL_REVIEW       → Invoke review-ticket-work sub-agent
 7. PR_CREATION        → Invoke cut-pr sub-agent & enable auto-merge
-8. PR_CHECKPOINT      → Present PR; await user approval for auto-merge
+8. PR_REVIEW_REQUEST  → Create PR comment tagging reviewer; auto-merge enabled, CI gates PR
 9. AUTO_MERGE_MONITOR → Monitor PR until auto-merge completes or needs intervention
 10. DONE              → Workflow complete; generate summary
 ```
