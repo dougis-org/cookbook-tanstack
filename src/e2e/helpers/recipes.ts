@@ -45,7 +45,7 @@ export async function createRecipeViaUI(page: Page, data: RecipeData) {
 
   for (const key in fieldsToFill) {
     const value = data[key as keyof RecipeData]
-    if (value) {
+    if (value !== undefined && value !== null) {
       await page.getByLabel(fieldsToFill[key as keyof RecipeData]!).fill(String(value))
     }
   }

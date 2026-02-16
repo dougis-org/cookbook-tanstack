@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { registerAndLogin } from "./helpers/auth"
-import { createRecipeViaUI, getUniqueRecipeName } from "./helpers/recipes"
+import { createRecipeViaUI } from "./helpers/recipes"
 
 test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test.beforeEach(async ({ page }) => {
@@ -101,19 +101,27 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
       .filter({ hasNotText: /Clear/ })
     const chipCount = await filterChips.count()
 
-    if (chipCount > 0) {
-      await filterChips.first().click()
+    // Taxonomy data should be seeded — assert chips are present
+    expect(chipCount).toBeGreaterThan(0)
 
-      // "Clear all" button should appear
-      const clearButton = page.getByRole("button", { name: /Clear all/ })
-      await expect(clearButton).toBeVisible()
+    // Apply a filter by clicking the first chip
+    await filterChips.first().click()
 
-      // Click clear all
-      await clearButton.click()
+    // URL should contain a filter query param
+    await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/)
 
-      // Clear all button should disappear
-      await expect(clearButton).not.toBeVisible()
-    }
+    // "Clear all" button should appear
+    const clearButton = page.getByRole("button", { name: /Clear all/ })
+    await expect(clearButton).toBeVisible()
+
+    // Click clear all
+    await clearButton.click()
+
+    // Clear all button should disappear
+    await expect(clearButton).not.toBeVisible()
+
+    // Filter-related query params should be removed from the URL
+    await expect(page).not.toHaveURL(/(mealIds|courseIds|preparationIds)=/)
   })
 
   test("should display pagination when enough recipes exist", async ({
@@ -121,22 +129,21 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   }) => {
     await page.goto("/recipes")
 
-    // Check if pagination is present (depends on data volume)
+    // This test requires >20 recipes in the database to verify pagination
     const paginationText = page.getByText(/^Page \d+ of \d+$/)
     const hasPagination = (await paginationText.count()) > 0
+    test.skip(!hasPagination, "Not enough recipes in DB to test pagination (need >20)")
 
-    if (hasPagination) {
-      await expect(paginationText).toBeVisible()
+    await expect(paginationText).toBeVisible()
 
-      // Verify navigation buttons exist within the pagination container
-      const paginationControls = paginationText.locator("..")
-      const prevButton = paginationControls.locator("button").first()
-      const nextButton = paginationControls.locator("button").last()
+    // Verify navigation buttons exist within the pagination container
+    const paginationControls = paginationText.locator("..")
+    const prevButton = paginationControls.locator("button").first()
+    const nextButton = paginationControls.locator("button").last()
 
-      // At least one pagination button should be visible
-      expect(
-        (await prevButton.isVisible()) || (await nextButton.isVisible()),
-      ).toBeTruthy()
-    }
+    // At least one pagination button should be visible
+    expect(
+      (await prevButton.isVisible()) || (await nextButton.isVisible()),
+    ).toBeTruthy()
   })
 })
