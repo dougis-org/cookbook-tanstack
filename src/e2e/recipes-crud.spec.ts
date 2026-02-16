@@ -39,8 +39,11 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("A delicious test recipe")).toBeVisible()
     await expect(page.getByText("15 min")).toBeVisible()
     await expect(page.getByText("30 min")).toBeVisible()
-    await expect(page.getByText("4", { exact: true })).toBeVisible()
     await expect(page.getByText("medium")).toBeVisible()
+
+    // Verify servings scoped to its label context
+    const servingsSection = page.getByText("Servings").locator("..")
+    await expect(servingsSection).toContainText("4")
 
     // Verify ingredients
     await expect(page.getByText("2 cups flour")).toBeVisible()
@@ -54,12 +57,13 @@ test.describe("Recipe CRUD Operations", () => {
       page.getByText("Bake at 350F for 30 minutes"),
     ).toBeVisible()
 
-    // Verify nutrition
-    await expect(page.getByText("250")).toBeVisible()
-    await expect(page.getByText("10g")).toBeVisible()
-    await expect(page.getByText("50mg")).toBeVisible()
-    await expect(page.getByText("200mg")).toBeVisible()
-    await expect(page.getByText("8g")).toBeVisible()
+    // Verify nutrition scoped to the Nutrition section
+    const nutritionSection = page.getByRole("heading", { name: "Nutrition" }).locator("..")
+    await expect(nutritionSection.getByText("250")).toBeVisible()
+    await expect(nutritionSection.getByText("10g")).toBeVisible()
+    await expect(nutritionSection.getByText("50mg")).toBeVisible()
+    await expect(nutritionSection.getByText("200mg")).toBeVisible()
+    await expect(nutritionSection.getByText("8g")).toBeVisible()
   })
 
   test("should edit an existing recipe and verify changes persist", async ({
@@ -99,7 +103,10 @@ test.describe("Recipe CRUD Operations", () => {
     ).toBeVisible()
     await expect(page.getByText("Updated notes")).toBeVisible()
     await expect(page.getByText("25 min")).toBeVisible()
-    await expect(page.getByText("6", { exact: true })).toBeVisible()
+
+    // Verify servings scoped to its label context
+    const servingsSection = page.getByText("Servings").locator("..")
+    await expect(servingsSection).toContainText("6")
   })
 
   test("should delete a recipe via confirmation modal", async ({ page }) => {
@@ -120,8 +127,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(dialog.getByText("Delete Recipe")).toBeVisible()
     await expect(dialog.getByText(recipeName)).toBeVisible()
 
-    // Confirm deletion
+    // Confirm deletion and wait for modal to close
     await dialog.getByRole("button", { name: "Delete" }).click()
+    await expect(dialog).not.toBeVisible()
 
     // Should redirect to recipe list
     await page.waitForURL("/recipes")

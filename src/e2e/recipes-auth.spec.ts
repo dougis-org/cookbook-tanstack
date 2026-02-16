@@ -12,7 +12,6 @@ test.describe("Recipe Auth-Gated Actions", () => {
   }) => {
     await page.goto("/recipes/new")
     await page.waitForURL(/\/auth\/login/)
-    expect(page.url()).toContain("/auth/login")
   })
 
   test("should redirect unauthenticated user from /recipes/:id/edit to login", async ({
@@ -35,7 +34,6 @@ test.describe("Recipe Auth-Gated Actions", () => {
     // Try to access edit page
     await page.goto(editUrl)
     await page.waitForURL(/\/auth\/login/)
-    expect(page.url()).toContain("/auth/login")
   })
 
   test("should not show New Recipe button on list page when logged out", async ({

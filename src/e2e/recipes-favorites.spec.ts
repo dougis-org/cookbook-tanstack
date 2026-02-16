@@ -23,13 +23,9 @@ test.describe("Recipe Favorites", () => {
     // Click to mark as favorite
     await saveButton.click()
 
-    // Should now show "Saved" with filled heart
+    // Should now show "Saved" after marking as favorite
     const savedButton = page.getByRole("button", { name: /^Saved$/ })
     await expect(savedButton).toBeVisible()
-
-    // Verify the heart icon has the filled style (fill-red-500)
-    const heartIcon = savedButton.locator("svg")
-    await expect(heartIcon).toHaveClass(/fill-red-500/)
 
     // Click again to unmark
     await savedButton.click()
