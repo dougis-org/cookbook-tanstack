@@ -99,7 +99,7 @@ jobs:
           # Install Codacy coverage reporter
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
-          
+
           # Upload coverage report if it exists
           if [ -f coverage/lcov.info ]; then
             ./codacy-coverage-reporter.sh report -r coverage/lcov.info
