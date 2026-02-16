@@ -91,9 +91,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const createMutation = useMutation(trpc.recipes.create.mutationOptions())
   const updateMutation = useMutation(trpc.recipes.update.mutationOptions())
   const isPending = createMutation.isPending || updateMutation.isPending
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   function toNum(v: string | undefined): number | undefined {
-    if (!v) return undefined
+    if (v == null) return undefined
+    if (v.trim() === "") return undefined
     const n = Number(v)
     return Number.isFinite(n) ? n : undefined
   }
@@ -119,6 +121,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   }
 
   async function onSubmit(values: RecipeFormValues) {
+    setSubmitError(null)
     const payload = toPayload(values)
     const taxonomyIds = {
       mealIds: selectedMealIds.length ? selectedMealIds : undefined,
@@ -126,14 +129,18 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       preparationIds: selectedPrepIds.length ? selectedPrepIds : undefined,
     }
 
-    if (isEdit) {
-      await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
-      await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-      navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
-    } else {
-      const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
-      await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-      navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
+    try {
+      if (isEdit) {
+        await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
+        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
+      } else {
+        const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
+        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
+      }
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Failed to save recipe. Please try again.")
     }
   }
 
@@ -449,6 +456,12 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               </div>
             </div>
           </div>
+
+          {submitError && (
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+              {submitError}
+            </div>
+          )}
 
           {/* Form Actions */}
           <div className="flex gap-4 pt-4">

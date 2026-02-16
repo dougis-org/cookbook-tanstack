@@ -75,7 +75,7 @@ function RecipesPage() {
     [navigate],
   )
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const debouncedSearch = useCallback(
     (value: string) => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
