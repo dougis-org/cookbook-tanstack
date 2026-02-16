@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
-import { toRecipeProps } from '@/lib/adapters'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 
@@ -64,14 +63,14 @@ function CategoryDetailPage() {
       <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 mb-8">
         <h1 className="text-4xl font-bold text-white mb-4">{classification.name}</h1>
         <p className="text-gray-400 text-lg mb-2">{classification.description}</p>
-        <p className="text-gray-500">{recipes?.length ?? 0} recipes</p>
+        <p className="text-gray-500">{recipes?.total ?? 0} recipes</p>
       </div>
 
       <h2 className="text-2xl font-bold text-white mb-6">Recipes in this category</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {recipes?.map((recipe) => (
+        {recipes?.items.map((recipe) => (
           <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
-            <RecipeCard recipe={toRecipeProps(recipe)} />
+            <RecipeCard recipe={recipe} />
           </Link>
         ))}
       </div>

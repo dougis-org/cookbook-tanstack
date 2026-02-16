@@ -30,14 +30,7 @@ function CategoriesPage() {
               to="/categories/$categoryId"
               params={{ categoryId: classification.id }}
             >
-              <CategoryCard
-                category={{
-                  id: classification.id,
-                  name: classification.name,
-                  description: classification.description ?? '',
-                  recipeCount: classification.recipeCount,
-                }}
-              />
+              <CategoryCard category={classification} />
             </Link>
           ))}
         </div>

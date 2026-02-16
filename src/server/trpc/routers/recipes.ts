@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { eq, and, ilike } from "drizzle-orm"
+import { eq, and, or, ilike, inArray, asc, desc, sql } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership, syncJunction } from "./_helpers"
 import {
@@ -8,6 +8,7 @@ import {
   recipeCourses,
   recipePreparations,
   recipeImages,
+  recipeLikes,
 } from "@/db/schema"
 
 const recipeFields = z.object({
@@ -16,6 +17,9 @@ const recipeFields = z.object({
   instructions: z.string().optional(),
   notes: z.string().optional(),
   servings: z.number().int().positive().optional(),
+  prepTime: z.number().int().positive().optional(),
+  cookTime: z.number().int().positive().optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   sourceId: z.string().uuid().optional(),
   classificationId: z.string().uuid().optional(),
   calories: z.number().int().nonnegative().optional(),
@@ -51,6 +55,12 @@ export const recipesRouter = router({
           userId: z.string().uuid().optional(),
           isPublic: z.boolean().optional(),
           search: z.string().optional(),
+          mealIds: z.array(z.string().uuid()).optional(),
+          courseIds: z.array(z.string().uuid()).optional(),
+          preparationIds: z.array(z.string().uuid()).optional(),
+          sort: z.enum(["name_asc", "name_desc", "newest", "oldest"]).optional(),
+          page: z.number().int().positive().optional(),
+          pageSize: z.number().int().positive().max(100).optional(),
         })
         .optional(),
     )
@@ -65,9 +75,53 @@ export const recipesRouter = router({
 
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
-      if (input?.search) conditions.push(ilike(recipes.name, `%${input.search}%`))
+      if (input?.search) {
+        const escaped = input.search.replace(/[%_]/g, "\\$&")
+        const pattern = `%${escaped}%`
+        conditions.push(or(ilike(recipes.name, pattern), ilike(recipes.ingredients, pattern)))
+      }
 
-      return ctx.db.select().from(recipes).where(and(...conditions))
+      // Junction table filters — recipes that have at least one matching row
+      if (input?.mealIds?.length) {
+        conditions.push(
+          inArray(recipes.id, ctx.db.select({ id: recipeMeals.recipeId }).from(recipeMeals).where(inArray(recipeMeals.mealId, input.mealIds))),
+        )
+      }
+      if (input?.courseIds?.length) {
+        conditions.push(
+          inArray(recipes.id, ctx.db.select({ id: recipeCourses.recipeId }).from(recipeCourses).where(inArray(recipeCourses.courseId, input.courseIds))),
+        )
+      }
+      if (input?.preparationIds?.length) {
+        conditions.push(
+          inArray(recipes.id, ctx.db.select({ id: recipePreparations.recipeId }).from(recipePreparations).where(inArray(recipePreparations.preparationId, input.preparationIds))),
+        )
+      }
+
+      const where = and(...conditions)
+
+      // Sort
+      const sortMap = {
+        name_asc: asc(recipes.name),
+        name_desc: desc(recipes.name),
+        newest: desc(recipes.dateAdded),
+        oldest: asc(recipes.dateAdded),
+      } as const
+      const orderBy = sortMap[input?.sort ?? "newest"]
+
+      // Pagination
+      const page = input?.page ?? 1
+      const pageSize = input?.pageSize ?? 20
+      const offset = (page - 1) * pageSize
+
+      const [items, countResult] = await Promise.all([
+        ctx.db.select().from(recipes).where(where).orderBy(orderBy).limit(pageSize).offset(offset),
+        ctx.db.select({ count: sql<number>`cast(count(*) as int)` }).from(recipes).where(where),
+      ])
+
+      const total = countResult[0]?.count ?? 0
+
+      return { items, total, page, pageSize }
     }),
 
   byId: publicProcedure
@@ -103,6 +157,9 @@ export const recipesRouter = router({
             instructions: fields.instructions ?? null,
             notes: fields.notes ?? null,
             servings: fields.servings ?? null,
+            prepTime: fields.prepTime ?? null,
+            cookTime: fields.cookTime ?? null,
+            difficulty: fields.difficulty ?? null,
             sourceId: fields.sourceId ?? null,
             classificationId: fields.classificationId ?? null,
             calories: fields.calories ?? null,
@@ -151,5 +208,39 @@ export const recipesRouter = router({
       )
       await ctx.db.delete(recipes).where(eq(recipes.id, input.id))
       return { success: true }
+    }),
+
+  isMarked: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      if (!ctx.user) return { marked: false }
+
+      const [row] = await ctx.db
+        .select()
+        .from(recipeLikes)
+        .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
+
+      return { marked: !!row }
+    }),
+
+  toggleMarked: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.transaction(async (tx) => {
+        const [existing] = await tx
+          .select()
+          .from(recipeLikes)
+          .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
+
+        if (existing) {
+          await tx
+            .delete(recipeLikes)
+            .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
+          return { marked: false }
+        }
+
+        await tx.insert(recipeLikes).values({ userId: ctx.user.id, recipeId: input.id })
+        return { marked: true }
+      })
     }),
 })

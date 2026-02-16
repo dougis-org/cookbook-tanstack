@@ -50,7 +50,7 @@ describe("tRPC integration", () => {
 
     for (const { path, input } of protectedProcedures) {
       it(`rejects unauthenticated call to ${path}`, async () => {
-        const caller = appRouter.createCaller({ db: createMockDb(), ...anonCtx })
+        const caller = appRouter.createCaller({ db: createMockDb() as never, ...anonCtx })
         const [routerName, procName] = path.split(".") as [keyof typeof caller, string]
         const proc = (caller[routerName] as Record<string, Function>)[procName]
 
@@ -61,32 +61,32 @@ describe("tRPC integration", () => {
 
   describe("Zod validation", () => {
     it("rejects invalid UUID for recipes.byId", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...anonCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...anonCtx })
       await expect(caller.recipes.byId({ id: "not-a-uuid" })).rejects.toThrow()
     })
 
     it("rejects invalid UUID for classifications.byId", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...anonCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...anonCtx })
       await expect(caller.classifications.byId({ id: "invalid" })).rejects.toThrow()
     })
 
     it("rejects empty name for recipes.create", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...authCtx })
       await expect(caller.recipes.create({ name: "" })).rejects.toThrow()
     })
 
     it("rejects invalid URL for sources.create", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...authCtx })
       await expect(caller.sources.create({ name: "Test", url: "not-a-url" })).rejects.toThrow()
     })
 
     it("rejects empty users.updateProfile input", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...authCtx })
       await expect(caller.users.updateProfile({})).rejects.toThrow()
     })
 
     it("rejects cookbooks.update with only an id", async () => {
-      const caller = appRouter.createCaller({ db: createMockDb(), ...authCtx })
+      const caller = appRouter.createCaller({ db: createMockDb() as never, ...authCtx })
       await expect(caller.cookbooks.update({ id: VALID_UUID })).rejects.toThrow()
     })
   })
@@ -96,7 +96,7 @@ describe("tRPC integration", () => {
       "allows unauthenticated access to %s.list",
       async (routerName) => {
         const db = createMockDb([{ id: "1", name: "Breakfast", slug: "breakfast" }])
-        const caller = appRouter.createCaller({ db, ...anonCtx })
+        const caller = appRouter.createCaller({ db: db as never, ...anonCtx })
 
         const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
         expect(result).toHaveLength(1)

@@ -1,40 +1,25 @@
-export interface Recipe {
-  id: string
-  title: string
-  description: string
-  ingredients: Ingredient[]
-  instructions: string[]
-  prepTime: number // in minutes
-  cookTime: number // in minutes
-  servings: number
-  difficulty: 'easy' | 'medium' | 'hard'
-  categoryId: string
-  imageUrl?: string
-  tags: string[]
-  createdAt: string
-  updatedAt: string
-}
+import type { InferSelectModel } from "drizzle-orm"
+import type { recipes, classifications } from "@/db/schema"
 
-export interface Ingredient {
-  id: string
-  name: string
-  quantity: number
-  unit: string
-}
+/** Row returned by a `select().from(recipes)` query. */
+export type Recipe = InferSelectModel<typeof recipes>
 
-export interface Category {
-  id: string
-  name: string
-  description: string
-  imageUrl?: string
+/** The difficulty values accepted by the recipes table. */
+export type Difficulty = "easy" | "medium" | "hard"
+
+/** Row returned by a `select().from(classifications)` query. */
+export type Classification = InferSelectModel<typeof classifications>
+
+/** Classification with a computed recipe count (from the list query). */
+export interface ClassificationWithCount extends Classification {
   recipeCount: number
 }
 
+/** Filters accepted by the recipe list query. */
 export interface RecipeFilters {
-  category?: string
-  difficulty?: Recipe['difficulty']
-  searchTerm?: string
-  tags?: string[]
+  classificationId?: string
+  difficulty?: Difficulty
+  search?: string
   maxPrepTime?: number
   maxCookTime?: number
 }
