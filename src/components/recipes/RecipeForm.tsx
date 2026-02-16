@@ -26,6 +26,12 @@ const recipeFormSchema = z.object({
 })
 
 type RecipeFormValues = z.infer<typeof recipeFormSchema>
+type Difficulty = "easy" | "medium" | "hard"
+const validDifficulties: Difficulty[] = ["easy", "medium", "hard"]
+
+function toDifficulty(value: string | undefined): Difficulty | undefined {
+  return validDifficulties.includes(value as Difficulty) ? (value as Difficulty) : undefined
+}
 
 interface RecipeWithRelations extends Recipe {
   meals?: { recipeId: string; mealId: string }[]
@@ -102,11 +108,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       prepTime: toNum(values.prepTime),
       cookTime: toNum(values.cookTime),
       servings: toNum(values.servings),
-      difficulty: (
-        values.difficulty === "easy" || values.difficulty === "medium" || values.difficulty === "hard"
-          ? values.difficulty
-          : undefined
-      ) as "easy" | "medium" | "hard" | undefined,
+      difficulty: toDifficulty(values.difficulty),
       isPublic: values.isPublic,
       calories: toNum(values.calories),
       fat: toNum(values.fat),

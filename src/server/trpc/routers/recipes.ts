@@ -76,8 +76,9 @@ export const recipesRouter = router({
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
       if (input?.search) {
-        const pattern = `%${input.search}%`
-        conditions.push(or(ilike(recipes.name, pattern), ilike(recipes.ingredients, pattern))!)
+        const escaped = input.search.replace(/[%_]/g, "\\$&")
+        const pattern = `%${escaped}%`
+        conditions.push(or(ilike(recipes.name, pattern), ilike(recipes.ingredients, pattern)))
       }
 
       // Junction table filters — recipes that have at least one matching row
@@ -225,19 +226,21 @@ export const recipesRouter = router({
   toggleMarked: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      const [existing] = await ctx.db
-        .select()
-        .from(recipeLikes)
-        .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
-
-      if (existing) {
-        await ctx.db
-          .delete(recipeLikes)
+      return ctx.db.transaction(async (tx) => {
+        const [existing] = await tx
+          .select()
+          .from(recipeLikes)
           .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
-        return { marked: false }
-      }
 
-      await ctx.db.insert(recipeLikes).values({ userId: ctx.user.id, recipeId: input.id })
-      return { marked: true }
+        if (existing) {
+          await tx
+            .delete(recipeLikes)
+            .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
+          return { marked: false }
+        }
+
+        await tx.insert(recipeLikes).values({ userId: ctx.user.id, recipeId: input.id })
+        return { marked: true }
+      })
     }),
 })

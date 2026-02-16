@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
@@ -62,6 +62,19 @@ function RecipesPage() {
 
   const hasActiveFilters = !!(classificationId || mealIds?.length || courseIds?.length || preparationIds?.length)
 
+  const updateSearch = useCallback(
+    (updates: Partial<z.infer<typeof searchSchema>>) => {
+      navigate({
+        search: (prev) => ({
+          ...prev,
+          ...updates,
+          page: updates.page ?? 1,
+        }),
+      })
+    },
+    [navigate],
+  )
+
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null)
   const debouncedSearch = useCallback(
     (value: string) => {
@@ -70,19 +83,14 @@ function RecipesPage() {
         updateSearch({ search: value || undefined })
       }, 300)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [updateSearch],
   )
 
-  function updateSearch(updates: Partial<z.infer<typeof searchSchema>>) {
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        ...updates,
-        page: updates.page ?? 1,
-      }),
-    })
-  }
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
 
   function clearFilters() {
     navigate({
