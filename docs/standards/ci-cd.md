@@ -52,20 +52,59 @@ A PR is ready to merge when:
    - Minimum 1 approval for normal PRs
    - Senior review for architectural changes
 
-3. **Merge conflicts resolved** (required if applicable)
+3. **All PR comments addressed** (required)
+   - All review comments resolved or dismissed
+   - Any requested changes implemented
 
-4. **Commits squashed or clean** (project preference)
+4. **Merge conflicts resolved** (required if applicable)
+
+5. **Commits squashed or clean** (project preference)
+
+## Auto-Merge Workflow
+
+**All PRs should be marked for auto-merge** after creation. This enables automatic merging once all requirements are met:
+
+### How to Enable Auto-Merge
+
+When creating a PR:
+1. Create the PR as normal with clear description and context
+2. Enable auto-merge on the PR (preferably via GitHub MCP tools, or GitHub UI/API as fallback)
+3. Select merge method: "squash and merge"
+
+### Auto-Merge Conditions
+
+The PR will automatically merge when:
+- ✅ All CI/CD checks pass
+- ✅ Required approvals obtained
+- ✅ All review comments addressed/resolved
+- ✅ No merge conflicts
+- ✅ Branch is up to date with base branch (if required)
+
+### Benefits of Auto-Merge
+
+- **Reduces manual intervention:** No need to manually click merge after approvals
+- **Ensures quality:** Only merges when all gates pass
+- **Faster feedback loop:** Changes land as soon as they're ready
+- **Prevents forgotten PRs:** Automatically completes work once validated
+
+### After Auto-Merge Completion
+
+Once the PR auto-merges:
+- Branch is automatically deleted (if configured)
+- Related issue updated/closed (if linked)
+- Deployment pipeline may trigger automatically
+- Contributors notified of merge
 
 ## What CI/CD Checks
 
-Standard CI/CD pipeline runs:
+Standard CI/CD pipeline (Build and Test workflow) runs:
 
+- **Build:** Vite build succeeds, assets generated
 - **TypeScript:** Type checking with strict mode
-- **Tests:** Unit tests (Vitest) + E2E tests (Playwright)
+- **Tests:** Unit tests (Vitest) + Integration tests + E2E tests (Playwright)
+- **Coverage:** Test coverage consolidated and reported to Codacy
 - **Security:** Dependency scanning (Snyk) + container scanning (Trivy)
 - **Code Quality:** Issue detection (Codacy) + linting
-- **Build:** Vite build succeeds, assets generated
-- **Deployment:** (if applicable) Build artifact generated, deployment test
 
 ## What CI/CD Does NOT Check
 
@@ -113,15 +152,15 @@ Local Development
   ↓
 Optional: Local analysis for feedback
   ↓
-Create PR
+Create PR & Enable Auto-Merge
   ↓
 Automated CI/CD runs (AUTHORITATIVE)
   ↓
-Fix failures (if any)
+Fix failures (if any) & Address PR comments
   ↓
-CI/CD passes + Review approved
+CI/CD passes + Review approved + Comments resolved
   ↓
-Merge to main
+PR Auto-Merges to main
   ↓
 (Optional) Deploy to production
 ```

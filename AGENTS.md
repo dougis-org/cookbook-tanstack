@@ -123,7 +123,11 @@ When implementing a feature, follow this checklist:
 5. **Create pull request**
    - [ ] All tests pass locally
    - [ ] TypeScript compilation succeeds
-   - [ ] Ready for CI/CD validation
+   - [ ] Local quality gates met (ready for CI/CD validation)
+   - [ ] **Enable auto-merge** immediately when PR is created
+   - [ ] CI/CD will validate quality gates before merge
+   - [ ] Address all PR comments and feedback
+   - [ ] PR will merge automatically when all checks pass and comments are resolved
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
 
