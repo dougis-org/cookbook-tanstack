@@ -69,6 +69,26 @@ For each code change:
 - No GitHub issue creation/modification beyond status transitions & comments
 - No production logic without tests
 
+## Pull Request Creation & Auto-Merge
+
+When work is complete and ready for review:
+
+1. **Create Pull Request** with clear description including:
+   - What changed and why
+   - Reference to related GitHub issue/ticket
+   - Summary of tests added/modified
+   - Any breaking changes or migration notes
+
+2. **Enable Auto-Merge** on the PR:
+   - Configure PR to auto-merge when all checks pass
+   - Ensures automatic merging once quality gates are met and comments addressed
+   - Use squash merge or merge commit based on project preference
+
+3. **Address Review Comments**:
+   - Monitor PR for review comments and feedback
+   - Fix issues and respond to comments promptly
+   - PR will auto-merge once all comments resolved and checks pass
+
 ---
 
 End of chat mode specification.

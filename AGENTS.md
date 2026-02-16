@@ -124,6 +124,9 @@ When implementing a feature, follow this checklist:
    - [ ] All tests pass locally
    - [ ] TypeScript compilation succeeds
    - [ ] Ready for CI/CD validation
+   - [ ] **Mark PR for auto-merge** once quality gates are met
+   - [ ] Address all PR comments and feedback
+   - [ ] PR will merge automatically when all checks pass and comments are resolved
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
 
