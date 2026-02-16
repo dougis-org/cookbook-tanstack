@@ -9,5 +9,25 @@
     "**/routeTree.gen.ts": true
   },
   "peacock.remoteColor": "#42543d",
-  "snyk.advanced.autoSelectOrganization": true
+  "snyk.advanced.autoSelectOrganization": true,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#7a6af8",
+    "activityBar.background": "#7a6af8",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#981807",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#7a6af8",
+    "statusBar.background": "#4f39f6",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#7a6af8",
+    "statusBarItem.remoteBackground": "#4f39f6",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#4f39f6",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#4f39f699",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#4F39F6"
 }

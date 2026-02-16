@@ -105,7 +105,9 @@ jobs:
 
           # Upload coverage report if it exists
           if [ -f coverage/lcov.info ]; then
-            ./codacy-coverage-reporter.sh report -r coverage/lcov.info
+            ./codacy-coverage-reporter.sh report --partial -l Javascript -r coverage/lcov.info
+            ./codacy-coverage-reporter.sh report --partial -l TypeScript -r coverage/lcov.info
+            ./codacy-coverage-reporter.sh final
           else
             echo "No coverage report found at coverage/lcov.info"
           fi
