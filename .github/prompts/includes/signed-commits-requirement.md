@@ -1,5 +1,5 @@
 <!-- TOGGLE: Set REQUIRE_SIGNED_COMMITS to true to enable signed commits, false to disable -->
-<!-- REQUIRE_SIGNED_COMMITS: true -->
+<!-- REQUIRE_SIGNED_COMMITS: false -->
 
 {% if REQUIRE_SIGNED_COMMITS == true %}
 ## Signed Commits

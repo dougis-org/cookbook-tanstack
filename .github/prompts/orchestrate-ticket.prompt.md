@@ -106,7 +106,7 @@ Actions:
 
 Transition to `PLANNING` phase. Invoke `plan-ticket` sub-agent using the .github/agents/plan-ticket.agent.md mode and the .github/prompts/plan-ticket.prompt.md prompt file for instructions:
 
-```
+``` text
 Subagent Task: Create implementation plan for [TICKET_ID]
 
 Ticket Context:
@@ -117,6 +117,7 @@ Ticket Context:
 Requirements:
 1. Create detailed plan at docs/plan/tickets/[TICKET_ID]-plan.md
 2. Plan must include all 11 required sections (per plan schema)
+and be persisted to disk
 3. ACs should be normalized and unambiguous
 4. Identify any blockers or require clarification upfront
 
