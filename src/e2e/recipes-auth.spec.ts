@@ -40,6 +40,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     page,
   }) => {
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // Wait for the page to be loaded
     await expect(
@@ -60,6 +61,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
   }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // When logged in: sidebar link + recipe list page link (count = 2)
     await expect(
@@ -81,6 +83,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     // Log out and revisit
     await page.context().clearCookies()
     await page.goto(recipeUrl)
+    await page.waitForLoadState("networkidle")
 
     await expect(
       page.getByRole("heading", { name: recipeName }),
@@ -112,6 +115,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
 
     // Visit the recipe created by user A
     await page.goto(recipeUrl)
+    await page.waitForLoadState("networkidle")
 
     await expect(
       page.getByRole("heading", { name: recipeName }),
@@ -134,6 +138,9 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await page.goto("/recipes/new")
     await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
+
+    // Wait for the detail page to be fully hydrated
+    await page.waitForLoadState("networkidle")
 
     // Owner should see Edit and Delete buttons
     await expect(

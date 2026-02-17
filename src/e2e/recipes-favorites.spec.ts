@@ -15,6 +15,7 @@ test.describe("Recipe Favorites", () => {
     await page.goto("/recipes/new")
     await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
+    await page.waitForLoadState("networkidle")
 
     // The Save button should be visible for logged-in users
     const saveButton = page.getByRole("button", { name: /^Save$/ })
@@ -48,6 +49,7 @@ test.describe("Recipe Favorites", () => {
     // Log out by clearing cookies and revisiting
     await page.context().clearCookies()
     await page.goto(recipeUrl)
+    await page.waitForLoadState("networkidle")
 
     // Wait for the page to load
     await expect(

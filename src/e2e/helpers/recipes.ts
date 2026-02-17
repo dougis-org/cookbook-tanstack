@@ -42,6 +42,9 @@ const textFieldLabels = {
  * Assumes the page is already on /recipes/new or /recipes/:id/edit.
  */
 export async function submitRecipeForm(page: Page, data: RecipeData) {
+  // Ensure React hydration is complete before interacting with the form
+  await page.waitForLoadState("networkidle")
+
   await page.getByLabel("Recipe Name").fill(data.name)
 
   for (const [key, label] of Object.entries(textFieldLabels)) {

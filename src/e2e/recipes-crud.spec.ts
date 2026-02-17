@@ -87,6 +87,7 @@ test.describe("Recipe CRUD Operations", () => {
     // Navigate to edit page
     await page.getByRole("link", { name: "Edit Recipe" }).click()
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/)
+    await page.waitForLoadState("networkidle")
 
     // Change fields
     const updatedName = getUniqueRecipeName("Edited Recipe")

@@ -19,13 +19,21 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
   const password = opts.password ?? "ValidPassword123!"
 
   await page.goto("/auth/register")
+  // Wait for React hydration — SSR renders the form HTML but event handlers
+  // (e.g. onSubmit with e.preventDefault()) aren't attached until hydration.
+  await page.waitForLoadState("networkidle")
+
   await page.getByLabel(/^Name$/).fill(name)
   await page.getByLabel(/^Username/).fill(username)
   await page.getByLabel(/^Email/).fill(email)
   await page.getByLabel(/^Password/).fill(password)
-  // Set up a listener for the auth API response BEFORE clicking submit
+
+  // Listen for the signup POST response before clicking submit
   const signUpResponse = page.waitForResponse(
-    (resp) => resp.url().includes("/api/auth") && resp.ok(),
+    (resp) =>
+      resp.request().method() === "POST" &&
+      resp.url().includes("/api/auth") &&
+      resp.ok(),
   )
   await page.getByRole("button", { name: "Create Account" }).click()
   await signUpResponse

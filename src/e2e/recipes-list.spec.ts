@@ -19,6 +19,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
 
     // Navigate to recipe list and search
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(uniqueWord)
 
@@ -30,6 +31,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should show no results for unmatched search", async ({ page }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(`NoMatchXYZ${Date.now()}`)
@@ -42,6 +44,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should change sort order and update URL", async ({ page }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // Target the sort select by its unique option content (not default selection)
     const sortSelect = page.locator("select").filter({ hasText: "Name A-Z" })
@@ -64,6 +67,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // Find filter chips by role, excluding non-chip action buttons
     const filterChips = page
@@ -93,6 +97,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should clear all filters", async ({ page }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // Find filter chips by role, excluding non-chip action buttons
     const filterChips = page
@@ -128,6 +133,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   }) => {
     await registerAndLogin(page)
     await page.goto("/recipes")
+    await page.waitForLoadState("networkidle")
 
     // This test requires >20 recipes in the database to verify pagination
     const paginationText = page.getByText(/^Page \d+ of \d+$/)
