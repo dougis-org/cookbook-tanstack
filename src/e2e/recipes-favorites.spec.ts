@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { registerAndLogin } from "./helpers/auth"
-import { createRecipeViaUI, getUniqueRecipeName } from "./helpers/recipes"
+import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes"
 
 test.describe("Recipe Favorites", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe("Recipe Favorites", () => {
     // Create a recipe so we have one to favorite
     const recipeName = getUniqueRecipeName("Fave Test")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
 
     // The Save button should be visible for logged-in users
@@ -41,7 +41,7 @@ test.describe("Recipe Favorites", () => {
     await registerAndLogin(page)
     const recipeName = getUniqueRecipeName("No Fave Button")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
     const recipeUrl = page.url()
 

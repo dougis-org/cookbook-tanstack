@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { registerAndLogin } from "./helpers/auth"
-import { createRecipeViaUI, getUniqueRecipeName } from "./helpers/recipes"
+import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes"
 
 test.describe("Recipe Auth-Gated Actions", () => {
   test.beforeEach(async ({ page }) => {
@@ -21,7 +21,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await registerAndLogin(page)
     const recipeName = getUniqueRecipeName("Auth Edit Test")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
 
     // Extract the recipe URL and build edit URL
@@ -70,7 +70,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await registerAndLogin(page)
     const recipeName = getUniqueRecipeName("Auth Buttons Test")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
     const recipeUrl = page.url()
 
@@ -98,7 +98,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await registerAndLogin(page)
     const recipeName = getUniqueRecipeName("Owner Only Test")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
     const recipeUrl = page.url()
 
@@ -128,7 +128,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await registerAndLogin(page)
     const recipeName = getUniqueRecipeName("Owner Buttons Test")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
 
     // Owner should see Edit and Delete buttons

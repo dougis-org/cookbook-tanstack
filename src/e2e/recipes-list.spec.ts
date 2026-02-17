@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { registerAndLogin } from "./helpers/auth"
-import { createRecipeViaUI } from "./helpers/recipes"
+import { submitRecipeForm } from "./helpers/recipes"
 
 test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     const uniqueWord = `Searchable${Date.now()}`
     const recipeName = `${uniqueWord} Pasta`
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
 
     // Navigate to recipe list and search
@@ -22,10 +22,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(uniqueWord)
 
-    // Wait for debounce (300ms) + URL update with actual search value
+    // Wait for debounce (300ms) + URL update, then for results to render
     await page.waitForURL(/search=.+/)
-
-    // Wait for search results to render
     await expect(page.getByText(recipeName)).toBeVisible()
   })
 
@@ -36,10 +34,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(`NoMatchXYZ${Date.now()}`)
 
-    // Wait for debounce + URL update with actual search value
+    // Wait for debounce + URL update, then for empty state to render
     await page.waitForURL(/search=.+/)
-
-    // Wait for the empty state to render after search completes
     await expect(page.getByText("No recipes found")).toBeVisible()
   })
 
@@ -47,8 +43,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await registerAndLogin(page)
     await page.goto("/recipes")
 
-    // Target the sort select by its current option text
-    const sortSelect = page.locator("select").filter({ hasText: "Newest first" })
+    // Target the sort select by its unique option content (not default selection)
+    const sortSelect = page.locator("select").filter({ hasText: "Name A-Z" })
 
     // Change to Name A-Z
     await sortSelect.selectOption("name_asc")
@@ -66,6 +62,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should filter by taxonomy chips and show active state", async ({
     page,
   }) => {
+    await registerAndLogin(page)
     await page.goto("/recipes")
 
     // Find filter chips by role, excluding non-chip action buttons
@@ -94,6 +91,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   })
 
   test("should clear all filters", async ({ page }) => {
+    await registerAndLogin(page)
     await page.goto("/recipes")
 
     // Find filter chips by role, excluding non-chip action buttons
@@ -128,6 +126,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should display pagination when enough recipes exist", async ({
     page,
   }) => {
+    await registerAndLogin(page)
     await page.goto("/recipes")
 
     // This test requires >20 recipes in the database to verify pagination

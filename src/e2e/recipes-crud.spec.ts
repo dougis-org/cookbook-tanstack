@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 import { registerAndLogin } from "./helpers/auth"
-import { createRecipeViaUI, getUniqueRecipeName } from "./helpers/recipes"
+import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes"
 
 test.describe("Recipe CRUD Operations", () => {
   test.beforeEach(async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe("Recipe CRUD Operations", () => {
     const recipeName = getUniqueRecipeName("Full Recipe")
     await page.goto("/recipes/new")
 
-    await createRecipeViaUI(page, {
+    await submitRecipeForm(page, {
       name: recipeName,
       notes: "A delicious test recipe",
       prepTime: "15",
@@ -76,7 +76,7 @@ test.describe("Recipe CRUD Operations", () => {
     // Create a recipe first
     const originalName = getUniqueRecipeName("Edit Me")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, {
+    await submitRecipeForm(page, {
       name: originalName,
       notes: "Original notes",
       prepTime: "10",
@@ -117,7 +117,7 @@ test.describe("Recipe CRUD Operations", () => {
     // Create a recipe to delete
     const recipeName = getUniqueRecipeName("Delete Me")
     await page.goto("/recipes/new")
-    await createRecipeViaUI(page, { name: recipeName })
+    await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
 
     // Click Delete Recipe button
