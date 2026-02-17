@@ -46,10 +46,13 @@ test.describe("Recipe Auth-Gated Actions", () => {
       page.getByRole("heading", { name: "Recipes" }),
     ).toBeVisible()
 
-    // "New Recipe" link should NOT be visible
+    // The sidebar nav always renders a "New Recipe" link (off-screen via CSS
+    // transform, but Playwright considers it visible). The recipe list page
+    // conditionally renders a second one only for authenticated users.
+    // When logged out: only the sidebar link exists (count = 1).
     await expect(
       page.getByRole("link", { name: "New Recipe" }),
-    ).not.toBeVisible()
+    ).toHaveCount(1)
   })
 
   test("should show New Recipe button on list page when logged in", async ({
@@ -58,9 +61,10 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await registerAndLogin(page)
     await page.goto("/recipes")
 
+    // When logged in: sidebar link + recipe list page link (count = 2)
     await expect(
       page.getByRole("link", { name: "New Recipe" }),
-    ).toBeVisible()
+    ).toHaveCount(2)
   })
 
   test("should not show Edit/Delete buttons for unauthenticated user", async ({

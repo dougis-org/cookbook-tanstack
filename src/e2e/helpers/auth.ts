@@ -23,8 +23,16 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
   await page.getByLabel(/^Username/).fill(username)
   await page.getByLabel(/^Email/).fill(email)
   await page.getByLabel(/^Password/).fill(password)
+  // Set up a listener for the auth API response BEFORE clicking submit
+  const signUpResponse = page.waitForResponse(
+    (resp) => resp.url().includes("/api/auth") && resp.ok(),
+  )
   await page.getByRole("button", { name: "Create Account" }).click()
-  await page.waitForURL("/")
+  await signUpResponse
+
+  // Session cookie is now set; navigate ourselves since the client-side
+  // redirect after signUp can be unreliable under CI timing conditions.
+  await page.goto("/")
 
   return { name, username, email, password }
 }
