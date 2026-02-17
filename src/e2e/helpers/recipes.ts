@@ -22,6 +22,21 @@ export function getUniqueRecipeName(prefix = "Test Recipe") {
   return `${prefix} ${Date.now()}`
 }
 
+/** Fields that map directly from RecipeData keys to form labels. */
+const textFieldLabels = {
+  notes: "Notes",
+  prepTime: "Prep Time (minutes)",
+  cookTime: "Cook Time (minutes)",
+  servings: "Servings",
+  ingredients: "Ingredients",
+  instructions: "Instructions",
+  calories: "Calories",
+  fat: "Fat (g)",
+  cholesterol: "Cholesterol (mg)",
+  sodium: "Sodium (mg)",
+  protein: "Protein (g)",
+} as const satisfies Partial<Record<keyof RecipeData, string>>
+
 /**
  * Fill the recipe form and submit it.
  * Assumes the page is already on /recipes/new or /recipes/:id/edit.
@@ -29,24 +44,10 @@ export function getUniqueRecipeName(prefix = "Test Recipe") {
 export async function createRecipeViaUI(page: Page, data: RecipeData) {
   await page.getByLabel("Recipe Name").fill(data.name)
 
-  const fieldsToFill: Partial<Record<keyof RecipeData, string>> = {
-    notes: "Notes",
-    prepTime: "Prep Time (minutes)",
-    cookTime: "Cook Time (minutes)",
-    servings: "Servings",
-    ingredients: "Ingredients",
-    instructions: "Instructions",
-    calories: "Calories",
-    fat: "Fat (g)",
-    cholesterol: "Cholesterol (mg)",
-    sodium: "Sodium (mg)",
-    protein: "Protein (g)",
-  }
-
-  for (const key in fieldsToFill) {
-    const value = data[key as keyof RecipeData]
+  for (const [key, label] of Object.entries(textFieldLabels)) {
+    const value = data[key as keyof typeof textFieldLabels]
     if (value !== undefined && value !== null) {
-      await page.getByLabel(fieldsToFill[key as keyof RecipeData]!).fill(String(value))
+      await page.getByLabel(label).fill(String(value))
     }
   }
 
@@ -59,5 +60,5 @@ export async function createRecipeViaUI(page: Page, data: RecipeData) {
     await page.getByLabel("Public recipe (visible to everyone)").uncheck()
   }
 
-  await page.getByRole("button", { name: /Create Recipe|Update Recipe/ }).click()
+  await page.getByRole("button", { name: /^(Create Recipe|Update Recipe)$/ }).click()
 }

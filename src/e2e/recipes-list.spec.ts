@@ -25,11 +25,12 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // Wait for debounce (300ms) + URL update with actual search value
     await page.waitForURL(/search=.+/)
 
-    // Verify the recipe appears in results
+    // Wait for search results to render
     await expect(page.getByText(recipeName)).toBeVisible()
   })
 
   test("should show no results for unmatched search", async ({ page }) => {
+    await registerAndLogin(page)
     await page.goto("/recipes")
 
     const searchInput = page.getByPlaceholder("Search recipes...")
@@ -38,10 +39,12 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // Wait for debounce + URL update with actual search value
     await page.waitForURL(/search=.+/)
 
+    // Wait for the empty state to render after search completes
     await expect(page.getByText("No recipes found")).toBeVisible()
   })
 
   test("should change sort order and update URL", async ({ page }) => {
+    await registerAndLogin(page)
     await page.goto("/recipes")
 
     // Target the sort select by its current option text
@@ -65,11 +68,10 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   }) => {
     await page.goto("/recipes")
 
-    // Find filter chips within the filter chip container
-    const filterChipContainer = page.locator(".flex.flex-wrap.gap-3")
-    const filterChips = filterChipContainer
-      .locator("button")
-      .filter({ hasNotText: /Clear|New|Create/ })
+    // Find filter chips by role, excluding non-chip action buttons
+    const filterChips = page
+      .getByRole("button")
+      .filter({ hasNotText: /Clear|New|Create|Newest|Oldest/ })
     const chipCount = await filterChips.count()
 
     if (chipCount > 0) {
@@ -78,13 +80,13 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
 
       // Click to activate filter — verify URL updates with filter param
       await firstChip.click()
-      await expect(page).toHaveURL(/Ids=/)
+      await expect(page).toHaveURL(/ids=/i)
 
       // Click again to deactivate
       await firstChip.click()
 
       // URL should no longer have the filter param
-      await expect(page).not.toHaveURL(/Ids=/)
+      await expect(page).not.toHaveURL(/ids=/i)
 
       // Verify chip was interactive
       expect(chipText).toBeTruthy()
@@ -94,11 +96,10 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
   test("should clear all filters", async ({ page }) => {
     await page.goto("/recipes")
 
-    // Find filter chips within the filter chip container
-    const filterChipContainer = page.locator(".flex.flex-wrap.gap-3")
-    const filterChips = filterChipContainer
-      .locator("button")
-      .filter({ hasNotText: /Clear/ })
+    // Find filter chips by role, excluding non-chip action buttons
+    const filterChips = page
+      .getByRole("button")
+      .filter({ hasNotText: /Clear|New|Create|Newest|Oldest/ })
     const chipCount = await filterChips.count()
 
     // Taxonomy data should be seeded — assert chips are present
