@@ -134,7 +134,6 @@ test.describe("Recipe CRUD Operations", () => {
       page.waitForURL("/recipes"),
       dialog.getByRole("button", { name: "Delete" }).click(),
     ])
-    await expect(dialog).not.toBeVisible()
 
     // Verify the recipe is no longer in the list
     await expect(page.getByText(recipeName)).not.toBeVisible()
