@@ -27,6 +27,11 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
+  advanced: {
+    database: {
+      generateId: "uuid",
+    },
+  },
   plugins: [
     username(),
     tanstackStartCookies(), // must be last
