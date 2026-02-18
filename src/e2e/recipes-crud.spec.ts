@@ -38,7 +38,7 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByRole("heading", { name: recipeName })).toBeVisible()
     await expect(page.getByText("A delicious test recipe")).toBeVisible()
     await expect(page.getByText("15 min")).toBeVisible()
-    await expect(page.getByText("30 min")).toBeVisible()
+    await expect(page.getByText("30 min", { exact: true })).toBeVisible()
     await expect(page.getByText("medium")).toBeVisible()
 
     // Verify servings — the detail page shows the label "Servings" and value in adjacent elements
@@ -87,7 +87,9 @@ test.describe("Recipe CRUD Operations", () => {
     // Navigate to edit page
     await page.getByRole("link", { name: "Edit Recipe" }).click()
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/)
-    await page.waitForLoadState("networkidle")
+
+    // Wait for the edit form to load (tRPC fetches recipe data asynchronously)
+    await page.getByLabel("Recipe Name").waitFor()
 
     // Change fields
     const updatedName = getUniqueRecipeName("Edited Recipe")
@@ -137,6 +139,9 @@ test.describe("Recipe CRUD Operations", () => {
     ])
 
     // Verify the recipe is no longer in the list
-    await expect(page.getByText(recipeName)).not.toBeVisible()
+    await page.waitForLoadState("networkidle")
+    await expect(
+      page.getByRole("heading", { name: recipeName }),
+    ).not.toBeVisible()
   })
 })

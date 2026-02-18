@@ -69,28 +69,24 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    // Find filter chips by role, excluding non-chip action buttons
-    const filterChips = page
-      .getByRole("button")
-      .filter({ hasNotText: /Clear|New|Create|Newest|Oldest/ })
+    // Scope to the filter bar section (contains the "Filters" label)
+    const filterSection = page.locator("div").filter({ hasText: /^Filters$/ }).first().locator("..")
+    const filterChips = filterSection.getByRole("button").filter({ hasNotText: /Clear/ })
     const chipCount = await filterChips.count()
 
     if (chipCount > 0) {
-      const firstChip = filterChips.first()
-      const chipText = await firstChip.textContent()
+      const chipText = await filterChips.first().textContent()
+      expect(chipText).toBeTruthy()
 
       // Click to activate filter — verify URL updates with filter param
-      await firstChip.click()
-      await expect(page).toHaveURL(/ids=/i)
+      await page.getByRole("button", { name: chipText!, exact: true }).click()
+      await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/)
 
       // Click again to deactivate
-      await firstChip.click()
+      await page.getByRole("button", { name: chipText!, exact: true }).click()
 
       // URL should no longer have the filter param
-      await expect(page).not.toHaveURL(/ids=/i)
-
-      // Verify chip was interactive
-      expect(chipText).toBeTruthy()
+      await expect(page).not.toHaveURL(/(mealIds|courseIds|preparationIds)=/)
     }
   })
 
@@ -99,10 +95,9 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    // Find filter chips by role, excluding non-chip action buttons
-    const filterChips = page
-      .getByRole("button")
-      .filter({ hasNotText: /Clear|New|Create|Newest|Oldest/ })
+    // Scope to the filter bar section (contains the "Filters" label)
+    const filterSection = page.locator("div").filter({ hasText: /^Filters$/ }).first().locator("..")
+    const filterChips = filterSection.getByRole("button").filter({ hasNotText: /Clear/ })
     const chipCount = await filterChips.count()
 
     // Taxonomy data should be seeded — assert chips are present
