@@ -23,7 +23,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(uniqueWord)
 
-    // Wait for debounce (300ms) + URL update, then for results to render
+    // waitForURL blocks until the debounced search updates the URL query param;
+    // toBeVisible then auto-retries until the re-rendered results appear.
     await page.waitForURL(/search=.+/)
     await expect(page.getByText(recipeName)).toBeVisible()
   })
@@ -36,7 +37,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     const searchInput = page.getByPlaceholder("Search recipes...")
     await searchInput.fill(`NoMatchXYZ${Date.now()}`)
 
-    // Wait for debounce + URL update, then for empty state to render
+    // waitForURL blocks until the debounced search updates the URL;
+    // toBeVisible auto-retries until the empty state renders.
     await page.waitForURL(/search=.+/)
     await expect(page.getByText("No recipes found")).toBeVisible()
   })

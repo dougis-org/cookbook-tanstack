@@ -19,7 +19,8 @@ export interface RecipeData {
 
 /** Generate a unique recipe name for test isolation. */
 export function getUniqueRecipeName(prefix = "Test Recipe") {
-  return `${prefix} ${Date.now()}`
+  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`
+  return `${prefix} ${suffix}`
 }
 
 /** Fields that map directly from RecipeData keys to form labels. */

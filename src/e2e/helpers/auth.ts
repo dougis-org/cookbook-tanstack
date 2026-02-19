@@ -12,10 +12,10 @@ interface RegisterOptions {
  * Returns the credentials used so tests can re-login if needed.
  */
 export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
-  const timestamp = Date.now()
+  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`
   const name = opts.name ?? "Test User"
-  const username = opts.username ?? `testuser${timestamp}`
-  const email = opts.email ?? `testuser${timestamp}@example.com`
+  const username = opts.username ?? `testuser${suffix}`
+  const email = opts.email ?? `testuser${suffix}@example.com`
   const password = opts.password ?? "ValidPassword123!"
 
   await page.goto("/auth/register")
@@ -41,6 +41,7 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
   // Session cookie is now set; navigate ourselves since the client-side
   // redirect after signUp can be unreliable under CI timing conditions.
   await page.goto("/")
+  await page.waitForLoadState("networkidle")
 
   return { name, username, email, password }
 }

@@ -41,10 +41,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("30 min", { exact: true })).toBeVisible()
     await expect(page.getByText("medium")).toBeVisible()
 
-    // Verify servings — the detail page shows the label "Servings" and value in adjacent elements
-    const metaGrid = page.locator(".grid.grid-cols-2").first()
-    await expect(metaGrid.getByText("Servings")).toBeVisible()
-    await expect(metaGrid.getByText("4", { exact: true })).toBeVisible()
+    // Verify servings — locate the value adjacent to its label
+    const servingsContainer = page.getByText("Servings").locator("..")
+    await expect(servingsContainer.getByText("4", { exact: true })).toBeVisible()
 
     // Verify ingredients
     await expect(page.getByText("2 cups flour")).toBeVisible()
@@ -109,9 +108,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("Updated notes")).toBeVisible()
     await expect(page.getByText("25 min")).toBeVisible()
 
-    // Verify servings in the meta grid
-    const metaGrid = page.locator(".grid.grid-cols-2").first()
-    await expect(metaGrid.getByText("6", { exact: true })).toBeVisible()
+    // Verify servings — locate the value adjacent to its label
+    const servingsContainer = page.getByText("Servings").locator("..")
+    await expect(servingsContainer.getByText("6", { exact: true })).toBeVisible()
   })
 
   test("should delete a recipe via confirmation modal", async ({ page }) => {
