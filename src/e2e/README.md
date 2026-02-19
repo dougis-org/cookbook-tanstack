@@ -49,14 +49,13 @@ npm run test:e2e:ui
 
 Tests are organized by feature:
 
-- `registration.spec.ts` — User registration flow, validation, and error handling
-
-Each test file covers:
-- ✅ Happy path scenarios
-- ✅ Validation errors
-- ✅ Edge cases (duplicates, invalid input)
-- ✅ Loading states
-- ✅ Navigation
+- `registration.spec.ts` — User registration form UI and validation
+- `recipes-crud.spec.ts` — Recipe create, edit, and delete operations
+- `recipes-list.spec.ts` — Recipe list search, sort, filter, and pagination
+- `recipes-auth.spec.ts` — Auth-gated actions (create/edit/delete visibility)
+- `recipes-favorites.spec.ts` — Mark/unmark recipes as favorites
+- `helpers/auth.ts` — Reusable registration and login helpers
+- `helpers/recipes.ts` — Recipe form submission helper
 
 ## Viewing Test Results
 
@@ -92,21 +91,41 @@ The configuration in `playwright.config.ts` automatically:
 Current E2E tests cover:
 
 ### Registration (`registration.spec.ts`)
-- ✅ Display form elements
-- ✅ Successful registration with valid data
-- ✅ Validation: empty username
-- ✅ Validation: invalid email
-- ✅ Validation: short password
-- ✅ Loading state during submission
+- ✅ Display form elements and accessible labels
+- ✅ Fill form with valid data
+- ✅ Input types, placeholders, required field indicators
+- ✅ Submit button state
 - ✅ Navigation to login page
-- ✅ Duplicate username prevention
-- ✅ Duplicate email prevention
+
+### Recipe CRUD (`recipes-crud.spec.ts`)
+- ✅ Create recipe with all fields (name, notes, times, servings, difficulty, ingredients, instructions, nutrition)
+- ✅ Edit an existing recipe and verify changes persist
+- ✅ Delete recipe via confirmation modal
+
+### Recipe List (`recipes-list.spec.ts`)
+- ✅ Search recipes by name with debounced URL update
+- ✅ Show "No recipes found" for unmatched search
+- ✅ Change sort order (newest, oldest, name A-Z, name Z-A)
+- ✅ Filter by taxonomy chips and toggle active state
+- ✅ Clear all active filters
+- ✅ Display pagination controls when enough recipes exist
+
+### Auth-Gated Actions (`recipes-auth.spec.ts`)
+- ✅ Redirect unauthenticated user from /recipes/new to login
+- ✅ Redirect unauthenticated user from /recipes/:id/edit to login
+- ✅ Hide "New Recipe" button on list page when logged out
+- ✅ Show "New Recipe" button on list page when logged in
+- ✅ Hide Edit/Delete buttons for unauthenticated users
+- ✅ Hide Edit/Delete buttons for non-owner users
+- ✅ Show Edit/Delete buttons for recipe owner
+
+### Favorites (`recipes-favorites.spec.ts`)
+- ✅ Toggle favorite on and off (Save/Saved button)
+- ✅ Hide Save button when logged out
 
 ## Future Test Coverage
 
 Planned E2E test suites:
-- Authentication flow (login, logout)
-- Recipe CRUD operations
-- Search and filtering
+- Authentication flow (login, logout, session persistence)
 - Cookbook management
 - User profile management

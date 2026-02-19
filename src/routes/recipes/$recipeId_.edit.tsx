@@ -6,7 +6,7 @@ import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
 
-export const Route = createFileRoute('/recipes/$recipeId/edit')({
+export const Route = createFileRoute('/recipes/$recipeId_/edit')({
   component: EditRecipePage,
   server: {
     middleware: [authMiddleware],
