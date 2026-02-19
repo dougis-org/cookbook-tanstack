@@ -1,33 +1,58 @@
-import { describe, it, expect, vi } from "vitest"
-import { createMockDb } from "@/test-helpers/mocks"
+// @vitest-environment node
+import { describe, it, expect, vi, afterAll } from "vitest"
+import { withDbTx, closeTestPool } from "@/test-helpers/with-db-tx"
+import * as schema from "@/db/schema"
 
+// Prevent the module-level Pool in src/db/index.ts from connecting;
+// the router receives ctx.db from the caller, not this singleton.
 vi.mock("@/db", () => ({ db: {} }))
-vi.mock("@/db/schema", () => ({
-  users: {}, sessions: {}, accounts: {}, verifications: {},
-  recipes: {}, cookbooks: {}, classifications: {}, sources: {},
-  meals: {}, courses: {}, preparations: {},
-  recipeMeals: {}, recipeCourses: {}, recipePreparations: {},
-  cookbookRecipes: {}, recipeImages: {}, recipeLikes: {}, cookbookFollowers: {},
-}))
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
-const sampleRows = [
-  { id: "1", name: "Breakfast", slug: "breakfast", description: null },
-  { id: "2", name: "Lunch", slug: "lunch", description: null },
-]
+afterAll(async () => {
+  await closeTestPool()
+})
 
-describe.each(["meals", "courses", "preparations"] as const)(
-  "%s.list",
-  (routerName) => {
-    it("returns all rows via public access", async () => {
+describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerName) => {
+  const tableMap = {
+    meals: schema.meals,
+    courses: schema.courses,
+    preparations: schema.preparations,
+  } as const
+
+  it("returns an empty array when no rows exist", async () => {
+    await withDbTx(async (db) => {
       const { appRouter } = await import("@/server/trpc/router")
-      const db = createMockDb(sampleRows)
       const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
+      expect(result).toEqual([])
+    })
+  })
 
+  it("returns all inserted rows", async () => {
+    await withDbTx(async (db) => {
+      await db.insert(tableMap[routerName]).values({ name: "Breakfast", slug: "breakfast" })
+
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ name: "Breakfast", slug: "breakfast" })
+    })
+  })
+
+  it("returns multiple rows in insertion order", async () => {
+    await withDbTx(async (db) => {
+      await db.insert(tableMap[routerName]).values([
+        { name: "Alpha", slug: "alpha" },
+        { name: "Beta", slug: "beta" },
+      ])
+
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
       const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
 
       expect(result).toHaveLength(2)
-      expect(result[0]).toHaveProperty("name", "Breakfast")
     })
-  },
-)
+  })
+})
