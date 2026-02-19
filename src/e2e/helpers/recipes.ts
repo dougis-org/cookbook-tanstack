@@ -64,5 +64,5 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
     await page.getByLabel("Public recipe (visible to everyone)").uncheck()
   }
 
-  await page.getByRole("button", { name: /^(Create Recipe|Update Recipe)$/ }).click()
+  await page.getByRole("button", { name: /(Create|Update) Recipe/ }).click()
 }
