@@ -14,7 +14,8 @@ Refer to `.github/prompts/includes/signed-commits-requirement.md` for signed com
 
 ---
 
-**Goal:** Produce a concise, unambiguous implementation plan that a separate engineer/agent can execute without further clarification.
+**Goal:** Produce a concise, unambiguous implementation plan that a separate engineer/agent can execute without further clarification
+and can be reviewed by a human within the current branch.
 
 > Output only the plan (no extraneous narrative). Ask clarifying questions ONLY once if blocking gaps exist.
 
@@ -59,11 +60,11 @@ Apply the auto-detection steps:
    - Use GitHub MCP server to list/create branches as needed
    - `git switch -c <PREFIX>/{{TICKET_ID}}-short-kebab-summary` (truncate ≤ ~60 chars) OR
    - `git switch <PREFIX>/{{TICKET_ID}}-short-kebab-summary` if exists
-4. Confirm: "Planning {{PLATFORM}} {{TICKET_ID}} on branch <PREFIX>/{{TICKET_ID}}-short-kebab-summary"
+4. Confirm: "Planning {{PLATFORM}} {{TICKET_ID}}
+on branch <PREFIX>/{{TICKET_ID}}-short-kebab-summary"
 5. Future ticket updates must use appropriate API (GitHub or Jira) — never manual text unless API unavailable (then note fallback)
    (Shared conventions: `.github/prompts/includes/branch-commit-guidance.md`)
-
-7. **Traceability alignment**
+6. **Traceability alignment**
     - Map each acceptance criterion to: requirement (or new requirement tag), milestone(s), feature flag(s), test type(s).
     - If creating new requirement tags, add them in the plan file’s summary—not the central plan (a later consolidation step can merge them).
 
@@ -292,15 +293,16 @@ Every AC row filled (no blanks). Tasks reference milestone IDs if applicable.
 - Do NOT implement production code here.
 - Challenge ambiguities; make ≤2 explicit assumptions if still unresolved.
 - Reuse existing patterns & utilities; avoid speculative abstractions.
-- Signed commits (-S) with conventional format when committing the plan.
+- Follow the commit rules defined elsewhere.
 - New runtime behavior behind feature flag unless justified.
 - Keep plan deterministic, minimal, test-driven, traceable.
 - Dependency versions: If referencing an existing dependency, default to the version already declared in the project. For any new dependency (plugin, library, tool) required by the ticket, use the Context7 MCP server to resolve and retrieve the latest stable release version at plan time; cite that version explicitly in the plan (pin it) and note the retrieval date. If Context7 is unavailable, add an assumption and specify a placeholder `LATEST` tag to be resolved during implementation.
 - Scope limit: Once the plan is fully accepted (all sections complete, no open blocking questions) and the plan file is committed & pushed, this planning session terminates. Do not proceed to implementation steps here; direct any further work to the `work-ticket` prompt and clear transient context.
+- Plan **MUST** be persisted to the local disk
 
 ## Commit & Push (after writing plan file)
 
-```
+``` bash
 git add docs/plan/tickets/{{JIRA_KEY}}-plan.md
 git commit -m "chore(plan): {{JIRA_KEY}} add implementation plan"
 git push -u origin <PREFIX>/{{JIRA_KEY}}-short-kebab-summary
