@@ -10,6 +10,7 @@ export default defineConfig({
     viteReact(),
   ],
   test: {
+    globalSetup: ['./src/test-helpers/db-global-setup.ts'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     exclude: ['**/node_modules/**', '**/e2e/**', '**/*.e2e.*'],

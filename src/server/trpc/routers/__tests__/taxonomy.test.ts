@@ -1,33 +1,70 @@
-import { describe, it, expect, vi } from "vitest"
-import { createMockDb } from "@/test-helpers/mocks"
+// @vitest-environment node
+import { describe, it, expect, vi, afterAll } from "vitest"
+import { withDbTx, closeTestPool } from "@/test-helpers/with-db-tx"
+import * as schema from "@/db/schema"
 
 vi.mock("@/db", () => ({ db: {} }))
-vi.mock("@/db/schema", () => ({
-  users: {}, sessions: {}, accounts: {}, verifications: {},
-  recipes: {}, cookbooks: {}, classifications: {}, sources: {},
-  meals: {}, courses: {}, preparations: {},
-  recipeMeals: {}, recipeCourses: {}, recipePreparations: {},
-  cookbookRecipes: {}, recipeImages: {}, recipeLikes: {}, cookbookFollowers: {},
-}))
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
-const sampleRows = [
-  { id: "1", name: "Breakfast", slug: "breakfast", description: null },
-  { id: "2", name: "Lunch", slug: "lunch", description: null },
-]
+afterAll(async () => {
+  await closeTestPool()
+})
 
-describe.each(["meals", "courses", "preparations"] as const)(
-  "%s.list",
-  (routerName) => {
-    it("returns all rows via public access", async () => {
+// Use a unique prefix per test run so assertions are independent of other
+// data that may exist in the shared container. Integration tests verify
+// "our record is present", not "only our record exists".
+const RUN_ID = Date.now()
+
+describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerName) => {
+  const tableMap = {
+    meals: schema.meals,
+    courses: schema.courses,
+    preparations: schema.preparations,
+  } as const
+
+  it("includes an inserted row in the result", async () => {
+    await withDbTx(async (db) => {
+      const slug = `${routerName}-single-${RUN_ID}`
+      await db.insert(tableMap[routerName]).values({ name: "Breakfast", slug })
+
       const { appRouter } = await import("@/server/trpc/router")
-      const db = createMockDb(sampleRows)
       const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
-
       const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
 
-      expect(result).toHaveLength(2)
-      expect(result[0]).toHaveProperty("name", "Breakfast")
+      expect(result).toEqual(
+        expect.arrayContaining([expect.objectContaining({ name: "Breakfast", slug })]),
+      )
     })
-  },
-)
+  })
+
+  it("includes all inserted rows in the result", async () => {
+    await withDbTx(async (db) => {
+      const slugA = `${routerName}-alpha-${RUN_ID}`
+      const slugB = `${routerName}-beta-${RUN_ID}`
+      await db.insert(tableMap[routerName]).values([
+        { name: "Alpha", slug: slugA },
+        { name: "Beta", slug: slugB },
+      ])
+
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ slug: slugA }),
+          expect.objectContaining({ slug: slugB }),
+        ]),
+      )
+    })
+  })
+
+  it("returns an array (route is publicly accessible without auth)", async () => {
+    await withDbTx(async (db) => {
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ db: db as never, session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
+      expect(Array.isArray(result)).toBe(true)
+    })
+  })
+})
