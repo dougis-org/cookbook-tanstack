@@ -153,11 +153,26 @@ describe("recipes.list", () => {
   })
 
   describe("filter parameters", () => {
-    it("accepts mealIds filter without error", async () => {
+    it("filters by mealId — returns only recipes linked to that meal", async () => {
       await withDbTx(async (db) => {
+        const user = await seedUser(db)
+        const id = uid()
+        const [meal] = await db
+          .insert(schema.meals)
+          .values({ name: "Dinner", slug: `dinner-${id}` })
+          .returning()
+        const [recipeWithMeal] = await db
+          .insert(schema.recipes)
+          .values({ name: "Steak", userId: user.id, isPublic: true })
+          .returning()
+        await db.insert(schema.recipes).values({ name: "Salad", userId: user.id, isPublic: true })
+        await db.insert(schema.recipeMeals).values({ recipeId: recipeWithMeal.id, mealId: meal.id })
+
         const caller = await makeAnonCaller(db)
-        const result = await caller.recipes.list({ mealIds: [VALID_UUID] })
-        expect(result).toHaveProperty("items")
+        const result = await caller.recipes.list({ userId: user.id, mealIds: [meal.id] })
+
+        expect(result.items).toHaveLength(1)
+        expect(result.items[0]).toMatchObject({ name: "Steak" })
       })
     })
 
@@ -293,6 +308,22 @@ describe("recipes.delete", () => {
       await expect(caller.recipes.delete({ id: VALID_UUID })).rejects.toThrow("UNAUTHORIZED")
     })
   })
+
+  it("deletes the recipe and makes it no longer retrievable", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      const [recipe] = await db
+        .insert(schema.recipes)
+        .values({ name: "Delete Me", userId: user.id, isPublic: true })
+        .returning()
+
+      const caller = await makeAuthCaller(db, user.id)
+      const result = await caller.recipes.delete({ id: recipe.id })
+
+      expect(result).toEqual({ success: true })
+      expect(await caller.recipes.byId({ id: recipe.id })).toBeNull()
+    })
+  })
 })
 
 // ─── recipes.isMarked / toggleMarked ──────────────────────────────────────────
@@ -314,16 +345,23 @@ describe("recipes.toggleMarked", () => {
     })
   })
 
-  it("returns a boolean marked field after toggling on an owned recipe", async () => {
+  it("cycles through the full isMarked=false → true → false state", async () => {
     await withDbTx(async (db) => {
       const user = await seedUser(db)
       const [recipe] = await db.insert(schema.recipes).values({ name: "Toggle Me", userId: user.id }).returning()
 
       const caller = await makeAuthCaller(db, user.id)
-      const result = await caller.recipes.toggleMarked({ id: recipe.id })
 
-      expect(result).toHaveProperty("marked")
-      expect(typeof result.marked).toBe("boolean")
+      // Initial state: not marked
+      expect(await caller.recipes.isMarked({ id: recipe.id })).toEqual({ marked: false })
+
+      // First toggle: mark it
+      expect(await caller.recipes.toggleMarked({ id: recipe.id })).toEqual({ marked: true })
+      expect(await caller.recipes.isMarked({ id: recipe.id })).toEqual({ marked: true })
+
+      // Second toggle: unmark it
+      expect(await caller.recipes.toggleMarked({ id: recipe.id })).toEqual({ marked: false })
+      expect(await caller.recipes.isMarked({ id: recipe.id })).toEqual({ marked: false })
     })
   })
 })

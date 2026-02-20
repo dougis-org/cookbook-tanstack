@@ -41,13 +41,17 @@ export async function withDbTx<T>(fn: (db: TestDb) => Promise<T>): Promise<T> {
     const db = drizzle(client, { schema })
     return await fn(db)
   } finally {
-    await client.query("ROLLBACK")
-    client.release()
+    try {
+      await client.query("ROLLBACK")
+    } finally {
+      client.release()
+    }
   }
 }
 
 /** Close the shared pool. Call from afterAll in each test suite that uses withDbTx. */
 export async function closeTestPool(): Promise<void> {
-  await pool?.end()
+  const p = pool
   pool = null
+  await p?.end()
 }

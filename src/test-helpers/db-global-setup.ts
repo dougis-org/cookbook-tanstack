@@ -31,5 +31,9 @@ export async function setup() {
 }
 
 export async function teardown() {
-  await container?.stop()
+  try {
+    await container?.stop()
+  } catch (err) {
+    console.error("Failed to stop Testcontainers PostgreSQL container:", err)
+  }
 }

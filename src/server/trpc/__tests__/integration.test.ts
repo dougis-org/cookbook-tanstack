@@ -3,13 +3,15 @@
  * tRPC integration tests.
  *
  * Structural checks (router shape, auth enforcement, Zod validation) are
- * run against the real appRouter with a real DB behind it.  Because these
- * tests fail before any DB query is issued (auth check / Zod parse), the DB
- * is never touched and results are identical to the old mock-based approach —
- * but we no longer need to maintain the schema mock objects.
+ * run against the real appRouter with a real DB behind it.  Because most
+ * of these tests fail before any DB query is issued (auth check / Zod parse),
+ * the DB is never touched for those cases — but we no longer need to maintain
+ * the schema mock objects.
  */
-import { describe, it, expect, vi, afterAll } from "vitest"
+import { describe, it, expect, vi, afterAll, beforeAll } from "vitest"
 import { withDbTx, closeTestPool } from "@/test-helpers/with-db-tx"
+import * as schema from "@/db/schema"
+import type { AppRouter } from "@/server/trpc/router"
 
 vi.mock("@/db", () => ({ db: {} }))
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
@@ -22,10 +24,18 @@ const VALID_UUID = "00000000-0000-0000-0000-000000000000"
 const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never }
 const anonCtx = { session: null, user: null }
 
+// Unique prefix per test run for slug-based uniqueness in shared container
+const RUN_ID = Date.now()
+
+// Import the router once for the entire suite rather than per-test
+let appRouter: AppRouter
+beforeAll(async () => {
+  ;({ appRouter } = await import("@/server/trpc/router"))
+})
+
 describe("tRPC integration", () => {
   describe("router structure", () => {
-    it("has all expected sub-routers", async () => {
-      const { appRouter } = await import("@/server/trpc/router")
+    it("has all expected sub-routers", () => {
       const routers = Object.keys(appRouter._def.record)
       expect(routers).toEqual(
         expect.arrayContaining([
@@ -58,7 +68,6 @@ describe("tRPC integration", () => {
     for (const { path, input } of protectedProcedures) {
       it(`rejects unauthenticated call to ${path}`, async () => {
         await withDbTx(async (db) => {
-          const { appRouter } = await import("@/server/trpc/router")
           const caller = appRouter.createCaller({ db: db as never, ...anonCtx })
           const [routerName, procName] = path.split(".") as [keyof typeof caller, string]
           const proc = (caller[routerName] as Record<string, Function>)[procName]
@@ -71,7 +80,6 @@ describe("tRPC integration", () => {
   describe("Zod validation", () => {
     it("rejects invalid UUID for recipes.byId", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...anonCtx })
         await expect(caller.recipes.byId({ id: "not-a-uuid" })).rejects.toThrow()
       })
@@ -79,7 +87,6 @@ describe("tRPC integration", () => {
 
     it("rejects invalid UUID for classifications.byId", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...anonCtx })
         await expect(caller.classifications.byId({ id: "invalid" })).rejects.toThrow()
       })
@@ -87,7 +94,6 @@ describe("tRPC integration", () => {
 
     it("rejects empty name for recipes.create", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...authCtx })
         await expect(caller.recipes.create({ name: "" })).rejects.toThrow()
       })
@@ -95,7 +101,6 @@ describe("tRPC integration", () => {
 
     it("rejects invalid URL for sources.create", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...authCtx })
         await expect(caller.sources.create({ name: "Test", url: "not-a-url" })).rejects.toThrow()
       })
@@ -103,7 +108,6 @@ describe("tRPC integration", () => {
 
     it("rejects empty users.updateProfile input", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...authCtx })
         await expect(caller.users.updateProfile({})).rejects.toThrow()
       })
@@ -111,7 +115,6 @@ describe("tRPC integration", () => {
 
     it("rejects cookbooks.update with only an id", async () => {
       await withDbTx(async (db) => {
-        const { appRouter } = await import("@/server/trpc/router")
         const caller = appRouter.createCaller({ db: db as never, ...authCtx })
         await expect(caller.cookbooks.update({ id: VALID_UUID })).rejects.toThrow()
       })
@@ -119,16 +122,25 @@ describe("tRPC integration", () => {
   })
 
   describe("public access", () => {
+    const tableMap = {
+      meals: schema.meals,
+      courses: schema.courses,
+      preparations: schema.preparations,
+    } as const
+
     it.each(["meals", "courses", "preparations"] as const)(
-      "allows unauthenticated access to %s.list",
+      "%s.list is accessible without auth and returns seeded data",
       async (routerName) => {
         await withDbTx(async (db) => {
-          const { appRouter } = await import("@/server/trpc/router")
+          const slug = `integration-${routerName}-${RUN_ID}`
+          await db.insert(tableMap[routerName]).values({ name: "Integration Item", slug })
+
           const caller = appRouter.createCaller({ db: db as never, ...anonCtx })
-          // With an empty DB the result is an empty array — the test verifies
-          // the route is publicly accessible (no UNAUTHORIZED error thrown).
           const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
-          expect(Array.isArray(result)).toBe(true)
+
+          expect(result).toEqual(
+            expect.arrayContaining([expect.objectContaining({ slug })]),
+          )
         })
       },
     )
