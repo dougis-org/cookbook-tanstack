@@ -20,22 +20,26 @@ import * as schema from "@/db/schema"
 
 export type TestDb = NodePgDatabase<typeof schema>
 
-let pool: Pool | null = null
+// Promise-based singleton prevents multiple concurrent callers from each
+// creating their own Pool before the first one is stored. Even though
+// `new Pool()` is synchronous today, using a promise ensures the pattern
+// remains race-safe if getPool() ever needs to do async work.
+let poolPromise: Promise<Pool> | null = null
 
-function getPool(): Pool {
-  if (!pool) {
+async function getPool(): Promise<Pool> {
+  if (!poolPromise) {
     const url = process.env.DATABASE_URL
     if (!url) {
       throw new Error("DATABASE_URL not set — ensure db-global-setup runs before DB tests")
     }
-    pool = new Pool({ connectionString: url })
+    poolPromise = Promise.resolve(new Pool({ connectionString: url }))
   }
-  return pool
+  return poolPromise
 }
 
 /** Run `fn` inside a transaction that always rolls back on completion. */
 export async function withDbTx<T>(fn: (db: TestDb) => Promise<T>): Promise<T> {
-  const client = await getPool().connect()
+  const client = await (await getPool()).connect()
   await client.query("BEGIN")
   try {
     const db = drizzle(client, { schema })
@@ -51,7 +55,9 @@ export async function withDbTx<T>(fn: (db: TestDb) => Promise<T>): Promise<T> {
 
 /** Close the shared pool. Call from afterAll in each test suite that uses withDbTx. */
 export async function closeTestPool(): Promise<void> {
-  const p = pool
-  pool = null
-  await p?.end()
+  const p = poolPromise
+  poolPromise = null
+  if (p) {
+    await (await p).end()
+  }
 }

@@ -31,3 +31,16 @@ engines:
     enabled: true
   semgrep:
     enabled: true
+
+# Coverage-specific exclusions — separate from static-analysis exclude_patterns.
+# Without this section, Codacy counts node_modules as coverable lines when
+# computing coverage variation, inflating the denominator (e.g. +92k lines
+# after installing @testcontainers/postgresql).
+coverage:
+  exclude_paths:
+    - node_modules/**
+    - .vinxi/**
+    - .output/**
+    - drizzle/**
+    - playwright-report/**
+    - test-results/**
