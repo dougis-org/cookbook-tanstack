@@ -12,80 +12,103 @@ afterAll(async () => {
 
 const VALID_UUID = "00000000-0000-0000-0000-000000000000"
 
+// Unique suffix per test run prevents slug/email collisions when tests share
+// a container. Each seedUser call produces a fresh UUID anyway, so userId
+// scoping (not row counts) is the correct isolation mechanism.
+const RUN_ID = Date.now()
+let seq = 0
+function uid() {
+  return `${RUN_ID}-${++seq}`
+}
+
 /** Insert a minimal user and return it. */
-async function seedUser(db: TestDb, suffix: string) {
+async function seedUser(db: TestDb) {
+  const id = uid()
   const [user] = await db
     .insert(schema.users)
-    .values({ email: `${suffix}@recipe.test`, username: `rcp-${suffix}`, displayUsername: `Rcp ${suffix}` })
+    .values({ email: `user-${id}@recipe.test`, username: `rcp-${id}`, displayUsername: `User ${id}` })
     .returning()
   return user
 }
 
-type CallerOptions = { db: TestDb; userId?: string }
-
-async function makeCallerFrom({ db, userId }: CallerOptions) {
+async function makeAnonCaller(db: TestDb) {
   const { appRouter } = await import("@/server/trpc/router")
-  if (userId) {
-    return appRouter.createCaller({ db: db as never, session: { id: "s1" } as never, user: { id: userId } as never })
-  }
   return appRouter.createCaller({ db: db as never, session: null, user: null })
 }
 
-// ─── recipes.list — visibility filtering ────────────────────────────────────
+async function makeAuthCaller(db: TestDb, userId: string) {
+  const { appRouter } = await import("@/server/trpc/router")
+  return appRouter.createCaller({ db: db as never, session: { id: "s1" } as never, user: { id: userId } as never })
+}
+
+// ─── recipes.list — visibility filtering ─────────────────────────────────────
+//
+// Each test scopes list() to a specific userId so the assertion is exclusive
+// to our test data and independent of anything else in the shared container.
 
 describe("recipes.list", () => {
-  describe("visibility filtering (real DB)", () => {
-    it("returns only public recipes for anonymous users", async () => {
+  describe("visibility filtering", () => {
+    it("anon user sees a public recipe but not a private recipe from the same owner", async () => {
       await withDbTx(async (db) => {
-        const u1 = await seedUser(db, "anon1")
-        const u2 = await seedUser(db, "anon2")
+        const owner = await seedUser(db)
         await db.insert(schema.recipes).values([
-          { name: "Public Recipe", userId: u1.id, isPublic: true },
-          { name: "Private Recipe", userId: u2.id, isPublic: false },
+          { name: "Public One", userId: owner.id, isPublic: true },
+          { name: "Private One", userId: owner.id, isPublic: false },
         ])
 
-        const caller = await makeCallerFrom({ db })
-        const result = await caller.recipes.list()
+        const caller = await makeAnonCaller(db)
+        // Scope to this owner so we only see their recipes, not anyone else's
+        const result = await caller.recipes.list({ userId: owner.id })
 
         expect(result.items).toHaveLength(1)
-        expect(result.items[0]).toMatchObject({ name: "Public Recipe" })
+        expect(result.items[0]).toMatchObject({ name: "Public One" })
       })
     })
 
-    it("shows own private recipe alongside public recipes for authenticated user", async () => {
+    it("authenticated owner sees their own private recipe", async () => {
       await withDbTx(async (db) => {
-        const owner = await seedUser(db, "own-auth")
-        const other = await seedUser(db, "oth-auth")
-        await db.insert(schema.recipes).values([
-          { name: "Other Public", userId: other.id, isPublic: true },
-          { name: "My Private", userId: owner.id, isPublic: false },
-        ])
+        const owner = await seedUser(db)
+        await db.insert(schema.recipes).values({ name: "My Private", userId: owner.id, isPublic: false })
 
-        const caller = await makeCallerFrom({ db, userId: owner.id })
-        const result = await caller.recipes.list()
+        const caller = await makeAuthCaller(db, owner.id)
+        const result = await caller.recipes.list({ userId: owner.id })
 
-        const names = result.items.map((r) => r.name).sort()
-        expect(names).toEqual(["My Private", "Other Public"])
+        expect(result.items).toHaveLength(1)
+        expect(result.items[0]).toMatchObject({ name: "My Private" })
       })
     })
 
-    it("hides another user's private recipe from an authenticated user", async () => {
+    it("anon user sees nothing when scoped to an owner who has only private recipes", async () => {
       await withDbTx(async (db) => {
-        const viewer = await seedUser(db, "viewer")
-        const owner = await seedUser(db, "pvt-own")
+        const owner = await seedUser(db)
         await db.insert(schema.recipes).values({ name: "Hidden", userId: owner.id, isPublic: false })
 
-        const caller = await makeCallerFrom({ db, userId: viewer.id })
-        const result = await caller.recipes.list()
+        const caller = await makeAnonCaller(db)
+        const result = await caller.recipes.list({ userId: owner.id })
 
         expect(result.items).toEqual([])
       })
     })
 
-    it("returns empty result set with correct pagination metadata", async () => {
+    it("another authenticated user cannot see a private recipe through userId scoping", async () => {
       await withDbTx(async (db) => {
-        const caller = await makeCallerFrom({ db })
-        const result = await caller.recipes.list({ page: 2, pageSize: 5 })
+        const secretOwner = await seedUser(db)
+        const viewer = await seedUser(db)
+        await db.insert(schema.recipes).values({ name: "Top Secret", userId: secretOwner.id, isPublic: false })
+
+        const caller = await makeAuthCaller(db, viewer.id)
+        const result = await caller.recipes.list({ userId: secretOwner.id })
+
+        expect(result.items).toEqual([])
+      })
+    })
+
+    it("pagination metadata reflects scoped result count", async () => {
+      await withDbTx(async (db) => {
+        const owner = await seedUser(db)
+        // No recipes for this user — scoped total should be 0
+        const caller = await makeAnonCaller(db)
+        const result = await caller.recipes.list({ userId: owner.id, page: 2, pageSize: 5 })
 
         expect(result.page).toBe(2)
         expect(result.pageSize).toBe(5)
@@ -95,33 +118,33 @@ describe("recipes.list", () => {
     })
   })
 
-  describe("search (real DB)", () => {
-    it("filters by name using case-insensitive partial match", async () => {
+  describe("search", () => {
+    it("filters by name using case-insensitive partial match within a user's recipes", async () => {
       await withDbTx(async (db) => {
-        const user = await seedUser(db, "srch")
+        const user = await seedUser(db)
         await db.insert(schema.recipes).values([
           { name: "Pasta Carbonara", userId: user.id, isPublic: true },
           { name: "Beef Stew", userId: user.id, isPublic: true },
         ])
 
-        const caller = await makeCallerFrom({ db })
-        const result = await caller.recipes.list({ search: "pasta" })
+        const caller = await makeAnonCaller(db)
+        const result = await caller.recipes.list({ userId: user.id, search: "pasta" })
 
         expect(result.items).toHaveLength(1)
         expect(result.items[0]).toMatchObject({ name: "Pasta Carbonara" })
       })
     })
 
-    it("filters by ingredients", async () => {
+    it("filters by ingredients text within a user's recipes", async () => {
       await withDbTx(async (db) => {
-        const user = await seedUser(db, "ingr")
+        const user = await seedUser(db)
         await db.insert(schema.recipes).values([
           { name: "Soup", userId: user.id, isPublic: true, ingredients: "chicken broth\nnoodles" },
           { name: "Salad", userId: user.id, isPublic: true, ingredients: "lettuce\ntomato" },
         ])
 
-        const caller = await makeCallerFrom({ db })
-        const result = await caller.recipes.list({ search: "chicken" })
+        const caller = await makeAnonCaller(db)
+        const result = await caller.recipes.list({ userId: user.id, search: "chicken" })
 
         expect(result.items).toHaveLength(1)
         expect(result.items[0]).toMatchObject({ name: "Soup" })
@@ -129,10 +152,10 @@ describe("recipes.list", () => {
     })
   })
 
-  describe("filter parameters (real DB)", () => {
+  describe("filter parameters", () => {
     it("accepts mealIds filter without error", async () => {
       await withDbTx(async (db) => {
-        const caller = await makeCallerFrom({ db })
+        const caller = await makeAnonCaller(db)
         const result = await caller.recipes.list({ mealIds: [VALID_UUID] })
         expect(result).toHaveProperty("items")
       })
@@ -140,7 +163,7 @@ describe("recipes.list", () => {
 
     it("accepts courseIds filter without error", async () => {
       await withDbTx(async (db) => {
-        const caller = await makeCallerFrom({ db })
+        const caller = await makeAnonCaller(db)
         const result = await caller.recipes.list({ courseIds: [VALID_UUID] })
         expect(result).toHaveProperty("items")
       })
@@ -148,15 +171,15 @@ describe("recipes.list", () => {
 
     it("accepts preparationIds filter without error", async () => {
       await withDbTx(async (db) => {
-        const caller = await makeCallerFrom({ db })
+        const caller = await makeAnonCaller(db)
         const result = await caller.recipes.list({ preparationIds: [VALID_UUID] })
         expect(result).toHaveProperty("items")
       })
     })
 
-    it("accepts sort parameter", async () => {
+    it("accepts sort parameter without error", async () => {
       await withDbTx(async (db) => {
-        const caller = await makeCallerFrom({ db })
+        const caller = await makeAnonCaller(db)
         const result = await caller.recipes.list({ sort: "name_asc" })
         expect(result).toHaveProperty("items")
       })
@@ -164,32 +187,32 @@ describe("recipes.list", () => {
   })
 })
 
-// ─── recipes.byId ────────────────────────────────────────────────────────────
+// ─── recipes.byId ─────────────────────────────────────────────────────────────
 
 describe("recipes.byId", () => {
   it("returns null when recipe does not exist", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       expect(await caller.recipes.byId({ id: VALID_UUID })).toBeNull()
     })
   })
 
   it("rejects an invalid UUID", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       await expect(caller.recipes.byId({ id: "not-a-uuid" })).rejects.toThrow()
     })
   })
 
   it("returns a public recipe when found", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "byid")
+      const user = await seedUser(db)
       const [recipe] = await db
         .insert(schema.recipes)
         .values({ name: "Found Recipe", userId: user.id, isPublic: true })
         .returning()
 
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       const result = await caller.recipes.byId({ id: recipe.id })
 
       expect(result).toMatchObject({ id: recipe.id, name: "Found Recipe" })
@@ -197,65 +220,63 @@ describe("recipes.byId", () => {
   })
 })
 
-// ─── recipes.create ──────────────────────────────────────────────────────────
+// ─── recipes.create ───────────────────────────────────────────────────────────
 
 describe("recipes.create", () => {
   it("rejects unauthenticated requests", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       await expect(caller.recipes.create({ name: "Test" })).rejects.toThrow("UNAUTHORIZED")
     })
   })
 
   it("rejects an empty name", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "crt-zod")
-      const caller = await makeCallerFrom({ db, userId: user.id })
+      const user = await seedUser(db)
+      const caller = await makeAuthCaller(db, user.id)
       await expect(caller.recipes.create({ name: "" })).rejects.toThrow()
     })
   })
 
   it("creates a recipe and returns the new record", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "crt")
-      const caller = await makeCallerFrom({ db, userId: user.id })
+      const user = await seedUser(db)
+      const caller = await makeAuthCaller(db, user.id)
       const result = await caller.recipes.create({ name: "My New Recipe" })
       expect(result).toMatchObject({ name: "My New Recipe", userId: user.id })
     })
   })
 })
 
-// ─── recipes.update ──────────────────────────────────────────────────────────
+// ─── recipes.update ───────────────────────────────────────────────────────────
 
 describe("recipes.update", () => {
   it("rejects unauthenticated requests", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       await expect(caller.recipes.update({ id: VALID_UUID, name: "Updated" })).rejects.toThrow("UNAUTHORIZED")
     })
   })
 
   it("updates the recipe name", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "upd")
-      const [recipe] = await db
-        .insert(schema.recipes)
-        .values({ name: "Old Name", userId: user.id })
-        .returning()
+      const user = await seedUser(db)
+      const [recipe] = await db.insert(schema.recipes).values({ name: "Old Name", userId: user.id }).returning()
 
-      const caller = await makeCallerFrom({ db, userId: user.id })
+      const caller = await makeAuthCaller(db, user.id)
       const result = await caller.recipes.update({ id: recipe.id, name: "New Name" })
       expect(result).toMatchObject({ name: "New Name" })
     })
   })
 
-  it("skips UPDATE when only taxonomy IDs are provided and returns current record", async () => {
+  it("returns current record unchanged when only taxonomy IDs are updated", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "tax-upd")
+      const user = await seedUser(db)
+      const id = uid()
       const [recipe] = await db.insert(schema.recipes).values({ name: "Existing", userId: user.id }).returning()
-      const [meal] = await db.insert(schema.meals).values({ name: "Breakfast", slug: "bfast-tax" }).returning()
+      const [meal] = await db.insert(schema.meals).values({ name: "Breakfast", slug: `bfast-${id}` }).returning()
 
-      const caller = await makeCallerFrom({ db, userId: user.id })
+      const caller = await makeAuthCaller(db, user.id)
       const result = await caller.recipes.update({ id: recipe.id, mealIds: [meal.id] })
 
       expect(result).toMatchObject({ id: recipe.id, name: "Existing" })
@@ -263,23 +284,23 @@ describe("recipes.update", () => {
   })
 })
 
-// ─── recipes.delete ──────────────────────────────────────────────────────────
+// ─── recipes.delete ───────────────────────────────────────────────────────────
 
 describe("recipes.delete", () => {
   it("rejects unauthenticated requests", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       await expect(caller.recipes.delete({ id: VALID_UUID })).rejects.toThrow("UNAUTHORIZED")
     })
   })
 })
 
-// ─── recipes.isMarked / toggleMarked ─────────────────────────────────────────
+// ─── recipes.isMarked / toggleMarked ──────────────────────────────────────────
 
 describe("recipes.isMarked", () => {
   it("returns false for anonymous users without querying DB", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       expect(await caller.recipes.isMarked({ id: VALID_UUID })).toEqual({ marked: false })
     })
   })
@@ -288,17 +309,17 @@ describe("recipes.isMarked", () => {
 describe("recipes.toggleMarked", () => {
   it("rejects unauthenticated requests", async () => {
     await withDbTx(async (db) => {
-      const caller = await makeCallerFrom({ db })
+      const caller = await makeAnonCaller(db)
       await expect(caller.recipes.toggleMarked({ id: VALID_UUID })).rejects.toThrow("UNAUTHORIZED")
     })
   })
 
-  it("returns a boolean marked field after toggling", async () => {
+  it("returns a boolean marked field after toggling on an owned recipe", async () => {
     await withDbTx(async (db) => {
-      const user = await seedUser(db, "tmrk")
+      const user = await seedUser(db)
       const [recipe] = await db.insert(schema.recipes).values({ name: "Toggle Me", userId: user.id }).returning()
 
-      const caller = await makeCallerFrom({ db, userId: user.id })
+      const caller = await makeAuthCaller(db, user.id)
       const result = await caller.recipes.toggleMarked({ id: recipe.id })
 
       expect(result).toHaveProperty("marked")
