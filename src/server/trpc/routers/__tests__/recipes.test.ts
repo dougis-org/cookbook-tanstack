@@ -361,6 +361,30 @@ describe("recipes.list — markedByMe filter", () => {
     })
   })
 
+  it("treats markedByMe as a no-op for anonymous callers and returns visible recipes", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const liker = await seedUser(db)
+      const [publicRecipe] = await db
+        .insert(schema.recipes)
+        .values({ name: "Public Recipe", userId: owner.id, isPublic: true })
+        .returning()
+
+      // Even if another user has liked the recipe, an anonymous caller should
+      // not be filtered by markedByMe (since ctx.user is null).
+      await db.insert(schema.recipeLikes).values({ userId: liker.id, recipeId: publicRecipe.id })
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ markedByMe: true })
+
+      expect(result.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "Public Recipe" }),
+        ]),
+      )
+    })
+  })
+
   it("does not include recipes favorited by a different user", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)

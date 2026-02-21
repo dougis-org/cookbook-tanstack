@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, type ReactNode } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Search, ChevronLeft, ChevronRight, Filter, X, Heart, User } from 'lucide-react'
@@ -24,6 +24,29 @@ export const Route = createFileRoute('/recipes/')({
   component: RecipesPage,
   validateSearch: searchSchema,
 })
+
+function FilterToggle({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+        active
+          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+          : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
 
 function RecipesPage() {
   const navigate = useNavigate({ from: '/recipes/' })
@@ -52,8 +75,8 @@ function RecipesPage() {
       mealIds,
       courseIds,
       preparationIds,
-      userId: myRecipes && session?.user?.id ? session.user.id : undefined,
-      markedByMe: markedByMe || undefined,
+      userId: myRecipes ? session?.user?.id : undefined,
+      markedByMe,
     }),
   )
 
@@ -183,28 +206,20 @@ function RecipesPage() {
           {/* Personal filters — only shown when logged in */}
           {isLoggedIn && (
             <>
-              <button
+              <FilterToggle
+                active={!!myRecipes}
                 onClick={() => updateSearch({ myRecipes: myRecipes ? undefined : true })}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                  myRecipes
-                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
-                    : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
-                }`}
               >
                 <User className="w-3.5 h-3.5" />
                 My Recipes
-              </button>
-              <button
+              </FilterToggle>
+              <FilterToggle
+                active={!!markedByMe}
                 onClick={() => updateSearch({ markedByMe: markedByMe ? undefined : true })}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                  markedByMe
-                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
-                    : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
-                }`}
               >
                 <Heart className="w-3.5 h-3.5" />
                 Favorites
-              </button>
+              </FilterToggle>
             </>
           )}
 
