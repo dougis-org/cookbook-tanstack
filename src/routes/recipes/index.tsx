@@ -226,6 +226,7 @@ function RecipesPage() {
             return (
               <button
                 key={meal.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('mealIds', mealIds, meal.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active
@@ -244,6 +245,7 @@ function RecipesPage() {
             return (
               <button
                 key={course.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('courseIds', courseIds, course.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active
@@ -262,6 +264,7 @@ function RecipesPage() {
             return (
               <button
                 key={prep.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('preparationIds', preparationIds, prep.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active

@@ -41,6 +41,14 @@ coverage:
     - node_modules/**
     - .vinxi/**
     - .output/**
+    - public/assets/**
     - drizzle/**
     - playwright-report/**
     - test-results/**
+    # Routes are tested via Playwright E2E — exclude from unit-test coverage metric.
+    - src/routes/**
+    # Seed scripts and type-only files contain no testable logic.
+    - src/db/seeds/**
+    - src/types/**
+    # Test fixture / mock data.
+    - src/test-helpers/mocks.ts
