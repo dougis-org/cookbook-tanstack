@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight, Filter, X, Heart, User } from 'lucide-react'
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
 import { useSession } from '@/lib/auth-client'
@@ -16,6 +16,8 @@ const searchSchema = z.object({
   mealIds: z.array(z.string().uuid()).optional(),
   courseIds: z.array(z.string().uuid()).optional(),
   preparationIds: z.array(z.string().uuid()).optional(),
+  myRecipes: z.boolean().optional(),
+  markedByMe: z.boolean().optional(),
 })
 
 export const Route = createFileRoute('/recipes/')({
@@ -33,7 +35,12 @@ function RecipesPage() {
     mealIds,
     courseIds,
     preparationIds,
+    myRecipes,
+    markedByMe,
   } = Route.useSearch()
+
+  const { data: session } = useSession()
+  const isLoggedIn = !!session?.user
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
@@ -45,6 +52,8 @@ function RecipesPage() {
       mealIds,
       courseIds,
       preparationIds,
+      userId: myRecipes && session?.user?.id ? session.user.id : undefined,
+      markedByMe: markedByMe || undefined,
     }),
   )
 
@@ -52,15 +61,13 @@ function RecipesPage() {
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
-  const { data: session } = useSession()
-  const isLoggedIn = !!session?.user
 
   const recipes = data?.items ?? []
   const total = data?.total ?? 0
   const pageSize = data?.pageSize ?? 20
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
-  const hasActiveFilters = !!(classificationId || mealIds?.length || courseIds?.length || preparationIds?.length)
+  const hasActiveFilters = !!(classificationId || mealIds?.length || courseIds?.length || preparationIds?.length || myRecipes || markedByMe)
 
   const updateSearch = useCallback(
     (updates: Partial<z.infer<typeof searchSchema>>) => {
@@ -173,6 +180,34 @@ function RecipesPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          {/* Personal filters — only shown when logged in */}
+          {isLoggedIn && (
+            <>
+              <button
+                onClick={() => updateSearch({ myRecipes: myRecipes ? undefined : true })}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                  myRecipes
+                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+                    : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
+                }`}
+              >
+                <User className="w-3.5 h-3.5" />
+                My Recipes
+              </button>
+              <button
+                onClick={() => updateSearch({ markedByMe: markedByMe ? undefined : true })}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                  markedByMe
+                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+                    : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
+                }`}
+              >
+                <Heart className="w-3.5 h-3.5" />
+                Favorites
+              </button>
+            </>
+          )}
+
           {/* Classification filter */}
           <select
             value={classificationId ?? ''}

@@ -61,6 +61,7 @@ export const recipesRouter = router({
           sort: z.enum(["name_asc", "name_desc", "newest", "oldest"]).optional(),
           page: z.number().int().positive().optional(),
           pageSize: z.number().int().positive().max(100).optional(),
+          markedByMe: z.boolean().optional(),
         })
         .optional(),
     )
@@ -95,6 +96,11 @@ export const recipesRouter = router({
       if (input?.preparationIds?.length) {
         conditions.push(
           inArray(recipes.id, ctx.db.select({ id: recipePreparations.recipeId }).from(recipePreparations).where(inArray(recipePreparations.preparationId, input.preparationIds))),
+        )
+      }
+      if (input?.markedByMe && ctx.user) {
+        conditions.push(
+          inArray(recipes.id, ctx.db.select({ id: recipeLikes.recipeId }).from(recipeLikes).where(eq(recipeLikes.userId, ctx.user.id))),
         )
       }
 
