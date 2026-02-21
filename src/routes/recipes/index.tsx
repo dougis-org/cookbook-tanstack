@@ -1,7 +1,7 @@
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, type ReactNode } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight, Filter, X, Heart, User } from 'lucide-react'
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
 import { useSession } from '@/lib/auth-client'
@@ -16,12 +16,37 @@ const searchSchema = z.object({
   mealIds: z.array(z.string().uuid()).optional(),
   courseIds: z.array(z.string().uuid()).optional(),
   preparationIds: z.array(z.string().uuid()).optional(),
+  myRecipes: z.boolean().optional(),
+  markedByMe: z.boolean().optional(),
 })
 
 export const Route = createFileRoute('/recipes/')({
   component: RecipesPage,
   validateSearch: searchSchema,
 })
+
+function FilterToggle({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+        active
+          ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+          : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
 
 function RecipesPage() {
   const navigate = useNavigate({ from: '/recipes/' })
@@ -33,7 +58,12 @@ function RecipesPage() {
     mealIds,
     courseIds,
     preparationIds,
+    myRecipes,
+    markedByMe,
   } = Route.useSearch()
+
+  const { data: session } = useSession()
+  const isLoggedIn = !!session?.user
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
@@ -45,6 +75,8 @@ function RecipesPage() {
       mealIds,
       courseIds,
       preparationIds,
+      userId: myRecipes ? session?.user?.id : undefined,
+      markedByMe,
     }),
   )
 
@@ -52,15 +84,13 @@ function RecipesPage() {
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
-  const { data: session } = useSession()
-  const isLoggedIn = !!session?.user
 
   const recipes = data?.items ?? []
   const total = data?.total ?? 0
   const pageSize = data?.pageSize ?? 20
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
-  const hasActiveFilters = !!(classificationId || mealIds?.length || courseIds?.length || preparationIds?.length)
+  const hasActiveFilters = !!(classificationId || mealIds?.length || courseIds?.length || preparationIds?.length || myRecipes || markedByMe)
 
   const updateSearch = useCallback(
     (updates: Partial<z.infer<typeof searchSchema>>) => {
@@ -173,6 +203,26 @@ function RecipesPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          {/* Personal filters — only shown when logged in */}
+          {isLoggedIn && (
+            <>
+              <FilterToggle
+                active={!!myRecipes}
+                onClick={() => updateSearch({ myRecipes: myRecipes ? undefined : true })}
+              >
+                <User className="w-3.5 h-3.5" />
+                My Recipes
+              </FilterToggle>
+              <FilterToggle
+                active={!!markedByMe}
+                onClick={() => updateSearch({ markedByMe: markedByMe ? undefined : true })}
+              >
+                <Heart className="w-3.5 h-3.5" />
+                Favorites
+              </FilterToggle>
+            </>
+          )}
+
           {/* Classification filter */}
           <select
             value={classificationId ?? ''}
@@ -191,6 +241,7 @@ function RecipesPage() {
             return (
               <button
                 key={meal.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('mealIds', mealIds, meal.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active
@@ -209,6 +260,7 @@ function RecipesPage() {
             return (
               <button
                 key={course.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('courseIds', courseIds, course.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active
@@ -227,6 +279,7 @@ function RecipesPage() {
             return (
               <button
                 key={prep.id}
+                data-testid="taxonomy-filter-chip"
                 onClick={() => toggleArrayFilter('preparationIds', preparationIds, prep.id)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   active

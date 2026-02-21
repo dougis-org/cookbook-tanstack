@@ -326,6 +326,84 @@ describe("recipes.delete", () => {
   })
 })
 
+// ─── recipes.list — markedByMe filter ────────────────────────────────────────
+
+describe("recipes.list — markedByMe filter", () => {
+  it("returns only the recipe the caller has favorited", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const viewer = await seedUser(db)
+      const [liked] = await db
+        .insert(schema.recipes)
+        .values({ name: "Liked Recipe", userId: owner.id, isPublic: true })
+        .returning()
+      await db.insert(schema.recipes).values({ name: "Ignored Recipe", userId: owner.id, isPublic: true })
+      await db.insert(schema.recipeLikes).values({ userId: viewer.id, recipeId: liked.id })
+
+      const caller = await makeAuthCaller(db, viewer.id)
+      const result = await caller.recipes.list({ markedByMe: true })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "Liked Recipe" })
+    })
+  })
+
+  it("returns empty when the caller has no favorites", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const viewer = await seedUser(db)
+      await db.insert(schema.recipes).values({ name: "Public Recipe", userId: owner.id, isPublic: true })
+
+      const caller = await makeAuthCaller(db, viewer.id)
+      const result = await caller.recipes.list({ markedByMe: true })
+
+      expect(result.items).toEqual([])
+    })
+  })
+
+  it("treats markedByMe as a no-op for anonymous callers and returns visible recipes", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const liker = await seedUser(db)
+      const [publicRecipe] = await db
+        .insert(schema.recipes)
+        .values({ name: "Public Recipe", userId: owner.id, isPublic: true })
+        .returning()
+
+      // Even if another user has liked the recipe, an anonymous caller should
+      // not be filtered by markedByMe (since ctx.user is null).
+      await db.insert(schema.recipeLikes).values({ userId: liker.id, recipeId: publicRecipe.id })
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ markedByMe: true })
+
+      expect(result.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: "Public Recipe" }),
+        ]),
+      )
+    })
+  })
+
+  it("does not include recipes favorited by a different user", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const otherUser = await seedUser(db)
+      const viewer = await seedUser(db)
+      const [recipe] = await db
+        .insert(schema.recipes)
+        .values({ name: "Shared Recipe", userId: owner.id, isPublic: true })
+        .returning()
+      await db.insert(schema.recipeLikes).values({ userId: otherUser.id, recipeId: recipe.id })
+
+      const caller = await makeAuthCaller(db, viewer.id)
+      const result = await caller.recipes.list({ markedByMe: true })
+
+      expect(result.items).toEqual([])
+    })
+  })
+})
+
 // ─── recipes.isMarked / toggleMarked ──────────────────────────────────────────
 
 describe("recipes.isMarked", () => {

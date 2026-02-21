@@ -71,9 +71,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    // Scope to the filter bar section (contains the "Filters" label)
-    const filterSection = page.locator("div").filter({ hasText: /^Filters$/ }).first().locator("..")
-    const filterChips = filterSection.getByRole("button").filter({ hasNotText: /Clear/ })
+    // Scope to taxonomy chips only (meals, courses, preparations)
+    const filterChips = page.locator('[data-testid="taxonomy-filter-chip"]')
     const chipCount = await filterChips.count()
 
     if (chipCount > 0) {
@@ -81,11 +80,11 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
       expect(chipText).toBeTruthy()
 
       // Click to activate filter — verify URL updates with filter param
-      await page.getByRole("button", { name: chipText!, exact: true }).click()
+      await filterChips.first().click()
       await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/)
 
       // Click again to deactivate
-      await page.getByRole("button", { name: chipText!, exact: true }).click()
+      await filterChips.first().click()
 
       // URL should no longer have the filter param
       await expect(page).not.toHaveURL(/(mealIds|courseIds|preparationIds)=/)
@@ -97,9 +96,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    // Scope to the filter bar section (contains the "Filters" label)
-    const filterSection = page.locator("div").filter({ hasText: /^Filters$/ }).first().locator("..")
-    const filterChips = filterSection.getByRole("button").filter({ hasNotText: /Clear/ })
+    // Scope to taxonomy chips only (meals, courses, preparations)
+    const filterChips = page.locator('[data-testid="taxonomy-filter-chip"]')
     const chipCount = await filterChips.count()
 
     // Taxonomy data should be seeded — assert chips are present
