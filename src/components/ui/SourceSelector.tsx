@@ -84,8 +84,13 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
           placeholder="Search for a source..."
           value={inputText}
           onChange={(e) => {
-            setInputText(e.target.value)
-            debouncedQuery(e.target.value)
+            const val = e.target.value
+            setInputText(val)
+            if (!val.trim()) {
+              setQuery("")
+            } else {
+              debouncedQuery(val.trim())
+            }
             setOpen(true)
           }}
           onFocus={() => setOpen(true)}

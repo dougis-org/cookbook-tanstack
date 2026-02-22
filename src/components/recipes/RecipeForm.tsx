@@ -11,7 +11,6 @@ import SourceSelector from "@/components/ui/SourceSelector"
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
-  sourceId: z.string().optional(),
   ingredients: z.string().optional(),
   instructions: z.string().optional(),
   notes: z.string().optional(),

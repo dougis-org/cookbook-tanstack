@@ -54,7 +54,7 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
           </h1>
 
           {/* Classification + taxonomy tags */}
-          {(recipe.classificationId || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
+          {((recipe.classificationId && recipe.classificationName) || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
             <div className="flex flex-wrap gap-2 mb-4">
               {recipe.classificationId && recipe.classificationName && (
                 <ClassificationBadge

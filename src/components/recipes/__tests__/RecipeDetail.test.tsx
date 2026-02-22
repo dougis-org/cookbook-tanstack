@@ -118,12 +118,15 @@ describe("RecipeDetail", () => {
   })
 
   it.each([
-    ["renders badge",       { classificationId: "cat-1" }, "Italian",  true ],
-    ["omits badge without name", { classificationId: "cat-1" }, "Italian", false],
-  ])("%s when classificationName is %s", (_label, recipeOverrides, text, visible) => {
-    const extra = visible ? { classificationName: text } : {}
-    render(<RecipeDetail recipe={{ ...makeRecipe(recipeOverrides), ...extra }} />)
-    const el = screen.queryByText(text)
+    { label: "renders classification badge when name is provided", classificationName: "Italian",   visible: true  },
+    { label: "omits classification badge when name is absent",     classificationName: null,        visible: false },
+  ])("$label", ({ classificationName, visible }) => {
+    render(
+      <RecipeDetail
+        recipe={{ ...makeRecipe({ classificationId: "cat-1" }), classificationName: classificationName ?? undefined }}
+      />,
+    )
+    const el = screen.queryByText("Italian")
     visible ? expect(el).toBeInTheDocument() : expect(el).not.toBeInTheDocument()
   })
 
