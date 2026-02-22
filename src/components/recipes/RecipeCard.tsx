@@ -29,7 +29,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             <ClassificationBadge
               classificationId={recipe.classificationId}
               classificationName={recipe.classificationName}
-              linkable
             />
           </div>
         )}

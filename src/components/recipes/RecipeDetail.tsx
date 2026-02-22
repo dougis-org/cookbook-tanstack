@@ -1,11 +1,6 @@
-import type { Recipe } from '@/types/recipe'
+import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
-
-interface TaxonomyItem {
-  id: string
-  name: string
-}
 
 interface RecipeDetailProps {
   recipe: Recipe & {

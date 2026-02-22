@@ -15,6 +15,12 @@ export interface ClassificationWithCount extends Classification {
   recipeCount: number
 }
 
+/** A resolved taxonomy item (meal, course, or preparation) with its name. */
+export interface TaxonomyItem {
+  id: string
+  name: string
+}
+
 /** Filters accepted by the recipe list query. */
 export interface RecipeFilters {
   classificationId?: string

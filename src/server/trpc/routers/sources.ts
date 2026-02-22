@@ -9,7 +9,7 @@ export const sourcesRouter = router({
   }),
 
   search: publicProcedure
-    .input(z.object({ query: z.string() }))
+    .input(z.object({ query: z.string().min(1).max(255) }))
     .query(async ({ ctx, input }) => {
       const escaped = input.query.replace(/[%_]/g, "\\$&")
       return ctx.db.select().from(sources).where(ilike(sources.name, `%${escaped}%`)).limit(10)
