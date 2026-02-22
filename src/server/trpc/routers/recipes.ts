@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { eq, and, or, ilike, inArray, asc, desc, sql } from "drizzle-orm"
+import { eq, and, or, ilike, inArray, asc, desc, sql, getTableColumns } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership, syncJunction } from "./_helpers"
 import {
@@ -9,6 +9,11 @@ import {
   recipePreparations,
   recipeImages,
   recipeLikes,
+  classifications,
+  meals,
+  courses,
+  preparations,
+  sources,
 } from "@/db/schema"
 
 const recipeFields = z.object({
@@ -52,6 +57,7 @@ export const recipesRouter = router({
       z
         .object({
           classificationId: z.string().uuid().optional(),
+          sourceId: z.string().uuid().optional(),
           userId: z.string().uuid().optional(),
           isPublic: z.boolean().optional(),
           search: z.string().optional(),
@@ -75,6 +81,7 @@ export const recipesRouter = router({
       }
 
       if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
+      if (input?.sourceId) conditions.push(eq(recipes.sourceId, input.sourceId))
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
       if (input?.search) {
         const escaped = input.search.replace(/[%_]/g, "\\$&")
@@ -121,7 +128,14 @@ export const recipesRouter = router({
       const offset = (page - 1) * pageSize
 
       const [items, countResult] = await Promise.all([
-        ctx.db.select().from(recipes).where(where).orderBy(orderBy).limit(pageSize).offset(offset),
+        ctx.db
+          .select({ ...getTableColumns(recipes), classificationName: classifications.name })
+          .from(recipes)
+          .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
+          .where(where)
+          .orderBy(orderBy)
+          .limit(pageSize)
+          .offset(offset),
         ctx.db.select({ count: sql<number>`cast(count(*) as int)` }).from(recipes).where(where),
       ])
 
@@ -134,19 +148,44 @@ export const recipesRouter = router({
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const [recipe] = await ctx.db
-        .select()
+        .select({
+          ...getTableColumns(recipes),
+          classificationName: classifications.name,
+          sourceName: sources.name,
+          sourceUrl: sources.url,
+        })
         .from(recipes)
+        .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
+        .leftJoin(sources, eq(recipes.sourceId, sources.id))
         .where(and(eq(recipes.id, input.id), visibilityFilter(recipes.isPublic, recipes.userId, ctx.user)))
       if (!recipe) return null
 
-      const [meals, courses, preparations, images] = await Promise.all([
-        ctx.db.select().from(recipeMeals).where(eq(recipeMeals.recipeId, input.id)),
-        ctx.db.select().from(recipeCourses).where(eq(recipeCourses.recipeId, input.id)),
-        ctx.db.select().from(recipePreparations).where(eq(recipePreparations.recipeId, input.id)),
+      const [recipeMealItems, recipeCourseItems, recipePrepItems, images] = await Promise.all([
+        ctx.db
+          .select({ id: meals.id, name: meals.name })
+          .from(recipeMeals)
+          .innerJoin(meals, eq(recipeMeals.mealId, meals.id))
+          .where(eq(recipeMeals.recipeId, input.id)),
+        ctx.db
+          .select({ id: courses.id, name: courses.name })
+          .from(recipeCourses)
+          .innerJoin(courses, eq(recipeCourses.courseId, courses.id))
+          .where(eq(recipeCourses.recipeId, input.id)),
+        ctx.db
+          .select({ id: preparations.id, name: preparations.name })
+          .from(recipePreparations)
+          .innerJoin(preparations, eq(recipePreparations.preparationId, preparations.id))
+          .where(eq(recipePreparations.recipeId, input.id)),
         ctx.db.select().from(recipeImages).where(eq(recipeImages.recipeId, input.id)),
       ])
 
-      return { ...recipe, meals, courses, preparations, images }
+      return {
+        ...recipe,
+        meals: recipeMealItems,
+        courses: recipeCourseItems,
+        preparations: recipePrepItems,
+        images,
+      }
     }),
 
   create: protectedProcedure

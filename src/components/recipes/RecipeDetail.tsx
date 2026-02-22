@@ -1,7 +1,21 @@
 import type { Recipe } from '@/types/recipe'
+import ClassificationBadge from '@/components/ui/ClassificationBadge'
+import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
+
+interface TaxonomyItem {
+  id: string
+  name: string
+}
 
 interface RecipeDetailProps {
-  recipe: Recipe
+  recipe: Recipe & {
+    meals?: TaxonomyItem[]
+    courses?: TaxonomyItem[]
+    preparations?: TaxonomyItem[]
+    classificationName?: string | null
+    sourceName?: string | null
+    sourceUrl?: string | null
+  }
 }
 
 /** Split a text blob into non-empty lines for display. */
@@ -43,6 +57,47 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             {recipe.name}
           </h1>
+
+          {/* Classification + taxonomy tags */}
+          {(recipe.classificationId || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {recipe.classificationId && recipe.classificationName && (
+                <ClassificationBadge
+                  classificationId={recipe.classificationId}
+                  classificationName={recipe.classificationName}
+                  linkable
+                />
+              )}
+              {recipe.meals?.map((m) => (
+                <TaxonomyBadge key={m.id} name={m.name} variant="meal" />
+              ))}
+              {recipe.courses?.map((c) => (
+                <TaxonomyBadge key={c.id} name={c.name} variant="course" />
+              ))}
+              {recipe.preparations?.map((p) => (
+                <TaxonomyBadge key={p.id} name={p.name} variant="preparation" />
+              ))}
+            </div>
+          )}
+
+          {/* Source */}
+          {recipe.sourceName && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Source:{' '}
+              {recipe.sourceUrl ? (
+                <a
+                  href={recipe.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
+                >
+                  {recipe.sourceName}
+                </a>
+              ) : (
+                <span className="text-gray-300">{recipe.sourceName}</span>
+              )}
+            </p>
+          )}
 
           {recipe.notes && (
             <p className="text-gray-600 dark:text-gray-300 mb-6">

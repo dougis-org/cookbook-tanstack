@@ -1,15 +1,17 @@
-import { useState } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useNavigate } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { X } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import type { Recipe } from "@/types/recipe"
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
+  sourceId: z.string().optional(),
   ingredients: z.string().optional(),
   instructions: z.string().optional(),
   notes: z.string().optional(),
@@ -33,11 +35,142 @@ function toDifficulty(value: string | undefined): Difficulty | undefined {
   return validDifficulties.includes(value as Difficulty) ? (value as Difficulty) : undefined
 }
 
-interface RecipeWithRelations extends Recipe {
-  meals?: { recipeId: string; mealId: string }[]
-  courses?: { recipeId: string; courseId: string }[]
-  preparations?: { recipeId: string; preparationId: string }[]
+interface TaxonomyItem {
+  id: string
+  name: string
 }
+
+interface RecipeWithRelations extends Recipe {
+  meals?: TaxonomyItem[]
+  courses?: TaxonomyItem[]
+  preparations?: TaxonomyItem[]
+}
+
+// ─── SourceSelector ───────────────────────────────────────────────────────────
+
+interface SourceSelectorProps {
+  value: string
+  onChange: (id: string) => void
+}
+
+function SourceSelector({ value, onChange }: SourceSelectorProps) {
+  const [inputText, setInputText] = useState("")
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const [selectedName, setSelectedName] = useState("")
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
+
+  const debouncedQuery = useCallback((q: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setQuery(q), 300)
+  }, [])
+
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  const { data: results = [] } = useQuery({
+    ...trpc.sources.search.queryOptions({ query }),
+    enabled: query.length > 0,
+  })
+
+  const createMutation = useMutation(
+    trpc.sources.create.mutationOptions({
+      onSuccess: (source) => {
+        queryClient.invalidateQueries({ queryKey: [["sources"]] })
+        selectSource(source.id, source.name)
+      },
+    }),
+  )
+
+  function selectSource(id: string, name: string) {
+    onChange(id)
+    setSelectedName(name)
+    setInputText("")
+    setQuery("")
+    setOpen(false)
+  }
+
+  function clearSource() {
+    onChange("")
+    setSelectedName("")
+    setInputText("")
+    setQuery("")
+  }
+
+  const showDropdown = open && inputText.length > 0
+  const hasResults = results.length > 0
+
+  return (
+    <div ref={containerRef} className="relative">
+      {value && selectedName ? (
+        <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-900">
+          <span className="flex-1 text-white">{selectedName}</span>
+          <button type="button" onClick={clearSource} className="text-gray-400 hover:text-white">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <input
+          type="text"
+          placeholder="Search for a source..."
+          value={inputText}
+          onChange={(e) => {
+            setInputText(e.target.value)
+            debouncedQuery(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+        />
+      )}
+
+      {showDropdown && (
+        <ul className="absolute z-10 mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {results.map((source) => (
+            <li key={source.id}>
+              <button
+                type="button"
+                onMouseDown={() => selectSource(source.id, source.name)}
+                className="w-full text-left px-4 py-2 text-sm text-white hover:bg-slate-700 transition-colors"
+              >
+                {source.name}
+                {source.url && (
+                  <span className="ml-2 text-gray-400 text-xs truncate">{source.url}</span>
+                )}
+              </button>
+            </li>
+          ))}
+          {!hasResults && (
+            <li>
+              <button
+                type="button"
+                disabled={createMutation.isPending}
+                onMouseDown={() => createMutation.mutate({ name: inputText.trim() })}
+                className="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-slate-700 transition-colors disabled:opacity-50"
+              >
+                {createMutation.isPending ? "Creating…" : `Create "${inputText.trim()}"`}
+              </button>
+            </li>
+          )}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+// ─── RecipeForm ───────────────────────────────────────────────────────────────
 
 interface RecipeFormProps {
   initialData?: RecipeWithRelations
@@ -49,13 +182,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const isEdit = !!initialData
 
   const [selectedMealIds, setSelectedMealIds] = useState<string[]>(
-    initialData?.meals?.map((m) => m.mealId) ?? [],
+    initialData?.meals?.map((m) => m.id) ?? [],
   )
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>(
-    initialData?.courses?.map((c) => c.courseId) ?? [],
+    initialData?.courses?.map((c) => c.id) ?? [],
   )
   const [selectedPrepIds, setSelectedPrepIds] = useState<string[]>(
-    initialData?.preparations?.map((p) => p.preparationId) ?? [],
+    initialData?.preparations?.map((p) => p.id) ?? [],
+  )
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(
+    initialData?.sourceId ?? "",
   )
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
@@ -104,6 +240,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     return {
       name: values.name,
       classificationId: values.classificationId || undefined,
+      sourceId: selectedSourceId || undefined,
       ingredients: values.ingredients || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
@@ -184,6 +321,14 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+          </div>
+
+          {/* Source */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Source (cookbook, website, etc.)
+            </label>
+            <SourceSelector value={selectedSourceId} onChange={setSelectedSourceId} />
           </div>
 
           {/* Notes */}
