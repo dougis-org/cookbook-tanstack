@@ -3,6 +3,16 @@ import { eq, and, asc, sql, getTableColumns } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership } from "./_helpers"
 import { cookbooks, cookbookRecipes, recipes, classifications } from "@/db/schema"
+import type { db } from "@/db"
+
+/** Verify the current user owns the given cookbook, throwing FORBIDDEN if not. */
+async function guardOwner(ctx: { db: typeof db; user: { id: string } }, id: string) {
+  await verifyOwnership(
+    () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, id)),
+    ctx.user.id,
+    "Cookbook",
+  )
+}
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
@@ -85,12 +95,7 @@ export const cookbooksRouter = router({
         ),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
-        ctx.user.id,
-        "Cookbook",
-      )
-
+      await guardOwner(ctx, input.id)
       const { id: _, ...data } = input
       const [updated] = await ctx.db
         .update(cookbooks)
@@ -103,11 +108,7 @@ export const cookbooksRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
-        ctx.user.id,
-        "Cookbook",
-      )
+      await guardOwner(ctx, input.id)
       await ctx.db.delete(cookbooks).where(eq(cookbooks.id, input.id))
       return { success: true }
     }),
@@ -115,11 +116,7 @@ export const cookbooksRouter = router({
   addRecipe: protectedProcedure
     .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.cookbookId)),
-        ctx.user.id,
-        "Cookbook",
-      )
+      await guardOwner(ctx, input.cookbookId)
 
       const [{ count }] = await ctx.db
         .select({ count: sql<number>`cast(count(*) as int)` })
@@ -137,11 +134,7 @@ export const cookbooksRouter = router({
   removeRecipe: protectedProcedure
     .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.cookbookId)),
-        ctx.user.id,
-        "Cookbook",
-      )
+      await guardOwner(ctx, input.cookbookId)
       await ctx.db
         .delete(cookbookRecipes)
         .where(
@@ -157,17 +150,11 @@ export const cookbooksRouter = router({
     .input(
       z.object({
         cookbookId: z.string().uuid(),
-        // Ordered array of recipeIds defining the new sequence
         recipeIds: z.array(z.string().uuid()).min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.cookbookId)),
-        ctx.user.id,
-        "Cookbook",
-      )
-
+      await guardOwner(ctx, input.cookbookId)
       await Promise.all(
         input.recipeIds.map((recipeId, index) =>
           ctx.db
@@ -181,7 +168,6 @@ export const cookbooksRouter = router({
             ),
         ),
       )
-
       return { success: true }
     }),
 })

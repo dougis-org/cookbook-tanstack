@@ -20,6 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
+import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { GripVertical, X, Plus, Pencil, Trash2, Printer, List } from 'lucide-react'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId')({
@@ -39,6 +40,14 @@ interface CookbookRecipe {
   orderIndex?: number | null
 }
 
+/** Discriminated union replaces four separate boolean/nullable modal states. */
+type Modal =
+  | { kind: 'none' }
+  | { kind: 'addRecipe' }
+  | { kind: 'editCookbook' }
+  | { kind: 'deleteCookbook' }
+  | { kind: 'removeRecipe'; recipe: CookbookRecipe }
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function CookbookDetailPage() {
@@ -46,11 +55,11 @@ function CookbookDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const [showAddRecipe, setShowAddRecipe] = useState(false)
-  const [showEditCookbook, setShowEditCookbook] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  const [removeTarget, setRemoveTarget] = useState<CookbookRecipe | null>(null)
+  const [modal, setModal] = useState<Modal>({ kind: 'none' })
   const [localOrder, setLocalOrder] = useState<string[] | null>(null)
+
+  const closeModal = () => setModal({ kind: 'none' })
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
 
   const { data: cookbook, isLoading } = useQuery(
     trpc.cookbooks.byId.queryOptions({ id: cookbookId }),
@@ -58,28 +67,19 @@ function CookbookDetailPage() {
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
-        navigate({ to: '/cookbooks' })
-      },
+      onSuccess: () => { invalidate(); navigate({ to: '/cookbooks' }) },
     }),
   )
 
   const removeMutation = useMutation(
     trpc.cookbooks.removeRecipe.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
-        setRemoveTarget(null)
-        setLocalOrder(null)
-      },
+      onSuccess: () => { invalidate(); closeModal(); setLocalOrder(null) },
     }),
   )
 
   const reorderMutation = useMutation(trpc.cookbooks.reorderRecipes.mutationOptions())
 
   const recipes: CookbookRecipe[] = cookbook?.recipes ?? []
-
-  // Use localOrder for optimistic drag feedback, fall back to server order
   const orderedIds = localOrder ?? recipes.map((r) => r.id)
   const orderedRecipes = orderedIds
     .map((id) => recipes.find((r) => r.id === id))
@@ -94,32 +94,22 @@ function CookbookDetailPage() {
     (event: DragEndEvent) => {
       const { active, over } = event
       if (!over || active.id === over.id) return
-
-      const oldIndex = orderedIds.indexOf(active.id as string)
-      const newIndex = orderedIds.indexOf(over.id as string)
-      const newOrder = arrayMove(orderedIds, oldIndex, newIndex)
+      const newOrder = arrayMove(
+        orderedIds,
+        orderedIds.indexOf(active.id as string),
+        orderedIds.indexOf(over.id as string),
+      )
       setLocalOrder(newOrder)
-
       reorderMutation.mutate(
         { cookbookId, recipeIds: newOrder },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
-            setLocalOrder(null)
-          },
-          onError: () => setLocalOrder(null),
-        },
+        { onSuccess: () => { invalidate(); setLocalOrder(null) }, onError: () => setLocalOrder(null) },
       )
     },
     [cookbookId, orderedIds, queryClient, reorderMutation],
   )
 
   if (isLoading) {
-    return (
-      <PageLayout>
-        <p className="text-gray-400 text-center py-12">Loading…</p>
-      </PageLayout>
-    )
+    return <PageLayout><p className="text-gray-400 text-center py-12">Loading…</p></PageLayout>
   }
 
   if (!cookbook) {
@@ -127,9 +117,7 @@ function CookbookDetailPage() {
       <PageLayout>
         <div className="text-center py-20">
           <p className="text-gray-400 text-lg mb-4">Cookbook not found.</p>
-          <Link to="/cookbooks" className="text-cyan-400 hover:text-cyan-300">
-            Back to Cookbooks
-          </Link>
+          <Link to="/cookbooks" className="text-cyan-400 hover:text-cyan-300">Back to Cookbooks</Link>
         </div>
       </PageLayout>
     )
@@ -142,9 +130,7 @@ function CookbookDetailPage() {
         <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
             <p className="text-gray-400 text-sm mb-1">
-              <Link to="/cookbooks" className="hover:text-cyan-400 transition-colors">
-                Cookbooks
-              </Link>
+              <Link to="/cookbooks" className="hover:text-cyan-400 transition-colors">Cookbooks</Link>
               {' / '}
               <span className="text-gray-300">{cookbook.name}</span>
             </p>
@@ -176,14 +162,14 @@ function CookbookDetailPage() {
               Print
             </button>
             <button
-              onClick={() => setShowEditCookbook(true)}
+              onClick={() => setModal({ kind: 'editCookbook' })}
               className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
             >
               <Pencil className="w-4 h-4" />
               Edit
             </button>
             <button
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={() => setModal({ kind: 'deleteCookbook' })}
               className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-900/50 hover:bg-red-800/50 text-red-300 rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -193,60 +179,39 @@ function CookbookDetailPage() {
         </div>
       </div>
 
-      {/* Edit modal */}
-      {showEditCookbook && (
-        <EditCookbookModal
-          cookbook={cookbook}
-          onClose={() => setShowEditCookbook(false)}
-        />
+      {modal.kind === 'editCookbook' && (
+        <EditCookbookModal cookbook={cookbook} onClose={closeModal} />
       )}
 
-      {/* Delete confirm modal */}
-      {showDeleteConfirm && (
+      {modal.kind === 'deleteCookbook' && (
         <ConfirmModal
           title="Delete Cookbook"
-          body={
-            <>
-              Are you sure you want to permanently delete{' '}
-              <strong className="text-white">{cookbook.name}</strong>? This cannot be undone.
-            </>
-          }
+          body={<>Are you sure you want to permanently delete <strong className="text-white">{cookbook.name}</strong>? This cannot be undone.</>}
           confirmLabel="Delete"
           danger
           isPending={deleteMutation.isPending}
           onConfirm={() => deleteMutation.mutate({ id: cookbookId })}
-          onCancel={() => setShowDeleteConfirm(false)}
+          onCancel={closeModal}
         />
       )}
 
-      {/* Remove recipe confirm */}
-      {removeTarget && (
+      {modal.kind === 'removeRecipe' && (
         <ConfirmModal
           title="Remove Recipe"
-          body={
-            <>
-              Remove <strong className="text-white">{removeTarget.name}</strong> from this cookbook?
-            </>
-          }
+          body={<>Remove <strong className="text-white">{modal.recipe.name}</strong> from this cookbook?</>}
           confirmLabel="Remove"
           danger
           isPending={removeMutation.isPending}
-          onConfirm={() =>
-            removeMutation.mutate({ cookbookId, recipeId: removeTarget.id })
-          }
-          onCancel={() => setRemoveTarget(null)}
+          onConfirm={() => removeMutation.mutate({ cookbookId, recipeId: modal.recipe.id })}
+          onCancel={closeModal}
         />
       )}
 
-      {/* Add recipe modal */}
-      {showAddRecipe && (
+      {modal.kind === 'addRecipe' && (
         <AddRecipeModal
           cookbookId={cookbookId}
           existingRecipeIds={recipes.map((r) => r.id)}
-          onClose={() => {
-            setShowAddRecipe(false)
-            setLocalOrder(null)
-          }}
+          onClose={() => { closeModal(); setLocalOrder(null) }}
         />
       )}
 
@@ -255,7 +220,7 @@ function CookbookDetailPage() {
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-white">Recipes</h2>
           <button
-            onClick={() => setShowAddRecipe(true)}
+            onClick={() => setModal({ kind: 'addRecipe' })}
             className="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
@@ -267,7 +232,7 @@ function CookbookDetailPage() {
           <div className="text-center py-16">
             <p className="text-gray-400 mb-4">No recipes in this cookbook yet.</p>
             <button
-              onClick={() => setShowAddRecipe(true)}
+              onClick={() => setModal({ kind: 'addRecipe' })}
               className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
             >
               Add your first recipe
@@ -281,7 +246,7 @@ function CookbookDetailPage() {
                   key={recipe.id}
                   recipe={recipe}
                   index={index}
-                  onRemove={() => setRemoveTarget(recipe)}
+                  onRemove={() => setModal({ kind: 'removeRecipe', recipe })}
                 />
               ))}
             </SortableContext>
@@ -294,26 +259,22 @@ function CookbookDetailPage() {
 
 // ─── Sortable Recipe Row ──────────────────────────────────────────────────────
 
-interface SortableRecipeRowProps {
+function SortableRecipeRow({
+  recipe,
+  index,
+  onRemove,
+}: {
   recipe: CookbookRecipe
   index: number
   onRemove: () => void
-}
-
-function SortableRecipeRow({ recipe, index, onRemove }: SortableRecipeRowProps) {
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: recipe.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3 group"
     >
       <button
@@ -331,28 +292,18 @@ function SortableRecipeRow({ recipe, index, onRemove }: SortableRecipeRowProps) 
         {recipe.imageUrl ? (
           <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-            —
-          </div>
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">—</div>
         )}
       </div>
 
-      <Link
-        to="/recipes/$recipeId"
-        params={{ recipeId: recipe.id }}
-        className="flex-1 min-w-0"
-      >
-        <p className="font-medium text-white truncate hover:text-cyan-400 transition-colors">
-          {recipe.name}
-        </p>
+      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
+        <p className="font-medium text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
         <p className="text-xs text-gray-400">
           {[
             recipe.prepTime && `Prep ${recipe.prepTime}m`,
             recipe.cookTime && `Cook ${recipe.cookTime}m`,
             recipe.servings && `${recipe.servings} servings`,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
+          ].filter(Boolean).join(' · ')}
         </p>
       </Link>
 
@@ -369,13 +320,15 @@ function SortableRecipeRow({ recipe, index, onRemove }: SortableRecipeRowProps) 
 
 // ─── Add Recipe Modal ─────────────────────────────────────────────────────────
 
-interface AddRecipeModalProps {
+function AddRecipeModal({
+  cookbookId,
+  existingRecipeIds,
+  onClose,
+}: {
   cookbookId: string
   existingRecipeIds: string[]
   onClose: () => void
-}
-
-function AddRecipeModal({ cookbookId, existingRecipeIds, onClose }: AddRecipeModalProps) {
+}) {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
 
@@ -400,12 +353,7 @@ function AddRecipeModal({ cookbookId, existingRecipeIds, onClose }: AddRecipeMod
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
-        <div className="flex justify-between items-center p-5 border-b border-slate-700">
-          <h2 className="text-lg font-bold text-white">Add Recipe</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <ModalHeader title="Add Recipe" onClose={onClose} />
         <div className="p-4">
           <input
             type="text"
@@ -430,11 +378,7 @@ function AddRecipeModal({ cookbookId, existingRecipeIds, onClose }: AddRecipeMod
                   className="w-full flex items-center gap-3 p-3 rounded-lg text-left bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
                   <div className="h-10 w-10 bg-gray-600 rounded overflow-hidden flex-shrink-0">
-                    {r.imageUrl ? (
-                      <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full" />
-                    )}
+                    {r.imageUrl && <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover" />}
                   </div>
                   <span className="flex-1 text-white font-medium truncate">{r.name}</span>
                   <Plus className="w-4 h-4 text-cyan-400 flex-shrink-0" />
@@ -450,12 +394,13 @@ function AddRecipeModal({ cookbookId, existingRecipeIds, onClose }: AddRecipeMod
 
 // ─── Edit Cookbook Modal ──────────────────────────────────────────────────────
 
-interface EditCookbookModalProps {
+function EditCookbookModal({
+  cookbook,
+  onClose,
+}: {
   cookbook: { id: string; name: string; description?: string | null; isPublic: boolean }
   onClose: () => void
-}
-
-function EditCookbookModal({ cookbook, onClose }: EditCookbookModalProps) {
+}) {
   const queryClient = useQueryClient()
   const [name, setName] = useState(cookbook.name)
   const [description, setDescription] = useState(cookbook.description ?? '')
@@ -476,56 +421,23 @@ function EditCookbookModal({ cookbook, onClose }: EditCookbookModalProps) {
     e.preventDefault()
     if (!name.trim()) return
     setError(null)
-    updateMutation.mutate({
-      id: cookbook.id,
-      name: name.trim(),
-      description: description.trim() || undefined,
-      isPublic,
-    })
+    updateMutation.mutate({ id: cookbook.id, name: name.trim(), description: description.trim() || undefined, isPublic })
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-md">
-        <div className="flex justify-between items-center p-5 border-b border-slate-700">
-          <h2 className="text-lg font-bold text-white">Edit Cookbook</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        <ModalHeader title="Edit Cookbook" onClose={onClose} />
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={255}
-              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              maxLength={500}
-              className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              id="edit-ispublic"
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="w-4 h-4 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
-            />
-            <label htmlFor="edit-ispublic" className="text-sm text-gray-300">
-              Public
-            </label>
-          </div>
+          <CookbookFields
+            name={name}
+            description={description}
+            isPublic={isPublic}
+            checkboxId="edit-ispublic"
+            onNameChange={setName}
+            onDescriptionChange={setDescription}
+            onIsPublicChange={setIsPublic}
+          />
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <div className="flex gap-3">
             <button
@@ -535,11 +447,7 @@ function EditCookbookModal({ cookbook, onClose }: EditCookbookModalProps) {
             >
               {updateMutation.isPending ? 'Saving…' : 'Save'}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-            >
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
               Cancel
             </button>
           </div>
@@ -549,9 +457,30 @@ function EditCookbookModal({ cookbook, onClose }: EditCookbookModalProps) {
   )
 }
 
+// ─── Shared modal header ──────────────────────────────────────────────────────
+
+function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
+  return (
+    <div className="flex justify-between items-center p-5 border-b border-slate-700">
+      <h2 className="text-lg font-bold text-white">{title}</h2>
+      <button onClick={onClose} className="text-gray-400 hover:text-white">
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  )
+}
+
 // ─── Generic Confirm Modal ────────────────────────────────────────────────────
 
-interface ConfirmModalProps {
+function ConfirmModal({
+  title,
+  body,
+  confirmLabel,
+  danger,
+  isPending,
+  onConfirm,
+  onCancel,
+}: {
   title: string
   body: React.ReactNode
   confirmLabel: string
@@ -559,9 +488,7 @@ interface ConfirmModalProps {
   isPending: boolean
   onConfirm: () => void
   onCancel: () => void
-}
-
-function ConfirmModal({ title, body, confirmLabel, danger, isPending, onConfirm, onCancel }: ConfirmModalProps) {
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm p-6">

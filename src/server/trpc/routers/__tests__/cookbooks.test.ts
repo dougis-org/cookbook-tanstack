@@ -51,18 +51,66 @@ async function makeAuthCaller(db: TestDb, userId: string) {
   return appRouter.createCaller({ db: db as never, session: { id: "s1" } as never, user: { id: userId } as never })
 }
 
+type Caller = Awaited<ReturnType<typeof makeAuthCaller>>
+type Cookbook = typeof schema.cookbooks.$inferSelect
+type Recipe = typeof schema.recipes.$inferSelect
+
+// ─── Ownership guard ─────────────────────────────────────────────────────────
+//
+// All mutations that require cookbook ownership share the same rejection
+// behaviour. A single it.each drives the setup → act → assert pattern for all
+// five protected endpoints so we don't repeat the boilerplate five times.
+
+describe("ownership guard — non-owner is rejected", () => {
+  it.each([
+    {
+      label: "update",
+      act: (caller: Caller, cb: Cookbook, _r: Recipe) =>
+        caller.cookbooks.update({ id: cb.id, name: "Hacked" }),
+    },
+    {
+      label: "delete",
+      act: (caller: Caller, cb: Cookbook, _r: Recipe) =>
+        caller.cookbooks.delete({ id: cb.id }),
+    },
+    {
+      label: "addRecipe",
+      act: (caller: Caller, cb: Cookbook, r: Recipe) =>
+        caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id }),
+    },
+    {
+      label: "removeRecipe",
+      act: (caller: Caller, cb: Cookbook, r: Recipe) =>
+        caller.cookbooks.removeRecipe({ cookbookId: cb.id, recipeId: r.id }),
+    },
+    {
+      label: "reorderRecipes",
+      act: (caller: Caller, cb: Cookbook, r: Recipe) =>
+        caller.cookbooks.reorderRecipes({ cookbookId: cb.id, recipeIds: [r.id] }),
+    },
+  ])("$label", async ({ act }) => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const other = await seedUser(db)
+      const cb = await seedCookbook(db, owner.id)
+      const r = await seedRecipe(db, owner.id)
+      const caller = await makeAuthCaller(db, other.id)
+      await expect(act(caller, cb, r)).rejects.toThrow("Not your cookbook")
+    })
+  })
+})
+
 // ─── cookbooks.list ───────────────────────────────────────────────────────────
 
 describe("cookbooks.list", () => {
   it("anon user sees public cookbooks but not private ones", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
-      await seedCookbook(db, owner.id, { name: `PublicCB-${uid()}`, isPublic: true })
-      const privateCb = await seedCookbook(db, owner.id, { name: `PrivateCB-${uid()}`, isPublic: false })
+      await seedCookbook(db, owner.id, { isPublic: true })
+      const privateCb = await seedCookbook(db, owner.id, { isPublic: false })
 
       const caller = await makeAnonCaller(db)
-      const result = await caller.cookbooks.list()
-      const ids = result.map((c) => c.id)
+      const ids = (await caller.cookbooks.list()).map((c) => c.id)
       expect(ids).not.toContain(privateCb.id)
     })
   })
@@ -73,8 +121,7 @@ describe("cookbooks.list", () => {
       const privateCb = await seedCookbook(db, owner.id, { isPublic: false })
 
       const caller = await makeAuthCaller(db, owner.id)
-      const result = await caller.cookbooks.list()
-      expect(result.map((c) => c.id)).toContain(privateCb.id)
+      expect((await caller.cookbooks.list()).map((c) => c.id)).toContain(privateCb.id)
     })
   })
 })
@@ -82,11 +129,24 @@ describe("cookbooks.list", () => {
 // ─── cookbooks.byId ──────────────────────────────────────────────────────────
 
 describe("cookbooks.byId", () => {
-  it("returns null for a non-existent cookbook", async () => {
+  it.each([
+    {
+      label: "non-existent id",
+      setup: async (_db: TestDb) => "00000000-0000-0000-0000-000000000000",
+    },
+    {
+      label: "private cookbook for anon user",
+      setup: async (db: TestDb) => {
+        const owner = await seedUser(db)
+        const cb = await seedCookbook(db, owner.id, { isPublic: false })
+        return cb.id
+      },
+    },
+  ])("returns null for $label", async ({ setup }) => {
     await withDbTx(async (db) => {
+      const id = await setup(db)
       const caller = await makeAnonCaller(db)
-      const result = await caller.cookbooks.byId({ id: "00000000-0000-0000-0000-000000000000" })
-      expect(result).toBeNull()
+      expect(await caller.cookbooks.byId({ id })).toBeNull()
     })
   })
 
@@ -104,17 +164,7 @@ describe("cookbooks.byId", () => {
 
       const caller = await makeAnonCaller(db)
       const result = await caller.cookbooks.byId({ id: cb.id })
-      expect(result).not.toBeNull()
       expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id])
-    })
-  })
-
-  it("returns null for a private cookbook to anon user", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id, { isPublic: false })
-      const caller = await makeAnonCaller(db)
-      expect(await caller.cookbooks.byId({ id: cb.id })).toBeNull()
     })
   })
 })
@@ -137,8 +187,7 @@ describe("cookbooks.create", () => {
     await withDbTx(async (db) => {
       const user = await seedUser(db)
       const caller = await makeAuthCaller(db, user.id)
-      const result = await caller.cookbooks.create(input)
-      expect(result).toMatchObject({ ...expected, userId: user.id })
+      expect(await caller.cookbooks.create(input)).toMatchObject({ ...expected, userId: user.id })
     })
   })
 })
@@ -146,16 +195,6 @@ describe("cookbooks.create", () => {
 // ─── cookbooks.update ────────────────────────────────────────────────────────
 
 describe("cookbooks.update", () => {
-  it("rejects update by non-owner", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const other = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const caller = await makeAuthCaller(db, other.id)
-      await expect(caller.cookbooks.update({ id: cb.id, name: "Hacked" })).rejects.toThrow("Not your cookbook")
-    })
-  })
-
   it("owner can update name and description", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
@@ -170,23 +209,12 @@ describe("cookbooks.update", () => {
 // ─── cookbooks.delete ────────────────────────────────────────────────────────
 
 describe("cookbooks.delete", () => {
-  it("rejects delete by non-owner", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const other = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const caller = await makeAuthCaller(db, other.id)
-      await expect(caller.cookbooks.delete({ id: cb.id })).rejects.toThrow("Not your cookbook")
-    })
-  })
-
-  it("owner can delete their cookbook", async () => {
+  it("owner can delete their cookbook and it becomes unfetchable", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
       const cb = await seedCookbook(db, owner.id)
       const caller = await makeAuthCaller(db, owner.id)
-      const result = await caller.cookbooks.delete({ id: cb.id })
-      expect(result).toMatchObject({ success: true })
+      expect(await caller.cookbooks.delete({ id: cb.id })).toMatchObject({ success: true })
       expect(await caller.cookbooks.byId({ id: cb.id })).toBeNull()
     })
   })
@@ -195,18 +223,7 @@ describe("cookbooks.delete", () => {
 // ─── cookbooks.addRecipe ─────────────────────────────────────────────────────
 
 describe("cookbooks.addRecipe", () => {
-  it("rejects add by non-owner", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const other = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const r = await seedRecipe(db, owner.id)
-      const caller = await makeAuthCaller(db, other.id)
-      await expect(caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id })).rejects.toThrow("Not your cookbook")
-    })
-  })
-
-  it("appends recipe to end with correct orderIndex", async () => {
+  it("appends recipes in order and ignores duplicates", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
       const cb = await seedCookbook(db, owner.id)
@@ -216,24 +233,10 @@ describe("cookbooks.addRecipe", () => {
 
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r1.id })
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r2.id })
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r1.id }) // duplicate
 
       const result = await caller.cookbooks.byId({ id: cb.id })
       expect(result!.recipes.map((r) => r.id)).toEqual([r1.id, r2.id])
-    })
-  })
-
-  it("ignores duplicate add (onConflictDoNothing)", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const r = await seedRecipe(db, owner.id)
-      const caller = await makeAuthCaller(db, owner.id)
-
-      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id })
-      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id })
-
-      const result = await caller.cookbooks.byId({ id: cb.id })
-      expect(result!.recipes).toHaveLength(1)
     })
   })
 })
@@ -241,19 +244,7 @@ describe("cookbooks.addRecipe", () => {
 // ─── cookbooks.removeRecipe ──────────────────────────────────────────────────
 
 describe("cookbooks.removeRecipe", () => {
-  it("rejects remove by non-owner", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const other = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const r = await seedRecipe(db, owner.id)
-      await db.insert(schema.cookbookRecipes).values({ cookbookId: cb.id, recipeId: r.id, orderIndex: 0 })
-      const caller = await makeAuthCaller(db, other.id)
-      await expect(caller.cookbooks.removeRecipe({ cookbookId: cb.id, recipeId: r.id })).rejects.toThrow("Not your cookbook")
-    })
-  })
-
-  it("owner can remove a recipe from cookbook", async () => {
+  it("owner can remove a recipe from the cookbook", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
       const cb = await seedCookbook(db, owner.id)
@@ -263,8 +254,7 @@ describe("cookbooks.removeRecipe", () => {
       const caller = await makeAuthCaller(db, owner.id)
       await caller.cookbooks.removeRecipe({ cookbookId: cb.id, recipeId: r.id })
 
-      const result = await caller.cookbooks.byId({ id: cb.id })
-      expect(result!.recipes).toHaveLength(0)
+      expect((await caller.cookbooks.byId({ id: cb.id }))!.recipes).toHaveLength(0)
     })
   })
 })
@@ -272,26 +262,15 @@ describe("cookbooks.removeRecipe", () => {
 // ─── cookbooks.reorderRecipes ────────────────────────────────────────────────
 
 describe("cookbooks.reorderRecipes", () => {
-  it("rejects reorder by non-owner", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const other = await seedUser(db)
-      const cb = await seedCookbook(db, owner.id)
-      const r = await seedRecipe(db, owner.id)
-      const caller = await makeAuthCaller(db, other.id)
-      await expect(
-        caller.cookbooks.reorderRecipes({ cookbookId: cb.id, recipeIds: [r.id] }),
-      ).rejects.toThrow("Not your cookbook")
-    })
-  })
-
   it("persists new recipe order", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
       const cb = await seedCookbook(db, owner.id)
-      const r1 = await seedRecipe(db, owner.id)
-      const r2 = await seedRecipe(db, owner.id)
-      const r3 = await seedRecipe(db, owner.id)
+      const [r1, r2, r3] = await Promise.all([
+        seedRecipe(db, owner.id),
+        seedRecipe(db, owner.id),
+        seedRecipe(db, owner.id),
+      ])
 
       await db.insert(schema.cookbookRecipes).values([
         { cookbookId: cb.id, recipeId: r1.id, orderIndex: 0 },

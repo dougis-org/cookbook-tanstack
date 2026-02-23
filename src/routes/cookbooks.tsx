@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
+import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { Plus, X } from 'lucide-react'
 
 export const Route = createFileRoute('/cookbooks')({
@@ -12,13 +13,14 @@ export const Route = createFileRoute('/cookbooks')({
 
 function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
-
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
 
   return (
     <PageLayout title="Cookbooks" description="Your recipe collections">
       <div className="flex justify-between items-center mb-6">
-        <span className="text-gray-400">{cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}</span>
+        <span className="text-gray-400">
+          {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
+        </span>
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
@@ -51,18 +53,8 @@ function CookbooksPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {cookbooks.map((cb) => (
-            <Link
-              key={cb.id}
-              to="/cookbooks/$cookbookId"
-              params={{ cookbookId: cb.id }}
-            >
-              <CookbookCard
-                cookbook={{
-                  ...cb,
-                  description: cb.description ?? null,
-                  imageUrl: cb.imageUrl ?? null,
-                }}
-              />
+            <Link key={cb.id} to="/cookbooks/$cookbookId" params={{ cookbookId: cb.id }}>
+              <CookbookCard cookbook={{ ...cb, description: cb.description ?? null, imageUrl: cb.imageUrl ?? null }} />
             </Link>
           ))}
         </div>
@@ -71,11 +63,7 @@ function CookbooksPage() {
   )
 }
 
-interface CreateCookbookFormProps {
-  onClose: () => void
-}
-
-function CreateCookbookForm({ onClose }: CreateCookbookFormProps) {
+function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -96,11 +84,7 @@ function CreateCookbookForm({ onClose }: CreateCookbookFormProps) {
     e.preventDefault()
     if (!name.trim()) return
     setError(null)
-    createMutation.mutate({
-      name: name.trim(),
-      description: description.trim() || undefined,
-      isPublic,
-    })
+    createMutation.mutate({ name: name.trim(), description: description.trim() || undefined, isPublic })
   }
 
   return (
@@ -112,42 +96,15 @@ function CreateCookbookForm({ onClose }: CreateCookbookFormProps) {
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Name <span className="text-red-400">*</span>
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="My Cookbook"
-            maxLength={255}
-            className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
-            rows={2}
-            maxLength={500}
-            className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            id="create-ispublic"
-            type="checkbox"
-            checked={isPublic}
-            onChange={(e) => setIsPublic(e.target.checked)}
-            className="w-4 h-4 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
-          />
-          <label htmlFor="create-ispublic" className="text-sm text-gray-300">
-            Public (visible to everyone)
-          </label>
-        </div>
+        <CookbookFields
+          name={name}
+          description={description}
+          isPublic={isPublic}
+          checkboxId="create-ispublic"
+          onNameChange={setName}
+          onDescriptionChange={setDescription}
+          onIsPublicChange={setIsPublic}
+        />
         {error && <p className="text-red-400 text-sm">{error}</p>}
         <div className="flex gap-3">
           <button
