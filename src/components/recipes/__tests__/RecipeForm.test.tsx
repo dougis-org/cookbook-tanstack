@@ -30,6 +30,10 @@ vi.mock("@/lib/trpc", () => ({
     preparations: {
       list: { queryOptions: () => ({ queryKey: ["preparations"], queryFn: () => [{ id: "p1", name: "Baked" }] }) },
     },
+    sources: {
+      search: { queryOptions: () => ({ queryKey: ["sources", "search"], queryFn: () => [] }) },
+      create: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+    },
   },
 }))
 

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { eq } from "drizzle-orm"
+import { asc, eq, ilike } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { sources } from "@/db/schema"
 
@@ -7,6 +7,19 @@ export const sourcesRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.db.select().from(sources)
   }),
+
+  search: publicProcedure
+    .input(z.object({ query: z.string().min(1).max(255) }))
+    .query(async ({ ctx, input }) => {
+      const trimmed = input.query.trim()
+      const escaped = trimmed.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&")
+      return ctx.db
+        .select()
+        .from(sources)
+        .where(ilike(sources.name, `%${escaped}%`))
+        .orderBy(asc(sources.name))
+        .limit(10)
+    }),
 
   byId: publicProcedure
     .input(z.object({ id: z.string().uuid() }))

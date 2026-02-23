@@ -176,28 +176,57 @@ describe("recipes.list", () => {
       })
     })
 
-    it("accepts courseIds filter without error", async () => {
+    it.each([
+      ["courseIds",      { courseIds: [VALID_UUID] }      ],
+      ["preparationIds", { preparationIds: [VALID_UUID] } ],
+      ["sort",           { sort: "name_asc" as const }    ],
+    ])("accepts %s filter without error", async (_, input) => {
       await withDbTx(async (db) => {
         const caller = await makeAnonCaller(db)
-        const result = await caller.recipes.list({ courseIds: [VALID_UUID] })
-        expect(result).toHaveProperty("items")
+        expect(await caller.recipes.list(input)).toHaveProperty("items")
       })
     })
+  })
+})
 
-    it("accepts preparationIds filter without error", async () => {
-      await withDbTx(async (db) => {
-        const caller = await makeAnonCaller(db)
-        const result = await caller.recipes.list({ preparationIds: [VALID_UUID] })
-        expect(result).toHaveProperty("items")
+// ─── recipes.list — classificationName ───────────────────────────────────────
+
+describe("recipes.list — classificationName", () => {
+  it("includes classificationName when recipe has a linked classification", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      const id = uid()
+      const [classification] = await db
+        .insert(schema.classifications)
+        .values({ name: "Italian", slug: `italian-${id}` })
+        .returning()
+      await db.insert(schema.recipes).values({
+        name: "Pasta",
+        userId: user.id,
+        isPublic: true,
+        classificationId: classification.id,
       })
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id })
+
+      expect(result.items[0]).toMatchObject({ classificationName: "Italian" })
     })
+  })
 
-    it("accepts sort parameter without error", async () => {
-      await withDbTx(async (db) => {
-        const caller = await makeAnonCaller(db)
-        const result = await caller.recipes.list({ sort: "name_asc" })
-        expect(result).toHaveProperty("items")
+  it("returns classificationName as null when recipe has no classification", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values({
+        name: "Plain Recipe",
+        userId: user.id,
+        isPublic: true,
       })
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id })
+
+      expect(result.items[0]).toMatchObject({ classificationName: null })
     })
   })
 })
@@ -231,6 +260,85 @@ describe("recipes.byId", () => {
       const result = await caller.recipes.byId({ id: recipe.id })
 
       expect(result).toMatchObject({ id: recipe.id, name: "Found Recipe" })
+    })
+  })
+
+  it.each([
+    {
+      label: "meals",
+      link: async (db: TestDb, recipeId: string) => {
+        const id = uid()
+        const [m] = await db.insert(schema.meals).values({ name: "Breakfast", slug: `bfast-${id}` }).returning()
+        await db.insert(schema.recipeMeals).values({ recipeId, mealId: m.id })
+        return m
+      },
+      resultKey: "meals" as const,
+    },
+    {
+      label: "courses",
+      link: async (db: TestDb, recipeId: string) => {
+        const id = uid()
+        const [c] = await db.insert(schema.courses).values({ name: "Entree", slug: `entree-${id}` }).returning()
+        await db.insert(schema.recipeCourses).values({ recipeId, courseId: c.id })
+        return c
+      },
+      resultKey: "courses" as const,
+    },
+    {
+      label: "preparations",
+      link: async (db: TestDb, recipeId: string) => {
+        const id = uid()
+        const [p] = await db.insert(schema.preparations).values({ name: "Bake", slug: `bake-${id}` }).returning()
+        await db.insert(schema.recipePreparations).values({ recipeId, preparationId: p.id })
+        return p
+      },
+      resultKey: "preparations" as const,
+    },
+  ])("returns $label names when recipe has linked $label", async ({ link, resultKey }) => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      const [recipe] = await db.insert(schema.recipes).values({ name: "Dish", userId: user.id, isPublic: true }).returning()
+      const entity = await link(db, recipe.id)
+      const result = await (await makeAnonCaller(db)).recipes.byId({ id: recipe.id })
+      expect(result?.[resultKey]).toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: entity.id, name: entity.name })]),
+      )
+    })
+  })
+
+  it.each([
+    {
+      label: "classificationName",
+      seed: async (db: TestDb) => {
+        const id = uid()
+        const [cls] = await db.insert(schema.classifications).values({ name: "Italian", slug: `italian-${id}` }).returning()
+        return { recipeExtra: { classificationId: cls.id }, expected: { classificationName: "Italian" } }
+      },
+    },
+    {
+      label: "sourceName and sourceUrl",
+      seed: async (db: TestDb) => {
+        const [src] = await db.insert(schema.sources).values({ name: "Bon Appétit", url: "https://bonappetit.com" }).returning()
+        return { recipeExtra: { sourceId: src.id }, expected: { sourceName: "Bon Appétit", sourceUrl: "https://bonappetit.com" } }
+      },
+    },
+  ])("includes $label when recipe has a linked entity", async ({ seed }) => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      const { recipeExtra, expected } = await seed(db)
+      const [recipe] = await db.insert(schema.recipes).values({ name: "Dish", userId: user.id, isPublic: true, ...recipeExtra }).returning()
+      expect(await (await makeAnonCaller(db)).recipes.byId({ id: recipe.id })).toMatchObject(expected)
+    })
+  })
+
+  it.each([
+    ["classificationName"],
+    ["sourceName"],
+  ])("returns %s as null when recipe has no linked entity", async (field) => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      const [recipe] = await db.insert(schema.recipes).values({ name: "Plain", userId: user.id, isPublic: true }).returning()
+      expect(await (await makeAnonCaller(db)).recipes.byId({ id: recipe.id })).toMatchObject({ [field]: null })
     })
   })
 })

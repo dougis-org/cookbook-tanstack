@@ -5,7 +5,8 @@ import { z } from "zod"
 import { useNavigate } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
-import type { Recipe } from "@/types/recipe"
+import type { Recipe, TaxonomyItem } from "@/types/recipe"
+import SourceSelector from "@/components/ui/SourceSelector"
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
@@ -34,10 +35,13 @@ function toDifficulty(value: string | undefined): Difficulty | undefined {
 }
 
 interface RecipeWithRelations extends Recipe {
-  meals?: { recipeId: string; mealId: string }[]
-  courses?: { recipeId: string; courseId: string }[]
-  preparations?: { recipeId: string; preparationId: string }[]
+  meals?: TaxonomyItem[]
+  courses?: TaxonomyItem[]
+  preparations?: TaxonomyItem[]
+  sourceName?: string | null
 }
+
+// ─── RecipeForm ───────────────────────────────────────────────────────────────
 
 interface RecipeFormProps {
   initialData?: RecipeWithRelations
@@ -49,13 +53,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const isEdit = !!initialData
 
   const [selectedMealIds, setSelectedMealIds] = useState<string[]>(
-    initialData?.meals?.map((m) => m.mealId) ?? [],
+    initialData?.meals?.map((m) => m.id) ?? [],
   )
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>(
-    initialData?.courses?.map((c) => c.courseId) ?? [],
+    initialData?.courses?.map((c) => c.id) ?? [],
   )
   const [selectedPrepIds, setSelectedPrepIds] = useState<string[]>(
-    initialData?.preparations?.map((p) => p.preparationId) ?? [],
+    initialData?.preparations?.map((p) => p.id) ?? [],
+  )
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(
+    initialData?.sourceId ?? "",
   )
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
@@ -104,6 +111,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     return {
       name: values.name,
       classificationId: values.classificationId || undefined,
+      sourceId: selectedSourceId || undefined,
       ingredients: values.ingredients || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
@@ -184,6 +192,18 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
+          </div>
+
+          {/* Source */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Source (cookbook, website, etc.)
+            </label>
+            <SourceSelector
+              value={selectedSourceId}
+              initialName={initialData?.sourceName ?? ""}
+              onChange={setSelectedSourceId}
+            />
           </div>
 
           {/* Notes */}

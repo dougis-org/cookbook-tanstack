@@ -1,7 +1,10 @@
 import type { Recipe } from '@/types/recipe'
+import ClassificationBadge from '@/components/ui/ClassificationBadge'
 
 interface RecipeCardProps {
-  recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes'>
+  recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
+    classificationName?: string | null
+  }
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
@@ -21,6 +24,14 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         )}
       </div>
       <div className="p-4">
+        {recipe.classificationId && recipe.classificationName && (
+          <div className="mb-2">
+            <ClassificationBadge
+              classificationId={recipe.classificationId}
+              classificationName={recipe.classificationName}
+            />
+          </div>
+        )}
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
           {recipe.name}
         </h3>

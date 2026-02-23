@@ -1,7 +1,13 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail from "@/components/recipes/RecipeDetail"
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
+    <a href={to} {...props}>{children}</a>
+  ),
+}))
 
 function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
   return {
@@ -109,5 +115,63 @@ describe("RecipeDetail", () => {
     render(<RecipeDetail recipe={makeRecipe()} />)
 
     expect(screen.queryByText("Nutrition")).not.toBeInTheDocument()
+  })
+
+  it.each([
+    { label: "renders classification badge when name is provided", classificationName: "Italian",   visible: true  },
+    { label: "omits classification badge when name is absent",     classificationName: null,        visible: false },
+  ])("$label", ({ classificationName, visible }) => {
+    render(
+      <RecipeDetail
+        recipe={{ ...makeRecipe({ classificationId: "cat-1" }), classificationName: classificationName ?? undefined }}
+      />,
+    )
+    const el = screen.queryByText("Italian")
+    visible ? expect(el).toBeInTheDocument() : expect(el).not.toBeInTheDocument()
+  })
+
+  it("renders meal, course, and preparation taxonomy badges", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe(),
+          meals: [{ id: "m1", name: "Breakfast" }],
+          courses: [{ id: "c1", name: "Entree" }],
+          preparations: [{ id: "p1", name: "Bake" }],
+        }}
+      />,
+    )
+
+    for (const name of ["Breakfast", "Entree", "Bake"]) {
+      expect(screen.getByText(name)).toBeInTheDocument()
+    }
+  })
+
+  it.each([
+    {
+      label: "as a link when sourceUrl is provided",
+      props: { sourceName: "Bon Appétit", sourceUrl: "https://bonappetit.com" },
+      assert: () => {
+        const link = screen.getByRole("link", { name: "Bon Appétit" })
+        expect(link).toBeInTheDocument()
+        expect(link).toHaveAttribute("href", "https://bonappetit.com")
+      },
+    },
+    {
+      label: "as plain text when sourceUrl is absent",
+      props: { sourceName: "Grandma's Cookbook", sourceUrl: null },
+      assert: () => {
+        expect(screen.getByText("Grandma's Cookbook")).toBeInTheDocument()
+        expect(screen.queryByRole("link", { name: "Grandma's Cookbook" })).not.toBeInTheDocument()
+      },
+    },
+    {
+      label: "not at all when sourceName is absent",
+      props: {},
+      assert: () => expect(screen.queryByText(/source:/i)).not.toBeInTheDocument(),
+    },
+  ])("renders source $label", ({ props, assert }) => {
+    render(<RecipeDetail recipe={{ ...makeRecipe(), ...props }} />)
+    assert()
   })
 })
