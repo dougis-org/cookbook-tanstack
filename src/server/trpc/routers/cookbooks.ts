@@ -18,9 +18,14 @@ async function guardOwner(ctx: { db: typeof db; user: { id: string } }, id: stri
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.db
-      .select()
+      .select({
+        ...getTableColumns(cookbooks),
+        recipeCount: sql<number>`cast(count(${cookbookRecipes.recipeId}) as int)`,
+      })
       .from(cookbooks)
+      .leftJoin(cookbookRecipes, eq(cookbookRecipes.cookbookId, cookbooks.id))
       .where(visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user))
+      .groupBy(cookbooks.id)
       .orderBy(asc(cookbooks.name))
   }),
 
@@ -137,15 +142,17 @@ export const cookbooksRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
       }
 
-      const [{ nextIndex }] = await ctx.db
-        .select({ nextIndex: sql<number>`coalesce(max(${cookbookRecipes.orderIndex}), -1) + 1` })
-        .from(cookbookRecipes)
-        .where(eq(cookbookRecipes.cookbookId, input.cookbookId))
+      await ctx.db.transaction(async (tx) => {
+        const [{ nextIndex }] = await tx
+          .select({ nextIndex: sql<number>`coalesce(max(${cookbookRecipes.orderIndex}), -1) + 1` })
+          .from(cookbookRecipes)
+          .where(eq(cookbookRecipes.cookbookId, input.cookbookId))
 
-      await ctx.db
-        .insert(cookbookRecipes)
-        .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: nextIndex })
-        .onConflictDoNothing()
+        await tx
+          .insert(cookbookRecipes)
+          .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: nextIndex })
+          .onConflictDoNothing()
+      })
 
       return { success: true }
     }),
@@ -169,7 +176,12 @@ export const cookbooksRouter = router({
     .input(
       z.object({
         cookbookId: z.string().uuid(),
-        recipeIds: z.array(z.string().uuid()).min(1),
+        recipeIds: z
+          .array(z.string().uuid())
+          .min(1)
+          .refine((ids) => new Set(ids).size === ids.length, {
+            message: "Duplicate recipe IDs in reorder list",
+          }),
       }),
     )
     .mutation(async ({ ctx, input }) => {

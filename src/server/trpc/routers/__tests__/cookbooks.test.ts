@@ -103,25 +103,21 @@ describe("ownership guard — non-owner is rejected", () => {
 // ─── cookbooks.list ───────────────────────────────────────────────────────────
 
 describe("cookbooks.list", () => {
-  it("anon user sees public cookbooks but not private ones", async () => {
+  it("public cookbooks visible to all; private only to owner", async () => {
     await withDbTx(async (db) => {
       const owner = await seedUser(db)
-      await seedCookbook(db, owner.id, { isPublic: true })
+      const publicCb = await seedCookbook(db, owner.id, { isPublic: true })
       const privateCb = await seedCookbook(db, owner.id, { isPublic: false })
 
-      const caller = await makeAnonCaller(db)
-      const ids = (await caller.cookbooks.list()).map((c) => c.id)
-      expect(ids).not.toContain(privateCb.id)
-    })
-  })
+      const anonCaller = await makeAnonCaller(db)
+      const ownerCaller = await makeAuthCaller(db, owner.id)
 
-  it("owner sees their own private cookbooks", async () => {
-    await withDbTx(async (db) => {
-      const owner = await seedUser(db)
-      const privateCb = await seedCookbook(db, owner.id, { isPublic: false })
+      const anonIds = (await anonCaller.cookbooks.list()).map((c) => c.id)
+      const ownerIds = (await ownerCaller.cookbooks.list()).map((c) => c.id)
 
-      const caller = await makeAuthCaller(db, owner.id)
-      expect((await caller.cookbooks.list()).map((c) => c.id)).toContain(privateCb.id)
+      expect(anonIds).toContain(publicCb.id)
+      expect(anonIds).not.toContain(privateCb.id)
+      expect(ownerIds).toContain(privateCb.id)
     })
   })
 })

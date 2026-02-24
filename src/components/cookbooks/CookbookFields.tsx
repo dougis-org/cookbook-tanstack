@@ -22,13 +22,17 @@ export default function CookbookFields({
   onDescriptionChange,
   onIsPublicChange,
 }: CookbookFieldsProps) {
+  const nameId = `${checkboxId}-name`
+  const descId = `${checkboxId}-desc`
+
   return (
     <>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor={nameId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Name <span className="text-red-400">*</span>
         </label>
         <input
+          id={nameId}
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
@@ -38,8 +42,9 @@ export default function CookbookFields({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+        <label htmlFor={descId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
         <textarea
+          id={descId}
           value={description}
           onChange={(e) => onDescriptionChange(e.target.value)}
           placeholder="Optional description"

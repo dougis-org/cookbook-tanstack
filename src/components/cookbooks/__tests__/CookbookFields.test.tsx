@@ -61,8 +61,21 @@ describe("CookbookFields", () => {
 
   it("checkbox label is associated with the checkboxId", () => {
     renderFields({ checkboxId: "my-checkbox-id" })
-    const label = screen.getByText("Public (visible to everyone)")
-    expect(label).toHaveAttribute("for", "my-checkbox-id")
+    expect(screen.getByText("Public (visible to everyone)")).toHaveAttribute("for", "my-checkbox-id")
+  })
+
+  it("name input id and label htmlFor are derived from checkboxId", () => {
+    renderFields({ checkboxId: "form1-ispublic" })
+    const input = screen.getByPlaceholderText("My Cookbook")
+    expect(input).toHaveAttribute("id", "form1-ispublic-name")
+    expect(screen.getByText(/^Name/)).toHaveAttribute("for", "form1-ispublic-name")
+  })
+
+  it("description textarea id and label htmlFor are derived from checkboxId", () => {
+    renderFields({ checkboxId: "form1-ispublic" })
+    const textarea = screen.getByPlaceholderText("Optional description")
+    expect(textarea).toHaveAttribute("id", "form1-ispublic-desc")
+    expect(screen.getByText("Description")).toHaveAttribute("for", "form1-ispublic-desc")
   })
 
   it("name input has maxLength of 255", () => {

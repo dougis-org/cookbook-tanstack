@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -47,6 +47,40 @@ type Modal =
   | { kind: 'editCookbook' }
   | { kind: 'deleteCookbook' }
   | { kind: 'removeRecipe'; recipe: CookbookRecipe }
+
+// ─── Shared modal overlay with a11y and keyboard handling ─────────────────────
+
+function DialogOverlay({
+  labelId,
+  onClose,
+  isPending,
+  children,
+}: {
+  labelId: string
+  onClose: () => void
+  isPending?: boolean
+  children: React.ReactNode
+}) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !isPending) onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, isPending])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={labelId}
+      onClick={(e) => { if (e.target === e.currentTarget && !isPending) onClose() }}
+    >
+      {children}
+    </div>
+  )
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -351,9 +385,9 @@ function AddRecipeModal({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <DialogOverlay labelId="add-recipe-title" onClose={onClose}>
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
-        <ModalHeader title="Add Recipe" onClose={onClose} />
+        <ModalHeader title="Add Recipe" titleId="add-recipe-title" onClose={onClose} />
         <div className="p-4">
           <input
             type="text"
@@ -388,7 +422,7 @@ function AddRecipeModal({
           )}
         </ul>
       </div>
-    </div>
+    </DialogOverlay>
   )
 }
 
@@ -425,9 +459,9 @@ function EditCookbookModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <DialogOverlay labelId="edit-cookbook-title" onClose={onClose}>
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-md">
-        <ModalHeader title="Edit Cookbook" onClose={onClose} />
+        <ModalHeader title="Edit Cookbook" titleId="edit-cookbook-title" onClose={onClose} />
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <CookbookFields
             name={name}
@@ -453,17 +487,17 @@ function EditCookbookModal({
           </div>
         </form>
       </div>
-    </div>
+    </DialogOverlay>
   )
 }
 
 // ─── Shared modal header ──────────────────────────────────────────────────────
 
-function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
+function ModalHeader({ title, titleId, onClose }: { title: string; titleId: string; onClose: () => void }) {
   return (
     <div className="flex justify-between items-center p-5 border-b border-slate-700">
-      <h2 className="text-lg font-bold text-white">{title}</h2>
-      <button onClick={onClose} className="text-gray-400 hover:text-white">
+      <h2 id={titleId} className="text-lg font-bold text-white">{title}</h2>
+      <button type="button" aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-white">
         <X className="w-5 h-5" />
       </button>
     </div>
@@ -489,22 +523,24 @@ function ConfirmModal({
   onConfirm: () => void
   onCancel: () => void
 }) {
+  const titleId = 'confirm-modal-title'
+  const btnClass = danger ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-500 hover:bg-cyan-600'
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <DialogOverlay labelId={titleId} onClose={onCancel} isPending={isPending}>
       <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm p-6">
-        <h2 className="text-lg font-bold text-white mb-3">{title}</h2>
+        <h2 id={titleId} className="text-lg font-bold text-white mb-3">{title}</h2>
         <p className="text-gray-300 mb-6">{body}</p>
         <div className="flex gap-3">
           <button
+            type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className={`px-5 py-2 font-semibold rounded-lg transition-colors disabled:opacity-50 text-white ${
-              danger ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-500 hover:bg-cyan-600'
-            }`}
+            className={`px-5 py-2 font-semibold rounded-lg transition-colors disabled:opacity-50 text-white ${btnClass}`}
           >
             {isPending ? `${confirmLabel.replace(/e$/, '')}ing…` : confirmLabel}
           </button>
           <button
+            type="button"
             onClick={onCancel}
             disabled={isPending}
             className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
@@ -513,6 +549,6 @@ function ConfirmModal({
           </button>
         </div>
       </div>
-    </div>
+    </DialogOverlay>
   )
 }
