@@ -297,7 +297,7 @@ function SortableRecipeRow({
       </div>
 
       <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
-        <p className="font-medium text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
+        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
         <p className="text-xs text-gray-400">
           {[
             recipe.prepTime && `Prep ${recipe.prepTime}m`,
@@ -502,7 +502,7 @@ function ConfirmModal({
               danger ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-500 hover:bg-cyan-600'
             }`}
           >
-            {isPending ? `${confirmLabel}ing…` : confirmLabel}
+            {isPending ? `${confirmLabel.replace(/e$/, '')}ing…` : confirmLabel}
           </button>
           <button
             onClick={onCancel}

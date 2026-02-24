@@ -167,6 +167,30 @@ describe("cookbooks.byId", () => {
       expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id])
     })
   })
+
+  it("does not expose private recipes to non-owners in a public cookbook", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const other = await seedUser(db)
+      const cb = await seedCookbook(db, owner.id, { isPublic: true })
+      const publicRecipe = await seedRecipe(db, owner.id)
+      const [privateRecipe] = await db
+        .insert(schema.recipes)
+        .values({ name: `PrivateRecipe-${uid()}`, userId: other.id, isPublic: false })
+        .returning()
+
+      await db.insert(schema.cookbookRecipes).values([
+        { cookbookId: cb.id, recipeId: publicRecipe.id, orderIndex: 0 },
+        { cookbookId: cb.id, recipeId: privateRecipe.id, orderIndex: 1 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.cookbooks.byId({ id: cb.id })
+      const ids = result!.recipes.map((r) => r.id)
+      expect(ids).toContain(publicRecipe.id)
+      expect(ids).not.toContain(privateRecipe.id)
+    })
+  })
 })
 
 // ─── cookbooks.create ─────────────────────────────────────────────────────────
@@ -237,6 +261,45 @@ describe("cookbooks.addRecipe", () => {
 
       const result = await caller.cookbooks.byId({ id: cb.id })
       expect(result!.recipes.map((r) => r.id)).toEqual([r1.id, r2.id])
+    })
+  })
+
+  it("appends after max orderIndex even when gaps exist after a removal", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const cb = await seedCookbook(db, owner.id)
+      const r1 = await seedRecipe(db, owner.id)
+      const r2 = await seedRecipe(db, owner.id)
+      const r3 = await seedRecipe(db, owner.id)
+      const caller = await makeAuthCaller(db, owner.id)
+
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r1.id })
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r2.id })
+      // Remove the middle recipe, leaving indices [0, 1] with r2 removed → gap
+      await caller.cookbooks.removeRecipe({ cookbookId: cb.id, recipeId: r1.id })
+      // Add r3: should get max(orderIndex)+1 = 2, not count=1
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r3.id })
+
+      const result = await caller.cookbooks.byId({ id: cb.id })
+      const ids = result!.recipes.map((r) => r.id)
+      expect(ids).toEqual([r2.id, r3.id])
+    })
+  })
+
+  it("rejects adding a private recipe owned by another user", async () => {
+    await withDbTx(async (db) => {
+      const owner = await seedUser(db)
+      const other = await seedUser(db)
+      const cb = await seedCookbook(db, owner.id)
+      const [privateRecipe] = await db
+        .insert(schema.recipes)
+        .values({ name: `Private-${uid()}`, userId: other.id, isPublic: false })
+        .returning()
+
+      const caller = await makeAuthCaller(db, owner.id)
+      await expect(
+        caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: privateRecipe.id }),
+      ).rejects.toThrow("Recipe not found")
     })
   })
 })

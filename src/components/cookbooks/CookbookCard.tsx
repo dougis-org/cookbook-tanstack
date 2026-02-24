@@ -8,7 +8,6 @@ interface CookbookCardProps {
     isPublic: boolean
     imageUrl?: string | null
     recipeCount?: number
-    coverImageUrl?: string | null
   }
 }
 
@@ -16,9 +15,9 @@ export default function CookbookCard({ cookbook }: CookbookCardProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
       <div className="h-40 bg-gray-200 dark:bg-gray-700 relative">
-        {cookbook.coverImageUrl ? (
+        {cookbook.imageUrl ? (
           <img
-            src={cookbook.coverImageUrl}
+            src={cookbook.imageUrl}
             alt={cookbook.name}
             className="w-full h-full object-cover"
           />

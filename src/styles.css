@@ -16,7 +16,7 @@ code {
 
 /* ── Print styles ──────────────────────────────────────────────── */
 @media print {
-  header,
+  .site-header,
   aside,
   nav,
   .print\:hidden {

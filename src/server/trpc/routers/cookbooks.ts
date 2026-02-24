@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { eq, and, asc, sql, getTableColumns } from "drizzle-orm"
+import { TRPCError } from "@trpc/server"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership } from "./_helpers"
 import { cookbooks, cookbookRecipes, recipes, classifications } from "@/db/schema"
@@ -47,7 +48,12 @@ export const cookbooksRouter = router({
         .from(cookbookRecipes)
         .innerJoin(recipes, eq(cookbookRecipes.recipeId, recipes.id))
         .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
-        .where(eq(cookbookRecipes.cookbookId, input.id))
+        .where(
+          and(
+            eq(cookbookRecipes.cookbookId, input.id),
+            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
+          ),
+        )
         .orderBy(asc(cookbookRecipes.orderIndex))
 
       return { ...cookbook, recipes: recipeRows }
@@ -118,14 +124,27 @@ export const cookbooksRouter = router({
     .mutation(async ({ ctx, input }) => {
       await guardOwner(ctx, input.cookbookId)
 
-      const [{ count }] = await ctx.db
-        .select({ count: sql<number>`cast(count(*) as int)` })
+      const [accessible] = await ctx.db
+        .select({ id: recipes.id })
+        .from(recipes)
+        .where(
+          and(
+            eq(recipes.id, input.recipeId),
+            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
+          ),
+        )
+      if (!accessible) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
+      }
+
+      const [{ nextIndex }] = await ctx.db
+        .select({ nextIndex: sql<number>`coalesce(max(${cookbookRecipes.orderIndex}), -1) + 1` })
         .from(cookbookRecipes)
         .where(eq(cookbookRecipes.cookbookId, input.cookbookId))
 
       await ctx.db
         .insert(cookbookRecipes)
-        .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: count })
+        .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: nextIndex })
         .onConflictDoNothing()
 
       return { success: true }
@@ -155,19 +174,21 @@ export const cookbooksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await guardOwner(ctx, input.cookbookId)
-      await Promise.all(
-        input.recipeIds.map((recipeId, index) =>
-          ctx.db
-            .update(cookbookRecipes)
-            .set({ orderIndex: index })
-            .where(
-              and(
-                eq(cookbookRecipes.cookbookId, input.cookbookId),
-                eq(cookbookRecipes.recipeId, recipeId),
+      await ctx.db.transaction(async (tx) => {
+        await Promise.all(
+          input.recipeIds.map((recipeId, index) =>
+            tx
+              .update(cookbookRecipes)
+              .set({ orderIndex: index })
+              .where(
+                and(
+                  eq(cookbookRecipes.cookbookId, input.cookbookId),
+                  eq(cookbookRecipes.recipeId, recipeId),
+                ),
               ),
-            ),
-        ),
-      )
+          ),
+        )
+      })
       return { success: true }
     }),
 })
