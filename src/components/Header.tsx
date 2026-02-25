@@ -26,7 +26,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
+      <header className="site-header p-4 flex items-center justify-between bg-gray-800 text-white shadow-lg">
         <div className="flex items-center">
           <button
             onClick={() => setIsOpen(true)}
@@ -137,6 +137,19 @@ export default function Header() {
           >
             <ChefHat size={20} />
             <span className="font-medium">Categories</span>
+          </Link>
+
+          <Link
+            to="/cookbooks"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+            }}
+          >
+            <BookOpen size={20} />
+            <span className="font-medium">Cookbooks</span>
           </Link>
 
           <Link

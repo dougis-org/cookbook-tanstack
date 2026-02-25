@@ -1,15 +1,32 @@
 import { z } from "zod"
-import { eq, and } from "drizzle-orm"
+import { eq, and, asc, sql, getTableColumns } from "drizzle-orm"
+import { TRPCError } from "@trpc/server"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership } from "./_helpers"
-import { cookbooks, cookbookRecipes } from "@/db/schema"
+import { cookbooks, cookbookRecipes, recipes, classifications } from "@/db/schema"
+import type { db } from "@/db"
+
+/** Verify the current user owns the given cookbook, throwing FORBIDDEN if not. */
+async function guardOwner(ctx: { db: typeof db; user: { id: string } }, id: string) {
+  await verifyOwnership(
+    () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, id)),
+    ctx.user.id,
+    "Cookbook",
+  )
+}
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     return ctx.db
-      .select()
+      .select({
+        ...getTableColumns(cookbooks),
+        recipeCount: sql<number>`cast(count(${cookbookRecipes.recipeId}) as int)`,
+      })
       .from(cookbooks)
+      .leftJoin(cookbookRecipes, eq(cookbookRecipes.cookbookId, cookbooks.id))
       .where(visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user))
+      .groupBy(cookbooks.id)
+      .orderBy(asc(cookbooks.name))
   }),
 
   byId: publicProcedure
@@ -27,19 +44,31 @@ export const cookbooksRouter = router({
 
       if (!cookbook) return null
 
-      const recipes = await ctx.db
-        .select()
+      const recipeRows = await ctx.db
+        .select({
+          ...getTableColumns(recipes),
+          classificationName: classifications.name,
+          orderIndex: cookbookRecipes.orderIndex,
+        })
         .from(cookbookRecipes)
-        .where(eq(cookbookRecipes.cookbookId, input.id))
+        .innerJoin(recipes, eq(cookbookRecipes.recipeId, recipes.id))
+        .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
+        .where(
+          and(
+            eq(cookbookRecipes.cookbookId, input.id),
+            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
+          ),
+        )
+        .orderBy(asc(cookbookRecipes.orderIndex))
 
-      return { ...cookbook, recipes }
+      return { ...cookbook, recipes: recipeRows }
     }),
 
   create: protectedProcedure
     .input(
       z.object({
         name: z.string().min(1).max(255),
-        description: z.string().optional(),
+        description: z.string().max(500).optional(),
         isPublic: z.boolean().default(true),
         imageUrl: z.string().url().optional(),
       }),
@@ -64,7 +93,7 @@ export const cookbooksRouter = router({
         .object({
           id: z.string().uuid(),
           name: z.string().min(1).max(255).optional(),
-          description: z.string().optional(),
+          description: z.string().max(500).optional(),
           isPublic: z.boolean().optional(),
           imageUrl: z.string().url().optional(),
         })
@@ -77,12 +106,7 @@ export const cookbooksRouter = router({
         ),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
-        ctx.user.id,
-        "Cookbook",
-      )
-
+      await guardOwner(ctx, input.id)
       const { id: _, ...data } = input
       const [updated] = await ctx.db
         .update(cookbooks)
@@ -95,12 +119,88 @@ export const cookbooksRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, input.id)),
-        ctx.user.id,
-        "Cookbook",
-      )
+      await guardOwner(ctx, input.id)
       await ctx.db.delete(cookbooks).where(eq(cookbooks.id, input.id))
+      return { success: true }
+    }),
+
+  addRecipe: protectedProcedure
+    .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await guardOwner(ctx, input.cookbookId)
+
+      const [accessible] = await ctx.db
+        .select({ id: recipes.id })
+        .from(recipes)
+        .where(
+          and(
+            eq(recipes.id, input.recipeId),
+            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
+          ),
+        )
+      if (!accessible) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
+      }
+
+      await ctx.db.transaction(async (tx) => {
+        const [{ nextIndex }] = await tx
+          .select({ nextIndex: sql<number>`coalesce(max(${cookbookRecipes.orderIndex}), -1) + 1` })
+          .from(cookbookRecipes)
+          .where(eq(cookbookRecipes.cookbookId, input.cookbookId))
+
+        await tx
+          .insert(cookbookRecipes)
+          .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: nextIndex })
+          .onConflictDoNothing()
+      })
+
+      return { success: true }
+    }),
+
+  removeRecipe: protectedProcedure
+    .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      await guardOwner(ctx, input.cookbookId)
+      await ctx.db
+        .delete(cookbookRecipes)
+        .where(
+          and(
+            eq(cookbookRecipes.cookbookId, input.cookbookId),
+            eq(cookbookRecipes.recipeId, input.recipeId),
+          ),
+        )
+      return { success: true }
+    }),
+
+  reorderRecipes: protectedProcedure
+    .input(
+      z.object({
+        cookbookId: z.string().uuid(),
+        recipeIds: z
+          .array(z.string().uuid())
+          .min(1)
+          .refine((ids) => new Set(ids).size === ids.length, {
+            message: "Duplicate recipe IDs in reorder list",
+          }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await guardOwner(ctx, input.cookbookId)
+      await ctx.db.transaction(async (tx) => {
+        await Promise.all(
+          input.recipeIds.map((recipeId, index) =>
+            tx
+              .update(cookbookRecipes)
+              .set({ orderIndex: index })
+              .where(
+                and(
+                  eq(cookbookRecipes.cookbookId, input.cookbookId),
+                  eq(cookbookRecipes.recipeId, recipeId),
+                ),
+              ),
+          ),
+        )
+      })
       return { success: true }
     }),
 })
