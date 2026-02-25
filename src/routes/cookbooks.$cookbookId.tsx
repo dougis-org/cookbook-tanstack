@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, Printer, List } from 'lucide-react'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId')({
@@ -160,14 +161,10 @@ function CookbookDetailPage() {
   return (
     <PageLayout>
       {/* Header */}
+      <Breadcrumb items={[{ label: 'Cookbooks', to: '/cookbooks' }, { label: cookbook.name }]} />
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
-            <p className="text-gray-400 text-sm mb-1">
-              <Link to="/cookbooks" className="hover:text-cyan-400 transition-colors">Cookbooks</Link>
-              {' / '}
-              <span className="text-gray-300">{cookbook.name}</span>
-            </p>
             <h1 className="text-4xl font-bold text-white">{cookbook.name}</h1>
             {cookbook.description && (
               <p className="text-gray-300 mt-2 max-w-2xl">{cookbook.description}</p>

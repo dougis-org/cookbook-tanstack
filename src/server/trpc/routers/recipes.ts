@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { eq, and, or, ilike, inArray, asc, desc, sql, getTableColumns } from "drizzle-orm"
+import { eq, and, or, ilike, inArray, asc, desc, sql, getTableColumns, isNotNull, gte, lte } from "drizzle-orm"
 import { publicProcedure, protectedProcedure, router } from "../init"
 import { visibilityFilter, verifyOwnership, syncJunction } from "./_helpers"
 import {
@@ -64,10 +64,13 @@ export const recipesRouter = router({
           mealIds: z.array(z.string().uuid()).optional(),
           courseIds: z.array(z.string().uuid()).optional(),
           preparationIds: z.array(z.string().uuid()).optional(),
-          sort: z.enum(["name_asc", "name_desc", "newest", "oldest"]).optional(),
+          sort: z.enum(["name_asc", "name_desc", "newest", "oldest", "servings_asc", "servings_desc", "updated_desc"]).optional(),
           page: z.number().int().positive().optional(),
           pageSize: z.number().int().positive().max(100).optional(),
           markedByMe: z.boolean().optional(),
+          hasImage: z.boolean().optional(),
+          minServings: z.number().int().positive().optional(),
+          maxServings: z.number().int().positive().optional(),
         })
         .optional(),
     )
@@ -84,10 +87,23 @@ export const recipesRouter = router({
       if (input?.sourceId) conditions.push(eq(recipes.sourceId, input.sourceId))
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
       if (input?.search) {
-        const escaped = input.search.replace(/[%_]/g, "\\$&")
-        const pattern = `%${escaped}%`
-        conditions.push(or(ilike(recipes.name, pattern), ilike(recipes.ingredients, pattern)))
+        const term = input.search.trim()
+        if (term.length >= 2) {
+          // Full-text search across name, ingredients, and instructions using the GIN index.
+          // Falls back to ilike on name for short terms or special characters.
+          conditions.push(
+            or(
+              sql`to_tsvector('english', coalesce(${recipes.name},'') || ' ' || coalesce(${recipes.ingredients},'') || ' ' || coalesce(${recipes.instructions},'')) @@ plainto_tsquery('english', ${term})`,
+              ilike(recipes.name, `%${term.replace(/[%_]/g, "\\$&")}%`),
+            ),
+          )
+        } else {
+          conditions.push(ilike(recipes.name, `%${term.replace(/[%_]/g, "\\$&")}%`))
+        }
       }
+      if (input?.hasImage) conditions.push(isNotNull(recipes.imageUrl))
+      if (input?.minServings) conditions.push(gte(recipes.servings, input.minServings))
+      if (input?.maxServings) conditions.push(lte(recipes.servings, input.maxServings))
 
       // Junction table filters — recipes that have at least one matching row
       if (input?.mealIds?.length) {
@@ -119,6 +135,9 @@ export const recipesRouter = router({
         name_desc: desc(recipes.name),
         newest: desc(recipes.dateAdded),
         oldest: asc(recipes.dateAdded),
+        servings_asc: asc(recipes.servings),
+        servings_desc: desc(recipes.servings),
+        updated_desc: desc(recipes.updatedAt),
       } as const
       const orderBy = sortMap[input?.sort ?? "newest"]
 

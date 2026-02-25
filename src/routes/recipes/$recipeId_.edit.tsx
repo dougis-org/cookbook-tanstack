@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
 import { authMiddleware } from '@/lib/middleware'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const Route = createFileRoute('/recipes/$recipeId_/edit')({
   component: EditRecipePage,
@@ -47,17 +47,11 @@ function EditRecipePage() {
 
   return (
     <PageLayout>
-      <div className="mb-6">
-        <Link
-          to="/recipes/$recipeId"
-          params={{ recipeId }}
-          className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Recipe
-        </Link>
-      </div>
-
+      <Breadcrumb items={[
+        { label: 'Recipes', to: '/recipes' },
+        { label: recipe.name, to: '/recipes/$recipeId', params: { recipeId } },
+        { label: 'Edit' },
+      ]} />
       <RecipeForm initialData={recipe} />
     </PageLayout>
   )
