@@ -88,17 +88,23 @@ export const recipesRouter = router({
       if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
       if (input?.search) {
         const term = input.search.trim()
-        if (term.length >= 2) {
-          // Full-text search across name, ingredients, and instructions using the GIN index.
-          // Falls back to ilike on name for short terms or special characters.
-          conditions.push(
-            or(
+        if (term) {
+          // Escape backslashes first, then LIKE special chars
+          const escaped = term.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&")
+          if (term.length >= 2) {
+            // Full-text search across name, ingredients, and instructions using the GIN index.
+            conditions.push(
               sql`to_tsvector('english', coalesce(${recipes.name},'') || ' ' || coalesce(${recipes.ingredients},'') || ' ' || coalesce(${recipes.instructions},'')) @@ plainto_tsquery('english', ${term})`,
-              ilike(recipes.name, `%${term.replace(/[%_]/g, "\\$&")}%`),
-            ),
-          )
-        } else {
-          conditions.push(ilike(recipes.name, `%${term.replace(/[%_]/g, "\\$&")}%`))
+            )
+          } else {
+            // ilike fallback for single-char terms — search name and ingredients
+            conditions.push(
+              or(
+                ilike(recipes.name, `%${escaped}%`),
+                ilike(recipes.ingredients, `%${escaped}%`),
+              ),
+            )
+          }
         }
       }
       if (input?.hasImage) conditions.push(isNotNull(recipes.imageUrl))

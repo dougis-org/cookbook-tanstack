@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, type ReactNode } from 'react'
+import { useRef, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Heart, User, Image } from 'lucide-react'
@@ -12,7 +12,7 @@ const searchSchema = z.object({
   search: z.string().optional(),
   sort: z.enum(['name_asc', 'name_desc', 'newest', 'oldest', 'servings_asc', 'servings_desc', 'updated_desc']).optional(),
   page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().max(100).optional(),
   classificationId: z.string().uuid().optional(),
   sourceId: z.string().uuid().optional(),
   mealIds: z.array(z.string().uuid()).optional(),
@@ -79,6 +79,10 @@ function RecipesPage() {
   const { data: session } = useSession()
   const isLoggedIn = !!session?.user
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const [searchValue, setSearchValue] = useState(search)
+  // Keep the controlled input in sync when the URL search param changes externally
+  // (e.g. "Clear all filters", navigating back/forward)
+  useEffect(() => { setSearchValue(search) }, [search])
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
@@ -169,15 +173,15 @@ function RecipesPage() {
     ...(maxServings ? [{ label: `≤ ${maxServings} servings`, onRemove: () => updateSearch({ maxServings: undefined }) }] : []),
     ...(mealIds ?? []).map((id) => ({
       label: allMeals?.find((m) => m.id === id)?.name ?? 'Meal',
-      onRemove: () => updateSearch({ mealIds: mealIds!.filter((v) => v !== id) }),
+      onRemove: () => { const next = (mealIds ?? []).filter((v) => v !== id); updateSearch({ mealIds: next.length ? next : undefined }) },
     })),
     ...(courseIds ?? []).map((id) => ({
       label: allCourses?.find((c) => c.id === id)?.name ?? 'Course',
-      onRemove: () => updateSearch({ courseIds: courseIds!.filter((v) => v !== id) }),
+      onRemove: () => { const next = (courseIds ?? []).filter((v) => v !== id); updateSearch({ courseIds: next.length ? next : undefined }) },
     })),
     ...(preparationIds ?? []).map((id) => ({
       label: allPreparations?.find((p) => p.id === id)?.name ?? 'Prep',
-      onRemove: () => updateSearch({ preparationIds: preparationIds!.filter((v) => v !== id) }),
+      onRemove: () => { const next = (preparationIds ?? []).filter((v) => v !== id); updateSearch({ preparationIds: next.length ? next : undefined }) },
     })),
   ]
 
@@ -191,9 +195,9 @@ function RecipesPage() {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Search recipes… (press / to focus)"
-              defaultValue={search}
-              onChange={(e) => debouncedSearch(e.target.value)}
+              placeholder="Search recipes..."
+              value={searchValue}
+              onChange={(e) => { setSearchValue(e.target.value); debouncedSearch(e.target.value) }}
               className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
           </div>
@@ -315,15 +319,23 @@ function RecipesPage() {
         {/* Servings range */}
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-400">Servings:</span>
-          <input type="number" min={1} placeholder="Min"
+          <input type="number" min={1} step={1} placeholder="Min"
             value={minServings ?? ''}
-            onChange={(e) => updateSearch({ minServings: e.target.value ? Number(e.target.value) : undefined })}
+            onChange={(e) => {
+              const v = e.target.value
+              const n = Number(v)
+              updateSearch({ minServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
+            }}
             className="w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           />
           <span className="text-gray-600">–</span>
-          <input type="number" min={1} placeholder="Max"
+          <input type="number" min={1} step={1} placeholder="Max"
             value={maxServings ?? ''}
-            onChange={(e) => updateSearch({ maxServings: e.target.value ? Number(e.target.value) : undefined })}
+            onChange={(e) => {
+              const v = e.target.value
+              const n = Number(v)
+              updateSearch({ maxServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
+            }}
             className="w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           />
         </div>
@@ -331,8 +343,8 @@ function RecipesPage() {
         {/* Active filter badges */}
         {activeBadges.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-1">
-            {activeBadges.map((b) => (
-              <ActiveBadge key={b.label} label={b.label} onRemove={b.onRemove} />
+            {activeBadges.map((b, i) => (
+              <ActiveBadge key={i} label={b.label} onRemove={b.onRemove} />
             ))}
           </div>
         )}

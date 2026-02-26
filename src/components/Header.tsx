@@ -66,7 +66,7 @@ export default function Header() {
               type="search"
               value={headerSearch}
               onChange={(e) => setHeaderSearch(e.target.value)}
-              placeholder="Search recipes… (/)"
+              placeholder="Search recipes…"
               className="w-full pl-9 pr-4 py-1.5 bg-gray-700 text-white rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
           </div>

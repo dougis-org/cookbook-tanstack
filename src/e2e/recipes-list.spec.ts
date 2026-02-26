@@ -20,7 +20,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // Navigate to recipe list and search
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
-    const searchInput = page.getByPlaceholder("Search recipes...")
+    const searchInput = page.getByPlaceholder(/Search recipes/)
     await searchInput.fill(uniqueWord)
 
     // waitForURL blocks until the debounced search updates the URL query param;
@@ -34,7 +34,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    const searchInput = page.getByPlaceholder("Search recipes...")
+    const searchInput = page.getByPlaceholder(/Search recipes/)
     await searchInput.fill(`NoMatchXYZ${Date.now()}`)
 
     // waitForURL blocks until the debounced search updates the URL;
