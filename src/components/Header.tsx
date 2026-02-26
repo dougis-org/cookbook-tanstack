@@ -1,5 +1,5 @@
-import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useState, useRef } from 'react'
 import {
   Home,
   Menu,
@@ -17,11 +17,22 @@ import { useSession, signOut } from '@/lib/auth-client'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [headerSearch, setHeaderSearch] = useState('')
   const { data: session, isPending } = useSession()
+  const navigate = useNavigate()
+  const headerSearchRef = useRef<HTMLInputElement>(null)
 
   async function handleSignOut() {
     await signOut()
     setIsOpen(false)
+  }
+
+  function handleHeaderSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const q = headerSearch.trim()
+    navigate({ to: '/recipes', search: q ? { search: q } : {} })
+    setHeaderSearch('')
+    headerSearchRef.current?.blur()
   }
 
   return (
@@ -40,6 +51,26 @@ export default function Header() {
             <h1 className="text-xl font-semibold">CookBook</h1>
           </Link>
         </div>
+
+        <form
+          onSubmit={handleHeaderSearch}
+          className="hidden md:flex items-center flex-1 max-w-sm mx-4"
+        >
+          <div className="relative w-full">
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              size={16}
+            />
+            <input
+              ref={headerSearchRef}
+              type="search"
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
+              placeholder="Search recipes…"
+              className="w-full pl-9 pr-4 py-1.5 bg-gray-700 text-white rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            />
+          </div>
+        </form>
 
         <div className="flex items-center gap-3">
           {isPending ? null : session ? (
@@ -164,16 +195,6 @@ export default function Header() {
             <Plus size={20} />
             <span className="font-medium">New Recipe</span>
           </Link>
-
-          <div className="mt-6 pt-6 border-t border-gray-700">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 px-3">
-              Coming Soon
-            </p>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-800/50 text-gray-500 mb-2">
-              <Search size={20} />
-              <span className="font-medium">Advanced Search</span>
-            </div>
-          </div>
         </nav>
       </aside>
     </>

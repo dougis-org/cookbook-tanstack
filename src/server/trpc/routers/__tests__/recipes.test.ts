@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, afterAll } from "vitest"
+import { eq } from "drizzle-orm"
 import { withDbTx, closeTestPool, type TestDb } from "@/test-helpers/with-db-tx"
 import * as schema from "@/db/schema"
 
@@ -135,7 +136,7 @@ describe("recipes.list", () => {
       })
     })
 
-    it("filters by ingredients text within a user's recipes", async () => {
+    it("filters by ingredients text (FTS path, >= 2 chars) within a user's recipes", async () => {
       await withDbTx(async (db) => {
         const user = await seedUser(db)
         await db.insert(schema.recipes).values([
@@ -148,6 +149,42 @@ describe("recipes.list", () => {
 
         expect(result.items).toHaveLength(1)
         expect(result.items[0]).toMatchObject({ name: "Soup" })
+      })
+    })
+
+    it("single-char search uses ilike fallback on name and ingredients", async () => {
+      await withDbTx(async (db) => {
+        const user = await seedUser(db)
+        await db.insert(schema.recipes).values([
+          { name: "Quesadilla", userId: user.id, isPublic: true, ingredients: "cheese\ntortilla" },
+          { name: "Tacos", userId: user.id, isPublic: true, ingredients: "beef\nsalsa" },
+        ])
+
+        const caller = await makeAnonCaller(db)
+        // 'Q' is a single char → ilike fallback, matches name "Quesadilla"
+        const byName = await caller.recipes.list({ userId: user.id, search: "Q" })
+        expect(byName.items).toHaveLength(1)
+        expect(byName.items[0]).toMatchObject({ name: "Quesadilla" })
+
+        // 'e' matches "cheese" in ingredients → ilike fallback on ingredients
+        const byIngredient = await caller.recipes.list({ userId: user.id, search: "e" })
+        const names = byIngredient.items.map((r) => r.name)
+        expect(names).toContain("Quesadilla") // matches "cheese" and name
+      })
+    })
+
+    it("whitespace-only search returns all visible recipes without applying any filter", async () => {
+      await withDbTx(async (db) => {
+        const user = await seedUser(db)
+        await db.insert(schema.recipes).values([
+          { name: "Recipe A", userId: user.id, isPublic: true },
+          { name: "Recipe B", userId: user.id, isPublic: true },
+        ])
+
+        const caller = await makeAnonCaller(db)
+        const result = await caller.recipes.list({ userId: user.id, search: "   " })
+
+        expect(result.items).toHaveLength(2)
       })
     })
   })
@@ -430,6 +467,176 @@ describe("recipes.delete", () => {
 
       expect(result).toEqual({ success: true })
       expect(await caller.recipes.byId({ id: recipe.id })).toBeNull()
+    })
+  })
+})
+
+// ─── recipes.list — M05 filter parameters ─────────────────────────────────────
+
+describe("recipes.list — hasImage filter", () => {
+  it("returns only recipes with an imageUrl when hasImage is true", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "With Image", userId: user.id, isPublic: true, imageUrl: "https://example.com/img.jpg" },
+        { name: "No Image", userId: user.id, isPublic: true, imageUrl: null },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, hasImage: true })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "With Image" })
+    })
+  })
+
+  it("returns all visible recipes when hasImage is not set", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "With Image", userId: user.id, isPublic: true, imageUrl: "https://example.com/img.jpg" },
+        { name: "No Image", userId: user.id, isPublic: true, imageUrl: null },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id })
+
+      expect(result.items).toHaveLength(2)
+    })
+  })
+})
+
+describe("recipes.list — servings range filter", () => {
+  it("minServings returns only recipes with servings >= min", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Small Batch", userId: user.id, isPublic: true, servings: 2 },
+        { name: "Large Batch", userId: user.id, isPublic: true, servings: 8 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, minServings: 5 })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "Large Batch" })
+    })
+  })
+
+  it("maxServings returns only recipes with servings <= max", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Small Batch", userId: user.id, isPublic: true, servings: 2 },
+        { name: "Large Batch", userId: user.id, isPublic: true, servings: 8 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, maxServings: 4 })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "Small Batch" })
+    })
+  })
+
+  it("minServings + maxServings returns recipes within the inclusive range", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Tiny", userId: user.id, isPublic: true, servings: 1 },
+        { name: "Medium", userId: user.id, isPublic: true, servings: 4 },
+        { name: "Huge", userId: user.id, isPublic: true, servings: 20 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, minServings: 2, maxServings: 10 })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "Medium" })
+    })
+  })
+
+  it("excludes recipes with null servings from a minServings query", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Unknown Servings", userId: user.id, isPublic: true, servings: null },
+        { name: "Known Servings", userId: user.id, isPublic: true, servings: 4 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, minServings: 1 })
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0]).toMatchObject({ name: "Known Servings" })
+    })
+  })
+})
+
+describe("recipes.list — new sort options", () => {
+  it.each([
+    ["servings_asc" as const],
+    ["servings_desc" as const],
+    ["updated_desc" as const],
+  ])("sort=%s returns results without error", async (sort) => {
+    await withDbTx(async (db) => {
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ sort })
+      expect(result).toHaveProperty("items")
+      expect(result).toHaveProperty("total")
+    })
+  })
+
+  it("servings_asc orders by servings ascending", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Eight Servings", userId: user.id, isPublic: true, servings: 8 },
+        { name: "Two Servings", userId: user.id, isPublic: true, servings: 2 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, sort: "servings_asc" })
+
+      const names = result.items.map((r) => r.name)
+      expect(names.indexOf("Two Servings")).toBeLessThan(names.indexOf("Eight Servings"))
+    })
+  })
+
+  it("servings_desc orders by servings descending", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      await db.insert(schema.recipes).values([
+        { name: "Two Servings", userId: user.id, isPublic: true, servings: 2 },
+        { name: "Eight Servings", userId: user.id, isPublic: true, servings: 8 },
+      ])
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, sort: "servings_desc" })
+
+      const names = result.items.map((r) => r.name)
+      expect(names.indexOf("Eight Servings")).toBeLessThan(names.indexOf("Two Servings"))
+    })
+  })
+
+  it("updated_desc orders by updatedAt descending", async () => {
+    await withDbTx(async (db) => {
+      const user = await seedUser(db)
+      // Insert first recipe with a deliberately old updatedAt so we can distinguish ordering
+      const [r1] = await db
+        .insert(schema.recipes)
+        .values({ name: "Old Recipe", userId: user.id, isPublic: true, updatedAt: new Date("2020-01-01") })
+        .returning()
+      await db.insert(schema.recipes).values({ name: "New Recipe", userId: user.id, isPublic: true })
+
+      // Touch r1 to bump its updatedAt past New Recipe's timestamp
+      await db.update(schema.recipes).set({ name: "Old Recipe — Touched" }).where(eq(schema.recipes.id, r1.id))
+
+      const caller = await makeAnonCaller(db)
+      const result = await caller.recipes.list({ userId: user.id, sort: "updated_desc" })
+
+      const names = result.items.map((r) => r.name)
+      expect(names[0]).toBe("Old Recipe — Touched")
     })
   })
 })

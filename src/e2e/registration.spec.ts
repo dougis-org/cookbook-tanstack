@@ -136,7 +136,7 @@ test.describe("Registration Form UI", () => {
 
   test("should have proper form structure", async ({ page }) => {
     // Verify form element exists
-    const form = page.locator('form');
+    const form = page.locator('form[novalidate]');
     await expect(form).toBeVisible();
 
     // Verify form has noValidate attribute (client-side validation only)

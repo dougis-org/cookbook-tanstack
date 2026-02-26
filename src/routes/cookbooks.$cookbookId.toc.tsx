@@ -2,6 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import { Printer, ArrowLeft } from 'lucide-react'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId/toc')({
   component: CookbookTocPage,
@@ -38,6 +39,13 @@ function CookbookTocPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 print:bg-white print:text-black">
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* Screen-only nav */}
+        <div className="print:hidden mb-2">
+          <Breadcrumb items={[
+            { label: 'Cookbooks', to: '/cookbooks' },
+            { label: cookbook.name, to: '/cookbooks/$cookbookId', params: { cookbookId } },
+            { label: 'Table of Contents' },
+          ]} />
+        </div>
         <div className="flex justify-between items-center mb-8 print:hidden">
           <Link
             to="/cookbooks/$cookbookId"

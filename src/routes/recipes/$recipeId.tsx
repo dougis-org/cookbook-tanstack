@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Heart } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useSession } from '@/lib/auth-client'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
+import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
   component: RecipeDetailPage,
@@ -75,14 +76,9 @@ function RecipeDetailPage() {
 
   return (
     <PageLayout>
+      <Breadcrumb items={[{ label: 'Recipes', to: '/recipes' }, { label: recipe.name }]} />
       <div className="mb-6 flex items-center justify-between">
-        <Link
-          to="/recipes"
-          className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Recipes
-        </Link>
+        <span />
 
         {isLoggedIn && (
           <button

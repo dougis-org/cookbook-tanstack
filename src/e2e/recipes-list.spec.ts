@@ -20,7 +20,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // Navigate to recipe list and search
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
-    const searchInput = page.getByPlaceholder("Search recipes...")
+    const searchInput = page.getByTestId("recipe-search-input")
     await searchInput.fill(uniqueWord)
 
     // waitForURL blocks until the debounced search updates the URL query param;
@@ -34,7 +34,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.goto("/recipes")
     await page.waitForLoadState("networkidle")
 
-    const searchInput = page.getByPlaceholder("Search recipes...")
+    const searchInput = page.getByTestId("recipe-search-input")
     await searchInput.fill(`NoMatchXYZ${Date.now()}`)
 
     // waitForURL blocks until the debounced search updates the URL;
@@ -110,7 +110,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/)
 
     // "Clear all" button should appear
-    const clearButton = page.getByRole("button", { name: /Clear all/ })
+    const clearButton = page.getByTestId("clear-all-filters")
     await expect(clearButton).toBeVisible()
 
     // Click clear all

@@ -4,8 +4,16 @@
 
 This document outlines the complete migration from the Laravel-based recipe application to a modern TanStack Start application. The migration is organized into 12 detailed milestones, each with specific tasks, acceptance criteria, and deliverables.
 
-**Estimated Timeline**: 12 weeks (250-300 hours)  
-**Current Status**: ~15% complete (UI/Layout foundation only)
+**Original Estimated Timeline**: 12 weeks (250-300 hours)
+**Current Status**: ~33% complete (M01–M04 shipped)
+
+### Revised Launch Scope (as of 2026-02-25)
+
+M06 (Image Management) and M07 (User Features & Social) are **deferred to post-launch** to accelerate production release. The revised path to launch is:
+
+**M05 → M08 → M09 → M10 → M11 → M12**
+
+M06 and M07 will be implemented as post-launch improvements once the core application is live and validated with real users.
 
 For detailed implementation steps, acceptance criteria, and testing requirements, refer to the individual milestone documents linked below.
 
