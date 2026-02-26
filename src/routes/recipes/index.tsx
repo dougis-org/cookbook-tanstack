@@ -194,6 +194,7 @@ function RecipesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               ref={searchInputRef}
+              data-testid="recipe-search-input"
               type="text"
               placeholder="Search recipes..."
               value={searchValue}
@@ -212,8 +213,8 @@ function RecipesPage() {
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
             <option value="updated_desc">Recently updated</option>
-            <option value="name_asc">Name A–Z</option>
-            <option value="name_desc">Name Z–A</option>
+            <option value="name_asc">Name A-Z</option>
+            <option value="name_desc">Name Z-A</option>
             <option value="servings_asc">Servings ↑</option>
             <option value="servings_desc">Servings ↓</option>
           </select>
@@ -248,7 +249,7 @@ function RecipesPage() {
           <Filter className="w-4 h-4" />
           <span>Filters</span>
           {hasActiveFilters && (
-            <button onClick={clearFilters} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-700 text-gray-300 hover:bg-slate-600 transition-colors text-xs">
+            <button data-testid="clear-all-filters" onClick={clearFilters} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-700 text-gray-300 hover:bg-slate-600 transition-colors text-xs">
               <X className="w-3 h-3" />
               Clear all
             </button>
