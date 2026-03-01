@@ -12,14 +12,20 @@ RUN npm run build
 FROM node:25-alpine AS production
 WORKDIR /app
 
-# Copy Nitro build output and migration files
+# Nitro build output
 COPY --from=build /app/.output ./.output
+# Migration SQL files + config (needed by drizzle-kit migrate release command)
 COPY --from=build /app/drizzle ./drizzle
-# Include all deps (drizzle-kit is needed for the release command: npm run db:migrate)
+COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
+# Seed scripts and DB client (needed by npm run db:seed via fly ssh console)
+COPY --from=build /app/src/db ./src/db
+# All deps required: drizzle-kit (devDep) is needed for the release command
 COPY --from=build /app/package*.json ./
 RUN npm ci
 
 ENV NODE_ENV=production
 EXPOSE 3000
 
+# Run as non-root for least-privilege security
+USER node
 CMD ["node", ".output/server/index.mjs"]

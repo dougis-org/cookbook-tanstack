@@ -8,10 +8,10 @@ CookBook currently runs only on a local Docker-based PostgreSQL instance with no
 - Add Fly.io app configuration (`fly.toml`) for the TanStack Start / Nitro server
 - Add Fly.io Postgres clusters for `test` and `prod` environments
 - Add environment-specific secrets management (DATABASE_URL, NODE_ENV) via `flyctl secrets`
-- Add GitHub Actions CI/CD pipeline: run tests against the test DB, deploy to prod on merge to main
-- Add `.env.test` and `.env.production` environment files (gitignored, values injected via secrets)
-- Update `drizzle.config.ts` and DB client to honour `DATABASE_URL` from environment without hard-coded defaults
-- Add `npm run db:migrate:prod` script that runs migrations against prod DB via Fly.io proxy
+- Add GitHub Actions CI/CD pipeline: deploy to prod on merge to main (tests already run in existing workflow)
+- *(follow-up)* Add `.env.test` and `.env.production` environment files (gitignored, values injected via secrets)
+- *(follow-up)* Update `drizzle.config.ts` and DB client to honour `DATABASE_URL` from environment without hard-coded defaults
+- *(follow-up)* Add `npm run db:migrate:prod` script that runs migrations against prod DB via Fly.io proxy
 
 ## Capabilities
 

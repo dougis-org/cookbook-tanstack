@@ -95,8 +95,10 @@ fly postgres create \
 # 6. Deploy (builds Docker image remotely and runs migrations via release command)
 fly deploy --remote-only
 
-# 7. Seed taxonomy data on prod (one-time after first deploy)
-fly ssh console -a cookbook-tanstack -C "npm run db:seed"
+# 7. Seed taxonomy data on prod (one-time, run from local checkout via proxy)
+#    In a separate terminal: fly proxy 5432 -a cookbook-db-prod
+#    Then:
+DATABASE_URL="postgresql://<user>:<pass>@localhost:5432/cookbook" npm run db:seed
 
 # 8. Verify the app is live
 fly open
@@ -107,8 +109,9 @@ fly open
 Add `FLY_API_TOKEN` to the GitHub repository under **Settings → Secrets and variables → Actions**:
 
 ```bash
-fly tokens create deploy -x 999999h
+fly tokens create deploy -x 720h
 # Copy the output token into GitHub as FLY_API_TOKEN
+# Rotate this token monthly: re-run the command above and update the secret
 ```
 
 ### Day-to-day deploys
@@ -142,8 +145,10 @@ fly deploy --image <image-from-list> --app cookbook-tanstack
 # Open a local proxy to the prod DB on port 5432
 fly proxy 5432 -a cookbook-db-prod
 
-# In a separate terminal, connect with psql
-psql $DATABASE_URL
+# In a separate terminal, connect with psql (use your actual prod credentials)
+psql "postgresql://<user>:<pass>@localhost:5432/cookbook"
+# Or use the Fly CLI shortcut (no proxy needed):
+# fly postgres connect -a cookbook-db-prod
 ```
 
 ### Rotate DATABASE_URL

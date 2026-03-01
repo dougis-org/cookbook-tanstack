@@ -8,7 +8,7 @@
 ## 1. Docker Build Setup
 
 - [x] 1.1 Create `Dockerfile` at project root — multi-stage build: `node:25-alpine` build stage runs `npm ci && npm run build`, production stage copies `.output/` and runs `node .output/server/index.mjs` (or equivalent Nitro entry point)
-- [x] 1.2 Create `.dockerignore` to exclude `node_modules/`, `.git/`, `drizzle/`, `playwright-report/`, `test-results/`, `.env*`, and `openspec/`
+- [x] 1.2 Create `.dockerignore` to exclude `node_modules/`, `.git/`, `playwright-report/`, `test-results/`, `.env*`, and `openspec/` *(note: do **not** exclude `drizzle/` — the Dockerfile copies it into the runtime image so `npm run db:migrate` can run on Fly)*
 - [x] 1.3 Verify image builds locally: `docker build -t cookbook-tanstack .` and `docker run -e PORT=3000 -e DATABASE_URL=... -p 3000:3000 cookbook-tanstack`
 
 ## 2. Fly.io App Configuration
