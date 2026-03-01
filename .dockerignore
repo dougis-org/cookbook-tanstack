@@ -1,0 +1,12 @@
+node_modules/
+.git/
+.output/
+playwright-report/
+test-results/
+coverage/
+.env*
+openspec/
+.claude/
+.tanstack/
+.nitro/
+.vinxi/

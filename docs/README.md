@@ -16,6 +16,10 @@ These standards are referenced by:
 - `AGENTS.md` — Agent development workflow
 - `CLAUDE.md` — Architecture and conventions
 
+## Deployment
+
+- **[Deployment Guide](./deployment.md)** — Local dev database options (`sponky.dougis.com` vs Docker compose), Fly.io provisioning, CI/CD, and operations runbook
+
 ## Database
 
 - **[Database Schema](./database.md)** — PostgreSQL schema documentation with all 15 tables, relationships, and migration info
