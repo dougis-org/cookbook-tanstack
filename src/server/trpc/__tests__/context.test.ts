@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-const mockDb = { select: vi.fn() }
 const mockGetSession = vi.fn()
 
-vi.mock("@/db", () => ({ db: mockDb }))
-vi.mock("@/db/schema", () => ({ users: {}, sessions: {}, accounts: {}, verifications: {} }))
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: mockGetSession } } }))
 
 const fetchOpts = {
@@ -16,7 +13,7 @@ const fetchOpts = {
 describe("createContext", () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("returns db, session, and user when authenticated", async () => {
+  it("returns session and user when authenticated", async () => {
     const { createContext } = await import("@/server/trpc/context")
     mockGetSession.mockResolvedValue({
       session: { id: "session-1" },
@@ -25,7 +22,6 @@ describe("createContext", () => {
 
     const ctx = await createContext(fetchOpts)
 
-    expect(ctx.db).toBe(mockDb)
     expect(ctx.session).toEqual({ id: "session-1" })
     expect(ctx.user).toEqual({ id: "user-1", email: "test@example.com" })
   })
@@ -36,8 +32,16 @@ describe("createContext", () => {
 
     const ctx = await createContext(fetchOpts)
 
-    expect(ctx.db).toBe(mockDb)
     expect(ctx.session).toBeNull()
     expect(ctx.user).toBeNull()
+  })
+
+  it("does not include a db property on the context", async () => {
+    const { createContext } = await import("@/server/trpc/context")
+    mockGetSession.mockResolvedValue(null)
+
+    const ctx = await createContext(fetchOpts)
+
+    expect(ctx).not.toHaveProperty("db")
   })
 })

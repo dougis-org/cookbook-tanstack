@@ -1,4 +1,4 @@
 import { createTaxonomyRouter } from "./_helpers"
-import { meals } from "@/db/schema"
+import { Meal } from "@/db/models"
 
-export const mealsRouter = createTaxonomyRouter(meals)
+export const mealsRouter = createTaxonomyRouter(Meal)

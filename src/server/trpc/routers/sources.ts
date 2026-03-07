@@ -1,33 +1,26 @@
 import { z } from "zod"
-import { asc, eq, ilike } from "drizzle-orm"
-import { publicProcedure, protectedProcedure, router } from "../init"
-import { sources } from "@/db/schema"
+import { protectedProcedure, publicProcedure, router } from "../init"
+import { Source } from "@/db/models"
 
 export const sourcesRouter = router({
-  list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(sources)
+  list: publicProcedure.query(async () => {
+    return Source.find().lean()
   }),
 
   search: publicProcedure
     .input(z.object({ query: z.string().min(1).max(255) }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const trimmed = input.query.trim()
-      const escaped = trimmed.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&")
-      return ctx.db
-        .select()
-        .from(sources)
-        .where(ilike(sources.name, `%${escaped}%`))
-        .orderBy(asc(sources.name))
+      return Source.find({ name: { $regex: trimmed, $options: "i" } })
+        .sort({ name: 1 })
         .limit(10)
+        .lean()
     }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const [source] = await ctx.db
-        .select()
-        .from(sources)
-        .where(eq(sources.id, input.id))
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const source = await Source.findById(input.id).lean()
       return source ?? null
     }),
 
@@ -38,11 +31,11 @@ export const sourcesRouter = router({
         url: z.string().url().optional(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const [source] = await ctx.db
-        .insert(sources)
-        .values({ name: input.name, url: input.url ?? null })
-        .returning()
-      return source
+    .mutation(async ({ input }) => {
+      const source = await new Source({
+        name: input.name,
+        url: input.url ?? null,
+      }).save()
+      return source.toObject()
     }),
 })

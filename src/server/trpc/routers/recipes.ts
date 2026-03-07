@@ -1,20 +1,8 @@
 import { z } from "zod"
-import { eq, and, or, ilike, inArray, asc, desc, sql, getTableColumns, isNotNull, gte, lte } from "drizzle-orm"
+import { TRPCError } from "@trpc/server"
 import { publicProcedure, protectedProcedure, router } from "../init"
-import { visibilityFilter, verifyOwnership, syncJunction } from "./_helpers"
-import {
-  recipes,
-  recipeMeals,
-  recipeCourses,
-  recipePreparations,
-  recipeImages,
-  recipeLikes,
-  classifications,
-  meals,
-  courses,
-  preparations,
-  sources,
-} from "@/db/schema"
+import { visibilityFilter, verifyOwnership } from "./_helpers"
+import { Recipe, RecipeLike } from "@/db/models"
 
 const recipeFields = z.object({
   name: z.string().min(1).max(500),
@@ -25,8 +13,8 @@ const recipeFields = z.object({
   prepTime: z.number().int().positive().optional(),
   cookTime: z.number().int().positive().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
-  sourceId: z.string().uuid().optional(),
-  classificationId: z.string().uuid().optional(),
+  sourceId: z.string().optional(),
+  classificationId: z.string().optional(),
   calories: z.number().int().nonnegative().optional(),
   fat: z.number().nonnegative().optional(),
   cholesterol: z.number().nonnegative().optional(),
@@ -37,33 +25,24 @@ const recipeFields = z.object({
 })
 
 const taxonomyIds = z.object({
-  mealIds: z.array(z.string().uuid()).optional(),
-  courseIds: z.array(z.string().uuid()).optional(),
-  preparationIds: z.array(z.string().uuid()).optional(),
+  mealIds: z.array(z.string()).optional(),
+  courseIds: z.array(z.string()).optional(),
+  preparationIds: z.array(z.string()).optional(),
 })
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function syncTaxonomy(db: any, recipeId: string, input: z.infer<typeof taxonomyIds>) {
-  await Promise.all([
-    syncJunction(db, recipeMeals, recipeMeals.recipeId, recipeId, input.mealIds, "mealId"),
-    syncJunction(db, recipeCourses, recipeCourses.recipeId, recipeId, input.courseIds, "courseId"),
-    syncJunction(db, recipePreparations, recipePreparations.recipeId, recipeId, input.preparationIds, "preparationId"),
-  ])
-}
 
 export const recipesRouter = router({
   list: publicProcedure
     .input(
       z
         .object({
-          classificationId: z.string().uuid().optional(),
-          sourceId: z.string().uuid().optional(),
-          userId: z.string().uuid().optional(),
+          classificationId: z.string().optional(),
+          sourceId: z.string().optional(),
+          userId: z.string().optional(),
           isPublic: z.boolean().optional(),
           search: z.string().optional(),
-          mealIds: z.array(z.string().uuid()).optional(),
-          courseIds: z.array(z.string().uuid()).optional(),
-          preparationIds: z.array(z.string().uuid()).optional(),
+          mealIds: z.array(z.string()).optional(),
+          courseIds: z.array(z.string()).optional(),
+          preparationIds: z.array(z.string()).optional(),
           sort: z.enum(["name_asc", "name_desc", "newest", "oldest", "servings_asc", "servings_desc", "updated_desc"]).optional(),
           page: z.number().int().positive().optional(),
           pageSize: z.number().int().positive().max(100).optional(),
@@ -75,141 +54,105 @@ export const recipesRouter = router({
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      const conditions = []
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filter: Record<string, any> = {}
 
       if (input?.isPublic !== undefined) {
-        conditions.push(eq(recipes.isPublic, input.isPublic))
+        filter.isPublic = input.isPublic
       } else {
-        conditions.push(visibilityFilter(recipes.isPublic, recipes.userId, ctx.user))
+        Object.assign(filter, visibilityFilter(ctx.user))
       }
 
-      if (input?.classificationId) conditions.push(eq(recipes.classificationId, input.classificationId))
-      if (input?.sourceId) conditions.push(eq(recipes.sourceId, input.sourceId))
-      if (input?.userId) conditions.push(eq(recipes.userId, input.userId))
+      if (input?.classificationId) filter.classificationId = input.classificationId
+      if (input?.sourceId) filter.sourceId = input.sourceId
+      if (input?.userId) filter.userId = input.userId
+
       if (input?.search) {
         const term = input.search.trim()
         if (term) {
-          // Escape backslashes first, then LIKE special chars
-          const escaped = term.replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&")
-          if (term.length >= 2) {
-            // Full-text search across name, ingredients, and instructions using the GIN index.
-            conditions.push(
-              sql`to_tsvector('english', coalesce(${recipes.name},'') || ' ' || coalesce(${recipes.ingredients},'') || ' ' || coalesce(${recipes.instructions},'')) @@ plainto_tsquery('english', ${term})`,
-            )
-          } else {
-            // ilike fallback for single-char terms — search name and ingredients
-            conditions.push(
-              or(
-                ilike(recipes.name, `%${escaped}%`),
-                ilike(recipes.ingredients, `%${escaped}%`),
-              ),
-            )
-          }
+          filter.$or = [
+            { name: { $regex: term, $options: "i" } },
+            { ingredients: { $regex: term, $options: "i" } },
+          ]
         }
       }
-      if (input?.hasImage) conditions.push(isNotNull(recipes.imageUrl))
-      if (input?.minServings) conditions.push(gte(recipes.servings, input.minServings))
-      if (input?.maxServings) conditions.push(lte(recipes.servings, input.maxServings))
 
-      // Junction table filters — recipes that have at least one matching row
-      if (input?.mealIds?.length) {
-        conditions.push(
-          inArray(recipes.id, ctx.db.select({ id: recipeMeals.recipeId }).from(recipeMeals).where(inArray(recipeMeals.mealId, input.mealIds))),
-        )
-      }
-      if (input?.courseIds?.length) {
-        conditions.push(
-          inArray(recipes.id, ctx.db.select({ id: recipeCourses.recipeId }).from(recipeCourses).where(inArray(recipeCourses.courseId, input.courseIds))),
-        )
-      }
-      if (input?.preparationIds?.length) {
-        conditions.push(
-          inArray(recipes.id, ctx.db.select({ id: recipePreparations.recipeId }).from(recipePreparations).where(inArray(recipePreparations.preparationId, input.preparationIds))),
-        )
-      }
+      if (input?.hasImage) filter.imageUrl = { $exists: true, $ne: null }
+      if (input?.minServings !== undefined) filter.servings = { ...filter.servings, $gte: input.minServings }
+      if (input?.maxServings !== undefined) filter.servings = { ...filter.servings, $lte: input.maxServings }
+
+      if (input?.mealIds?.length) filter.mealIds = { $in: input.mealIds }
+      if (input?.courseIds?.length) filter.courseIds = { $in: input.courseIds }
+      if (input?.preparationIds?.length) filter.preparationIds = { $in: input.preparationIds }
+
       if (input?.markedByMe && ctx.user) {
-        conditions.push(
-          inArray(recipes.id, ctx.db.select({ id: recipeLikes.recipeId }).from(recipeLikes).where(eq(recipeLikes.userId, ctx.user.id))),
-        )
+        const likedDocs = await RecipeLike.find({ userId: ctx.user.id }).select("recipeId").lean()
+        const likedIds = likedDocs.map((l) => l.recipeId)
+        filter._id = { $in: likedIds }
       }
 
-      const where = and(...conditions)
-
-      // Sort
       const sortMap = {
-        name_asc: asc(recipes.name),
-        name_desc: desc(recipes.name),
-        newest: desc(recipes.dateAdded),
-        oldest: asc(recipes.dateAdded),
-        servings_asc: asc(recipes.servings),
-        servings_desc: desc(recipes.servings),
-        updated_desc: desc(recipes.updatedAt),
+        name_asc: { name: 1 },
+        name_desc: { name: -1 },
+        newest: { createdAt: -1 },
+        oldest: { createdAt: 1 },
+        servings_asc: { servings: 1 },
+        servings_desc: { servings: -1 },
+        updated_desc: { updatedAt: -1 },
       } as const
-      const orderBy = sortMap[input?.sort ?? "newest"]
+      const sort = sortMap[input?.sort ?? "newest"]
 
-      // Pagination
       const page = input?.page ?? 1
       const pageSize = input?.pageSize ?? 20
       const offset = (page - 1) * pageSize
 
-      const [items, countResult] = await Promise.all([
-        ctx.db
-          .select({ ...getTableColumns(recipes), classificationName: classifications.name })
-          .from(recipes)
-          .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
-          .where(where)
-          .orderBy(orderBy)
+      const [rawItems, total] = await Promise.all([
+        Recipe.find(filter)
+          .populate("classificationId", "name")
+          .sort(sort)
+          .skip(offset)
           .limit(pageSize)
-          .offset(offset),
-        ctx.db.select({ count: sql<number>`cast(count(*) as int)` }).from(recipes).where(where),
+          .lean(),
+        Recipe.countDocuments(filter),
       ])
 
-      const total = countResult[0]?.count ?? 0
+      const items = rawItems.map((r) => ({
+        ...r,
+        id: r._id.toString(),
+        classificationName: (r.classificationId as { name?: string } | null)?.name ?? null,
+      }))
 
       return { items, total, page, pageSize }
     }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const [recipe] = await ctx.db
-        .select({
-          ...getTableColumns(recipes),
-          classificationName: classifications.name,
-          sourceName: sources.name,
-          sourceUrl: sources.url,
-        })
-        .from(recipes)
-        .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
-        .leftJoin(sources, eq(recipes.sourceId, sources.id))
-        .where(and(eq(recipes.id, input.id), visibilityFilter(recipes.isPublic, recipes.userId, ctx.user)))
+      const visFilter = visibilityFilter(ctx.user)
+      const recipe = await Recipe.findOne({ _id: input.id, ...visFilter })
+        .populate("classificationId", "name slug")
+        .populate("sourceId", "name url")
+        .populate("mealIds", "name")
+        .populate("courseIds", "name")
+        .populate("preparationIds", "name")
+        .lean()
+
       if (!recipe) return null
 
-      const [recipeMealItems, recipeCourseItems, recipePrepItems, images] = await Promise.all([
-        ctx.db
-          .select({ id: meals.id, name: meals.name })
-          .from(recipeMeals)
-          .innerJoin(meals, eq(recipeMeals.mealId, meals.id))
-          .where(eq(recipeMeals.recipeId, input.id)),
-        ctx.db
-          .select({ id: courses.id, name: courses.name })
-          .from(recipeCourses)
-          .innerJoin(courses, eq(recipeCourses.courseId, courses.id))
-          .where(eq(recipeCourses.recipeId, input.id)),
-        ctx.db
-          .select({ id: preparations.id, name: preparations.name })
-          .from(recipePreparations)
-          .innerJoin(preparations, eq(recipePreparations.preparationId, preparations.id))
-          .where(eq(recipePreparations.recipeId, input.id)),
-        ctx.db.select().from(recipeImages).where(eq(recipeImages.recipeId, input.id)),
-      ])
+      type PopRef = { _id?: unknown; name?: string; url?: string } | null
+      const cls = recipe.classificationId as PopRef
+      const src = recipe.sourceId as PopRef
+      type PopItem = { _id?: unknown; name?: string }
 
       return {
         ...recipe,
-        meals: recipeMealItems,
-        courses: recipeCourseItems,
-        preparations: recipePrepItems,
-        images,
+        id: recipe._id.toString(),
+        classificationName: cls?.name ?? null,
+        sourceName: src?.name ?? null,
+        sourceUrl: src?.url ?? null,
+        meals: ((recipe.mealIds as PopItem[]) ?? []).map((m) => ({ id: m._id?.toString(), name: m.name })),
+        courses: ((recipe.courseIds as PopItem[]) ?? []).map((c) => ({ id: c._id?.toString(), name: c.name })),
+        preparations: ((recipe.preparationIds as PopItem[]) ?? []).map((p) => ({ id: p._id?.toString(), name: p.name })),
       }
     }),
 
@@ -217,100 +160,74 @@ export const recipesRouter = router({
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       const { mealIds, courseIds, preparationIds, ...fields } = input
-      return ctx.db.transaction(async (tx) => {
-        const [recipe] = await tx
-          .insert(recipes)
-          .values({
-            ...fields,
-            userId: ctx.user.id,
-            ingredients: fields.ingredients ?? null,
-            instructions: fields.instructions ?? null,
-            notes: fields.notes ?? null,
-            servings: fields.servings ?? null,
-            prepTime: fields.prepTime ?? null,
-            cookTime: fields.cookTime ?? null,
-            difficulty: fields.difficulty ?? null,
-            sourceId: fields.sourceId ?? null,
-            classificationId: fields.classificationId ?? null,
-            calories: fields.calories ?? null,
-            fat: fields.fat ?? null,
-            cholesterol: fields.cholesterol ?? null,
-            sodium: fields.sodium ?? null,
-            protein: fields.protein ?? null,
-            imageUrl: fields.imageUrl ?? null,
-          })
-          .returning()
-
-        await syncTaxonomy(tx, recipe.id, { mealIds, courseIds, preparationIds })
-        return recipe
-      })
+      const recipe = await new Recipe({
+        ...fields,
+        userId: ctx.user.id,
+        mealIds: mealIds ?? [],
+        courseIds: courseIds ?? [],
+        preparationIds: preparationIds ?? [],
+      }).save()
+      return { ...recipe.toObject({ virtuals: true }), userId: recipe.userId?.toString() }
     }),
 
   update: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }).merge(recipeFields.partial()).merge(taxonomyIds))
+    .input(z.object({ id: z.string() }).merge(recipeFields.partial()).merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => ctx.db.select().from(recipes).where(eq(recipes.id, input.id)),
+        () => Recipe.findById(input.id).lean(),
         ctx.user.id,
         "Recipe",
       )
 
       const { id, mealIds, courseIds, preparationIds, ...data } = input
-      return ctx.db.transaction(async (tx) => {
-        // Only issue UPDATE if there are scalar fields to set
-        const hasScalarFields = Object.keys(data).length > 0
-        const [updated] = hasScalarFields
-          ? await tx.update(recipes).set(data).where(eq(recipes.id, id)).returning()
-          : await tx.select().from(recipes).where(eq(recipes.id, id))
 
-        await syncTaxonomy(tx, id, { mealIds, courseIds, preparationIds })
-        return updated
-      })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const updateData: Record<string, any> = { ...data }
+      if (mealIds !== undefined) updateData.mealIds = mealIds
+      if (courseIds !== undefined) updateData.courseIds = courseIds
+      if (preparationIds !== undefined) updateData.preparationIds = preparationIds
+
+      const doc = await Recipe.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true },
+      ).lean()
+
+      return doc ? { ...doc, id: doc._id.toString() } : null
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => ctx.db.select().from(recipes).where(eq(recipes.id, input.id)),
+        () => Recipe.findById(input.id).lean(),
         ctx.user.id,
         "Recipe",
       )
-      await ctx.db.delete(recipes).where(eq(recipes.id, input.id))
+      await Recipe.findByIdAndDelete(input.id)
       return { success: true }
     }),
 
   isMarked: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       if (!ctx.user) return { marked: false }
 
-      const [row] = await ctx.db
-        .select()
-        .from(recipeLikes)
-        .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
-
-      return { marked: !!row }
+      const exists = await RecipeLike.exists({ userId: ctx.user.id, recipeId: input.id })
+      return { marked: !!exists }
     }),
 
   toggleMarked: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.transaction(async (tx) => {
-        const [existing] = await tx
-          .select()
-          .from(recipeLikes)
-          .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
+      const existing = await RecipeLike.findOne({ userId: ctx.user.id, recipeId: input.id })
 
-        if (existing) {
-          await tx
-            .delete(recipeLikes)
-            .where(and(eq(recipeLikes.userId, ctx.user.id), eq(recipeLikes.recipeId, input.id)))
-          return { marked: false }
-        }
+      if (existing) {
+        await RecipeLike.findByIdAndDelete(existing._id)
+        return { marked: false }
+      }
 
-        await tx.insert(recipeLikes).values({ userId: ctx.user.id, recipeId: input.id })
-        return { marked: true }
-      })
+      await new RecipeLike({ userId: ctx.user.id, recipeId: input.id }).save()
+      return { marked: true }
     }),
 })

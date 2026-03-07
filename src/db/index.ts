@@ -1,17 +1,20 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Pool } from 'pg'
-import * as schema from './schema'
+import mongoose from 'mongoose'
 
-const DATABASE_URL = process.env.DATABASE_URL
-if (!DATABASE_URL) {
+const MONGODB_URI = process.env.MONGODB_URI
+if (!MONGODB_URI) {
   throw new Error(
-    'DATABASE_URL environment variable is not set. Ensure .env.local or .env is configured with a valid PostgreSQL connection string.',
+    'MONGODB_URI environment variable is not set. Ensure .env.local or .env is configured with a valid MongoDB connection string.',
   )
 }
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-})
+mongoose.set('strict', true)
 
-export const db = drizzle({ client: pool, schema })
-export { pool }
+if (mongoose.connection.readyState === 0) {
+  mongoose.connect(MONGODB_URI)
+}
+
+export function getMongoClient() {
+  return mongoose.connection.getClient()
+}
+
+export default mongoose

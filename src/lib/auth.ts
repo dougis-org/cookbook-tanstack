@@ -1,20 +1,11 @@
 import { betterAuth } from "better-auth"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { mongodbAdapter } from "better-auth/adapters/mongodb"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import { username } from "better-auth/plugins"
-import { db } from "@/db"
-import * as schema from "@/db/schema"
+import { getMongoClient } from "@/db"
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: {
-      user: schema.users,
-      session: schema.sessions,
-      account: schema.accounts,
-      verification: schema.verifications,
-    },
-  }),
+  database: mongodbAdapter(getMongoClient().db()),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
@@ -25,11 +16,6 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60, // 5 minutes
-    },
-  },
-  advanced: {
-    database: {
-      generateId: "uuid",
     },
   },
   plugins: [

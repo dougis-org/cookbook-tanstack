@@ -1,114 +1,155 @@
-# Database Schema
+# Database
 
-CookBook uses PostgreSQL 16 with Drizzle ORM for type-safe database access.
+CookBook uses MongoDB 7 with Mongoose ODM for type-safe database access.
 
 ## Quick Start
 
 ```bash
-docker compose up -d          # Start PostgreSQL (enables pgcrypto extension)
-npm run db:push               # Apply schema to database
-npm run db:seed               # Seed taxonomy data
-npm run db:studio             # Browse data in Drizzle Studio
+docker compose up -d     # Start MongoDB (or set MONGODB_URI to Atlas SRV string)
+npm run db:seed          # Seed taxonomy data (idempotent)
+npm run db:connect       # Verify connection is reachable
 ```
 
-> **Note:** The PostgreSQL server automatically enables the `pgcrypto` extension during initialization, which is required for UUID generation (`gen_random_uuid()`). This is handled by Drizzle's migration system.
+To use MongoDB Atlas instead of Docker, set `MONGODB_URI` in `.env.local` to your Atlas SRV connection string. No other code changes needed.
 
-## Schema Overview
+## Collections Overview
 
-The database has 15 tables organized into four groups:
+Twelve collections organized into four groups:
 
-### Core Tables
+### Core Collections
 
-| Table | Purpose |
-|-------|---------|
-| `users` | User accounts with email/password auth |
-| `recipes` | Recipe content, nutrition data, and metadata |
+| Collection | Purpose |
+|------------|---------|
+| `users` | User accounts (managed by Better-Auth + username plugin) |
+| `recipes` | Recipe content, nutrition, taxonomy references |
 | `classifications` | Recipe classifications (e.g., cuisine type) |
 | `sources` | Recipe sources (books, websites, etc.) |
 | `cookbooks` | User-curated recipe collections |
 
-### Taxonomy Tables
+### Taxonomy Collections
 
-| Table | Purpose |
-|-------|---------|
+| Collection | Purpose |
+|------------|---------|
 | `meals` | Meal types (Breakfast, Lunch, Dinner, etc.) |
 | `courses` | Course types (Appetizer, Main Course, Dessert, etc.) |
 | `preparations` | Preparation methods (Baked, Grilled, Steamed, etc.) |
 
-All taxonomy tables share the same structure: `id`, `name`, `description`, `slug` (unique), and timestamps. Slugs enable URL-friendly lookups.
+All taxonomy collections share the same structure: `_id` (ObjectId), `name`, `description`, `slug` (unique), `createdAt`, `updatedAt`. Slugs enable URL-friendly lookups.
 
-### Junction Tables
+### Auth Collections (Better-Auth managed)
 
-| Table | Relationship |
-|-------|-------------|
-| `recipe_meals` | Recipe ↔ Meal (many-to-many) |
-| `recipe_courses` | Recipe ↔ Course (many-to-many) |
-| `recipe_preparations` | Recipe ↔ Preparation (many-to-many) |
-| `cookbook_recipes` | Cookbook ↔ Recipe (many-to-many, with ordering) |
+| Collection | Purpose |
+|------------|---------|
+| `sessions` | Active user sessions with expiry |
+| `accounts` | OAuth / credential account links |
+| `verifications` | Email verification tokens |
 
-Junction tables use composite primary keys (no surrogate ID). All foreign keys cascade on delete.
+### Social Collections
 
-### Additional Tables
+| Collection | Purpose |
+|------------|---------|
+| `recipelikes` | Recipe favorites — compound unique index on `(userId, recipeId)` |
 
-| Table | Purpose |
-|-------|---------|
-| `recipe_images` | Multiple images per recipe with ordering |
-| `recipe_likes` | User ↔ Recipe likes (composite PK) |
-| `cookbook_followers` | User ↔ Cookbook follows (composite PK) |
+## Document Design
 
-## Key Relationships
+### Recipe Document
 
-- **User → Recipes**: One-to-many (CASCADE delete)
-- **User → Cookbooks**: One-to-many (CASCADE delete)
-- **Recipe → Source**: Many-to-one (SET NULL on delete)
-- **Recipe → Classification**: Many-to-one (SET NULL on delete)
-- **Recipe ↔ Meals/Courses/Preparations**: Many-to-many via junction tables
+Recipes embed taxonomy references as ObjectId arrays, replacing the old junction tables:
 
-## Indexing Strategy
-
-- **Primary keys**: All tables have UUID primary keys with `gen_random_uuid()` (requires `pgcrypto` extension)
-- **Unique constraints**: `users.email`, `users.username`, plus `slug` on all taxonomy tables
-- **Foreign key indexes**: Every FK column is explicitly indexed for JOIN performance
-- **Search indexes**: `recipes.name` is indexed for basic name-based lookups. The `ingredients` field is not indexed—use `recipes.name` for search queries or implement full-text search (GIN index) in a future milestone for ingredient-based queries.
-
-## Column Conventions
-
-- **Snake case**: All DB column names use `snake_case` (e.g., `user_id`, `created_at`)
-- **Camel case**: TypeScript field names use `camelCase` (Drizzle maps between them)
-- **Timestamps**: All tables include `created_at` (set at insert) and `updated_at` (set at insert and automatically updated on every record modification via database triggers)
-- **UUIDs**: All primary keys use UUID v4 generated at the database level
-- **Booleans**: Default to explicit values (`false` for `marked`, `true` for `is_public`)
-
-## Schema Files
-
-All schema definitions live in `src/db/schema/`:
-
-```
-src/db/schema/
-├── index.ts              # Barrel re-export
-├── users.ts
-├── recipes.ts
-├── classifications.ts
-├── sources.ts
-├── cookbooks.ts
-├── meals.ts
-├── courses.ts
-├── preparations.ts
-├── recipe_meals.ts
-├── recipe_courses.ts
-├── recipe_preparations.ts
-├── cookbook_recipes.ts
-├── recipe_images.ts
-├── recipe_likes.ts
-└── cookbook_followers.ts
+```typescript
+{
+  _id: ObjectId,
+  userId: ObjectId,          // ref: User
+  name: string,
+  ingredients: string,
+  instructions: string,
+  notes: string,
+  servings: number,
+  prepTime: number,          // minutes
+  cookTime: number,          // minutes
+  difficulty: 'easy' | 'medium' | 'hard',
+  sourceId: ObjectId,        // ref: Source
+  classificationId: ObjectId, // ref: Classification
+  dateAdded: Date,
+  calories: number,
+  fat: number,
+  cholesterol: number,
+  sodium: number,
+  protein: number,
+  imageUrl: string,
+  isPublic: boolean,
+  marked: boolean,
+  mealIds: ObjectId[],       // ref: Meal (replaces recipe_meals junction)
+  courseIds: ObjectId[],     // ref: Course (replaces recipe_courses junction)
+  preparationIds: ObjectId[], // ref: Preparation (replaces recipe_preparations junction)
+  createdAt: Date,
+  updatedAt: Date,
+}
 ```
 
-## Migrations
+### Cookbook Document
 
-Generated migrations live in `drizzle/` and should be committed to version control. The `drizzle/meta/` directory contains Drizzle's internal snapshot state.
+Cookbooks embed recipe entries with ordering, replacing the old `cookbook_recipes` junction table:
+
+```typescript
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  name: string,
+  description: string,
+  isPublic: boolean,
+  imageUrl: string,
+  recipes: [               // replaces cookbook_recipes junction table
+    { recipeId: ObjectId, orderIndex: number }
+  ],
+  createdAt: Date,
+  updatedAt: Date,
+}
+```
+
+## Connection
+
+`src/db/index.ts` is the Mongoose connection singleton:
+
+- Reads `MONGODB_URI` from environment; throws if missing
+- Calls `mongoose.set('strict', true)` globally before connecting
+- Exports `getMongoClient()` → `mongoose.connection.getClient()` for Better-Auth's native MongoDB adapter
+- Connection is initiated once when the module is first imported
+
+## Models
+
+All Mongoose models live in `src/db/models/`:
+
+```
+src/db/models/
+├── columns.ts          # Shared helpers (ObjectIdType)
+├── user.ts
+├── session.ts
+├── account.ts
+├── verification.ts
+├── classification.ts
+├── source.ts
+├── meal.ts
+├── course.ts
+├── preparation.ts
+├── recipe.ts
+├── cookbook.ts
+├── recipe-like.ts
+└── index.ts            # Barrel export of all models
+```
+
+All models use `timestamps: true` in Mongoose schema options (auto-manages `createdAt` / `updatedAt`) except `RecipeLike` which only has `createdAt`.
+
+## Seeds
+
+`src/db/seeds/` contains idempotent seed scripts for taxonomy data. Each entry is upserted by `slug`:
 
 ```bash
-npm run db:generate    # Generate migration SQL from schema changes
-npm run db:migrate     # Apply pending migrations
-npm run db:push        # Push schema directly (dev only, no migration file)
+npm run db:seed   # runs src/db/seeds/index.ts via tsx
 ```
+
+Seeds connect to MongoDB using `MONGODB_URI` and disconnect when finished.
+
+## Testing
+
+Integration tests use `mongodb-memory-server` for in-process isolation — no Docker required for `npm run test`. The global setup in `src/test-helpers/db-global-setup.ts` starts the in-memory server, connects Mongoose, and sets `MONGODB_URI` before any tests run.

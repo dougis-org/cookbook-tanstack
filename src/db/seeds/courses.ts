@@ -1,5 +1,4 @@
-import { db } from '../index'
-import { courses } from '../schema'
+import { Course } from '../models'
 
 const courseData = [
   { name: 'Appetizer', slug: 'appetizer', description: 'Starters and small plates' },
@@ -14,6 +13,10 @@ const courseData = [
 ]
 
 export async function seedCourses() {
-  const result = await db.insert(courses).values(courseData).onConflictDoNothing()
-  console.log(`Seeded ${result.rowCount ?? 0} courses`)
+  let count = 0
+  for (const data of courseData) {
+    const result = await Course.updateOne({ slug: data.slug }, { $set: data }, { upsert: true })
+    if (result.upsertedCount) count++
+  }
+  console.log(`Seeded ${count} new courses`)
 }
