@@ -21,3 +21,6 @@ playwright-report/
 # Test coverage
 coverage/
 *.lcov
+.env.prod
+.env.test
+.env.local
