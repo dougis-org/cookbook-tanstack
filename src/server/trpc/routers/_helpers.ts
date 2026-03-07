@@ -1,5 +1,5 @@
-import { TRPCError } from "@trpc/server"
-import { publicProcedure, router } from "../init"
+import { TRPCError } from "@trpc/server";
+import { publicProcedure, router } from "../init";
 
 /**
  * Builds a Mongoose filter enforcing visibility for user-owned content.
@@ -7,9 +7,9 @@ import { publicProcedure, router } from "../init"
  */
 export function visibilityFilter(user: { id: string } | null) {
   if (user) {
-    return { $or: [{ isPublic: true }, { userId: user.id }] }
+    return { $or: [{ isPublic: true }, { userId: user.id }] };
   }
-  return { isPublic: true }
+  return { isPublic: true };
 }
 
 /**
@@ -21,17 +21,17 @@ export async function verifyOwnership<T extends { userId: unknown }>(
   userId: string,
   label: string,
 ): Promise<T> {
-  const existing = await fetchRecord()
+  const existing = await fetchRecord();
   if (!existing) {
-    throw new TRPCError({ code: "NOT_FOUND", message: `${label} not found` })
+    throw new TRPCError({ code: "NOT_FOUND", message: `${label} not found` });
   }
   if (existing.userId?.toString() !== userId) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: `Not your ${label.toLowerCase()}`,
-    })
+    });
   }
-  return existing
+  return existing;
 }
 
 /**
@@ -41,7 +41,7 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 export function createTaxonomyRouter(Model: any) {
   return router({
     list: publicProcedure.query(async () => {
-      return Model.find().lean()
+      return Model.find().lean();
     }),
-  })
+  });
 }

@@ -1,20 +1,20 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI
+const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
   throw new Error(
-    'MONGODB_URI environment variable is not set. Ensure .env.local or .env is configured with a valid MongoDB connection string.',
-  )
+    "MONGODB_URI environment variable is not set. Ensure .env.local or .env is configured with a valid MongoDB connection string.",
+  );
 }
 
-mongoose.set('strict', true)
+mongoose.set("strict", true);
 
 if (mongoose.connection.readyState === 0) {
-  mongoose.connect(MONGODB_URI)
+  mongoose.connect(MONGODB_URI);
 }
 
 export function getMongoClient() {
-  return mongoose.connection.getClient()
+  return mongoose.connection.getClient();
 }
 
-export default mongoose
+export default mongoose;

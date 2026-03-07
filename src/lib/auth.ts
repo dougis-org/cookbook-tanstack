@@ -1,8 +1,8 @@
-import { betterAuth } from "better-auth"
-import { mongodbAdapter } from "better-auth/adapters/mongodb"
-import { tanstackStartCookies } from "better-auth/tanstack-start"
-import { username } from "better-auth/plugins"
-import { getMongoClient } from "@/db"
+import { betterAuth } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { tanstackStartCookies } from "better-auth/tanstack-start";
+import { username } from "better-auth/plugins";
+import { getMongoClient } from "@/db";
 
 export const auth = betterAuth({
   database: mongodbAdapter(getMongoClient().db()),
@@ -22,4 +22,4 @@ export const auth = betterAuth({
     username(),
     tanstackStartCookies(), // must be last
   ],
-})
+});

@@ -1,54 +1,65 @@
-import { z } from "zod"
-import { TRPCError } from "@trpc/server"
-import { publicProcedure, protectedProcedure, router } from "../init"
-import { visibilityFilter, verifyOwnership } from "./_helpers"
-import { Cookbook, Recipe } from "@/db/models"
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { publicProcedure, protectedProcedure, router } from "../init";
+import { visibilityFilter, verifyOwnership } from "./_helpers";
+import { Cookbook, Recipe } from "@/db/models";
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     const docs = await Cookbook.find(visibilityFilter(ctx.user))
       .sort({ name: 1 })
-      .lean()
+      .lean();
 
     return docs.map((cb) => ({
       ...cb,
       id: cb._id.toString(),
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
-    }))
+    }));
   }),
 
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user)
-      const cookbook = await Cookbook.findOne({ _id: input.id, ...visFilter }).lean()
+      const visFilter = visibilityFilter(ctx.user);
+      const cookbook = await Cookbook.findOne({
+        _id: input.id,
+        ...visFilter,
+      }).lean();
 
-      if (!cookbook) return null
+      if (!cookbook) return null;
 
-      const recipeVisFilter = visibilityFilter(ctx.user)
+      const recipeVisFilter = visibilityFilter(ctx.user);
 
       // Sort embedded recipe stubs by orderIndex, then fetch the actual Recipe docs
-      const stubs: Array<{ recipeId: unknown; orderIndex: number }> = Array.isArray(cookbook.recipes)
-        ? [...cookbook.recipes].sort((a, b) => a.orderIndex - b.orderIndex)
-        : []
+      const stubs: Array<{ recipeId: unknown; orderIndex: number }> =
+        Array.isArray(cookbook.recipes)
+          ? [...cookbook.recipes].sort((a, b) => a.orderIndex - b.orderIndex)
+          : [];
 
-      const recipeIds = stubs.map((s) => s.recipeId)
+      const recipeIds = stubs.map((s) => s.recipeId);
 
-      const recipeDocs = await Recipe.find({ _id: { $in: recipeIds }, ...recipeVisFilter })
+      const recipeDocs = await Recipe.find({
+        _id: { $in: recipeIds },
+        ...recipeVisFilter,
+      })
         .populate("classificationId", "name")
-        .lean()
+        .lean();
 
       // Re-map to preserve orderIndex from the stub
-      const recipeById = new Map(recipeDocs.map((r) => [r._id.toString(), r]))
+      const recipeById = new Map(recipeDocs.map((r) => [r._id.toString(), r]));
       const recipes = stubs
         .map((stub) => {
-          const doc = recipeById.get(stub.recipeId?.toString() ?? "")
-          if (!doc) return null
-          return { ...doc, id: doc._id.toString(), orderIndex: stub.orderIndex }
+          const doc = recipeById.get(stub.recipeId?.toString() ?? "");
+          if (!doc) return null;
+          return {
+            ...doc,
+            id: doc._id.toString(),
+            orderIndex: stub.orderIndex,
+          };
         })
-        .filter(Boolean)
+        .filter(Boolean);
 
-      return { ...cookbook, id: cookbook._id.toString(), recipes }
+      return { ...cookbook, id: cookbook._id.toString(), recipes };
     }),
 
   create: protectedProcedure
@@ -68,8 +79,11 @@ export const cookbooksRouter = router({
         isPublic: input.isPublic,
         imageUrl: input.imageUrl ?? null,
         recipes: [],
-      }).save()
-      return { ...cookbook.toObject({ virtuals: true }), userId: cookbook.userId?.toString() }
+      }).save();
+      return {
+        ...cookbook.toObject({ virtuals: true }),
+        userId: cookbook.userId?.toString(),
+      };
     }),
 
   update: protectedProcedure
@@ -84,8 +98,8 @@ export const cookbooksRouter = router({
         })
         .refine(
           (data) => {
-            const { id: _, ...rest } = data
-            return Object.keys(rest).length > 0
+            const { id: _, ...rest } = data;
+            return Object.keys(rest).length > 0;
           },
           { message: "At least one field to update must be provided" },
         ),
@@ -95,11 +109,15 @@ export const cookbooksRouter = router({
         () => Cookbook.findById(input.id).lean(),
         ctx.user.id,
         "Cookbook",
-      )
+      );
 
-      const { id, ...data } = input
-      const updated = await Cookbook.findByIdAndUpdate(id, { $set: data }, { new: true }).lean()
-      return updated
+      const { id, ...data } = input;
+      const updated = await Cookbook.findByIdAndUpdate(
+        id,
+        { $set: data },
+        { new: true },
+      ).lean();
+      return updated;
     }),
 
   delete: protectedProcedure
@@ -109,9 +127,9 @@ export const cookbooksRouter = router({
         () => Cookbook.findById(input.id).lean(),
         ctx.user.id,
         "Cookbook",
-      )
-      await Cookbook.findByIdAndDelete(input.id)
-      return { success: true }
+      );
+      await Cookbook.findByIdAndDelete(input.id);
+      return { success: true };
     }),
 
   addRecipe: protectedProcedure
@@ -121,33 +139,43 @@ export const cookbooksRouter = router({
         () => Cookbook.findById(input.cookbookId).lean(),
         ctx.user.id,
         "Cookbook",
-      )
+      );
 
-      const recipeVisFilter = visibilityFilter(ctx.user)
-      const accessible = await Recipe.findOne({ _id: input.recipeId, ...recipeVisFilter })
+      const recipeVisFilter = visibilityFilter(ctx.user);
+      const accessible = await Recipe.findOne({
+        _id: input.recipeId,
+        ...recipeVisFilter,
+      })
         .select("_id")
-        .lean()
+        .lean();
       if (!accessible) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
+        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" });
       }
 
       // Check for duplicate, then push with next orderIndex
-      const cookbook = await Cookbook.findById(input.cookbookId)
+      const cookbook = await Cookbook.findById(input.cookbookId);
       if (!cookbook) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cookbook not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Cookbook not found",
+        });
       }
 
-      const recipes: Array<{ recipeId: unknown; orderIndex: number }> = cookbook.get("recipes") ?? []
-      const alreadyIn = recipes.some((r) => r.recipeId?.toString() === input.recipeId)
+      const recipes: Array<{ recipeId: unknown; orderIndex: number }> =
+        cookbook.get("recipes") ?? [];
+      const alreadyIn = recipes.some(
+        (r) => r.recipeId?.toString() === input.recipeId,
+      );
       if (!alreadyIn) {
-        const nextIndex = recipes.length
-        await Cookbook.findByIdAndUpdate(
-          input.cookbookId,
-          { $push: { recipes: { recipeId: input.recipeId, orderIndex: nextIndex } } },
-        )
+        const nextIndex = recipes.length;
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $push: {
+            recipes: { recipeId: input.recipeId, orderIndex: nextIndex },
+          },
+        });
       }
 
-      return { success: true }
+      return { success: true };
     }),
 
   removeRecipe: protectedProcedure
@@ -157,12 +185,11 @@ export const cookbooksRouter = router({
         () => Cookbook.findById(input.cookbookId).lean(),
         ctx.user.id,
         "Cookbook",
-      )
-      await Cookbook.findByIdAndUpdate(
-        input.cookbookId,
-        { $pull: { recipes: { recipeId: input.recipeId } } },
-      )
-      return { success: true }
+      );
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $pull: { recipes: { recipeId: input.recipeId } },
+      });
+      return { success: true };
     }),
 
   reorderRecipes: protectedProcedure
@@ -182,27 +209,33 @@ export const cookbooksRouter = router({
         () => Cookbook.findById(input.cookbookId).lean(),
         ctx.user.id,
         "Cookbook",
-      )
+      );
 
-      const cookbook = await Cookbook.findById(input.cookbookId)
+      const cookbook = await Cookbook.findById(input.cookbookId);
       if (!cookbook) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Cookbook not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Cookbook not found",
+        });
       }
 
-      const recipes: Array<{ recipeId: unknown; orderIndex: number }> = cookbook.get("recipes") ?? []
+      const recipes: Array<{ recipeId: unknown; orderIndex: number }> =
+        cookbook.get("recipes") ?? [];
 
       // Rebuild the recipes array with updated orderIndex values
       const updatedRecipes = recipes.map((stub) => {
-        const newIndex = input.recipeIds.indexOf(stub.recipeId?.toString() ?? "")
+        const newIndex = input.recipeIds.indexOf(
+          stub.recipeId?.toString() ?? "",
+        );
         return {
           recipeId: stub.recipeId,
           orderIndex: newIndex >= 0 ? newIndex : stub.orderIndex,
-        }
-      })
+        };
+      });
 
-      cookbook.set("recipes", updatedRecipes)
-      await cookbook.save()
+      cookbook.set("recipes", updatedRecipes);
+      await cookbook.save();
 
-      return { success: true }
+      return { success: true };
     }),
-})
+});
