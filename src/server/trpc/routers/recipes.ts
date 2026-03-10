@@ -4,6 +4,11 @@ import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Recipe, RecipeLike } from "@/db/models";
 
+/** Escapes regex metacharacters so user input is treated as a literal substring. */
+function escapeRegex(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 const recipeFields = z.object({
   name: z.string().min(1).max(500),
   ingredients: z.string().optional(),
@@ -13,8 +18,8 @@ const recipeFields = z.object({
   prepTime: z.number().int().positive().optional(),
   cookTime: z.number().int().positive().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
-  sourceId: z.string().optional(),
-  classificationId: z.string().optional(),
+  sourceId: objectId.optional(),
+  classificationId: objectId.optional(),
   calories: z.number().int().nonnegative().optional(),
   fat: z.number().nonnegative().optional(),
   cholesterol: z.number().nonnegative().optional(),
@@ -25,9 +30,9 @@ const recipeFields = z.object({
 });
 
 const taxonomyIds = z.object({
-  mealIds: z.array(z.string()).optional(),
-  courseIds: z.array(z.string()).optional(),
-  preparationIds: z.array(z.string()).optional(),
+  mealIds: z.array(objectId).optional(),
+  courseIds: z.array(objectId).optional(),
+  preparationIds: z.array(objectId).optional(),
 });
 
 export const recipesRouter = router({
@@ -35,14 +40,14 @@ export const recipesRouter = router({
     .input(
       z
         .object({
-          classificationId: z.string().optional(),
-          sourceId: z.string().optional(),
-          userId: z.string().optional(),
+          classificationId: objectId.optional(),
+          sourceId: objectId.optional(),
+          userId: objectId.optional(),
           isPublic: z.boolean().optional(),
           search: z.string().optional(),
-          mealIds: z.array(z.string()).optional(),
-          courseIds: z.array(z.string()).optional(),
-          preparationIds: z.array(z.string()).optional(),
+          mealIds: z.array(objectId).optional(),
+          courseIds: z.array(objectId).optional(),
+          preparationIds: z.array(objectId).optional(),
           sort: z
             .enum([
               "name_asc",
@@ -79,7 +84,7 @@ export const recipesRouter = router({
       if (input?.userId) filter.userId = input.userId;
 
       if (input?.search) {
-        const term = input.search.trim();
+        const term = escapeRegex(input.search.trim());
         if (term) {
           filter.$or = [
             { name: { $regex: term, $options: "i" } },

@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Source } from "@/db/models";
+import { objectId } from "./_helpers";
+
+/** Escapes regex metacharacters so user input is treated as a literal substring. */
+function escapeRegex(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
@@ -10,15 +16,15 @@ export const sourcesRouter = router({
   search: publicProcedure
     .input(z.object({ query: z.string().min(1).max(255) }))
     .query(async ({ input }) => {
-      const trimmed = input.query.trim();
-      return Source.find({ name: { $regex: trimmed, $options: "i" } })
+      const escaped = escapeRegex(input.query.trim());
+      return Source.find({ name: { $regex: escaped, $options: "i" } })
         .sort({ name: 1 })
         .limit(10)
         .lean();
     }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .query(async ({ input }) => {
       const source = await Source.findById(input.id).lean();
       return source ?? null;

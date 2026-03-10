@@ -10,7 +10,10 @@ if (!MONGODB_URI) {
 mongoose.set("strict", true);
 
 if (mongoose.connection.readyState === 0) {
-  mongoose.connect(MONGODB_URI);
+  mongoose.connect(MONGODB_URI).catch((error) => {
+    console.error("Failed to connect to MongoDB:", error);
+    process.exit(1);
+  });
 }
 
 export function getMongoClient() {
