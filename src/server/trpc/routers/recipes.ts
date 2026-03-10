@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Recipe, RecipeLike } from "@/db/models";
 
 const recipeFields = z.object({
@@ -143,7 +143,7 @@ export const recipesRouter = router({
     }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const visFilter = visibilityFilter(ctx.user);
       const recipe = await Recipe.findOne({ _id: input.id, ...visFilter })
@@ -202,7 +202,7 @@ export const recipesRouter = router({
   update: protectedProcedure
     .input(
       z
-        .object({ id: z.string() })
+        .object({ id: objectId })
         .merge(recipeFields.partial())
         .merge(taxonomyIds),
     )
@@ -232,7 +232,7 @@ export const recipesRouter = router({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
         () => Recipe.findById(input.id).lean(),
@@ -244,7 +244,7 @@ export const recipesRouter = router({
     }),
 
   isMarked: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       if (!ctx.user) return { marked: false };
 
@@ -256,7 +256,7 @@ export const recipesRouter = router({
     }),
 
   toggleMarked: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       const existing = await RecipeLike.findOne({
         userId: ctx.user.id,

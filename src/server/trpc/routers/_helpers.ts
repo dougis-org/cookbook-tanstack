@@ -1,5 +1,11 @@
+import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../init";
+
+/** Validates a MongoDB ObjectId: a 24-character hexadecimal string. */
+export const objectId = z
+  .string()
+  .regex(/^[a-f0-9]{24}$/i, "Invalid ID format");
 
 /**
  * Builds a Mongoose filter enforcing visibility for user-owned content.

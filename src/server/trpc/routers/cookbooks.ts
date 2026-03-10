@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
 
 export const cookbooksRouter = router({
@@ -18,7 +18,7 @@ export const cookbooksRouter = router({
   }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const visFilter = visibilityFilter(ctx.user);
       const cookbook = await Cookbook.findOne({
@@ -90,7 +90,7 @@ export const cookbooksRouter = router({
     .input(
       z
         .object({
-          id: z.string(),
+          id: objectId,
           name: z.string().min(1).max(255).optional(),
           description: z.string().max(500).optional(),
           isPublic: z.boolean().optional(),
@@ -121,7 +121,7 @@ export const cookbooksRouter = router({
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
         () => Cookbook.findById(input.id).lean(),
@@ -133,7 +133,7 @@ export const cookbooksRouter = router({
     }),
 
   addRecipe: protectedProcedure
-    .input(z.object({ cookbookId: z.string(), recipeId: z.string() }))
+    .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
         () => Cookbook.findById(input.cookbookId).lean(),
@@ -179,7 +179,7 @@ export const cookbooksRouter = router({
     }),
 
   removeRecipe: protectedProcedure
-    .input(z.object({ cookbookId: z.string(), recipeId: z.string() }))
+    .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
         () => Cookbook.findById(input.cookbookId).lean(),
@@ -195,9 +195,9 @@ export const cookbooksRouter = router({
   reorderRecipes: protectedProcedure
     .input(
       z.object({
-        cookbookId: z.string(),
+        cookbookId: objectId,
         recipeIds: z
-          .array(z.string())
+          .array(objectId)
           .min(1)
           .refine((ids) => new Set(ids).size === ids.length, {
             message: "Duplicate recipe IDs in reorder list",
