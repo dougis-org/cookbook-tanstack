@@ -20,7 +20,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "npm run dev -- --mode test",
+    // In CI the production build is already available (built in a prior step).
+    // Using the Nitro production server eliminates Vite's lazy module compilation,
+    // which can take >30 s per route on a cold cache and causes test timeouts.
+    command: process.env.CI
+      ? "PORT=3000 node .output/server/index.mjs"
+      : "npm run dev -- --mode test",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

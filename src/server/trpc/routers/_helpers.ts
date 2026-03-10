@@ -41,7 +41,8 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 export function createTaxonomyRouter(Model: any) {
   return router({
     list: publicProcedure.query(async () => {
-      return Model.find().lean();
+      const docs = await Model.find().lean();
+      return docs.map((doc: any) => ({ ...doc, id: doc._id.toString() }));
     }),
   });
 }

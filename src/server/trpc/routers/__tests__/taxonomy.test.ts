@@ -16,7 +16,7 @@ describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerN
     preparations: Preparation,
   } as const
 
-  it("includes an inserted row in the result", async () => {
+  it("includes an inserted row in the result with a string id field", async () => {
     await withCleanDb(async () => {
       const slug = `${routerName}-single-${RUN_ID}`
       await new ModelMap[routerName]({ name: "Breakfast", slug }).save()
@@ -28,6 +28,11 @@ describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerN
       expect(result).toEqual(
         expect.arrayContaining([expect.objectContaining({ name: "Breakfast", slug })]),
       )
+      // Each item must have a string `id` (mapped from MongoDB _id) so that
+      // the recipes filter chips can use it as a URL search parameter.
+      for (const item of result as { id?: unknown }[]) {
+        expect(typeof item.id).toBe("string")
+      }
     })
   })
 
