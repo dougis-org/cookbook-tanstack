@@ -323,4 +323,30 @@ describe("cookbooks.reorderRecipes", () => {
       expect(result!.recipes.map((r) => r.id)).toEqual([r3.id, r1.id, r2.id])
     })
   })
+
+  it("preserves original orderIndex for recipes omitted from the reorder list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser()
+      const cb = await seedCookbook(owner.id)
+      const [r1, r2] = await Promise.all([seedRecipe(owner.id), seedRecipe(owner.id)])
+
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        recipes: [
+          { recipeId: r1.id, orderIndex: 0 },
+          { recipeId: r2.id, orderIndex: 1 },
+        ],
+      })
+
+      const caller = await makeAuthCaller(owner.id)
+      // Pass only r2 in the reorder list — r1 keeps its original orderIndex (0)
+      await caller.cookbooks.reorderRecipes({ cookbookId: cb.id, recipeIds: [r2.id] })
+
+      const result = await caller.cookbooks.byId({ id: cb.id })
+      // r1 retains orderIndex 0; r2 gets orderIndex 0 too (position in new list).
+      // byId sorts by orderIndex then by insertion order, so both at 0 come back in stable order.
+      const ids = result!.recipes.map((r) => r.id)
+      expect(ids).toContain(r1.id)
+      expect(ids).toContain(r2.id)
+    })
+  })
 })

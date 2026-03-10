@@ -135,7 +135,7 @@ export const cookbooksRouter = router({
   addRecipe: protectedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
+      const cookbook = await verifyOwnership(
         () => Cookbook.findById(input.cookbookId).lean(),
         ctx.user.id,
         "Cookbook",
@@ -153,24 +153,14 @@ export const cookbooksRouter = router({
       }
 
       // Check for duplicate, then push with next orderIndex
-      const cookbook = await Cookbook.findById(input.cookbookId);
-      if (!cookbook) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Cookbook not found",
-        });
-      }
-
-      const recipes: Array<{ recipeId: unknown; orderIndex: number }> =
-        cookbook.get("recipes") ?? [];
+      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
       const alreadyIn = recipes.some(
-        (r) => r.recipeId?.toString() === input.recipeId,
+        (r: { recipeId: unknown }) => r.recipeId?.toString() === input.recipeId,
       );
       if (!alreadyIn) {
-        const nextIndex = recipes.length;
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
           $push: {
-            recipes: { recipeId: input.recipeId, orderIndex: nextIndex },
+            recipes: { recipeId: input.recipeId, orderIndex: recipes.length },
           },
         });
       }
@@ -205,36 +195,30 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
+      const cookbook = await verifyOwnership(
         () => Cookbook.findById(input.cookbookId).lean(),
         ctx.user.id,
         "Cookbook",
       );
 
-      const cookbook = await Cookbook.findById(input.cookbookId);
-      if (!cookbook) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Cookbook not found",
-        });
-      }
-
-      const recipes: Array<{ recipeId: unknown; orderIndex: number }> =
-        cookbook.get("recipes") ?? [];
+      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
 
       // Rebuild the recipes array with updated orderIndex values
-      const updatedRecipes = recipes.map((stub) => {
-        const newIndex = input.recipeIds.indexOf(
-          stub.recipeId?.toString() ?? "",
-        );
-        return {
-          recipeId: stub.recipeId,
-          orderIndex: newIndex >= 0 ? newIndex : stub.orderIndex,
-        };
-      });
+      const updatedRecipes = recipes.map(
+        (stub: { recipeId: unknown; orderIndex: number }) => {
+          const newIndex = input.recipeIds.indexOf(
+            stub.recipeId?.toString() ?? "",
+          );
+          return {
+            recipeId: stub.recipeId,
+            orderIndex: newIndex >= 0 ? newIndex : stub.orderIndex,
+          };
+        },
+      );
 
-      cookbook.set("recipes", updatedRecipes);
-      await cookbook.save();
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $set: { recipes: updatedRecipes },
+      });
 
       return { success: true };
     }),
