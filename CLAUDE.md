@@ -123,4 +123,4 @@ The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPat
 
 ## Planned Architecture (Not Yet Implemented)
 
-Per the migration plan, future milestones will add: Better-Auth (authentication), tRPC (type-safe API), and Cloudinary/S3 (image storage).
+Per the migration plan, future milestones will add: Cloudinary/S3 (image storage).

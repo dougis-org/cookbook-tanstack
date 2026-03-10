@@ -137,7 +137,9 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
 
 - **Framework:** TanStack Start with React 19, deployed via Nitro
 - **Routing:** TanStack Router — file-based routing in `src/routes/`
-- **Database:** PostgreSQL 16 (Docker) with Drizzle ORM
+- **Database:** MongoDB 7 (Docker or Atlas) with Mongoose ODM
+- **API:** tRPC with superjson — routers in `src/server/trpc/routers/`
+- **Auth:** Better-Auth with MongoDB adapter and username plugin
 - **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 - **Icons:** Lucide React
 - **Build:** Vite 7

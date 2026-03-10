@@ -5,7 +5,7 @@
 This document outlines the complete migration from the Laravel-based recipe application to a modern TanStack Start application. The migration is organized into 12 detailed milestones, each with specific tasks, acceptance criteria, and deliverables.
 
 **Original Estimated Timeline**: 12 weeks (250-300 hours)
-**Current Status**: ~33% complete (M01–M04 shipped)
+**Current Status**: ~50% complete (M01–M05 shipped, MongoDB migration complete)
 
 ### Revised Launch Scope (as of 2026-02-25)
 
@@ -29,15 +29,15 @@ For detailed implementation steps, acceptance criteria, and testing requirements
 - **Icons**: Lucide React
 
 ### Backend
-- **API Layer**: TanStack Start server functions + tRPC for complex operations
-- **Database ORM**: Drizzle ORM (TypeScript-native, type-safe)
-- **Database**: PostgreSQL (recommended) or MySQL
-- **Authentication**: Better-Auth or Lucia
-- **File Storage**: Cloudinary or AWS S3 for images
+- **API Layer**: tRPC with superjson — routers in `src/server/trpc/routers/`
+- **Database ODM**: Mongoose (TypeScript-native, schema validation)
+- **Database**: MongoDB 7 (Docker for local dev, Atlas for production)
+- **Authentication**: Better-Auth with MongoDB adapter and username plugin
+- **File Storage**: Cloudinary or AWS S3 for images (not yet implemented)
 - **Email**: Resend or SendGrid
 
 ### DevOps
-- **Hosting**: Vercel (frontend) + Neon/Supabase (database)
+- **Hosting**: Vercel (frontend) + MongoDB Atlas (database)
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Sentry for errors, Vercel Analytics
 - **Testing**: Vitest + React Testing Library
@@ -53,7 +53,7 @@ Set up the project foundation including database schema, authentication system, 
 
 Set up the project foundation including database schema, authentication system, and tRPC API layer. This phase establishes the core infrastructure needed for all subsequent development.
 
-**Key Deliverables**: Database schema with Drizzle ORM, Better-Auth authentication, tRPC routers, environment configuration
+**Key Deliverables**: MongoDB models with Mongoose ODM, Better-Auth authentication, tRPC routers, environment configuration
 
 ---
 
@@ -186,7 +186,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 - 1 QA tester (optional, part-time)
 
 ### Infrastructure
-- **Database**: Neon/Supabase (free tier initially)
+- **Database**: MongoDB Atlas (free tier initially)
 - **Image Storage**: Cloudinary (free tier: 25GB storage, 25GB bandwidth)
 - **Email Service**: Resend (free tier: 3k emails/month) or SendGrid
 - **Hosting**: Vercel (Hobby free tier or Pro $20/month)
