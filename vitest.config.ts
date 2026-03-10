@@ -12,7 +12,7 @@ export default defineConfig({
   test: {
     globalSetup: ['./src/test-helpers/db-global-setup.ts'],
     environment: 'jsdom',
-    setupFiles: ['./src/test-setup.ts'],
+    setupFiles: ['./src/test-setup.ts', './src/test-helpers/db-connect.ts'],
     exclude: ['**/node_modules/**', '**/e2e/**', '**/*.e2e.*'],
     coverage: {
       provider: 'v8',

@@ -1,10 +1,9 @@
 import { describe, it, expect, vi } from "vitest"
 
-vi.mock("@/db", () => ({ db: {} }))
-vi.mock("@/db/schema", () => ({ users: {}, sessions: {}, accounts: {}, verifications: {} }))
+vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
-const anonCtx = { db: {} as never, session: null, user: null }
-const authCtx = { db: {} as never, session: { id: "s1" } as never, user: { id: "u1" } as never }
+const anonCtx = { session: null, user: null }
+const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never }
 
 describe("tRPC init", () => {
   it("exports router, publicProcedure, and protectedProcedure", async () => {

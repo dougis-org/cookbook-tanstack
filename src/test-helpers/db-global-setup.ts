@@ -1,39 +1,28 @@
 /**
- * Vitest global setup: starts a real PostgreSQL 16 container once for the
- * entire test suite, applies all Drizzle migrations, and exposes the
- * connection URL via DATABASE_URL so test workers can reach it.
+ * Vitest global setup: starts an in-process MongoDB instance once for the
+ * entire test suite using mongodb-memory-server, connects Mongoose, and
+ * exposes the connection URI via MONGODB_URI so test workers can reach it.
  *
  * Workers inherit process.env from the parent process, so setting
- * DATABASE_URL here makes it visible to every test file — including the
- * `// @vitest-environment node` files that use the real DB.
+ * MONGODB_URI here makes it visible to every test file.
  */
-import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql"
-import { drizzle } from "drizzle-orm/node-postgres"
-import { migrate } from "drizzle-orm/node-postgres/migrator"
-import { Pool } from "pg"
-import path from "path"
+import { MongoMemoryServer } from "mongodb-memory-server"
+import mongoose from "mongoose"
 
-let container: StartedPostgreSqlContainer
+let mongod: MongoMemoryServer
 
 export async function setup() {
-  container = await new PostgreSqlContainer("postgres:16-alpine").start()
-  const url = container.getConnectionUri()
-  process.env.DATABASE_URL = url
-
-  // Apply all migrations so every table exists before tests run
-  const pool = new Pool({ connectionString: url })
-  try {
-    const db = drizzle(pool)
-    await migrate(db, { migrationsFolder: path.resolve(process.cwd(), "drizzle") })
-  } finally {
-    await pool.end()
-  }
+  mongod = await MongoMemoryServer.create()
+  const uri = mongod.getUri()
+  process.env.MONGODB_URI = uri
+  await mongoose.connect(uri)
 }
 
 export async function teardown() {
   try {
-    await container?.stop()
+    await mongoose.disconnect()
+    await mongod?.stop()
   } catch (err) {
-    console.error("Failed to stop Testcontainers PostgreSQL container:", err)
+    console.error("Failed to stop mongodb-memory-server:", err)
   }
 }

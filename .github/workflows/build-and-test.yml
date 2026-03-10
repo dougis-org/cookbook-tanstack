@@ -20,19 +20,15 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: cookbook
+      mongodb:
+        image: mongo:7
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh localhost:27017/test --quiet"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 5432:5432
+          - 27017:27017
 
     steps:
       - name: Checkout
@@ -52,26 +48,24 @@ jobs:
 
       - name: Run unit and integration tests with coverage
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cookbook
+          MONGODB_URI: mongodb://localhost:27017/cookbook
         run: npm run test -- --coverage
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Setup test database
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cookbook
-        run: |
-          npm run db:push
-
       - name: Seed database
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cookbook
+          MONGODB_URI: mongodb://localhost:27017/cookbook
         run: npm run db:seed
 
       - name: Run E2E tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cookbook
+          MONGODB_URI: mongodb://localhost:27017/cookbook
+          # Required by the Nitro production server (playwright.config.ts uses the
+          # built server in CI to avoid Vite's cold-compilation timeouts).
+          BETTER_AUTH_SECRET: qjmHvoVR+EuLOAknrjddOvClC+9dSQXQIxf17BVVBkI=
+          BETTER_AUTH_URL: http://localhost:3000
           CI: true
         run: npm run test:e2e
 

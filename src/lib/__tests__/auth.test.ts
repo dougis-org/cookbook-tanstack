@@ -1,14 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
 
 vi.mock("@/db", () => ({
-  db: {},
-}))
-
-vi.mock("@/db/schema", () => ({
-  users: {},
-  sessions: {},
-  accounts: {},
-  verifications: {},
+  getMongoClient: vi.fn(() => ({ db: vi.fn(() => ({})) })),
 }))
 
 describe("auth server config", () => {

@@ -1,67 +1,65 @@
-import { z } from "zod"
-import { eq, and, asc, sql, getTableColumns } from "drizzle-orm"
-import { TRPCError } from "@trpc/server"
-import { publicProcedure, protectedProcedure, router } from "../init"
-import { visibilityFilter, verifyOwnership } from "./_helpers"
-import { cookbooks, cookbookRecipes, recipes, classifications } from "@/db/schema"
-import type { db } from "@/db"
-
-/** Verify the current user owns the given cookbook, throwing FORBIDDEN if not. */
-async function guardOwner(ctx: { db: typeof db; user: { id: string } }, id: string) {
-  await verifyOwnership(
-    () => ctx.db.select().from(cookbooks).where(eq(cookbooks.id, id)),
-    ctx.user.id,
-    "Cookbook",
-  )
-}
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { publicProcedure, protectedProcedure, router } from "../init";
+import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
+import { Cookbook, Recipe } from "@/db/models";
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db
-      .select({
-        ...getTableColumns(cookbooks),
-        recipeCount: sql<number>`cast(count(${cookbookRecipes.recipeId}) as int)`,
-      })
-      .from(cookbooks)
-      .leftJoin(cookbookRecipes, eq(cookbookRecipes.cookbookId, cookbooks.id))
-      .where(visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user))
-      .groupBy(cookbooks.id)
-      .orderBy(asc(cookbooks.name))
+    const docs = await Cookbook.find(visibilityFilter(ctx.user))
+      .sort({ name: 1 })
+      .lean();
+
+    return docs.map((cb) => ({
+      ...cb,
+      id: cb._id.toString(),
+      recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
+    }));
   }),
 
   byId: publicProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const [cookbook] = await ctx.db
-        .select()
-        .from(cookbooks)
-        .where(
-          and(
-            eq(cookbooks.id, input.id),
-            visibilityFilter(cookbooks.isPublic, cookbooks.userId, ctx.user),
-          ),
-        )
+      const visFilter = visibilityFilter(ctx.user);
+      const cookbook = await Cookbook.findOne({
+        _id: input.id,
+        ...visFilter,
+      }).lean();
 
-      if (!cookbook) return null
+      if (!cookbook) return null;
 
-      const recipeRows = await ctx.db
-        .select({
-          ...getTableColumns(recipes),
-          classificationName: classifications.name,
-          orderIndex: cookbookRecipes.orderIndex,
+      const recipeVisFilter = visibilityFilter(ctx.user);
+
+      // Sort embedded recipe stubs by orderIndex, then fetch the actual Recipe docs
+      const stubs: Array<{ recipeId: unknown; orderIndex: number }> =
+        Array.isArray(cookbook.recipes)
+          ? [...cookbook.recipes].sort((a, b) => a.orderIndex - b.orderIndex)
+          : [];
+
+      const recipeIds = stubs.map((s) => s.recipeId);
+
+      const recipeDocs = await Recipe.find({
+        _id: { $in: recipeIds },
+        ...recipeVisFilter,
+      })
+        .populate("classificationId", "name")
+        .lean();
+
+      // Re-map to preserve orderIndex from the stub
+      const recipeById = new Map(recipeDocs.map((r) => [r._id.toString(), r]));
+      const recipes = stubs
+        .map((stub) => {
+          const doc = recipeById.get(stub.recipeId?.toString() ?? "");
+          if (!doc) return null;
+          return {
+            ...doc,
+            id: doc._id.toString(),
+            orderIndex: stub.orderIndex,
+          };
         })
-        .from(cookbookRecipes)
-        .innerJoin(recipes, eq(cookbookRecipes.recipeId, recipes.id))
-        .leftJoin(classifications, eq(recipes.classificationId, classifications.id))
-        .where(
-          and(
-            eq(cookbookRecipes.cookbookId, input.id),
-            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
-          ),
-        )
-        .orderBy(asc(cookbookRecipes.orderIndex))
+        .filter(Boolean);
 
-      return { ...cookbook, recipes: recipeRows }
+      return { ...cookbook, id: cookbook._id.toString(), recipes };
     }),
 
   create: protectedProcedure
@@ -74,24 +72,25 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const [cookbook] = await ctx.db
-        .insert(cookbooks)
-        .values({
-          userId: ctx.user.id,
-          name: input.name,
-          description: input.description ?? null,
-          isPublic: input.isPublic,
-          imageUrl: input.imageUrl ?? null,
-        })
-        .returning()
-      return cookbook
+      const cookbook = await new Cookbook({
+        userId: ctx.user.id,
+        name: input.name,
+        description: input.description ?? null,
+        isPublic: input.isPublic,
+        imageUrl: input.imageUrl ?? null,
+        recipes: [],
+      }).save();
+      return {
+        ...cookbook.toObject({ virtuals: true }),
+        userId: cookbook.userId?.toString(),
+      };
     }),
 
   update: protectedProcedure
     .input(
       z
         .object({
-          id: z.string().uuid(),
+          id: objectId,
           name: z.string().min(1).max(255).optional(),
           description: z.string().max(500).optional(),
           isPublic: z.boolean().optional(),
@@ -99,85 +98,96 @@ export const cookbooksRouter = router({
         })
         .refine(
           (data) => {
-            const { id: _, ...rest } = data
-            return Object.keys(rest).length > 0
+            const { id: _, ...rest } = data;
+            return Object.keys(rest).length > 0;
           },
           { message: "At least one field to update must be provided" },
         ),
     )
     .mutation(async ({ ctx, input }) => {
-      await guardOwner(ctx, input.id)
-      const { id: _, ...data } = input
-      const [updated] = await ctx.db
-        .update(cookbooks)
-        .set(data)
-        .where(eq(cookbooks.id, input.id))
-        .returning()
-      return updated
+      await verifyOwnership(
+        () => Cookbook.findById(input.id).lean(),
+        ctx.user.id,
+        "Cookbook",
+      );
+
+      const { id, ...data } = input;
+      const updated = await Cookbook.findByIdAndUpdate(
+        id,
+        { $set: data },
+        { new: true },
+      ).lean();
+      return updated;
     }),
 
   delete: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await guardOwner(ctx, input.id)
-      await ctx.db.delete(cookbooks).where(eq(cookbooks.id, input.id))
-      return { success: true }
+      await verifyOwnership(
+        () => Cookbook.findById(input.id).lean(),
+        ctx.user.id,
+        "Cookbook",
+      );
+      await Cookbook.findByIdAndDelete(input.id);
+      return { success: true };
     }),
 
   addRecipe: protectedProcedure
-    .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
+    .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await guardOwner(ctx, input.cookbookId)
+      const cookbook = await verifyOwnership(
+        () => Cookbook.findById(input.cookbookId).lean(),
+        ctx.user.id,
+        "Cookbook",
+      );
 
-      const [accessible] = await ctx.db
-        .select({ id: recipes.id })
-        .from(recipes)
-        .where(
-          and(
-            eq(recipes.id, input.recipeId),
-            visibilityFilter(recipes.isPublic, recipes.userId, ctx.user),
-          ),
-        )
+      const recipeVisFilter = visibilityFilter(ctx.user);
+      const accessible = await Recipe.findOne({
+        _id: input.recipeId,
+        ...recipeVisFilter,
+      })
+        .select("_id")
+        .lean();
       if (!accessible) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
+        throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" });
       }
 
-      await ctx.db.transaction(async (tx) => {
-        const [{ nextIndex }] = await tx
-          .select({ nextIndex: sql<number>`coalesce(max(${cookbookRecipes.orderIndex}), -1) + 1` })
-          .from(cookbookRecipes)
-          .where(eq(cookbookRecipes.cookbookId, input.cookbookId))
+      // Check for duplicate, then push with next orderIndex
+      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+      const alreadyIn = recipes.some(
+        (r: { recipeId: unknown }) => r.recipeId?.toString() === input.recipeId,
+      );
+      if (!alreadyIn) {
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $push: {
+            recipes: { recipeId: input.recipeId, orderIndex: recipes.length },
+          },
+        });
+      }
 
-        await tx
-          .insert(cookbookRecipes)
-          .values({ cookbookId: input.cookbookId, recipeId: input.recipeId, orderIndex: nextIndex })
-          .onConflictDoNothing()
-      })
-
-      return { success: true }
+      return { success: true };
     }),
 
   removeRecipe: protectedProcedure
-    .input(z.object({ cookbookId: z.string().uuid(), recipeId: z.string().uuid() }))
+    .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await guardOwner(ctx, input.cookbookId)
-      await ctx.db
-        .delete(cookbookRecipes)
-        .where(
-          and(
-            eq(cookbookRecipes.cookbookId, input.cookbookId),
-            eq(cookbookRecipes.recipeId, input.recipeId),
-          ),
-        )
-      return { success: true }
+      await verifyOwnership(
+        () => Cookbook.findById(input.cookbookId).lean(),
+        ctx.user.id,
+        "Cookbook",
+      );
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $pull: { recipes: { recipeId: input.recipeId } },
+      });
+      return { success: true };
     }),
 
   reorderRecipes: protectedProcedure
     .input(
       z.object({
-        cookbookId: z.string().uuid(),
+        cookbookId: objectId,
         recipeIds: z
-          .array(z.string().uuid())
+          .array(objectId)
           .min(1)
           .refine((ids) => new Set(ids).size === ids.length, {
             message: "Duplicate recipe IDs in reorder list",
@@ -185,22 +195,31 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await guardOwner(ctx, input.cookbookId)
-      await ctx.db.transaction(async (tx) => {
-        await Promise.all(
-          input.recipeIds.map((recipeId, index) =>
-            tx
-              .update(cookbookRecipes)
-              .set({ orderIndex: index })
-              .where(
-                and(
-                  eq(cookbookRecipes.cookbookId, input.cookbookId),
-                  eq(cookbookRecipes.recipeId, recipeId),
-                ),
-              ),
-          ),
-        )
-      })
-      return { success: true }
+      const cookbook = await verifyOwnership(
+        () => Cookbook.findById(input.cookbookId).lean(),
+        ctx.user.id,
+        "Cookbook",
+      );
+
+      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+
+      // Rebuild the recipes array with updated orderIndex values
+      const updatedRecipes = recipes.map(
+        (stub: { recipeId: unknown; orderIndex: number }) => {
+          const newIndex = input.recipeIds.indexOf(
+            stub.recipeId?.toString() ?? "",
+          );
+          return {
+            recipeId: stub.recipeId,
+            orderIndex: newIndex >= 0 ? newIndex : stub.orderIndex,
+          };
+        },
+      );
+
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $set: { recipes: updatedRecipes },
+      });
+
+      return { success: true };
     }),
-})
+});

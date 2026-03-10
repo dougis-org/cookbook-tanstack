@@ -1,14 +1,10 @@
 import { z } from "zod"
-import { eq } from "drizzle-orm"
 import { protectedProcedure, router } from "../init"
-import { users } from "@/db/schema"
+import { User } from "@/db/models"
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
-    const [user] = await ctx.db
-      .select()
-      .from(users)
-      .where(eq(users.id, ctx.user.id))
+    const user = await User.findById(ctx.user.id).lean()
     return user ?? null
   }),
 
@@ -24,11 +20,11 @@ export const usersRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const [updated] = await ctx.db
-        .update(users)
-        .set(input)
-        .where(eq(users.id, ctx.user.id))
-        .returning()
+      const updated = await User.findByIdAndUpdate(
+        ctx.user.id,
+        { $set: input },
+        { new: true },
+      ).lean()
       return updated ?? null
     }),
 })
