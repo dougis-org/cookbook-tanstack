@@ -6,20 +6,25 @@ interface ExportedRecipe extends Recipe {
   _version: typeof RECIPE_EXPORT_VERSION;
 }
 
-type IdLike =
-  | string
-  | number
-  | { id?: string; _id?: string; toString?: () => string }
-  | null
-  | undefined;
+type IdLikeObject = {
+  id?: IdLike;
+  _id?: IdLike;
+  toString?: () => string;
+};
+
+type IdLike = string | number | IdLikeObject | null | undefined;
 
 function toObjectIdString(value: IdLike): string | null | undefined {
   if (value === null || value === undefined) return value;
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
   if (typeof value === "object") {
-    if (typeof value.id === "string") return value.id;
-    if (typeof value._id === "string") return value._id;
+    const nestedId = toObjectIdString(value.id);
+    if (nestedId !== undefined) return nestedId;
+
+    const nestedObjectId = toObjectIdString(value._id);
+    if (nestedObjectId !== undefined) return nestedObjectId;
+
     if (typeof value.toString === "function") {
       const str = value.toString();
       if (str && str !== "[object Object]") return str;

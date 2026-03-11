@@ -62,9 +62,13 @@ describe("exportRecipeToJson", () => {
 
   it("normalizes populated id objects to id strings for import compatibility", () => {
     const recipe = makeRecipe({
-      sourceId: { _id: "507f1f77bcf86cd799439011" },
+      sourceId: {
+        _id: { toString: () => "507f1f77bcf86cd799439011" },
+      },
       classificationId: { id: "507f1f77bcf86cd799439012" },
-      mealIds: [{ _id: "507f1f77bcf86cd799439013" }],
+      mealIds: [
+        { _id: { toString: () => "507f1f77bcf86cd799439013" } },
+      ],
       courseIds: [{ id: "507f1f77bcf86cd799439014" }],
       preparationIds: [{ toString: () => "507f1f77bcf86cd799439015" }],
     });
