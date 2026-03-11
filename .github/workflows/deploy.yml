@@ -17,7 +17,7 @@ jobs:
       cancel-in-progress: false
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: superfly/flyctl-actions/setup-flyctl@63da3ecc5e2793b98a3f2519b3d75d4f4c11cec2 # master (2024-08-02)
 
