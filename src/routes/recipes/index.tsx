@@ -188,7 +188,7 @@ function RecipesPage() {
   return (
     <PageLayout title="Recipes" description="Browse and discover delicious recipes">
       {/* Search + Sort + Page-size bar */}
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="print:hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex-1 w-full sm:max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -208,6 +208,7 @@ function RecipesPage() {
           <select
             value={sort}
             onChange={(e) => updateSearch({ sort: e.target.value as typeof sort })}
+            aria-label="Sort recipes"
             className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           >
             <option value="newest">Newest first</option>
@@ -232,19 +233,28 @@ function RecipesPage() {
           </select>
 
           {isLoggedIn && (
-            <Link
-              to="/recipes/new"
-              className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50 text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              New Recipe
-            </Link>
+            <>
+              <Link
+                to="/import"
+                className="flex items-center gap-2 px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Import Recipe
+              </Link>
+              <Link
+                to="/recipes/new"
+                className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50 text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                New Recipe
+              </Link>
+            </>
           )}
         </div>
       </div>
 
       {/* Filter bar */}
-      <div className="mb-4 space-y-3">
+      <div className="print:hidden mb-4 space-y-3">
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <Filter className="w-4 h-4" />
           <span>Filters</span>
@@ -278,6 +288,7 @@ function RecipesPage() {
           <select
             value={classificationId ?? ''}
             onChange={(e) => updateSearch({ classificationId: e.target.value || undefined })}
+            aria-label="Filter by category"
             className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           >
             <option value="">All Categories</option>
@@ -288,6 +299,7 @@ function RecipesPage() {
           <select
             value={sourceId ?? ''}
             onChange={(e) => updateSearch({ sourceId: e.target.value || undefined })}
+            aria-label="Filter by source"
             className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           >
             <option value="">All Sources</option>

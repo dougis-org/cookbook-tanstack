@@ -1,6 +1,8 @@
+import { useEffect, useMemo, useState } from 'react'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
+import ServingSizeAdjuster from '@/components/recipes/ServingSizeAdjuster'
 
 interface RecipeDetailProps {
   recipe: Recipe & {
@@ -20,14 +22,19 @@ function splitLines(text: string | null): string[] {
 }
 
 export default function RecipeDetail({ recipe }: RecipeDetailProps) {
-  const ingredientLines = splitLines(recipe.ingredients)
-  const instructionLines = splitLines(recipe.instructions)
+  const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
+  const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
+  const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
     recipe.cholesterol != null ||
     recipe.sodium != null ||
     recipe.protein != null
+
+  useEffect(() => {
+    setScaledIngredientLines(ingredientLines)
+  }, [recipe.id, recipe.ingredients])
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -133,14 +140,21 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Ingredients
             </h2>
+            {recipe.servings && ingredientLines.length > 0 && (
+              <ServingSizeAdjuster
+                originalServings={recipe.servings}
+                ingredients={ingredientLines}
+                onScaledIngredientsChange={setScaledIngredientLines}
+              />
+            )}
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
-                {ingredientLines.map((line, i) => (
+                {(recipe.servings ? scaledIngredientLines : ingredientLines).map((line, i) => (
                   <li
                     key={i}
-                    className="flex items-center text-gray-700 dark:text-gray-300"
+                    className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"
                   >
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 flex-shrink-0"></span>
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
                     {line}
                   </li>
                 ))}
@@ -162,9 +176,9 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
                 {instructionLines.map((step, index) => (
                   <li
                     key={index}
-                    className="flex gap-4 text-gray-700 dark:text-gray-300"
+                    className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
                   >
-                    <span className="flex-shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
+                    <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
                       {index + 1}
                     </span>
                     <p className="flex-1 pt-1">{step}</p>

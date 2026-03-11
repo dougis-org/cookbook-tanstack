@@ -180,7 +180,7 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 - [ ] Write E2E test for recipe search
 - [ ] Write E2E test for cookbook creation
 - [ ] Write E2E test for image upload
-- [ ] Write E2E test for contact form
+- [ ] Write E2E test for print/export/import and serving adjuster flows
 - [ ] Test across browsers (Chrome, Firefox, Safari)
 - [ ] Test on mobile viewports
 
@@ -193,7 +193,7 @@ Comprehensive testing phase covering unit tests, integration tests, end-to-end t
 - [ ] User can create cookbook and add recipes
 - [ ] User can upload images
 - [ ] User can favorite recipes
-- [ ] User can submit contact form
+- [ ] User can export and import recipes
 
 **Browser Testing:**
 - [ ] All tests pass in Chrome
