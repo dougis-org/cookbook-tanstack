@@ -281,6 +281,14 @@ export const recipesRouter = router({
   import: protectedProcedure
     .input(importedRecipeSchema)
     .mutation(async ({ ctx, input }) => {
+      const parsedDate = input.dateAdded ? new Date(input.dateAdded) : new Date();
+      if (Number.isNaN(parsedDate.getTime())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid dateAdded value",
+        });
+      }
+
       const recipe = await new Recipe({
         name: input.name,
         userId: ctx.user.id,
@@ -293,7 +301,7 @@ export const recipesRouter = router({
         difficulty: input.difficulty ?? undefined,
         sourceId: input.sourceId ?? undefined,
         classificationId: input.classificationId ?? undefined,
-        dateAdded: input.dateAdded ? new Date(input.dateAdded) : new Date(),
+        dateAdded: parsedDate,
         calories: input.calories ?? undefined,
         fat: input.fat ?? undefined,
         cholesterol: input.cholesterol ?? undefined,

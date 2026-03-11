@@ -35,4 +35,14 @@ describe("importedRecipeSchema", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("rejects invalid dateAdded strings", () => {
+    const result = importedRecipeSchema.safeParse({
+      name: "Bad Date Recipe",
+      dateAdded: "not-a-date",
+      _version: RECIPE_EXPORT_VERSION,
+    });
+
+    expect(result.success).toBe(false);
+  });
 });

@@ -1047,4 +1047,19 @@ describe("recipes.import", () => {
       ).rejects.toThrow();
     });
   });
+
+  it("fails validation for invalid dateAdded", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+
+      await expect(
+        caller.recipes.import({
+          name: "Bad Date Import",
+          dateAdded: "not-a-date",
+          _version: "1",
+        }),
+      ).rejects.toThrow();
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
@@ -22,9 +22,9 @@ function splitLines(text: string | null): string[] {
 }
 
 export default function RecipeDetail({ recipe }: RecipeDetailProps) {
-  const ingredientLines = splitLines(recipe.ingredients)
+  const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
-  const instructionLines = splitLines(recipe.instructions)
+  const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||

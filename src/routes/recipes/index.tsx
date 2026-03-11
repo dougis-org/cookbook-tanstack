@@ -411,7 +411,7 @@ function RecipesPage() {
                   className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-white disabled:opacity-30 hover:bg-slate-700 transition-colors"
                   aria-label="Previous page"
                 ><ChevronLeft className="w-4 h-4" /></button>
-                <span className="px-3 py-1 text-sm text-gray-300 min-w-22.5 text-center">
+                <span className="px-3 py-1 text-sm text-gray-300 min-w-[90px] text-center">
                   Page {page} of {totalPages}
                 </span>
                 <button disabled={page >= totalPages} onClick={() => updateSearch({ page: page + 1 })}

@@ -44,7 +44,7 @@ const textFieldLabels = {
  */
 export async function submitRecipeForm(page: Page, data: RecipeData) {
   await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(2000);
+  await page.getByLabel("Recipe Name").waitFor({ state: "visible" });
 
   await page.getByLabel("Recipe Name").fill(data.name);
 

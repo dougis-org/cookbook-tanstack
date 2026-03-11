@@ -36,7 +36,7 @@ export const importedRecipeSchema = z.object({
   difficulty: z.enum(["easy", "medium", "hard"]).nullable().optional(),
   sourceId: objectIdSchema.nullable().optional(),
   classificationId: objectIdSchema.nullable().optional(),
-  dateAdded: z.string().optional(),
+  dateAdded: z.string().datetime().optional(),
   calories: z.number().int().nonnegative().nullable().optional(),
   fat: z.number().nonnegative().nullable().optional(),
   cholesterol: z.number().nonnegative().nullable().optional(),
