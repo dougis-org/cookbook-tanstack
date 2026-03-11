@@ -7,6 +7,7 @@ import { getQueryClient } from '@/lib/trpc'
 import Header from '../components/Header'
 
 import appCss from '../styles.css?url'
+import printCss from '../styles/print.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -27,6 +28,10 @@ export const Route = createRootRoute({
         rel: 'stylesheet',
         href: appCss,
       },
+      {
+        rel: 'stylesheet',
+        href: printCss,
+      },
     ],
   }),
 
@@ -37,6 +42,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {import.meta.env.DEV ? (
+          <script
+            type="module"
+            dangerouslySetInnerHTML={{
+              __html:
+                'import RefreshRuntime from "/@react-refresh"; RefreshRuntime.injectIntoGlobalHook(window); window.$RefreshReg$ = () => {}; window.$RefreshSig$ = () => (type) => type; window.__vite_plugin_react_preamble_installed__ = true;',
+            }}
+          />
+        ) : null}
         <HeadContent />
       </head>
       <body>

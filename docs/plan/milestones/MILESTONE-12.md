@@ -21,7 +21,7 @@ Final deployment preparation, production environment setup, launch checklist, mo
 - [ ] Set up domain and SSL
 - [ ] Configure DNS
 - [ ] Set up CDN (Cloudflare/CloudFront)
-- [ ] Configure email service (Resend/SendGrid)
+- [ ] Confirm deferred email stream is out of launch configuration scope
 - [ ] Set up image storage (Cloudinary/S3)
 - [ ] Configure backup strategy
 - [ ] Set up staging environment
@@ -42,7 +42,7 @@ Final deployment preparation, production environment setup, launch checklist, mo
 - [ ] API keys configured
 - [ ] Secrets secured (not in code)
 - [ ] Database connection string set
-- [ ] Email service configured
+- [ ] Launch scope configuration complete (excluding deferred email stream)
 - [ ] Image storage configured
 
 **Staging Environment:**
@@ -429,7 +429,7 @@ Final deployment preparation, production environment setup, launch checklist, mo
 - [ ] Search works
 - [ ] Images display
 - [ ] Cookbooks work
-- [ ] Contact form works
+- [ ] Import/export and print flows work
 
 ---
 

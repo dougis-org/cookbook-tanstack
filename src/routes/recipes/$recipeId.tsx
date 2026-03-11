@@ -7,6 +7,7 @@ import { useSession } from '@/lib/auth-client'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
+import ExportButton from '@/components/recipes/ExportButton'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
@@ -76,7 +77,9 @@ function RecipeDetailPage() {
 
   return (
     <PageLayout>
-      <Breadcrumb items={[{ label: 'Recipes', to: '/recipes' }, { label: recipe.name }]} />
+      <div className="print:hidden">
+        <Breadcrumb items={[{ label: 'Recipes', to: '/recipes' }, { label: recipe.name }]} />
+      </div>
       <div className="mb-6 flex items-center justify-between">
         <span />
 
@@ -84,7 +87,7 @@ function RecipeDetailPage() {
           <button
             onClick={() => toggleMarkedMutation.mutate({ id: recipeId })}
             disabled={toggleMarkedMutation.isPending}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-gray-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
+            className="print:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-gray-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <Heart
               className={`w-5 h-5 ${markedData?.marked ? 'fill-red-500 text-red-500' : ''}`}
@@ -96,23 +99,26 @@ function RecipeDetailPage() {
 
       <RecipeDetail recipe={recipe} />
 
-      {isOwner && (
-        <div className="mt-8 flex justify-center gap-4">
-          <Link
-            to="/recipes/$recipeId/edit"
-            params={{ recipeId }}
-            className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            Edit Recipe
-          </Link>
-          <button
-            onClick={() => setShowDelete(true)}
-            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            Delete Recipe
-          </button>
-        </div>
-      )}
+      <div className="mt-8 flex justify-center gap-4">
+        <ExportButton recipeId={recipeId} />
+        {isOwner && (
+          <>
+            <Link
+              to="/recipes/$recipeId/edit"
+              params={{ recipeId }}
+              className="print:hidden px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              Edit Recipe
+            </Link>
+            <button
+              onClick={() => setShowDelete(true)}
+              className="print:hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              Delete Recipe
+            </button>
+          </>
+        )}
+      </div>
 
       <DeleteConfirmModal
         open={showDelete}
