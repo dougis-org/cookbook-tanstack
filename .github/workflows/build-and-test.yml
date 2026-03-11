@@ -18,6 +18,10 @@ jobs:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     timeout-minutes: 30
     runs-on: ubuntu-latest
+    env:
+      MONGODB_URI: mongodb://localhost:27017/cookbook
+      BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
+      BETTER_AUTH_URL: http://localhost:3000
 
     services:
       mongodb:
@@ -37,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '25'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -47,21 +51,16 @@ jobs:
         run: npm run build
 
       - name: Run unit and integration tests with coverage
-        env:
-          MONGODB_URI: mongodb://localhost:27017/cookbook
         run: npm run test -- --coverage
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Seed database
-        env:
-          MONGODB_URI: mongodb://localhost:27017/cookbook
         run: npm run db:seed
 
       - name: Run E2E tests
         env:
-          MONGODB_URI: mongodb://localhost:27017/cookbook
           CI: true
         run: npm run test:e2e
 
