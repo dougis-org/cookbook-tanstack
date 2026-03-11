@@ -40,21 +40,14 @@ function normalizeIdArray(value: unknown): string[] | undefined {
 }
 
 export function exportRecipeToJson(recipe: Recipe): string {
-  const sourceId = toObjectIdString(
-    (recipe as unknown as Record<string, unknown>).sourceId as IdLike,
-  );
+  const recipeAsRecord = recipe as unknown as Record<string, unknown>;
+  const sourceId = toObjectIdString(recipeAsRecord.sourceId as IdLike);
   const classificationId = toObjectIdString(
-    (recipe as unknown as Record<string, unknown>).classificationId as IdLike,
+    recipeAsRecord.classificationId as IdLike,
   );
-  const mealIds = normalizeIdArray(
-    (recipe as unknown as Record<string, unknown>).mealIds,
-  );
-  const courseIds = normalizeIdArray(
-    (recipe as unknown as Record<string, unknown>).courseIds,
-  );
-  const preparationIds = normalizeIdArray(
-    (recipe as unknown as Record<string, unknown>).preparationIds,
-  );
+  const mealIds = normalizeIdArray(recipeAsRecord.mealIds);
+  const courseIds = normalizeIdArray(recipeAsRecord.courseIds);
+  const preparationIds = normalizeIdArray(recipeAsRecord.preparationIds);
 
   const exported: ExportedRecipe = {
     ...recipe,
