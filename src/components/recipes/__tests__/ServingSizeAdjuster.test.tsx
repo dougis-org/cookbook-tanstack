@@ -13,7 +13,7 @@ describe('ServingSizeAdjuster', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '+' }))
+    fireEvent.click(screen.getByRole('button', { name: /increase servings/i }))
 
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(onScaledIngredientsChange).toHaveBeenLastCalledWith(['3 cups flour'])
@@ -29,7 +29,7 @@ describe('ServingSizeAdjuster', () => {
       />,
     )
 
-    const decrement = screen.getByRole('button', { name: '-' })
+    const decrement = screen.getByRole('button', { name: /decrease servings/i })
     expect(decrement).toBeDisabled()
   })
 
@@ -43,7 +43,7 @@ describe('ServingSizeAdjuster', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: '+' }))
+    fireEvent.click(screen.getByRole('button', { name: /increase servings/i }))
     const reset = screen.getByRole('button', { name: /reset/i })
     fireEvent.click(reset)
 

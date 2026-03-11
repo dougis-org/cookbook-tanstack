@@ -31,6 +31,7 @@ export default function ServingSizeAdjuster({
           type="button"
           onClick={() => setCurrentServings((prev) => Math.max(1, prev - 1))}
           disabled={currentServings <= 1}
+          aria-label="Decrease servings"
           className="h-7 w-7 rounded border border-slate-600 disabled:opacity-40"
         >
           -
@@ -39,6 +40,7 @@ export default function ServingSizeAdjuster({
         <button
           type="button"
           onClick={() => setCurrentServings((prev) => prev + 1)}
+          aria-label="Increase servings"
           className="h-7 w-7 rounded border border-slate-600"
         >
           +

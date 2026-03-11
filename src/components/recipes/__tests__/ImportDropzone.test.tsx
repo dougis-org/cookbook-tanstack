@@ -28,4 +28,20 @@ describe('ImportDropzone', () => {
     expect(onFileSelected).toHaveBeenCalledTimes(1)
     expect(onFileSelected).toHaveBeenCalledWith(file)
   })
+
+  it('clears input value after selecting a file so same file can be selected again', () => {
+    const onFileSelected = vi.fn()
+    render(<ImportDropzone onFileSelected={onFileSelected} />)
+
+    const input = screen.getByTestId('import-file-input') as HTMLInputElement
+    const file = new File(['{"name":"Recipe"}'], 'recipe.json', { type: 'application/json' })
+
+    fireEvent.change(input, { target: { files: [file] } })
+
+    expect(onFileSelected).toHaveBeenCalledWith(file)
+    expect(input.value).toBe('')
+
+    fireEvent.change(input, { target: { files: [file] } })
+    expect(onFileSelected).toHaveBeenCalledTimes(2)
+  })
 })

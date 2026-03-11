@@ -32,7 +32,10 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
         accept=".json,application/json"
         aria-label="Import recipe JSON file"
         className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
+        onChange={(e) => {
+          handleFile(e.target.files?.[0])
+          e.currentTarget.value = ''
+        }}
         data-testid="import-file-input"
       />
 
