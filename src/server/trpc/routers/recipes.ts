@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Recipe, RecipeLike } from "@/db/models";
+import { importedRecipeSchema } from "@/lib/validation";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -275,5 +276,47 @@ export const recipesRouter = router({
 
       await new RecipeLike({ userId: ctx.user.id, recipeId: input.id }).save();
       return { marked: true };
+    }),
+
+  import: protectedProcedure
+    .input(importedRecipeSchema)
+    .mutation(async ({ ctx, input }) => {
+      const parsedDate = input.dateAdded ? new Date(input.dateAdded) : new Date();
+      if (Number.isNaN(parsedDate.getTime())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid dateAdded value",
+        });
+      }
+
+      const recipe = await new Recipe({
+        name: input.name,
+        userId: ctx.user.id,
+        ingredients: input.ingredients ?? undefined,
+        instructions: input.instructions ?? undefined,
+        notes: input.notes ?? undefined,
+        servings: input.servings ?? undefined,
+        prepTime: input.prepTime ?? undefined,
+        cookTime: input.cookTime ?? undefined,
+        difficulty: input.difficulty ?? undefined,
+        sourceId: input.sourceId ?? undefined,
+        classificationId: input.classificationId ?? undefined,
+        dateAdded: parsedDate,
+        calories: input.calories ?? undefined,
+        fat: input.fat ?? undefined,
+        cholesterol: input.cholesterol ?? undefined,
+        sodium: input.sodium ?? undefined,
+        protein: input.protein ?? undefined,
+        imageUrl: input.imageUrl ?? undefined,
+        isPublic: input.isPublic ?? true,
+        mealIds: input.mealIds ?? [],
+        courseIds: input.courseIds ?? [],
+        preparationIds: input.preparationIds ?? [],
+      }).save();
+
+      return {
+        id: recipe.id,
+        name: recipe.name,
+      };
     }),
 });

@@ -7,13 +7,13 @@ This document outlines the complete migration from the Laravel-based recipe appl
 **Original Estimated Timeline**: 12 weeks (250-300 hours)
 **Current Status**: ~33% complete (M01–M04 shipped)
 
-### Revised Launch Scope (as of 2026-02-25)
+### Revised Launch Scope (as of 2026-03-10)
 
-M06 (Image Management) and M07 (User Features & Social) are **deferred to post-launch** to accelerate production release. The revised path to launch is:
+M06 (Image Management) and M07 (User Features & Social) are **deferred to post-launch** to accelerate production release. Contact form and outbound email work in M08 are also **deferred to post-launch** so email complexity is handled in one dedicated stream. The revised path to launch is:
 
 **M05 → M08 → M09 → M10 → M11 → M12**
 
-M06 and M07 will be implemented as post-launch improvements once the core application is live and validated with real users.
+M06 and M07 will be implemented as post-launch improvements once the core application is live and validated with real users. Deferred M08 email-related features will be delivered in the same post-launch stream.
 
 For detailed implementation steps, acceptance criteria, and testing requirements, refer to the individual milestone documents linked below.
 
@@ -34,7 +34,7 @@ For detailed implementation steps, acceptance criteria, and testing requirements
 - **Database**: PostgreSQL (recommended) or MySQL
 - **Authentication**: Better-Auth or Lucia
 - **File Storage**: Cloudinary or AWS S3 for images
-- **Email**: Resend or SendGrid
+- **Email**: Deferred to post-launch email stream (Resend or SendGrid candidate)
 
 ### DevOps
 - **Hosting**: Vercel (frontend) + Neon/Supabase (database)
@@ -114,9 +114,9 @@ Implement user profiles, favorites system, cookbook following, ratings/reviews, 
 ### Phase 8: Additional Features (Week 12)
 **[→ View Full Milestone Details](milestones/MILESTONE-08.md)**
 
-Add contact form, print styles, recipe export/import, email notifications, and other enhancements.
+Add print styles, recipe export/import, serving adjustment, and other launch-focused enhancements.
 
-**Key Deliverables**: Contact form, print styles, recipe export/import, email service, serving adjuster
+**Key Deliverables**: Print styles, recipe export/import, serving adjuster
 
 ---
 
@@ -188,7 +188,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ### Infrastructure
 - **Database**: Neon/Supabase (free tier initially)
 - **Image Storage**: Cloudinary (free tier: 25GB storage, 25GB bandwidth)
-- **Email Service**: Resend (free tier: 3k emails/month) or SendGrid
+- **Email Service**: Deferred to post-launch stream (Resend or SendGrid)
 - **Hosting**: Vercel (Hobby free tier or Pro $20/month)
 - **Domain**: ~$15/year
 - **Monitoring**: Sentry (free tier)
@@ -251,6 +251,9 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ### Phase 13: Advanced Features (Future)
 
 Potential enhancements to consider after successful launch:
+
+- Contact form and outbound email delivery
+- Email notifications and preference management
 
 - Recipe comments and discussions
 - Recipe variations/forks
