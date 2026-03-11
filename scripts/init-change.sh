@@ -1,0 +1,1 @@
+../.github/openspec-shared/init-change.sh

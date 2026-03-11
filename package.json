@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
+    "opsx:init-change": "sh scripts/init-change.sh",
     "db:connect": "npx tsx -e \"import mongoose from 'mongoose'; import { config } from 'dotenv'; config({ path: '.env.local' }); config(); mongoose.connect(process.env.MONGODB_URI).then(() => { console.log('MongoDB connected successfully'); process.exit(0); }).catch(e => { console.error(e); process.exit(1); })\"",
     "db:seed": "npx tsx src/db/seeds/index.ts"
   },
