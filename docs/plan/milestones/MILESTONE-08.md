@@ -1,7 +1,7 @@
 # Milestone 08: Additional Features
 
 **Duration**: 1 week  
-**Status**: Not Started  
+**Status**: Complete (Merged 2026-03-11)  
 **Dependencies**: All previous milestones
 
 ## Overview
@@ -31,10 +31,10 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Acceptance Criteria
 
-- [ ] Recipe detail pages print clearly with core content visible
-- [ ] Recipe list pages print without filters/navigation clutter
-- [ ] Print output is readable in black and white
-- [ ] Cross-browser print preview is acceptable
+- [x] Recipe detail pages print clearly with core content visible
+- [x] Recipe list pages print without filters/navigation clutter
+- [x] Print output is readable in black and white
+- [x] Cross-browser print preview is acceptable
 
 ### Deliverables
 
@@ -56,10 +56,10 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Acceptance Criteria
 
-- [ ] Recipe exports as valid JSON
-- [ ] Export includes required recipe fields and metadata
-- [ ] Download starts reliably from recipe detail page
-- [ ] Filename is deterministic and user friendly
+- [x] Recipe exports as valid JSON
+- [x] Export includes required recipe fields and metadata
+- [x] Download starts reliably from recipe detail page
+- [x] Filename is deterministic and user friendly
 
 ### Deliverables
 
@@ -84,10 +84,10 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Acceptance Criteria
 
-- [ ] Users can upload valid JSON and preview before import
-- [ ] Invalid JSON/files are rejected with clear feedback
-- [ ] Confirmed import creates a new recipe
-- [ ] Successful import redirects to the new recipe
+- [x] Users can upload valid JSON and preview before import
+- [x] Invalid JSON/files are rejected with clear feedback
+- [x] Confirmed import creates a new recipe
+- [x] Successful import redirects to the new recipe
 
 ### Deliverables
 
@@ -112,10 +112,10 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Acceptance Criteria
 
-- [ ] Current serving size is visible and adjustable
-- [ ] Ingredient quantities update correctly when servings change
-- [ ] Reset returns values to original servings
-- [ ] Component is responsive on mobile and desktop
+- [x] Current serving size is visible and adjustable
+- [x] Ingredient quantities update correctly when servings change
+- [x] Reset returns values to original servings
+- [x] Component is responsive on mobile and desktop
 
 ### Deliverables
 
@@ -135,9 +135,9 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Rationale
 
-- [ ] Keep launch scope focused on core and high-value UX improvements
-- [ ] Remove launch dependency on outbound email infrastructure
-- [ ] Implement all email-related features in a single post-launch stream
+- [x] Keep launch scope focused on core and high-value UX improvements
+- [x] Remove launch dependency on outbound email infrastructure
+- [x] Implement all email-related features in a single post-launch stream
 
 ---
 
@@ -145,35 +145,35 @@ Contact form and outbound email features are deferred to a dedicated post-launch
 
 ### Unit Tests
 
-- [ ] Export data formatting
-- [ ] Import data validation
-- [ ] Serving size calculations
+- [x] Export data formatting
+- [x] Import data validation
+- [x] Serving size calculations
 
 ### Integration Tests
 
-- [ ] Recipe export correctness
-- [ ] Recipe import correctness
-- [ ] Print styles on key pages
-- [ ] Serving adjuster integration
+- [x] Recipe export correctness
+- [x] Recipe import correctness
+- [x] Print styles on key pages
+- [x] Serving adjuster integration
 
 ### Manual Testing
 
-- [ ] Print recipe detail
-- [ ] Print recipe list
-- [ ] Export recipe as JSON
-- [ ] Import recipe from JSON
-- [ ] Adjust serving sizes
+- [x] Print recipe detail
+- [x] Print recipe list
+- [x] Export recipe as JSON
+- [x] Import recipe from JSON
+- [x] Adjust serving sizes
 
 ---
 
 ## Definition of Done
 
-- [ ] All tasks completed
-- [ ] All acceptance criteria met
-- [ ] All tests passing
-- [ ] Documentation updated
-- [ ] No critical bugs
-- [ ] Feature behavior verified in supported browsers
+- [x] All tasks completed
+- [x] All acceptance criteria met
+- [x] All tests passing
+- [x] Documentation updated
+- [x] No critical bugs
+- [x] Feature behavior verified in supported browsers
 
 ---
 
