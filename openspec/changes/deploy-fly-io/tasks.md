@@ -29,6 +29,7 @@
 - [x] 5.3 Confirm `fly.toml` passes `flyctl config validate` (run: `flyctl config validate`)
 - [ ] 5.4 Verify MongoDB Atlas IP allowlist permits Fly.io outbound IPs (or is set to `0.0.0.0/0`)
 - [x] 5.5 Run `npm run test` and `npx tsc --noEmit` — all must pass
+- [ ] 5.6 Run `docker run --rm -e MONGODB_URI=... -e BETTER_AUTH_SECRET=... -e BETTER_AUTH_URL=... cookbook-tanstack npm run db:seed` and confirm the command completes successfully (mirrors Fly.io `release_command`)
 
 ## 6. PR and Merge
 

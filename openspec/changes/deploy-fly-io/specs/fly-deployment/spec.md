@@ -5,7 +5,7 @@ The project SHALL contain a `fly.toml` at the repository root that configures th
 
 #### Scenario: fly.toml is present and valid
 - **WHEN** the repository root is inspected
-- **THEN** a `fly.toml` file exists with `app = "cookbook-tanstack"`, `primary_region = "sjc"`, `[http_service]` with `internal_port = 3000`, `[deploy] release_command`, and a `[[vm]]` or `[http_service.checks]` health check section
+- **THEN** a `fly.toml` file exists with `app = "cookbook-tanstack"`, `primary_region = "sjc"`, `[http_service]` with `internal_port = 3000`, `[deploy] release_command`, and a `[[http_service.checks]]` health check section
 
 #### Scenario: release_command runs seeds
 - **WHEN** the `release_command` in `fly.toml` is executed
