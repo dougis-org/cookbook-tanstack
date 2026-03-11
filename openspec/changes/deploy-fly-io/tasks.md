@@ -32,9 +32,9 @@
 
 ## 6. PR and Merge
 
-- [ ] 6.1 Push branch and open PR targeting `main`
-- [ ] 6.2 Enable auto-merge on the PR
-- [ ] 6.3 Address any CI failures or review comments
+- [x] 6.1 Push branch and open PR targeting `main`
+- [x] 6.2 Enable auto-merge on the PR
+- [x] 6.3 Address any CI failures or review comments
 - [ ] 6.4 Confirm all status checks pass before merge
 
 ## 7. Post-Merge
