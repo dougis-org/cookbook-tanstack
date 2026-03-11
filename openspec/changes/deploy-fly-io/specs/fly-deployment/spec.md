@@ -18,7 +18,7 @@ The project SHALL contain a `fly.toml` at the repository root that configures th
 ---
 
 ### Requirement: Dockerfile produces a deployable production image
-The project SHALL contain a `Dockerfile` at the repository root using a multi-stage build. The builder stage MUST use `node:24-alpine`, install all dependencies and run `npm run build`. The runtime stage MUST copy only the build output (`.output/`) and production dependencies (`node_modules/`), expose port 3000, and start the server with `node .output/server/index.mjs`.
+The project SHALL contain a `Dockerfile` at the repository root using a multi-stage build. The builder stage MUST use `node:24-alpine`, install all dependencies and run `npm run build`. The runtime stage MUST copy the build output (`.output/`), production dependencies (`node_modules/`), and application source (`src/`) needed by the Fly.io `release_command` for database seeding. It MUST expose port 3000 and start the server with `node .output/server/index.mjs`.
 
 #### Scenario: Dockerfile builds successfully
 - **WHEN** `docker build .` is run from the repository root

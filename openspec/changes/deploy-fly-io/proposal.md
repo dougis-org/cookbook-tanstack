@@ -7,7 +7,7 @@ The application has no production deployment configuration — there is no `fly.
 - Add `fly.toml` — Fly.io app configuration (app name, region, HTTP service, health check, env vars)
 - Add `Dockerfile` — multi-stage build for the TanStack Start / Nitro server
 - Add `release_command` in `fly.toml` to run `npm run db:seed` on every deploy (idempotent seeds act as "migrations")
-- Add GitHub Actions workflow to deploy on push to `main`
+- Add GitHub Actions workflow to deploy when pull requests to `main` are merged
 
 ## Capabilities
 

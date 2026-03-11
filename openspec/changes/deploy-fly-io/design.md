@@ -7,7 +7,7 @@ The app is a TanStack Start application built with Vite + Nitro. Running `npm ru
 **Goals:**
 - `fly.toml` that configures the HTTP service, health check, and `release_command` for seeds
 - Multi-stage `Dockerfile` that produces a minimal production image
-- GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys on push to `main`
+- GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys when a pull request targeting `main` is closed and merged
 - Seeds always run before new server instances come up (via Fly.io `release_command`)
 
 **Non-Goals:**

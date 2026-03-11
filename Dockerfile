@@ -19,8 +19,10 @@ WORKDIR /app
 # Copy only the production build output
 COPY --from=builder --chown=node:node /app/.output ./.output
 COPY --from=builder --chown=node:node /app/package*.json ./
+# Copy application source needed by the Fly.io release_command (npm run db:seed)
+COPY --from=builder --chown=node:node /app/src ./src
 
-# Install only production dependencies (needed for db:seed in release_command)
+# Install only production dependencies (tsx + dotenv are in dependencies for db:seed)
 RUN npm ci --omit=dev
 
 ENV NODE_ENV=production
