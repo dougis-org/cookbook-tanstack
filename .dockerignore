@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build output (re-built inside Docker)
+.output/
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+
+# Environment files (secrets injected via Fly.io)
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# OpenSpec / docs (not needed in runtime)
+openspec/
+docs/
