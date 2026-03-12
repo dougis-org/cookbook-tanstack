@@ -59,4 +59,26 @@ describe("exportRecipeToJson", () => {
     expect(() => JSON.parse(json)).not.toThrow();
     expect(json).toContain('\n  "name":');
   });
+
+  it("normalizes populated id objects to id strings for import compatibility", () => {
+    const recipe = makeRecipe({
+      sourceId: {
+        _id: { toString: () => "507f1f77bcf86cd799439011" },
+      },
+      classificationId: { id: "507f1f77bcf86cd799439012" },
+      mealIds: [
+        { _id: { toString: () => "507f1f77bcf86cd799439013" } },
+      ],
+      courseIds: [{ id: "507f1f77bcf86cd799439014" }],
+      preparationIds: [{ toString: () => "507f1f77bcf86cd799439015" }],
+    });
+
+    const parsed = JSON.parse(exportRecipeToJson(recipe));
+
+    expect(parsed.sourceId).toBe("507f1f77bcf86cd799439011");
+    expect(parsed.classificationId).toBe("507f1f77bcf86cd799439012");
+    expect(parsed.mealIds).toEqual(["507f1f77bcf86cd799439013"]);
+    expect(parsed.courseIds).toEqual(["507f1f77bcf86cd799439014"]);
+    expect(parsed.preparationIds).toEqual(["507f1f77bcf86cd799439015"]);
+  });
 });
