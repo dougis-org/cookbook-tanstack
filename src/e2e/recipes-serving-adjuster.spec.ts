@@ -20,7 +20,7 @@ test.describe("Recipe Serving Adjuster", () => {
 
     await expect(page.getByText("2 cups flour")).toBeVisible();
 
-    await page.getByRole("button", { name: "+" }).click();
+    await page.getByRole("button", { name: /increase servings/i }).click();
     await expect(page.getByText("3 cups flour")).toBeVisible();
 
     await page.getByRole("button", { name: /reset/i }).click();
