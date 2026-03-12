@@ -10,19 +10,19 @@ Implement comprehensive search functionality with full-text search, advanced fil
 
 ---
 
-## 5.1 Full-Text Search
+## 5.1 Search Implementation
 
 ### Tasks
 
-1. [ ] Add full-text search index on recipes.name column
-2. [ ] Add full-text search index on recipes.ingredients column
-3. [ ] Add full-text search index on recipes.instructions column
-4. [ ] Generate migration for search indexes
-5. [ ] Run migration on local database
+1. [ ] Add search-supporting index on recipe name
+2. [ ] Add search-supporting index on ingredients data
+3. [ ] Add search-supporting index on instructions data
+4. [ ] Configure MongoDB-compatible search strategy
+5. [ ] Verify search indexes are available locally
 6. [ ] Test search index performance
 7. [ ] Create search Zod validation schema
 8. [ ] Create `search.recipes` tRPC query
-9. [ ] Implement PostgreSQL full-text search (tsvector)
+9. [ ] Implement MongoDB-compatible recipe search
 10. [ ] Add search across recipe names
 11. [ ] Add search across ingredients
 12. [ ] Add search across instructions
@@ -63,10 +63,10 @@ Implement comprehensive search functionality with full-text search, advanced fil
 
 ### Acceptance Criteria
 
-**Database:**
-- [ ] Full-text indexes on recipe.name
-- [ ] Full-text indexes on recipe.ingredients
-- [ ] Full-text indexes on recipe.instructions
+**Search Backend:**
+- [ ] Search indexes on recipe.name
+- [ ] Search indexes on recipe.ingredients
+- [ ] Search indexes on recipe.instructions
 - [ ] Search queries performant (< 500ms)
 
 **Search Functionality:**
@@ -96,7 +96,7 @@ Implement comprehensive search functionality with full-text search, advanced fil
 
 ### Deliverables
 
-- Full-text search implementation
+- Search implementation
 - SearchBar component
 - Search results highlighting
 - Autocomplete functionality

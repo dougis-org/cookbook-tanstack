@@ -14,24 +14,24 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Tasks
 
-1. [ ] Create cookbooks table schema in Drizzle
-2. [ ] Add id, user_id, name, description fields to cookbooks table
-3. [ ] Add is_public, image_url fields to cookbooks table
-4. [ ] Add created_at, updated_at timestamps to cookbooks table
-5. [ ] Create cookbook_recipes junction table schema
-6. [ ] Add cookbook_id, recipe_id to junction table
-7. [ ] Add order_index field to junction table for ordering
-8. [ ] Set up primary key on junction table (cookbook_id, recipe_id)
-9. [ ] Add foreign key constraint for cookbook_id
-10. [ ] Add foreign key constraint for recipe_id
-11. [ ] Configure cascade delete for cookbooks
-12. [ ] Configure cascade delete for cookbook_recipes
-13. [ ] Add index on cookbook_id in junction table
-14. [ ] Add index on recipe_id in junction table
-15. [ ] Add index on order_index in junction table
-16. [ ] Generate migration for cookbooks and cookbook_recipes tables
-17. [ ] Run migration on local database
-18. [ ] Verify tables created correctly
+1. [ ] Create `Cookbook` model in Mongoose
+2. [ ] Add `_id`, `userId`, `name`, `description` fields to cookbook model
+3. [ ] Add `isPublic`, `imageUrl` fields to cookbook model
+4. [ ] Add `createdAt`, `updatedAt` timestamps to cookbook model
+5. [ ] Add embedded `recipes` array to cookbook model
+6. [ ] Add `recipeId` field to embedded recipe entries
+7. [ ] Add `orderIndex` field to embedded recipe entries for ordering
+8. [ ] Configure validation for embedded recipe entries
+9. [ ] Add index on `userId`
+10. [ ] Add index on `isPublic`
+11. [ ] Add index on embedded `recipes.recipeId`
+12. [ ] Add index on embedded `recipes.orderIndex`
+13. [ ] Verify cookbook deletion removes embedded recipe entries naturally
+14. [ ] Verify embedded recipe ordering persists correctly
+15. [ ] Verify model registration and collection creation
+16. [ ] Run cookbook model against local database
+17. [ ] Verify collection created correctly
+18. [ ] Verify embedded recipe ordering queries behave correctly
 19. [ ] Create cookbooks tRPC router file
 20. [ ] Create Zod validation schema for cookbook creation
 21. [ ] Create Zod validation schema for cookbook updates
@@ -43,7 +43,7 @@ Implement cookbook functionality allowing users to create collections of recipes
 27. [ ] Add ownership check for updates
 28. [ ] Implement `cookbooks.delete` mutation
 29. [ ] Add ownership check for deletion
-30. [ ] Verify cascade delete removes cookbook_recipes
+30. [ ] Verify cookbook deletion removes embedded recipe entries with the document
 31. [ ] Implement `cookbooks.getById` query
 32. [ ] Load all recipes with cookbook in order
 33. [ ] Add recipe count to cookbook response
@@ -68,11 +68,11 @@ Implement cookbook functionality allowing users to create collections of recipes
 ### Acceptance Criteria
 
 **Database:**
-- [ ] cookbooks table exists with id, title, description, userId, createdAt, updatedAt
-- [ ] cookbook_recipes junction table with cookbookId, recipeId, order
-- [ ] Foreign keys properly constrained
-- [ ] Indexes on foreign keys
-- [ ] Cascade deletes configured
+- [ ] cookbooks collection exists with `_id`, `name`, `description`, `userId`, `createdAt`, `updatedAt`
+- [ ] Embedded `recipes` entries store `recipeId` and `orderIndex`
+- [ ] Reference fields and embedded entries validated correctly
+- [ ] Indexes present on ownership/public/query fields
+- [ ] Cookbook deletion removes embedded entries with the document
 
 **API:**
 - [ ] Can create cookbook with title and description
@@ -93,7 +93,7 @@ Implement cookbook functionality allowing users to create collections of recipes
 
 ### Deliverables
 
-- Cookbook database schema
+- Cookbook Mongoose model
 - Cookbook tRPC router
 - CRUD mutations
 - Recipe management mutations

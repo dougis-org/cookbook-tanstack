@@ -53,8 +53,8 @@ recipes.updateImage(id, imageUrl) // Protected
 10. [ ] Add preparation IDs filter to `recipes.list`
 11. [ ] Add marked filter to `recipes.list`
 12. [ ] Add user ID filter to `recipes.list`
-13. [ ] Implement full-text search on recipe name
-14. [ ] Implement full-text search on ingredients
+13. [ ] Implement search on recipe name
+14. [ ] Implement search on ingredients
 15. [ ] Add sorting by name (ascending)
 16. [ ] Add sorting by name (descending)
 17. [ ] Add sorting by date_added (newest first)
@@ -62,7 +62,7 @@ recipes.updateImage(id, imageUrl) // Protected
 19. [ ] Implement pagination offset calculation
 20. [ ] Implement pagination limit
 21. [ ] Add total count query for pagination
-22. [ ] Optimize `recipes.list` with JOINs for relationships
+22. [ ] Optimize `recipes.list` with populate/aggregation for relationships
 23. [ ] Test `recipes.list` with various filter combinations
 24. [ ] Implement `recipes.getById` query
 25. [ ] Add relationship loading to `recipes.getById` (classification, source, etc.)
@@ -74,26 +74,26 @@ recipes.updateImage(id, imageUrl) // Protected
 31. [ ] Implement `recipes.create` mutation base structure
 32. [ ] Add slug auto-generation from recipe name
 33. [ ] Add user association to created recipe
-34. [ ] Add many-to-many relationship saving for meals
-35. [ ] Add many-to-many relationship saving for courses
-36. [ ] Add many-to-many relationship saving for preparations
+34. [ ] Save `mealIds` relationship array on recipe create
+35. [ ] Save `courseIds` relationship array on recipe create
+36. [ ] Save `preparationIds` relationship array on recipe create
 37. [ ] Test recipe creation with all fields
 38. [ ] Implement `recipes.update` mutation base structure
 39. [ ] Add ownership check middleware for updates
 40. [ ] Add slug regeneration on name change (optional)
-41. [ ] Add relationship updates for meals
-42. [ ] Add relationship updates for courses
-43. [ ] Add relationship updates for preparations
+41. [ ] Update `mealIds` relationship array
+42. [ ] Update `courseIds` relationship array
+43. [ ] Update `preparationIds` relationship array
 44. [ ] Test recipe updates with ownership validation
 45. [ ] Implement `recipes.delete` mutation
 46. [ ] Add ownership check middleware for deletion
-47. [ ] Add cascade delete for recipe_meals
-48. [ ] Add cascade delete for recipe_courses
-49. [ ] Add cascade delete for recipe_preparations
-50. [ ] Add cascade delete for cookbook_recipes
-51. [ ] Add cascade delete for recipe_images
-52. [ ] Add cascade delete for recipe_likes
-53. [ ] Test deletion with cascade
+47. [ ] Remove deleted recipe from embedded cookbook recipe lists
+48. [ ] Delete `RecipeLike` documents for deleted recipe
+49. [ ] Clean up any stored image metadata/assets for deleted recipe
+50. [ ] Verify recipe document removal also removes embedded taxonomy references implicitly
+51. [ ] Log and handle cleanup failures safely
+52. [ ] Test deletion with dependent-document cleanup
+53. [ ] Verify deletion is safe to retry
 54. [ ] Implement `recipes.toggleMarked` mutation
 55. [ ] Add user-specific marking logic
 56. [ ] Test toggle functionality
@@ -125,7 +125,7 @@ recipes.updateImage(id, imageUrl) // Protected
 - [ ] `recipes.create` creates new recipe in database
 - [ ] Created recipe associated with authenticated user
 - [ ] Slug auto-generated from recipe name
-- [ ] Many-to-many relationships saved (meals, courses, preparations)
+- [ ] Taxonomy relationship arrays saved (`mealIds`, `courseIds`, `preparationIds`)
 - [ ] Recipe validation enforced (required fields)
 - [ ] `recipes.update` updates existing recipe
 - [ ] Ownership check prevents editing others' recipes
@@ -134,7 +134,7 @@ recipes.updateImage(id, imageUrl) // Protected
 - [ ] Slug updated if name changes (optional)
 - [ ] `recipes.delete` removes recipe from database
 - [ ] Ownership check prevents deleting others' recipes
-- [ ] Cascade delete relationships
+- [ ] Dependent document cleanup handled correctly on delete
 - [ ] `recipes.toggleMarked` marks/unmarks recipe as favorite
 - [ ] User can only mark recipes for themselves
 - [ ] Toggle state persists correctly
@@ -829,12 +829,12 @@ recipes.updateImage(id, imageUrl) // Protected
 330. [ ] Add "Action is permanent" warning text to modal
 331. [ ] Wire modal "Cancel" button to close modal
 332. [ ] Wire modal "Delete" button to trigger delete mutation
-333. [ ] Verify cascade delete for cookbook_recipes (database level)
-334. [ ] Verify cascade delete for recipe_meals (database level)
-335. [ ] Verify cascade delete for recipe_courses (database level)
-336. [ ] Verify cascade delete for recipe_preparations (database level)
-337. [ ] Verify cascade delete for recipe_images (database level)
-338. [ ] Verify cascade delete for recipe_likes (database level)
+333. [ ] Verify deleted recipe is removed from embedded cookbook recipe lists
+334. [ ] Verify recipe document deletion removes embedded taxonomy references implicitly
+335. [ ] Verify related `RecipeLike` documents are removed
+336. [ ] Verify any image references/assets are cleaned up
+337. [ ] Verify cleanup logic handles partial failures safely
+338. [ ] Verify no stale recipe references remain after delete
 339. [ ] Add loading spinner during delete operation
 340. [ ] Disable modal buttons during delete
 341. [ ] Add success toast notification after delete
@@ -844,7 +844,7 @@ recipes.updateImage(id, imageUrl) // Protected
 345. [ ] Verify ownership check in tRPC delete mutation
 346. [ ] Test delete with owned recipe
 347. [ ] Test delete rejection with non-owned recipe
-348. [ ] Test cascade delete verifies all relationships removed
+348. [ ] Test cleanup verifies all dependent references are removed
 349. [ ] Test error handling for network failures
 
 ### Acceptance Criteria
@@ -866,7 +866,7 @@ recipes.updateImage(id, imageUrl) // Protected
 
 **Delete Process:**
 - [ ] Ownership verified server-side
-- [ ] All related records deleted (cascade)
+- [ ] All dependent references/documents cleaned up
 - [ ] Recipe deleted from database
 - [ ] Delete operation atomic (all or nothing)
 - [ ] Optimistic UI update (optional)
@@ -888,7 +888,7 @@ recipes.updateImage(id, imageUrl) // Protected
 - Working delete functionality
 - Confirmation modal
 - Safe deletion with confirmation
-- Cascade delete implemented
+- Delete cleanup implemented
 - Error handling
 
 ---
@@ -959,7 +959,7 @@ recipes.updateImage(id, imageUrl) // Protected
 **Mitigation:**
 - Use React Hook Form for robust form handling
 - Use field array features for dynamic lists
-- Leverage PostgreSQL full-text search built-in features
+- Use MongoDB indexes and query profiling to keep search performant
 
 ---
 
