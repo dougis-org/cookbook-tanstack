@@ -12,13 +12,14 @@ Comprehensive documentation for the CookBook project, including standards, datab
 - [CI/CD Workflow](./standards/ci-cd.md) — Local vs CI/CD validation, merge readiness
 
 These standards are referenced by:
+
 - `.github/instructions/` — Tool-specific configurations
 - `AGENTS.md` — Agent development workflow
 - `CLAUDE.md` — Architecture and conventions
 
 ## Database
 
-- **[Database Schema](./database.md)** — PostgreSQL schema documentation with all 15 tables, relationships, and migration info
+- **[Database Schema](./database.md)** — MongoDB/Mongoose schema documentation, collections, relationships, and migration notes
 
 ## Project Planning
 

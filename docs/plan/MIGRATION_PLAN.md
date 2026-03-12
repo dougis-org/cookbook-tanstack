@@ -13,7 +13,7 @@ M06 (Image Management) and M07 (User Features & Social) are **deferred to post-l
 
 M08 (Additional Features) is now complete and merged. The remaining launch path is:
 
-**M09 → M10 → M11 → M12**
+Launch path: M09 → M10 → M11 → M12
 
 M06 and M07 will be implemented as post-launch improvements once the core application is live and validated with real users. Deferred M08 email-related features will be delivered in the same post-launch stream.
 
@@ -24,6 +24,7 @@ For detailed implementation steps, acceptance criteria, and testing requirements
 ## Technology Stack
 
 ### Frontend
+
 - **Framework**: TanStack Start with React 19
 - **Styling**: Tailwind CSS 4
 - **State Management**: TanStack Router + React Query (built-in)
@@ -31,15 +32,17 @@ For detailed implementation steps, acceptance criteria, and testing requirements
 - **Icons**: Lucide React
 
 ### Backend
+
 - **API Layer**: TanStack Start server functions + tRPC for complex operations
-- **Database ORM**: Drizzle ORM (TypeScript-native, type-safe)
-- **Database**: PostgreSQL (recommended) or MySQL
+- **Database ODM**: Mongoose ODM (TypeScript-friendly model layer)
+- **Database**: MongoDB 7 (Docker locally, Atlas for shared/staging/prod)
 - **Authentication**: Better-Auth or Lucia
 - **File Storage**: Cloudinary or AWS S3 for images
 - **Email**: Deferred to post-launch email stream (Resend or SendGrid candidate)
 
 ### DevOps
-- **Hosting**: Vercel (frontend) + Neon/Supabase (database)
+
+- **Hosting**: Nitro-compatible host (for example Fly.io) + MongoDB Atlas
 - **CI/CD**: GitHub Actions
 - **Monitoring**: Sentry for errors, Vercel Analytics
 - **Testing**: Vitest + React Testing Library
@@ -49,17 +52,19 @@ For detailed implementation steps, acceptance criteria, and testing requirements
 ## Migration Phases
 
 ### Phase 1: Foundation & Infrastructure (Week 1-2)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-01.md)**
 
 Set up the project foundation including database schema, authentication system, and tRPC API layer. This phase establishes the core infrastructure needed for all subsequent development.
 
 Set up the project foundation including database schema, authentication system, and tRPC API layer. This phase establishes the core infrastructure needed for all subsequent development.
 
-**Key Deliverables**: Database schema with Drizzle ORM, Better-Auth authentication, tRPC routers, environment configuration
+**Key Deliverables**: MongoDB/Mongoose data models, Better-Auth authentication, tRPC routers, environment configuration
 
 ---
 
 ### Phase 2: Core Recipe Management (Week 3-4)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-02.md)**
 
 Implement complete recipe CRUD operations, including list page, detail page, create/edit forms, and deletion functionality. This forms the core feature set of the application.
@@ -69,6 +74,7 @@ Implement complete recipe CRUD operations, including list page, detail page, cre
 ---
 
 ### Phase 3: Classification & Taxonomy System (Week 5)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-03.md)**
 
 Build the taxonomy system including classifications, sources, meals, courses, and preparations. Enables recipe categorization and filtering.
@@ -78,6 +84,7 @@ Build the taxonomy system including classifications, sources, meals, courses, an
 ---
 
 ### Phase 4: Cookbook Management (Week 6-7)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-04.md)**
 
 Implement cookbook functionality allowing users to create collections of recipes with custom ordering, table of contents, and print-friendly views.
@@ -87,15 +94,17 @@ Implement cookbook functionality allowing users to create collections of recipes
 ---
 
 ### Phase 5: Search & Navigation (Week 8-9)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-05.md)**
 
-Implement comprehensive search with full-text search, advanced filtering, sorting, pagination, and enhanced navigation throughout the application.
+Implement comprehensive recipe search, advanced filtering, sorting, pagination, and enhanced navigation throughout the application.
 
-**Key Deliverables**: Full-text search, filter sidebar, pagination, breadcrumbs, keyboard shortcuts
+**Key Deliverables**: Search implementation, filter sidebar, pagination, breadcrumbs, keyboard shortcuts
 
 ---
 
 ### Phase 6: Image Management (Week 10)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-06.md)**
 
 Implement image upload, storage (Cloudinary/S3), galleries, optimization, and display throughout the application.
@@ -105,6 +114,7 @@ Implement image upload, storage (Cloudinary/S3), galleries, optimization, and di
 ---
 
 ### Phase 7: User Features & Social (Week 11)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-07.md)**
 
 Implement user profiles, favorites system, cookbook following, ratings/reviews, and activity feed.
@@ -114,6 +124,7 @@ Implement user profiles, favorites system, cookbook following, ratings/reviews, 
 ---
 
 ### Phase 8: Additional Features (Week 12)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-08.md)**
 
 Add print styles, recipe export/import, serving adjustment, and other launch-focused enhancements.
@@ -123,6 +134,7 @@ Add print styles, recipe export/import, serving adjustment, and other launch-foc
 ---
 
 ### Phase 9: Data Migration (Week 13)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-09.md)**
 
 Migrate all data from Laravel database to new system, including data export, transformation, import, and verification.
@@ -132,6 +144,7 @@ Migrate all data from Laravel database to new system, including data export, tra
 ---
 
 ### Phase 10: Testing & QA (Week 14)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-10.md)**
 
 Comprehensive testing including unit tests, component tests, integration tests, E2E tests, accessibility, performance, and manual QA.
@@ -141,6 +154,7 @@ Comprehensive testing including unit tests, component tests, integration tests, 
 ---
 
 ### Phase 11: Performance & Optimization (Week 15)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-11.md)**
 
 Optimize database queries, frontend performance, caching, assets, API responses, and set up monitoring and analytics.
@@ -150,6 +164,7 @@ Optimize database queries, frontend performance, caching, assets, API responses,
 ---
 
 ### Phase 12: Deployment & Launch (Week 16)
+
 **[→ View Full Milestone Details](milestones/MILESTONE-12.md)**
 
 Production environment setup, CI/CD pipeline, monitoring, data migration to production, launch preparation, and go-live.
@@ -161,7 +176,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ## Timeline Summary
 
 | Phase | Duration | Milestone | Key Focus |
-|-------|----------|-----------|-----------|
+| ----- | -------- | --------- | --------- |
 | Phase 1 | 2 weeks | [Milestone 01](milestones/MILESTONE-01.md) | Foundation & Infrastructure |
 | Phase 2 | 2 weeks | [Milestone 02](milestones/MILESTONE-02.md) | Core Recipe Management |
 | Phase 3 | 1 week | [Milestone 03](milestones/MILESTONE-03.md) | Classification & Taxonomy |
@@ -183,12 +198,14 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ## Resource Requirements
 
 ### Development
+
 - 1 Full-stack developer (primary)
 - 1 Designer (optional, for branding/assets)
 - 1 QA tester (optional, part-time)
 
 ### Infrastructure
-- **Database**: Neon/Supabase (free tier initially)
+
+- **Database**: MongoDB Atlas (free tier initially)
 - **Image Storage**: Cloudinary (free tier: 25GB storage, 25GB bandwidth)
 - **Email Service**: Deferred to post-launch stream (Resend or SendGrid)
 - **Hosting**: Vercel (Hobby free tier or Pro $20/month)
@@ -202,6 +219,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ## Success Criteria
 
 ### Technical Metrics
+
 - ✅ Page load time < 2s
 - ✅ Time to Interactive < 3s
 - ✅ 99.9%+ uptime
@@ -210,6 +228,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 - ✅ Lighthouse score 90+ (mobile)
 
 ### Feature Completeness
+
 - ✅ All Laravel features replicated
 - ✅ All data migrated successfully
 - ✅ Authentication and authorization working
@@ -219,6 +238,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 - ✅ Mobile responsive
 
 ### User Experience
+
 - ✅ Intuitive navigation
 - ✅ Fast, responsive interface
 - ✅ Accessible (WCAG 2.1 AA)
@@ -232,7 +252,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ### Technical Risks
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| ---- | ------ | ---------- |
 | Database performance issues | High | Proper indexing, query optimization, caching |
 | Image storage costs | Medium | File size limits, optimization, monitoring |
 | Authentication vulnerabilities | High | Use proven library (Better-Auth), rate limiting |
@@ -241,7 +261,7 @@ Production environment setup, CI/CD pipeline, monitoring, data migration to prod
 ### Project Risks
 
 | Risk | Impact | Mitigation |
-|------|--------|------------|
+| ---- | ------ | ---------- |
 | Scope creep | Medium | Stick to phased plan, defer extras to post-launch |
 | Timeline overruns | Medium | Prioritize MVP features, track progress weekly |
 | Resource constraints | Low | Focus one phase at a time, use proven libraries |

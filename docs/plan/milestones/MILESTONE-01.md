@@ -14,30 +14,30 @@ Establish the technical foundation for the CookBook-TanStack application includi
 
 ### Tasks
 
-1. [ ] Install Drizzle ORM packages
+1. [ ] Install MongoDB and Mongoose packages
    ```bash
-   npm install drizzle-orm postgres
-   npm install -D drizzle-kit
+  npm install mongoose mongodb
+  npm install -D mongodb-memory-server
    ```
 2. [ ] Create `.env.example` file with all required database variables documented
 3. [ ] Configure environment variables for local environment (`.env.local`)
-4. [ ] Set up Drizzle config file (`drizzle.config.ts`)
-5. [ ] Create local database instance
+4. [ ] Set up MongoDB connection configuration (`MONGODB_URI`)
+5. [ ] Create local MongoDB instance
 6. [ ] Set up database connection and test connectivity
 7. [ ] Configure environment variables for staging environment
-8. [ ] Create staging database instance
+8. [ ] Create staging MongoDB instance
 9. [ ] Configure environment variables for production environment
-10. [ ] Create production database instance
-11. [ ] Verify `drizzle-kit` commands work correctly
+10. [ ] Create production MongoDB instance
+11. [ ] Verify local connection, seed, and test database workflows work correctly
 
 ### Acceptance Criteria
 
-- [ ] Drizzle ORM installed and configured
+- [ ] MongoDB and Mongoose installed and configured
 - [ ] Database connection established and tested
 - [ ] Environment variables properly configured
 - [ ] `.env.example` file created with all required variables documented
-- [ ] Drizzle config file properly configured with correct database connection
-- [ ] Can successfully run `drizzle-kit` commands
+- [ ] MongoDB connection settings correctly configured
+- [ ] Can successfully connect, seed, and run tests against MongoDB
 - [ ] Local, staging, and production databases created
 - [ ] Database credentials secured and not committed to version control
 
@@ -45,112 +45,113 @@ Establish the technical foundation for the CookBook-TanStack application includi
 
 - Working database connection
 - Environment configuration files
-- Drizzle config files
+- MongoDB connection configuration
 - Database instances (local, staging, production)
 
 ---
 
 ## 1.2 Database Schema Design
 
-### Schema Tables
+### Schema Collections
 
-**Core Tables:**
+**Core Collections:**
 ```typescript
-- users (id, email, username, password_hash, name, avatar_url, created_at, updated_at)
-- recipes (id, user_id, name, ingredients, instructions, notes, servings, 
-           source_id, classification_id, date_added, calories, fat, cholesterol, 
-           sodium, protein, marked, image_url, is_public, created_at, updated_at)
-- classifications (id, name, description, slug, created_at, updated_at)
-- sources (id, name, url, created_at, updated_at)
-- cookbooks (id, user_id, name, description, is_public, image_url, created_at, updated_at)
+- users (_id, email, username, passwordHash, name, avatarUrl, createdAt, updatedAt)
+- recipes (_id, userId, name, ingredients, instructions, notes, servings,
+           sourceId, classificationId, dateAdded, calories, fat, cholesterol,
+           sodium, protein, marked, imageUrl, isPublic, mealIds, courseIds,
+           preparationIds, createdAt, updatedAt)
+- classifications (_id, name, description, slug, createdAt, updatedAt)
+- sources (_id, name, url, createdAt, updatedAt)
+- cookbooks (_id, userId, name, description, isPublic, imageUrl,
+             recipes: [{ recipeId, orderIndex }], createdAt, updatedAt)
 ```
 
-**Taxonomy Tables:**
+**Taxonomy Collections:**
 ```typescript
-- meals (id, name, description, slug, created_at, updated_at)
-- courses (id, name, description, slug, created_at, updated_at)
-- preparations (id, name, description, slug, created_at, updated_at)
+- meals (_id, name, description, slug, createdAt, updatedAt)
+- courses (_id, name, description, slug, createdAt, updatedAt)
+- preparations (_id, name, description, slug, createdAt, updatedAt)
 ```
 
-**Junction Tables:**
+**Embedded Relationships:**
 ```typescript
-- recipe_meals (recipe_id, meal_id)
-- recipe_courses (recipe_id, course_id)
-- recipe_preparations (recipe_id, preparation_id)
-- cookbook_recipes (cookbook_id, recipe_id, order_index)
+- recipes.mealIds[]
+- recipes.courseIds[]
+- recipes.preparationIds[]
+- cookbooks.recipes[] = [{ recipeId, orderIndex }]
 ```
 
-**Additional Tables:**
+**Additional Collections:**
 ```typescript
-- recipe_images (id, recipe_id, url, alt_text, order_index, is_primary)
-- recipe_likes (user_id, recipe_id, created_at)
-- cookbook_followers (user_id, cookbook_id, created_at)
+- sessions/accounts/verifications (Better-Auth)
+- recipeLikes (_id, userId, recipeId, createdAt)
+- future social collections as needed
 ```
 
 ### Tasks
 
-12. [ ] Create directory structure `src/db/schema/`
-13. [ ] Define `users` table schema with all fields and types
-14. [ ] Define `recipes` table schema with all fields and types
-15. [ ] Define `classifications` table schema with all fields and types
-16. [ ] Define `sources` table schema with all fields and types
-17. [ ] Define `cookbooks` table schema with all fields and types
-18. [ ] Define `meals` taxonomy table schema
-19. [ ] Define `courses` taxonomy table schema
-20. [ ] Define `preparations` taxonomy table schema
-21. [ ] Define `recipe_meals` junction table schema
-22. [ ] Define `recipe_courses` junction table schema
-23. [ ] Define `recipe_preparations` junction table schema
-24. [ ] Define `cookbook_recipes` junction table schema
-25. [ ] Define `recipe_images` table schema
-26. [ ] Define `recipe_likes` table schema
-27. [ ] Define `cookbook_followers` table schema
-28. [ ] Set up all primary key constraints
-29. [ ] Set up foreign key relationships with proper ON DELETE/UPDATE cascades
-30. [ ] Create indexes on all foreign key columns
-31. [ ] Create indexes on recipe name and ingredients for search
-32. [ ] Create indexes on user email and username for auth
-33. [ ] Create indexes on classification, source, meal, course, preparation slugs
-34. [ ] Generate initial migration file using `drizzle-kit generate`
-35. [ ] Run migration on local database
-36. [ ] Verify all tables created with correct structure
-37. [ ] Create seeder script for meals taxonomy data
-38. [ ] Create seeder script for courses taxonomy data
-39. [ ] Create seeder script for preparations taxonomy data
-40. [ ] Test foreign key constraints with sample data
-41. [ ] Create database documentation file
+12. [ ] Create directory structure `src/db/models/`
+13. [ ] Define `User` model with all fields and types
+14. [ ] Define `Recipe` model with all fields and types
+15. [ ] Define `Classification` model with all fields and types
+16. [ ] Define `Source` model with all fields and types
+17. [ ] Define `Cookbook` model with all fields and types
+18. [ ] Define `Meal` taxonomy model
+19. [ ] Define `Course` taxonomy model
+20. [ ] Define `Preparation` taxonomy model
+21. [ ] Model recipe taxonomy relationships with `mealIds`, `courseIds`, and `preparationIds`
+22. [ ] Model cookbook recipe ordering with embedded `recipes[{ recipeId, orderIndex }]`
+23. [ ] Define Better-Auth backing collections/models as required
+24. [ ] Define `RecipeLike` model
+25. [ ] Configure schema validation rules and defaults
+26. [ ] Configure timestamps on all primary models
+27. [ ] Set up ownership and public/private fields on recipes and cookbooks
+28. [ ] Create indexes on referenced ObjectId fields
+29. [ ] Create indexes on recipe name and other search fields
+30. [ ] Create indexes on user email and username for auth
+31. [ ] Create indexes on classification, source, meal, course, preparation slugs
+32. [ ] Verify model registration and connection initialization
+33. [ ] Verify collections created with correct structure
+34. [ ] Create seeder script for meals taxonomy data
+35. [ ] Create seeder script for courses taxonomy data
+36. [ ] Create seeder script for preparations taxonomy data
+37. [ ] Test reference population with sample data
+38. [ ] Test embedded cookbook recipe ordering with sample data
+39. [ ] Test schema validation with sample data
+40. [ ] Create database documentation file
+41. [ ] Document local/staging/production MongoDB setup
 
 ### Acceptance Criteria
 
 - [ ] All schema files created in proper directory structure
-- [ ] All tables defined with correct field types
-- [ ] Primary keys defined on all tables
-- [ ] Foreign keys properly configured with correct references
-- [ ] ON DELETE and ON UPDATE cascades configured appropriately
+- [ ] All models defined with correct field types
+- [ ] All primary collections created with expected structure
+- [ ] Referenced ObjectId fields configured correctly
+- [ ] Embedded relationships configured appropriately
 - [ ] Indexes created on:
-  - All foreign key columns
+  - Referenced ObjectId fields
   - recipe name and ingredients (for search)
   - user email and username (for auth)
   - classification, source, meal, course, preparation slugs
-- [ ] Initial migration file generated
-- [ ] Migration successfully runs on clean database
-- [ ] All tables created with correct structure
-- [ ] Can insert test data into all tables
-- [ ] Foreign key constraints work correctly
+- [ ] Collections initialize correctly on clean database
+- [ ] Can insert test data into all primary collections
+- [ ] Reference population and embedded ordering work correctly
 - [ ] Seeder scripts created for taxonomy tables (meals, courses, preparations)
 
 ### Key Features
 
-- `user_id` on recipes and cookbooks for ownership
-- `is_public` flags for privacy control
+- `userId` on recipes and cookbooks for ownership
+- `isPublic` flags for privacy control
 - `marked` field for user favorites
 - Image support built-in
-- Proper indexes on foreign keys and search fields
+- Embedded taxonomy arrays and cookbook recipe ordering
+- Proper indexes on referenced fields and search fields
 
 ### Deliverables
 
-- Complete Drizzle schema files
-- Database migration scripts
+- Complete Mongoose model files
+- Database connection/model bootstrap
 - Seeder scripts for taxonomy data
 - Database documentation
 
@@ -175,7 +176,7 @@ Establish the technical foundation for the CookBook-TanStack application includi
     ```
 43. [ ] Create auth configuration file with database and session settings
 44. [ ] Set up environment variables for auth secrets
-45. [ ] Run migration to create auth-related database tables (sessions, verification_tokens)
+45. [ ] Create auth-related MongoDB collections/documents (sessions, accounts, verifications)
 46. [ ] Create auth API route handlers (login, register, logout)
 47. [ ] Create auth context provider component
 48. [ ] Create `useAuth()` hook for auth state and methods
@@ -509,7 +510,7 @@ src/server/trpc/
 
 ## Notes
 
-- Consider using Neon or Supabase for PostgreSQL hosting (both have generous free tiers)
+- Consider using MongoDB Atlas for shared staging/production hosting
 - Better-Auth is recommended but Lucia is a good alternative
 - Keep auth simple initially - OAuth can be added later
 - Document all environment variables clearly
