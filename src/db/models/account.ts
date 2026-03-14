@@ -1,10 +1,10 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const accountSchema = new Schema(
   {
     accountId: { type: String, required: true },
     providerId: { type: String, required: true },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     accessToken: { type: String },
     refreshToken: { type: String },
     idToken: { type: String },
@@ -13,8 +13,9 @@ const accountSchema = new Schema(
     scope: { type: String },
     password: { type: String },
   },
-  { timestamps: true },
-)
+  { timestamps: true, collection: "account" },
+);
 
 export const Account =
-  mongoose.models.Account || mongoose.model('Account', accountSchema)
+  mongoose.models.Account ||
+  mongoose.model("Account", accountSchema, "account");

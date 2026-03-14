@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const sessionSchema = new Schema(
   {
@@ -6,10 +6,11 @@ const sessionSchema = new Schema(
     token: { type: String, unique: true, required: true },
     ipAddress: { type: String },
     userAgent: { type: String },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
-  { timestamps: true },
-)
+  { timestamps: true, collection: "session" },
+);
 
 export const Session =
-  mongoose.models.Session || mongoose.model('Session', sessionSchema)
+  mongoose.models.Session ||
+  mongoose.model("Session", sessionSchema, "session");
