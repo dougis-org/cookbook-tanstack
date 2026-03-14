@@ -55,21 +55,21 @@
 
 ## 3. PR and Merge
 
-- [ ] 3.1 Update documentation affected by the migration workflow, including
+- [x] 3.1 Update documentation affected by the migration workflow, including
   operator instructions, mapping references, and any milestone-linked docs
   required for execution clarity
-- [ ] 3.2 Open a pull request that references
+- [x] 3.2 Open a pull request that references
   `openspec/changes/laravel-data-migration/` and summarizes extraction,
   transformation, import, verification, and the confirmed no-image migration
   behavior
-- [ ] 3.3 Request review from the assigned reviewer and include the staging
+- [x] 3.3 Request review from the assigned reviewer and include the staging
   rehearsal evidence, verification reports, and any approved exception lists
-- [ ] 3.4 Resolve all review comments and CI failures before merge; if
+- [x] 3.4 Resolve all review comments and CI failures before merge; if
   feedback changes approved behavior, update `proposal.md`, `design.md`,
   `specs/legacy-data-migration/spec.md`, and `tasks.md` before continuing
-- [ ] 3.5 Resolve security findings before merge or document explicit approved
+- [x] 3.5 Resolve security findings before merge or document explicit approved
   risk acceptance for any non-blocking residual issue
-- [ ] 3.6 Enable auto-merge only after required reviews, CI checks, and
+- [x] 3.6 Enable auto-merge only after required reviews, CI checks, and
   migration verification evidence are complete
 
 Ownership metadata:
