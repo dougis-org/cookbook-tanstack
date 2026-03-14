@@ -24,3 +24,13 @@ coverage/
 .env.prod
 .env.test
 .env.local
+
+# Legacy data migration workspace
+data/legacy-migration/extracted/*
+!data/legacy-migration/extracted/.gitkeep
+data/legacy-migration/transformed/*
+!data/legacy-migration/transformed/.gitkeep
+data/legacy-migration/manifests/*
+!data/legacy-migration/manifests/.gitkeep
+data/legacy-migration/reports/*
+!data/legacy-migration/reports/.gitkeep

@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const verificationSchema = new Schema(
   {
@@ -6,9 +6,9 @@ const verificationSchema = new Schema(
     value: { type: String, required: true },
     expiresAt: { type: Date, required: true },
   },
-  { timestamps: true },
-)
+  { timestamps: true, collection: "verification" },
+);
 
 export const Verification =
   mongoose.models.Verification ||
-  mongoose.model('Verification', verificationSchema)
+  mongoose.model("Verification", verificationSchema, "verification");
