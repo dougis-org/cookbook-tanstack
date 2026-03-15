@@ -10,24 +10,42 @@ function escapeRegex(str: string) {
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
-    return Source.find().lean();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docs = (await Source.find().lean()) as any[];
+    return docs.map((s) => ({
+      id: s._id.toString() as string,
+      name: s.name as string,
+      url: (s.url ?? null) as string | null,
+    }));
   }),
 
   search: publicProcedure
     .input(z.object({ query: z.string().min(1).max(255) }))
     .query(async ({ input }) => {
       const escaped = escapeRegex(input.query.trim());
-      return Source.find({ name: { $regex: escaped, $options: "i" } })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const docs = (await Source.find({ name: { $regex: escaped, $options: "i" } })
         .sort({ name: 1 })
         .limit(10)
-        .lean();
+        .lean()) as any[];
+      return docs.map((s) => ({
+        id: s._id.toString() as string,
+        name: s.name as string,
+        url: (s.url ?? null) as string | null,
+      }));
     }),
 
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ input }) => {
-      const source = await Source.findById(input.id).lean();
-      return source ?? null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const source = (await Source.findById(input.id).lean()) as any;
+      if (!source) return null;
+      return {
+        id: source._id.toString() as string,
+        name: source.name as string,
+        url: (source.url ?? null) as string | null,
+      };
     }),
 
   create: protectedProcedure

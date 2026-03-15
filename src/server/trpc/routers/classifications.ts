@@ -13,12 +13,14 @@ export const classificationsRouter = router({
       ]),
     ]);
 
-    const countMap = new Map(
-      counts.map((c) => [c._id?.toString(), c.count]),
-    );
+    const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
 
-    return classificationDocs.map((c) => ({
-      ...c,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return classificationDocs.map((c: any) => ({
+      id: c._id.toString() as string,
+      name: c.name as string,
+      description: (c.description ?? null) as string | null,
+      slug: c.slug as string,
       recipeCount: countMap.get(c._id.toString()) ?? 0,
     }));
   }),
@@ -27,6 +29,14 @@ export const classificationsRouter = router({
     .input(z.object({ id: objectId }))
     .query(async ({ input }) => {
       const classification = await Classification.findById(input.id).lean();
-      return classification ?? null;
+      if (!classification) return null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c = classification as any;
+      return {
+        id: c._id.toString() as string,
+        name: c.name as string,
+        description: (c.description ?? null) as string | null,
+        slug: c.slug as string,
+      };
     }),
 });

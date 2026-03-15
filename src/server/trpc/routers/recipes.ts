@@ -3,6 +3,12 @@ import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Recipe, RecipeLike } from "@/db/models";
+// Side-effect imports register Mongoose models referenced in Recipe.populate()
+import "@/db/models/source";
+import "@/db/models/classification";
+import "@/db/models/meal";
+import "@/db/models/course";
+import "@/db/models/preparation";
 import { importedRecipeSchema } from "@/lib/validation";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
@@ -138,9 +144,11 @@ export const recipesRouter = router({
         Recipe.countDocuments(filter),
       ]);
 
-      const items = rawItems.map((r) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const items = (rawItems as any[]).map((r) => ({
         ...r,
-        id: r._id.toString(),
+        id: r._id.toString() as string,
+        classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
       }));
@@ -152,37 +160,63 @@ export const recipesRouter = router({
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const visFilter = visibilityFilter(ctx.user);
-      const recipe = await Recipe.findOne({ _id: input.id, ...visFilter })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r = (await Recipe.findOne({ _id: input.id, ...visFilter })
         .populate("classificationId", "name slug")
         .populate("sourceId", "name url")
         .populate("mealIds", "name")
         .populate("courseIds", "name")
         .populate("preparationIds", "name")
-        .lean();
+        .lean()) as any;
 
-      if (!recipe) return null;
+      if (!r) return null;
 
-      type PopRef = { _id?: unknown; name?: string; url?: string } | null;
-      const cls = recipe.classificationId as PopRef;
-      const src = recipe.sourceId as PopRef;
-      type PopItem = { _id?: unknown; name?: string };
+      type PopItem = { _id: unknown; name: string };
 
       return {
-        ...recipe,
-        id: recipe._id.toString(),
-        classificationName: cls?.name ?? null,
-        sourceName: src?.name ?? null,
-        sourceUrl: src?.url ?? null,
-        meals: ((recipe.mealIds as PopItem[]) ?? []).map((m) => ({
-          id: m._id?.toString(),
+        id: r._id.toString() as string,
+        userId: r.userId.toString() as string,
+        name: r.name as string,
+        ingredients: (r.ingredients ?? null) as string | null,
+        instructions: (r.instructions ?? null) as string | null,
+        notes: (r.notes ?? null) as string | null,
+        servings: (r.servings ?? null) as number | null,
+        prepTime: (r.prepTime ?? null) as number | null,
+        cookTime: (r.cookTime ?? null) as number | null,
+        difficulty: (r.difficulty ?? null) as "easy" | "medium" | "hard" | null,
+        sourceId: ((r.sourceId?._id ?? r.sourceId)?.toString() ?? null) as
+          | string
+          | null,
+        classificationId: ((
+          r.classificationId?._id ?? r.classificationId
+        )?.toString() ?? null) as string | null,
+        dateAdded: (r.dateAdded ?? null) as Date | null,
+        calories: (r.calories ?? null) as number | null,
+        fat: (r.fat ?? null) as number | null,
+        cholesterol: (r.cholesterol ?? null) as number | null,
+        sodium: (r.sodium ?? null) as number | null,
+        protein: (r.protein ?? null) as number | null,
+        imageUrl: (r.imageUrl ?? null) as string | null,
+        isPublic: r.isPublic as boolean,
+        marked: (r.marked ?? false) as boolean,
+        createdAt: r.createdAt as Date,
+        updatedAt: r.updatedAt as Date,
+        classificationName: (r.classificationId?.name ?? null) as string | null,
+        sourceName: (r.sourceId?.name ?? null) as string | null,
+        sourceUrl: (r.sourceId?.url ?? null) as string | null,
+        mealIds: ((r.mealIds as PopItem[]) ?? []).map((m) => String(m._id)),
+        courseIds: ((r.courseIds as PopItem[]) ?? []).map((c) => String(c._id)),
+        preparationIds: ((r.preparationIds as PopItem[]) ?? []).map((p) => String(p._id)),
+        meals: ((r.mealIds as PopItem[]) ?? []).map((m) => ({
+          id: String(m._id),
           name: m.name,
         })),
-        courses: ((recipe.courseIds as PopItem[]) ?? []).map((c) => ({
-          id: c._id?.toString(),
+        courses: ((r.courseIds as PopItem[]) ?? []).map((c) => ({
+          id: String(c._id),
           name: c.name,
         })),
-        preparations: ((recipe.preparationIds as PopItem[]) ?? []).map((p) => ({
-          id: p._id?.toString(),
+        preparations: ((r.preparationIds as PopItem[]) ?? []).map((p) => ({
+          id: String(p._id),
           name: p.name,
         })),
       };
@@ -214,7 +248,10 @@ export const recipesRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => Recipe.findById(input.id).lean(),
+        async () =>
+          (await Recipe.findById(input.id).lean()) as {
+            userId: unknown;
+          } | null,
         ctx.user.id,
         "Recipe",
       );
@@ -234,14 +271,19 @@ export const recipesRouter = router({
         { new: true },
       ).lean();
 
-      return doc ? { ...doc, id: doc._id.toString() } : null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const d = doc as any;
+      return d ? { ...d, id: d._id.toString() as string } : null;
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => Recipe.findById(input.id).lean(),
+        async () =>
+          (await Recipe.findById(input.id).lean()) as {
+            userId: unknown;
+          } | null,
         ctx.user.id,
         "Recipe",
       );
@@ -281,7 +323,9 @@ export const recipesRouter = router({
   import: protectedProcedure
     .input(importedRecipeSchema)
     .mutation(async ({ ctx, input }) => {
-      const parsedDate = input.dateAdded ? new Date(input.dateAdded) : new Date();
+      const parsedDate = input.dateAdded
+        ? new Date(input.dateAdded)
+        : new Date();
       if (Number.isNaN(parsedDate.getTime())) {
         throw new TRPCError({
           code: "BAD_REQUEST",

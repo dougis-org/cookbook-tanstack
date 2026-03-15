@@ -3,6 +3,8 @@ import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
+// Side-effect import registers Classification model for Recipe.populate()
+import "@/db/models/classification";
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
@@ -10,9 +12,13 @@ export const cookbooksRouter = router({
       .sort({ name: 1 })
       .lean();
 
-    return docs.map((cb) => ({
-      ...cb,
-      id: cb._id.toString(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return docs.map((cb: any) => ({
+      id: cb._id.toString() as string,
+      name: cb.name as string,
+      description: (cb.description ?? null) as string | null,
+      isPublic: cb.isPublic as boolean,
+      imageUrl: (cb.imageUrl ?? null) as string | null,
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
     }));
   }),
@@ -21,10 +27,11 @@ export const cookbooksRouter = router({
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const visFilter = visibilityFilter(ctx.user);
-      const cookbook = await Cookbook.findOne({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cookbook = (await Cookbook.findOne({
         _id: input.id,
         ...visFilter,
-      }).lean();
+      }).lean()) as any;
 
       if (!cookbook) return null;
 
@@ -46,20 +53,46 @@ export const cookbooksRouter = router({
         .lean();
 
       // Re-map to preserve orderIndex from the stub
-      const recipeById = new Map(recipeDocs.map((r) => [r._id.toString(), r]));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recipeById = new Map(
+        recipeDocs.map((r: any) => [r._id.toString(), r]),
+      );
       const recipes = stubs
         .map((stub) => {
-          const doc = recipeById.get(stub.recipeId?.toString() ?? "");
+          const doc = recipeById.get(
+            stub.recipeId != null ? String(stub.recipeId) : "",
+          );
           if (!doc) return null;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const d = doc as any;
           return {
-            ...doc,
-            id: doc._id.toString(),
+            id: d._id.toString() as string,
+            name: d.name as string,
+            imageUrl: (d.imageUrl ?? null) as string | null,
+            prepTime: (d.prepTime ?? null) as number | null,
+            cookTime: (d.cookTime ?? null) as number | null,
+            servings: (d.servings ?? null) as number | null,
+            classificationName:
+              (d.classificationId as { name?: string } | null)?.name ??
+              (null as string | null),
             orderIndex: stub.orderIndex,
           };
         })
-        .filter(Boolean);
+        .filter((r): r is NonNullable<typeof r> => r !== null);
 
-      return { ...cookbook, id: cookbook._id.toString(), recipes };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cb = cookbook as any;
+      return {
+        id: cb._id.toString() as string,
+        name: cb.name as string,
+        description: (cb.description ?? null) as string | null,
+        isPublic: cb.isPublic as boolean,
+        imageUrl: (cb.imageUrl ?? null) as string | null,
+        userId: cb.userId?.toString() as string,
+        createdAt: cb.createdAt as Date,
+        updatedAt: cb.updatedAt as Date,
+        recipes,
+      };
     }),
 
   create: protectedProcedure
@@ -106,7 +139,10 @@ export const cookbooksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => Cookbook.findById(input.id).lean(),
+        async () =>
+          (await Cookbook.findById(input.id).lean()) as {
+            userId: unknown;
+          } | null,
         ctx.user.id,
         "Cookbook",
       );
@@ -124,7 +160,10 @@ export const cookbooksRouter = router({
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => Cookbook.findById(input.id).lean(),
+        async () =>
+          (await Cookbook.findById(input.id).lean()) as {
+            userId: unknown;
+          } | null,
         ctx.user.id,
         "Cookbook",
       );
@@ -135,8 +174,9 @@ export const cookbooksRouter = router({
   addRecipe: protectedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cookbook = await verifyOwnership(
-        () => Cookbook.findById(input.cookbookId).lean(),
+        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
         ctx.user.id,
         "Cookbook",
       );
@@ -155,7 +195,8 @@ export const cookbooksRouter = router({
       // Check for duplicate, then push with next orderIndex
       const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
       const alreadyIn = recipes.some(
-        (r: { recipeId: unknown }) => r.recipeId?.toString() === input.recipeId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (r: any) => r.recipeId?.toString() === input.recipeId,
       );
       if (!alreadyIn) {
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
@@ -172,7 +213,10 @@ export const cookbooksRouter = router({
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(
-        () => Cookbook.findById(input.cookbookId).lean(),
+        async () =>
+          (await Cookbook.findById(input.cookbookId).lean()) as {
+            userId: unknown;
+          } | null,
         ctx.user.id,
         "Cookbook",
       );
@@ -195,8 +239,9 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cookbook = await verifyOwnership(
-        () => Cookbook.findById(input.cookbookId).lean(),
+        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
         ctx.user.id,
         "Cookbook",
       );
@@ -205,7 +250,8 @@ export const cookbooksRouter = router({
 
       // Rebuild the recipes array with updated orderIndex values
       const updatedRecipes = recipes.map(
-        (stub: { recipeId: unknown; orderIndex: number }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (stub: any) => {
           const newIndex = input.recipeIds.indexOf(
             stub.recipeId?.toString() ?? "",
           );

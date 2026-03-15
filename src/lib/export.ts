@@ -56,8 +56,8 @@ export function exportRecipeToJson(recipe: Recipe): string {
 
   const exported: ExportedRecipe = {
     ...recipe,
-    sourceId: sourceId ?? undefined,
-    classificationId: classificationId ?? undefined,
+    sourceId: sourceId ?? null,
+    classificationId: classificationId ?? null,
     mealIds: mealIds ?? [],
     courseIds: courseIds ?? [],
     preparationIds: preparationIds ?? [],

@@ -23,7 +23,7 @@ export function visibilityFilter(user: { id: string } | null) {
  * Throws NOT_FOUND or FORBIDDEN as appropriate.
  */
 export async function verifyOwnership<T extends { userId: unknown }>(
-  fetchRecord: () => Promise<T | null>,
+  fetchRecord: () => PromiseLike<T | null>,
   userId: string,
   label: string,
 ): Promise<T> {
@@ -46,9 +46,16 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createTaxonomyRouter(Model: any) {
   return router({
-    list: publicProcedure.query(async () => {
-      const docs = await Model.find().lean();
-      return docs.map((doc: any) => ({ ...doc, id: doc._id.toString() }));
-    }),
+    list: publicProcedure.query(
+      async (): Promise<{ id: string; name: string; slug: string }[]> => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const docs = (await Model.find().lean()) as any[];
+        return docs.map((doc) => ({
+          id: doc._id.toString() as string,
+          name: doc.name as string,
+          slug: doc.slug as string,
+        }));
+      },
+    ),
   });
 }
