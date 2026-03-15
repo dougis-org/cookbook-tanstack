@@ -26,8 +26,14 @@ export const sourcesRouter = router({
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ input }) => {
-      const source = await Source.findById(input.id).lean();
-      return source ?? null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const source = (await Source.findById(input.id).lean()) as any;
+      if (!source) return null;
+      return {
+        id: source._id.toString() as string,
+        name: source.name as string,
+        url: (source.url ?? null) as string | null,
+      };
     }),
 
   create: protectedProcedure

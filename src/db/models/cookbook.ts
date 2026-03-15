@@ -1,23 +1,28 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const cookbookSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true, maxlength: 255 },
     description: { type: String },
     isPublic: { type: Boolean, default: true },
     imageUrl: { type: String },
     recipes: [
       {
-        recipeId: { type: Schema.Types.ObjectId, ref: 'Recipe', required: true },
+        recipeId: {
+          type: Schema.Types.ObjectId,
+          ref: "Recipe",
+          required: true,
+        },
         orderIndex: { type: Number },
       },
     ],
   },
   { timestamps: true },
-)
+);
 
-cookbookSchema.index({ userId: 1 })
+cookbookSchema.index({ userId: 1 });
 
-export const Cookbook =
-  mongoose.models.Cookbook || mongoose.model('Cookbook', cookbookSchema)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Cookbook: mongoose.Model<any> =
+  mongoose.models.Cookbook || mongoose.model<any>("Cookbook", cookbookSchema);

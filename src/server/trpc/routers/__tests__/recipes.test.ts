@@ -1028,7 +1028,8 @@ describe("recipes.import", () => {
 
       expect(result).toMatchObject({ name: "Imported Dish" });
 
-      const saved = await Recipe.findById(result.id).lean();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const saved = (await Recipe.findById(result.id).lean()) as any;
       expect(saved?.name).toBe("Imported Dish");
       expect(saved?.userId?.toString()).toBe(user.id);
     });

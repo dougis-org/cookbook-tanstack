@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { User, Recipe, Cookbook } from "@/db/models"
+import { User, Recipe, Cookbook, Classification } from "@/db/models"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -165,6 +165,32 @@ describe("cookbooks.byId", () => {
       const ids = result!.recipes.map((r) => r.id)
       expect(ids).toContain(publicRecipe.id)
       expect(ids).not.toContain(privateRecipe.id)
+    })
+  })
+
+  // Regression: Classification model must be registered for populate() to resolve classificationName
+  it("returns classificationName on recipe stubs when recipe has a linked classification", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser()
+      const cb = await seedCookbook(owner.id)
+      const cls = await new Classification({
+        name: "Italian",
+        slug: `italian-${uid()}`,
+      }).save()
+      const recipe = await new Recipe({
+        name: "Pasta Dish",
+        userId: owner.id,
+        isPublic: true,
+        classificationId: cls.id,
+      }).save()
+
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
+      })
+
+      const caller = await makeAnonCaller()
+      const result = await caller.cookbooks.byId({ id: cb.id })
+      expect(result!.recipes[0]).toMatchObject({ classificationName: "Italian" })
     })
   })
 })

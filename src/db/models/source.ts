@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const sourceSchema = new Schema(
   {
@@ -6,7 +6,8 @@ const sourceSchema = new Schema(
     url: { type: String },
   },
   { timestamps: true },
-)
+);
 
-export const Source =
-  mongoose.models.Source || mongoose.model('Source', sourceSchema)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Source: mongoose.Model<any> =
+  mongoose.models.Source || mongoose.model<any>("Source", sourceSchema);

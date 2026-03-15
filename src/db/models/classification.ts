@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const classificationSchema = new Schema(
   {
@@ -7,8 +7,9 @@ const classificationSchema = new Schema(
     slug: { type: String, unique: true, required: true },
   },
   { timestamps: true },
-)
+);
 
-export const Classification =
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Classification: mongoose.Model<any> =
   mongoose.models.Classification ||
-  mongoose.model('Classification', classificationSchema)
+  mongoose.model<any>("Classification", classificationSchema);
