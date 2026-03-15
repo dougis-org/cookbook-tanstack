@@ -47,12 +47,13 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 export function createTaxonomyRouter(Model: any) {
   return router({
     list: publicProcedure.query(
-      async (): Promise<{ id: string; name: string }[]> => {
+      async (): Promise<{ id: string; name: string; slug: string }[]> => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const docs = (await Model.find().lean()) as any[];
         return docs.map((doc) => ({
           id: doc._id.toString() as string,
           name: doc.name as string,
+          slug: doc.slug as string,
         }));
       },
     ),

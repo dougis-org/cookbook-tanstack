@@ -1,6 +1,34 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-const recipeSchema = new Schema(
+export interface IRecipe extends Document {
+  userId: Types.ObjectId;
+  name: string;
+  ingredients?: string;
+  instructions?: string;
+  notes?: string;
+  servings?: number;
+  prepTime?: number;
+  cookTime?: number;
+  difficulty?: "easy" | "medium" | "hard";
+  sourceId?: Types.ObjectId;
+  classificationId?: Types.ObjectId;
+  dateAdded?: Date;
+  calories?: number;
+  fat?: number;
+  cholesterol?: number;
+  sodium?: number;
+  protein?: number;
+  imageUrl?: string;
+  isPublic: boolean;
+  marked: boolean;
+  mealIds: Types.ObjectId[];
+  courseIds: Types.ObjectId[];
+  preparationIds: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const recipeSchema = new Schema<IRecipe>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true, maxlength: 500 },
@@ -32,6 +60,6 @@ const recipeSchema = new Schema(
 recipeSchema.index({ userId: 1 });
 recipeSchema.index({ name: 1 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Recipe: mongoose.Model<any> =
-  mongoose.models.Recipe || mongoose.model<any>("Recipe", recipeSchema);
+export const Recipe: Model<IRecipe> =
+  (mongoose.models.Recipe as Model<IRecipe>) ||
+  mongoose.model<IRecipe>("Recipe", recipeSchema);

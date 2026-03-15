@@ -1,7 +1,7 @@
 /** The difficulty values accepted by the recipe schema. */
 export type Difficulty = "easy" | "medium" | "hard";
 
-/** Recipe document as returned by the tRPC `recipes.byId` and `recipes.list` queries. */
+/** Recipe document as returned by the tRPC `recipes.list` query. */
 export interface Recipe {
   id: string;
   userId: string;
@@ -15,6 +15,7 @@ export interface Recipe {
   difficulty: Difficulty | null;
   sourceId: string | null;
   classificationId: string | null;
+  classificationName?: string | null;
   dateAdded: Date | null;
   calories: number | null;
   fat: number | null;
@@ -29,6 +30,19 @@ export interface Recipe {
   preparationIds?: string[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+/** Full recipe detail as returned by the tRPC `recipes.byId` query (superset of Recipe). */
+export interface RecipeDetail extends Recipe {
+  mealIds: string[];
+  courseIds: string[];
+  preparationIds: string[];
+  classificationName: string | null;
+  sourceName: string | null;
+  sourceUrl: string | null;
+  meals: TaxonomyItem[];
+  courses: TaxonomyItem[];
+  preparations: TaxonomyItem[];
 }
 
 /** Classification document as returned by the tRPC `classifications` queries. */
@@ -46,10 +60,15 @@ export interface ClassificationWithCount extends Classification {
   recipeCount: number;
 }
 
-/** A resolved taxonomy item (meal, course, or preparation) with its name. */
+/** A resolved taxonomy item embedded within a recipe response. */
 export interface TaxonomyItem {
   id: string;
   name: string;
+}
+
+/** A taxonomy list item as returned by the tRPC `meals.list`, `courses.list`, `preparations.list` queries. */
+export interface TaxonomyListItem extends TaxonomyItem {
+  slug: string;
 }
 
 /** Filters accepted by the recipe list query. */

@@ -1,6 +1,13 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-const sourceSchema = new Schema(
+export interface ISource extends Document {
+  name: string;
+  url?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const sourceSchema = new Schema<ISource>(
   {
     name: { type: String, required: true },
     url: { type: String },
@@ -8,6 +15,6 @@ const sourceSchema = new Schema(
   { timestamps: true },
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Source: mongoose.Model<any> =
-  mongoose.models.Source || mongoose.model<any>("Source", sourceSchema);
+export const Source: Model<ISource> =
+  (mongoose.models.Source as Model<ISource>) ||
+  mongoose.model<ISource>("Source", sourceSchema);

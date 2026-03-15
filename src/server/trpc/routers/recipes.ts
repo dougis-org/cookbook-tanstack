@@ -148,6 +148,7 @@ export const recipesRouter = router({
       const items = (rawItems as any[]).map((r) => ({
         ...r,
         id: r._id.toString() as string,
+        classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
       }));
@@ -203,6 +204,9 @@ export const recipesRouter = router({
         classificationName: (r.classificationId?.name ?? null) as string | null,
         sourceName: (r.sourceId?.name ?? null) as string | null,
         sourceUrl: (r.sourceId?.url ?? null) as string | null,
+        mealIds: ((r.mealIds as PopItem[]) ?? []).map((m) => String(m._id)),
+        courseIds: ((r.courseIds as PopItem[]) ?? []).map((c) => String(c._id)),
+        preparationIds: ((r.preparationIds as PopItem[]) ?? []).map((p) => String(p._id)),
         meals: ((r.mealIds as PopItem[]) ?? []).map((m) => ({
           id: String(m._id),
           name: m.name,

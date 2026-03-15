@@ -1,6 +1,14 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-const classificationSchema = new Schema(
+export interface IClassification extends Document {
+  name: string;
+  description?: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const classificationSchema = new Schema<IClassification>(
   {
     name: { type: String, required: true },
     description: { type: String },
@@ -9,7 +17,6 @@ const classificationSchema = new Schema(
   { timestamps: true },
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Classification: mongoose.Model<any> =
-  mongoose.models.Classification ||
-  mongoose.model<any>("Classification", classificationSchema);
+export const Classification: Model<IClassification> =
+  (mongoose.models.Classification as Model<IClassification>) ||
+  mongoose.model<IClassification>("Classification", classificationSchema);

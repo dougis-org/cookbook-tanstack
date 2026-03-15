@@ -1,6 +1,22 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-const cookbookSchema = new Schema(
+export interface ICookbookRecipeEntry {
+  recipeId: Types.ObjectId;
+  orderIndex?: number;
+}
+
+export interface ICookbook extends Document {
+  userId: Types.ObjectId;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  imageUrl?: string;
+  recipes: ICookbookRecipeEntry[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const cookbookSchema = new Schema<ICookbook>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true, maxlength: 255 },
@@ -23,6 +39,6 @@ const cookbookSchema = new Schema(
 
 cookbookSchema.index({ userId: 1 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Cookbook: mongoose.Model<any> =
-  mongoose.models.Cookbook || mongoose.model<any>("Cookbook", cookbookSchema);
+export const Cookbook: Model<ICookbook> =
+  (mongoose.models.Cookbook as Model<ICookbook>) ||
+  mongoose.model<ICookbook>("Cookbook", cookbookSchema);
