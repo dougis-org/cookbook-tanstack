@@ -55,7 +55,6 @@ async function main() {
     const { default: mongoose } = await import("../../src/db/index");
     mongooseInstance = mongoose;
     const {
-      User,
       Classification,
       Source,
       Meal,
@@ -70,7 +69,6 @@ async function main() {
     }
 
     const adminResolution = await resolveDefaultAdminUser(
-      User,
       Types.ObjectId,
       "migration:verify-import",
     );

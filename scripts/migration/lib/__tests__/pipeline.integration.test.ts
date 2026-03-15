@@ -18,8 +18,8 @@ import {
   Preparation,
   Recipe,
   Cookbook,
-  User,
 } from "@/db/models"
+import { getMongoClient } from "@/db"
 import { buildImageAudit } from "../imageAudit"
 import { extractTables, TARGET_TABLES } from "../mysqlDump"
 import {
@@ -340,13 +340,20 @@ async function runImport(adminId: string, transformed: ReturnType<typeof buildTr
 }
 
 async function createAdminUser() {
-  const user = await User.create({
+  const userId = new Types.ObjectId()
+  const now = new Date()
+  
+  const db = getMongoClient().db()
+  await db.collection("user").insertOne({
+    _id: userId,
     email: "admin@test.com",
     emailVerified: true,
-    username: "admin",
-    displayUsername: "Admin",
+    name: "Admin",
+    createdAt: now,
+    updatedAt: now,
   })
-  return String(user._id)
+  
+  return String(userId)
 }
 
 // ── Task 2.2 — Full pipeline and idempotency ──────────────────────────────────

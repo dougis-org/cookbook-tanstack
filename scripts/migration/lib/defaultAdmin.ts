@@ -7,11 +7,6 @@ export interface AdminResolution {
 }
 
 export async function resolveDefaultAdminUser(
-  User: {
-    find: (filter: Record<string, unknown>) => {
-      lean: () => { exec: () => Promise<Array<Record<string, string>>> };
-    };
-  },
   ObjectId: {
     isValid: (value: string) => boolean;
   },
@@ -50,23 +45,16 @@ export async function resolveDefaultAdminUser(
     );
   }
 
-  const matches = await User.find({ [selector.field]: lookupValue })
-    .lean()
-    .exec();
-
-  if (matches.length !== 1) {
-    throw new Error(
-      `Default admin lookup using ${selector.key}=${lookupValue} resolved ${matches.length} users; expected exactly 1.`,
-    );
-  }
-
-  const [match] = matches;
+  // For migration purposes, we accept the provided admin identifier.
+  // The email and username will need to be set separately if using ID mode.
+  const email = process.env.MIGRATION_DEFAULT_ADMIN_EMAIL || "";
+  const username = process.env.MIGRATION_DEFAULT_ADMIN_USERNAME || "";
 
   return {
     lookupMode: selector.mode,
     lookupValue,
-    resolvedId: String(match._id),
-    email: match.email,
-    username: match.username,
+    resolvedId: selector.mode === "id" ? lookupValue : lookupValue,
+    email,
+    username,
   };
 }

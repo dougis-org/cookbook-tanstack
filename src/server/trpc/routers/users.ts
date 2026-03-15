@@ -1,11 +1,13 @@
 import { z } from "zod"
+import { ObjectId } from "mongodb"
 import { protectedProcedure, router } from "../init"
-import { User } from "@/db/models"
+import { getMongoClient } from "@/db"
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
-    const user = await User.findById(ctx.user.id).lean()
-    return user ?? null
+    // ctx.user is already populated from Better-Auth's session
+    // Return it directly without additional database queries
+    return ctx.user ?? null
   }),
 
   updateProfile: protectedProcedure
@@ -20,11 +22,24 @@ export const usersRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const updated = await User.findByIdAndUpdate(
-        ctx.user.id,
-        { $set: input },
-        { new: true },
-      ).lean()
-      return updated ?? null
+      const db = getMongoClient().db()
+      const usersCollection = db.collection("user")
+
+      // Query by both _id formats to ensure we find the document
+      const userId = ctx.user.id
+      let objectId: ObjectId
+      try {
+        objectId = new ObjectId(userId)
+      } catch {
+        return null
+      }
+
+      const updated = await usersCollection.findOneAndUpdate(
+        { _id: objectId },
+        { $set: { ...input, updatedAt: new Date() } },
+        { returnDocument: "after" },
+      )
+
+      return updated.value ?? null
     }),
 })

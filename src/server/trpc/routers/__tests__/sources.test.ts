@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { User, Source } from "@/db/models"
+import { Source } from "@/db/models"
+import { seedUserWithBetterAuth } from "./test-helpers"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -11,10 +12,7 @@ function uid() {
   return `${RUN_ID}-${++seq}`
 }
 
-async function seedUser() {
-  const id = uid()
-  return new User({ email: `src-${id}@test.com`, username: `src-${id}`, displayUsername: `SrcUser ${id}` }).save()
-}
+const seedUser = seedUserWithBetterAuth
 
 async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router")
