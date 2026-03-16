@@ -1,24 +1,41 @@
 /**
  * Test helper for seeding users via MongoDB.
  * Creates user documents directly in the BetterAuth "user" collection.
+ * Uses the Mongoose connection to ensure we're on the same database as tests.
  */
-import { Types } from "mongoose"
-import { getMongoClient } from "@/db"
+import mongoose, { Types } from "mongoose";
+import { getMongoClient } from "@/db";
 
-let seedCounter = 0
+let seedCounter = 0;
 
 /**
  * Create a new test user in the BetterAuth user collection.
- * Returns the created user object with id, email, name, etc.
+ * Returns the created user object with id as a hex string.
  */
 export async function seedUserWithBetterAuth() {
-  const uniqueId = `${Date.now()}-${++seedCounter}`
-  const userId = new Types.ObjectId()
-  const email = `user-${uniqueId}@recipe.test`
-  const now = new Date()
+  const uniqueId = `${Date.now()}-${++seedCounter}`;
+  const userId = new Types.ObjectId();
+  const email = `user-${uniqueId}@recipe.test`;
+  const now = new Date();
 
-  const db = getMongoClient().db()
-  
+  // Ensure Mongoose connection is ready
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error("MongoDB connection not ready");
+  }
+
+  // Get the database name from the Mongoose URI to ensure test worker isolation
+  // Each worker gets test_worker_${VITEST_POOL_ID} as described in db-connect.ts
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI not set");
+  }
+  const url = new URL(mongoUri);
+  const dbName = url.pathname.slice(1); // Remove leading slash
+
+  // Use the MongoDB client from the Mongoose connection, requesting the correct database
+  const mongoClient = getMongoClient();
+  const db = mongoClient.db(dbName);
+
   const user = {
     _id: userId,
     email,
@@ -27,9 +44,25 @@ export async function seedUserWithBetterAuth() {
     image: null,
     createdAt: now,
     updatedAt: now,
+  };
+
+  const usersCollection = db.collection("user");
+  const insertResult = await usersCollection.insertOne(user);
+
+  // Verify the insert was successful
+  if (!insertResult.acknowledged) {
+    throw new Error(`Failed to insert user: ${email}`);
   }
 
-  await db.collection("user").insertOne(user)
+  // Verify we can query it back immediately
+  const queriedUser = await usersCollection.findOne({ _id: userId });
+  if (!queriedUser) {
+    // Try to count documents to debug
+    const count = await usersCollection.countDocuments();
+    throw new Error(
+      `Unable to verify user creation for: ${email}. DB: ${dbName}, Collection docs: ${count}`,
+    );
+  }
 
   return {
     id: userId.toHexString(),
@@ -39,5 +72,5 @@ export async function seedUserWithBetterAuth() {
     image: null,
     createdAt: now,
     updatedAt: now,
-  }
+  };
 }

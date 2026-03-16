@@ -14,6 +14,15 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts', './src/test-helpers/db-connect.ts'],
     exclude: ['**/node_modules/**', '**/e2e/**', '**/*.e2e.*'],
+    // Configure to run tests with single worker thread for proper MongoDB isolation
+    // The per-worker database naming (test_worker_${VITEST_POOL_ID}) works correctly
+    // with this configuration, ensuring each test gets a clean database state
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        maxThreads: 1,
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov', 'json'],

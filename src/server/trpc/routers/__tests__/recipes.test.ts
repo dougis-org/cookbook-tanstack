@@ -23,7 +23,7 @@ function uid() {
   return `${RUN_ID}-${++seq}`;
 }
 
-const seedUser = seedUserWithBetterAuth
+const seedUser = seedUserWithBetterAuth;
 
 async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
