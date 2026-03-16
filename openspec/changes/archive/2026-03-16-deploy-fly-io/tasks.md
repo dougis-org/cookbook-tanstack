@@ -25,22 +25,22 @@
 ## 5. Validation
 
 - [x] 5.1 Run `docker build .` locally and confirm success
-- [ ] 5.2 Run `docker run --rm -e MONGODB_URI=... -e BETTER_AUTH_SECRET=... -e BETTER_AUTH_URL=... -p 3000:3000 cookbook-tanstack` and confirm `GET /` returns 200
+- [x] 5.2 Run `docker run --rm -e MONGODB_URI=... -e BETTER_AUTH_SECRET=... -e BETTER_AUTH_URL=... -p 3000:3000 cookbook-tanstack` and confirm `GET /` returns 200
 - [x] 5.3 Confirm `fly.toml` passes `flyctl config validate` (run: `flyctl config validate`)
-- [ ] 5.4 Verify MongoDB Atlas IP allowlist permits Fly.io outbound IPs (or is set to `0.0.0.0/0`)
+- [x] 5.4 Verify MongoDB Atlas IP allowlist permits Fly.io outbound IPs (or is set to `0.0.0.0/0`)
 - [x] 5.5 Run `npm run test` and `npx tsc --noEmit` — all must pass
-- [ ] 5.6 Run `docker run --rm -e MONGODB_URI=... -e BETTER_AUTH_SECRET=... -e BETTER_AUTH_URL=... cookbook-tanstack npm run db:seed` and confirm the command completes successfully (mirrors Fly.io `release_command`)
+- [x] 5.6 Run `docker run --rm -e MONGODB_URI=... -e BETTER_AUTH_SECRET=... -e BETTER_AUTH_URL=... cookbook-tanstack npm run db:seed` and confirm the command completes successfully (mirrors Fly.io `release_command`)
 
 ## 6. PR and Merge
 
 - [x] 6.1 Push branch and open PR targeting `main`
 - [x] 6.2 Enable auto-merge on the PR
 - [x] 6.3 Address any CI failures or review comments
-- [ ] 6.4 Confirm all status checks pass before merge
+- [x] 6.4 Confirm all status checks pass before merge
 
 ## 7. Post-Merge
 
-- [ ] 7.1 Confirm the deploy workflow runs automatically after merge to `main`
-- [ ] 7.2 Check Fly.io dashboard that the `release_command` (seeds) completed successfully
-- [ ] 7.3 Verify the deployed app responds at `https://<app>.fly.dev/`
+- [x] 7.1 Confirm the deploy workflow runs automatically after merge to `main`
+- [x] 7.2 Check Fly.io dashboard that the `release_command` (seeds) completed successfully
+- [x] 7.3 Verify the deployed app responds at `https://<app>.fly.dev/`
 - [ ] 7.4 Run `openspec archive --change deploy-fly-io` to archive the completed change
