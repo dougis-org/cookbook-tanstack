@@ -146,5 +146,92 @@ describe("users router", () => {
         expect(result).toHaveProperty("name", newName);
       });
     });
+
+    it("returns transformed document with id as hex string", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+
+        const result = await caller.users.updateProfile({ name: "Test" });
+
+        // Verify the ID is a hex string and matches the user
+        expect(result).toHaveProperty("id");
+        expect(typeof result.id).toBe("string");
+        expect(result.id).toEqual(user.id); // Should be same user's ID
+        // Verify it's a valid hex string (24 characters for ObjectId)
+        expect(result.id).toMatch(/^[0-9a-f]{24}$/);
+      });
+    });
+
+    it("updates updatedAt timestamp when profile is modified", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const originalUpdatedAt = new Date(user.updatedAt!);
+        const caller = await makeAuthCaller(user.id);
+
+        // Wait a moment to ensure time difference
+        await new Promise((resolve) => setTimeout(resolve, 10));
+
+        const result = await caller.users.updateProfile({ name: "New Name" });
+
+        expect(result).toHaveProperty("updatedAt");
+        const newUpdatedAt = new Date(result.updatedAt);
+        expect(newUpdatedAt.getTime()).toBeGreaterThanOrEqual(
+          originalUpdatedAt.getTime(),
+        );
+      });
+    });
+
+    it("handles partial updates with only name field", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+        const originalImage = user.image;
+
+        const result = await caller.users.updateProfile({ name: "New Name" });
+
+        expect(result).toHaveProperty("name", "New Name");
+        expect(result).toHaveProperty("image", originalImage ?? null);
+      });
+    });
+
+    it("handles partial updates with only image field", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+        const originalName = user.name;
+
+        const newImage = "https://example.com/image.jpg";
+        const result = await caller.users.updateProfile({ image: newImage });
+
+        expect(result).toHaveProperty("image", newImage);
+        expect(result).toHaveProperty("name", originalName ?? null);
+      });
+    });
+
+    it("rejects profile object with no fields provided", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+
+        // Empty object should fail the refine validation
+        await expect(caller.users.updateProfile({} as never)).rejects.toThrow(
+          "At least one field must be provided",
+        );
+      });
+    });
+
+    it("handles special characters in name", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+        const specialName = "Jean-Claude Müller-Strasse";
+
+        const result = await caller.users.updateProfile({ name: specialName });
+
+        expect(result).toHaveProperty("name", specialName);
+      });
+    });
   });
 });
+
