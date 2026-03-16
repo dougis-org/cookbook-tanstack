@@ -71,6 +71,7 @@ async function main() {
     const adminResolution = await resolveDefaultAdminUser(
       Types.ObjectId,
       "migration:verify-import",
+      mongoose.connection.getClient(),
     );
     report.adminResolution = adminResolution;
     const extractedCounts = await loadExtractedCounts();
