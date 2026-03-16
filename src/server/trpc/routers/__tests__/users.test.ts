@@ -307,9 +307,7 @@ describe("users router - error cases", () => {
       const user = await seedUserWithBetterAuth();
       const caller = await makeAuthCaller(user.id);
 
-      await expect(
-        caller.users.updateProfile({ name: "" }),
-      ).rejects.toThrow();
+      await expect(caller.users.updateProfile({ name: "" })).rejects.toThrow();
     });
   });
 

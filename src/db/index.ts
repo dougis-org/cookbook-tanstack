@@ -7,7 +7,11 @@ if (!MONGODB_URI) {
   );
 }
 
-mongoose.set("strict", true);
+// Set strict mode if the mongoose instance supports it
+// (In some test environments, mongoose may be mocked without this method)
+if (typeof mongoose.set === "function") {
+  mongoose.set("strict", true);
+}
 
 if (mongoose.connection.readyState === 0) {
   mongoose.connect(MONGODB_URI).catch((error) => {
