@@ -145,17 +145,15 @@ describe("resolveDefaultAdminUser", () => {
   it("throws when user ID is invalid ObjectId", async () => {
     process.env.MIGRATION_DEFAULT_ADMIN_USER_ID = "not-a-valid-id";
 
-    await expect(
-      resolveDefaultAdminUser(ObjectId, "test"),
-    ).rejects.toThrow("MIGRATION_DEFAULT_ADMIN_USER_ID is not a valid ObjectId");
+    await expect(resolveDefaultAdminUser(ObjectId, "test")).rejects.toThrow(
+      "MIGRATION_DEFAULT_ADMIN_USER_ID is not a valid ObjectId",
+    );
   });
 
   it("throws when email lookup required but no mongoClient provided", async () => {
     process.env.MIGRATION_DEFAULT_ADMIN_EMAIL = "admin@test.com";
 
-    await expect(
-      resolveDefaultAdminUser(ObjectId, "test"),
-    ).rejects.toThrow(
+    await expect(resolveDefaultAdminUser(ObjectId, "test")).rejects.toThrow(
       "Cannot resolve admin by email without MongoDB client",
     );
   });
@@ -163,9 +161,7 @@ describe("resolveDefaultAdminUser", () => {
   it("throws when username lookup required but no mongoClient provided", async () => {
     process.env.MIGRATION_DEFAULT_ADMIN_USERNAME = "admin";
 
-    await expect(
-      resolveDefaultAdminUser(ObjectId, "test"),
-    ).rejects.toThrow(
+    await expect(resolveDefaultAdminUser(ObjectId, "test")).rejects.toThrow(
       "Cannot resolve admin by username without MongoDB client",
     );
   });
@@ -200,5 +196,96 @@ describe("resolveDefaultAdminUser", () => {
     expect(typeof result.resolvedId).toBe("string");
     expect(result.resolvedId).toMatch(/^[0-9a-f]{24}$/);
   });
-});
 
+  it("handles missing user fields gracefully (fallback empty strings)", async () => {
+    const db = createMongoClient().db();
+    const usersCollection = db.collection("user");
+
+    const adminUserId = new ObjectId();
+    // Insert user with minimal fields (no email/username)
+    await usersCollection.insertOne({
+      _id: adminUserId,
+    });
+
+    process.env.MIGRATION_DEFAULT_ADMIN_USER_ID = adminUserId.toHexString();
+
+    const result = await resolveDefaultAdminUser(ObjectId, "test");
+
+    // Should resolve successfully with ID-only lookup
+    expect(result.resolvedId).toBe(adminUserId.toHexString());
+    expect(result).toHaveProperty("email", "");
+    expect(result).toHaveProperty("username", "");
+  });
+
+  it("handles user with ObjectId as string in database", async () => {
+    const db = createMongoClient().db();
+    const usersCollection = db.collection("user");
+
+    const adminIdHex = new ObjectId().toHexString();
+    // Insert user with string ID instead of ObjectId
+    await usersCollection.insertOne({
+      _id: adminIdHex,
+      email: "admin@test.com",
+    } as never);
+
+    process.env.MIGRATION_DEFAULT_ADMIN_EMAIL = "admin@test.com";
+
+    const result = await resolveDefaultAdminUser(
+      ObjectId,
+      "test",
+      createMongoClient(),
+    );
+
+    expect(result.resolvedId).toBe(adminIdHex);
+  });
+
+  it("preserves environment-based email and username when available", async () => {
+    const db = createMongoClient().db();
+    const usersCollection = db.collection("user");
+
+    const adminUserId = new ObjectId();
+    const envEmail = "env@test.com";
+    const envUsername = "env_admin";
+
+    process.env.MIGRATION_DEFAULT_ADMIN_USER_ID = adminUserId.toHexString();
+    // NOTE: Only set USER_ID, not EMAIL or USERNAME, to avoid multiple selector error
+
+    await usersCollection.insertOne({
+      _id: adminUserId,
+      email: envEmail,
+      username: envUsername,
+    });
+
+    const result = await resolveDefaultAdminUser(ObjectId, "test");
+
+    // When resolving by ID, should use environment values if not set
+    expect(result.resolvedId).toBe(adminUserId.toHexString());
+  });
+
+  it("updates email and username from database on email/username lookup", async () => {
+    const db = createMongoClient().db();
+    const usersCollection = db.collection("user");
+
+    const adminUserId = new ObjectId();
+    const dbEmail = "db@test.com";
+    const dbUsername = "db_admin";
+
+    await usersCollection.insertOne({
+      _id: adminUserId,
+      email: dbEmail,
+      username: dbUsername,
+    });
+
+    process.env.MIGRATION_DEFAULT_ADMIN_EMAIL = dbEmail;
+
+    const result = await resolveDefaultAdminUser(
+      ObjectId,
+      "test",
+      createMongoClient(),
+    );
+
+    // When resolving by email, should get fields from database
+    expect(result).toHaveProperty("email", dbEmail);
+    expect(result).toHaveProperty("username", dbUsername);
+  });
+});

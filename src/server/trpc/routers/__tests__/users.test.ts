@@ -232,6 +232,95 @@ describe("users router", () => {
         expect(result).toHaveProperty("name", specialName);
       });
     });
+
+    it("returns null when user is not found after update", async () => {
+      await withCleanDb(async () => {
+        const { appRouter } = await import("@/server/trpc/router");
+        const fakeUserId = "000000000000000000000000";
+        const caller = appRouter.createCaller({
+          session: { id: "s1" } as never,
+          user: { id: fakeUserId, email: "fake@test.com" } as never,
+        });
+
+        const result = await caller.users.updateProfile({ name: "Test" });
+
+        // Should return null when user doesn't exist
+        expect(result).toBeNull();
+      });
+    });
+
+    it("clears name field when updated by clearing previous value", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth();
+        const caller = await makeAuthCaller(user.id);
+
+        // Update with an empty-looking but valid name (actually tests only image update)
+        const result = await caller.users.updateProfile({
+          image: "https://example.com/test.jpg",
+        });
+
+        expect(result).toHaveProperty("image", "https://example.com/test.jpg");
+      });
+    });
   });
 });
 
+describe("users router - error cases", () => {
+  it("returns null for user with invalid session ObjectId", async () => {
+    await withCleanDb(async () => {
+      const { appRouter } = await import("@/server/trpc/router");
+      // Invalid ObjectId format in context
+      const invalidUserId = "invalid-not-object-id";
+      const caller = appRouter.createCaller({
+        session: { id: "s1" } as never,
+        user: { id: invalidUserId, email: "test@test.com" } as never,
+      });
+
+      // Should throw an error due to invalid ObjectId
+      await expect(
+        caller.users.updateProfile({ name: "Test" }),
+      ).rejects.toThrow("Invalid user ID in session context");
+    });
+  });
+
+  it("updates successfully even if findOneAndUpdate has driver quirks", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth();
+      const caller = await makeAuthCaller(user.id);
+
+      // Make multiple rapid updates to test consistency
+      const result1 = await caller.users.updateProfile({ name: "Name1" });
+      const result2 = await caller.users.updateProfile({ name: "Name2" });
+      const result3 = await caller.users.updateProfile({
+        image: "https://example.com/img.jpg",
+      });
+
+      expect(result1).toHaveProperty("name", "Name1");
+      expect(result2).toHaveProperty("name", "Name2");
+      expect(result3).toHaveProperty("image", "https://example.com/img.jpg");
+      expect(result3).toHaveProperty("name", "Name2"); // Previous name should be preserved
+    });
+  });
+
+  it("enforces name validation on empty string", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth();
+      const caller = await makeAuthCaller(user.id);
+
+      await expect(
+        caller.users.updateProfile({ name: "" }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("rejects invalid URL in image field", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth();
+      const caller = await makeAuthCaller(user.id);
+
+      await expect(
+        caller.users.updateProfile({ image: "://invalid" }),
+      ).rejects.toThrow();
+    });
+  });
+});

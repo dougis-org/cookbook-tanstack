@@ -53,7 +53,9 @@ export const usersRouter = router({
       try {
         objectId = new ObjectId(userId);
       } catch {
-        return null;
+        // protectedProcedure ensures ctx.user exists, so an invalid ObjectId
+        // indicates a problem with the session/context and should surface as an error.
+        throw new Error("Invalid user ID in session context");
       }
 
       const updateData: Record<string, unknown> = { updatedAt: new Date() };
@@ -64,14 +66,17 @@ export const usersRouter = router({
         updateData.image = input.image;
       }
 
-      // First try findOneAndUpdate with returnDocument: "after"
+      // findOneAndUpdate with returnDocument: "after" returns the modified document,
+      // or null if no document matched. The result structure is { value: doc | null }.
       const updated = await usersCollection.findOneAndUpdate(
         { _id: objectId },
         { $set: updateData },
         { returnDocument: "after" as const },
       );
 
-      // If that doesn't work, fall back to updateOne then findOne
+      // Fallback: if findOneAndUpdate didn't return the document (either because
+      // it wasn't found or due to driver quirks), update separately and query back.
+      // This ensures we always return the final document state after the update.
       if (!updated || !updated.value) {
         await usersCollection.updateOne(
           { _id: objectId },
