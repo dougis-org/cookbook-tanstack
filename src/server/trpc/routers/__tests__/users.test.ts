@@ -155,11 +155,12 @@ describe("users router", () => {
         const result = await caller.users.updateProfile({ name: "Test" });
 
         // Verify the ID is a hex string and matches the user
+        expect(result).not.toBeNull();
         expect(result).toHaveProperty("id");
-        expect(typeof result.id).toBe("string");
-        expect(result.id).toEqual(user.id); // Should be same user's ID
+        expect(typeof result!.id).toBe("string");
+        expect(result!.id).toEqual(user.id); // Should be same user's ID
         // Verify it's a valid hex string (24 characters for ObjectId)
-        expect(result.id).toMatch(/^[0-9a-f]{24}$/);
+        expect(result!.id).toMatch(/^[0-9a-f]{24}$/);
       });
     });
 
@@ -174,8 +175,9 @@ describe("users router", () => {
 
         const result = await caller.users.updateProfile({ name: "New Name" });
 
+        expect(result).not.toBeNull();
         expect(result).toHaveProperty("updatedAt");
-        const newUpdatedAt = new Date(result.updatedAt);
+        const newUpdatedAt = new Date(result!.updatedAt);
         expect(newUpdatedAt.getTime()).toBeGreaterThanOrEqual(
           originalUpdatedAt.getTime(),
         );

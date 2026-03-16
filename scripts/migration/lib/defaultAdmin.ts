@@ -75,20 +75,27 @@ export async function resolveDefaultAdminUser(
         ? { email: lookupValue }
         : { username: lookupValue };
 
-    const user = (await usersCollection.findOne(query)) as any;
+    const user = (await usersCollection.findOne(query)) as Record<string, unknown> | null;
     if (!user || !user._id) {
       throw new Error(
-        `Could not find user with ${selector.mode} "${lookupValue}" in database`,
+        `Could not find user with ${selector.mode} in database`,
       );
     }
 
     // Extract the _id and convert to hex string if needed
-    resolvedId =
-      typeof user._id === "string"
-        ? user._id
-        : (user._id as any).toHexString?.() || (user._id as any).toString();
-    email = user.email || email;
-    username = (user as any).username || username;
+    const idValue = user._id;
+    if (typeof idValue === "string") {
+      resolvedId = idValue;
+    } else if (idValue && typeof idValue === "object" && "toHexString" in idValue) {
+      resolvedId = (idValue as { toHexString(): string }).toHexString();
+    } else if (idValue && typeof idValue === "object" && "toString" in idValue) {
+      resolvedId = (idValue as { toString(): string }).toString();
+    } else {
+      throw new Error("Invalid user ID format in database");
+    }
+    
+    email = typeof user.email === "string" ? user.email : email;
+    username = typeof user.username === "string" ? user.username : username;
   }
 
   return {

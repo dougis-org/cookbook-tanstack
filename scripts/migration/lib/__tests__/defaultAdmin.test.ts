@@ -1,12 +1,11 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach, afterEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { resolveDefaultAdminUser } from "../defaultAdmin";
 
 let mongoServer: MongoMemoryServer;
-let firstConnection = true;
 
 beforeEach(async () => {
   // Disconnect from previous connection if exists
@@ -111,7 +110,7 @@ describe("resolveDefaultAdminUser", () => {
     await expect(
       resolveDefaultAdminUser(ObjectId, "test", createMongoClient()),
     ).rejects.toThrow(
-      'Could not find user with email "nonexistent@test.com" in database',
+      'Could not find user with email in database',
     );
   });
 
@@ -121,7 +120,7 @@ describe("resolveDefaultAdminUser", () => {
     await expect(
       resolveDefaultAdminUser(ObjectId, "test", createMongoClient()),
     ).rejects.toThrow(
-      'Could not find user with username "nonexistent_user" in database',
+      'Could not find user with username in database',
     );
   });
 

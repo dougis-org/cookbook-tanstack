@@ -13,16 +13,35 @@ interface UserDocument {
   updatedAt: Date;
 }
 
-function transformUserDoc(doc: UserDocument | Record<string, unknown>) {
-  const typed = doc as UserDocument;
+interface TransformedUser {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  name: string | null;
+  image: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function transformUserDoc(doc: Record<string, unknown>): TransformedUser | null {
+  // Validate required fields exist before transformation
+  if (!doc || typeof doc !== "object") {
+    return null;
+  }
+  
+  const typed = doc as Partial<UserDocument>;
+  if (!typed._id || typeof typed._id !== "object" || !("toHexString" in typed._id)) {
+    return null;
+  }
+
   return {
-    id: typed._id.toHexString(),
-    email: typed.email,
-    emailVerified: typed.emailVerified,
-    name: typed.name ?? null,
-    image: typed.image ?? null,
-    createdAt: typed.createdAt,
-    updatedAt: typed.updatedAt,
+    id: (typed._id as ObjectId).toHexString(),
+    email: String(typed.email ?? ""),
+    emailVerified: Boolean(typed.emailVerified),
+    name: typeof typed.name === "string" ? typed.name : null,
+    image: typeof typed.image === "string" ? typed.image : null,
+    createdAt: typed.createdAt instanceof Date ? typed.createdAt : new Date(),
+    updatedAt: typed.updatedAt instanceof Date ? typed.updatedAt : new Date(),
   };
 }
 
@@ -58,7 +77,7 @@ export const usersRouter = router({
         throw new Error("Invalid user ID in session context");
       }
 
-      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+      const updateData: Partial<Pick<UserDocument, "name" | "image" | "updatedAt">> = { updatedAt: new Date() };
       if (input.name !== undefined) {
         updateData.name = input.name;
       }
@@ -84,9 +103,9 @@ export const usersRouter = router({
         );
         const refreshed = await usersCollection.findOne({ _id: objectId });
         if (!refreshed) return null;
-        return transformUserDoc(refreshed as UserDocument);
+        return transformUserDoc(refreshed);
       }
 
-      return transformUserDoc(updated.value as UserDocument);
+      return transformUserDoc(updated.value);
     }),
 });

@@ -57,11 +57,8 @@ export async function seedUserWithBetterAuth() {
   // Verify we can query it back immediately
   const queriedUser = await usersCollection.findOne({ _id: userId });
   if (!queriedUser) {
-    // Try to count documents to debug
-    const count = await usersCollection.countDocuments();
-    throw new Error(
-      `Unable to verify user creation for: ${email}. DB: ${dbName}, Collection docs: ${count}`,
-    );
+    // Silently fail without leaking database implementation details
+    throw new Error(`Failed to create user in database`);
   }
 
   return {
