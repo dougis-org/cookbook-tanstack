@@ -166,10 +166,10 @@ function buildTransformed(sql: string) {
   const preparations = extracted.preparations.rows as ExtractedRow[]
   const recipes = extracted.recipes.rows as ExtractedRow[]
   const cookbooks = extracted.cookbooks.rows as ExtractedRow[]
-  const recipeMeals = extracted.recipe_meals.rows as LegacyPivot[]
-  const recipeCourses = extracted.recipe_courses.rows as LegacyPivot[]
-  const recipePreparations = extracted.recipe_preparations.rows as LegacyPivot[]
-  const cookbookRecipes = extracted.cookbook_recipes.rows as LegacyPivot[]
+  const recipeMeals = extracted.recipe_meals.rows as any as LegacyPivot[]
+  const recipeCourses = extracted.recipe_courses.rows as any as LegacyPivot[]
+  const recipePreparations = extracted.recipe_preparations.rows as any as LegacyPivot[]
+  const cookbookRecipes = extracted.cookbook_recipes.rows as any as LegacyPivot[]
 
   const idMaps = {
     classifications: createIdMap("classification", classifications.map((r) => r.id as number)),
