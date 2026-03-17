@@ -22,9 +22,9 @@
 
 ## 5. PR and Merge
 
-- [ ] 5.1 Commit changes with message referencing issue: `fix: suppress image space when no imageUrl (#159)`
-- [ ] 5.2 Push branch and create PR; link to issue #159 in the PR body
-- [ ] 5.3 Enable auto-merge on the PR (per CI/CD standards in `docs/standards/ci-cd.md`)
+- [x] 5.1 Commit changes with message referencing issue: `fix: suppress image space when no imageUrl (#159)`
+- [x] 5.2 Push branch and create PR; link to issue #159 in the PR body
+- [x] 5.3 Enable auto-merge on the PR (per CI/CD standards in `docs/standards/ci-cd.md`)
 - [ ] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge
