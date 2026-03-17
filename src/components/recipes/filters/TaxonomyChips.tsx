@@ -37,6 +37,7 @@ export function TaxonomyChips({
           const isSelected = selectedIds?.includes(item.id)
           return (
             <button
+              type="button"
               key={item.id}
               onClick={() => onToggle(item.id)}
               data-testid={`taxonomy-chip-${label.toLowerCase()}-${item.id}`}
