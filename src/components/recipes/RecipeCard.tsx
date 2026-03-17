@@ -11,7 +11,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
       {recipe.imageUrl && (
-        <div className="h-48 bg-gray-200 dark:bg-gray-700">
+        <div data-testid="recipe-card-image" className="h-48 bg-gray-200 dark:bg-gray-700">
           <img
             src={recipe.imageUrl}
             alt={recipe.name}

@@ -41,7 +41,7 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header Image */}
         {recipe.imageUrl && (
-          <div className="h-96 bg-gray-200 dark:bg-gray-700">
+          <div data-testid="recipe-detail-image" className="h-96 bg-gray-200 dark:bg-gray-700">
             <img
               src={recipe.imageUrl}
               alt={recipe.name}

@@ -18,7 +18,7 @@
 - [x] 4.1 Run unit tests: `npx vitest run src/components/recipes/`
 - [x] 4.2 Run full test suite: `npm run test`
 - [x] 4.3 Run build: `npm run build` — must complete with no TypeScript errors
-- [x] 4.4 Visually verify in dev server (`npm run dev`): recipe list and detail pages show no empty image space for imageless recipes
+- [ ] 4.4 Visually verify in dev server (`npm run dev`): recipe list and detail pages show no empty image space for imageless recipes
 
 ## 5. PR and Merge
 

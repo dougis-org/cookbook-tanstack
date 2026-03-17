@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@testing-library/react"
+import type { Recipe } from "@/types/recipe"
 import RecipeCard from "@/components/recipes/RecipeCard"
 
-function makeRecipe(overrides: Record<string, unknown> = {}) {
+type RecipeCardRecipe = Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
+  classificationName?: string | null
+}
+
+function makeRecipe(overrides: Partial<RecipeCardRecipe> = {}): RecipeCardRecipe {
   return {
     id: "r1",
     name: "Test Recipe",
@@ -23,18 +28,21 @@ describe("RecipeCard", () => {
     expect(screen.getByText("Banana Bread")).toBeInTheDocument()
   })
 
-  it("does not render image container when imageUrl is absent", () => {
-    render(<RecipeCard recipe={makeRecipe({ imageUrl: null })} />)
+  it.each([
+    { label: "null imageUrl", imageUrl: null },
+    { label: "empty string imageUrl", imageUrl: "" },
+  ])("does not render image container when imageUrl is $label", ({ imageUrl }) => {
+    render(<RecipeCard recipe={makeRecipe({ imageUrl })} />)
 
+    expect(screen.queryByTestId("recipe-card-image")).not.toBeInTheDocument()
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
-    expect(screen.queryByText("No Image")).not.toBeInTheDocument()
   })
 
-  it("renders image when imageUrl is provided", () => {
+  it("renders image container and img when imageUrl is provided", () => {
     render(<RecipeCard recipe={makeRecipe({ imageUrl: "https://example.com/bread.jpg", name: "Banana Bread" })} />)
 
+    expect(screen.getByTestId("recipe-card-image")).toBeInTheDocument()
     const img = screen.getByRole("img", { name: "Banana Bread" })
-    expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute("src", "https://example.com/bread.jpg")
   })
 
