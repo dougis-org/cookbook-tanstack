@@ -2,7 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterMoreFiltersPanel } from '../FilterMoreFiltersPanel'
-import { createDefaultFilterMoreFiltersPanelProps, MOCK_MEALS, MOCK_COURSES, MOCK_PREPARATIONS, TAXONOMY_TOGGLE_CASES } from './test-helpers'
+import {
+  createDefaultFilterMoreFiltersPanelProps,
+  createMockUpdateSearch,
+  TAXONOMY_TOGGLE_CASES,
+  expandFilterPanel,
+} from './test-helpers'
 
 describe('FilterMoreFiltersPanel', () => {
   let mockUpdateSearch: ReturnType<typeof vi.fn>
@@ -35,31 +40,28 @@ describe('FilterMoreFiltersPanel', () => {
   })
 
   it('collapses panel when toggle is clicked while expanded', async () => {
-    const user = userEvent.setup()
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
-        updateSearch={mockUpdateSearch}
+        updateSearch={vi.fn()}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    const user = await expandFilterPanel()
     expect(screen.getByTestId('filter-more-filters-content')).toBeInTheDocument()
 
+    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
     await user.click(toggleButton)
     expect(screen.queryByTestId('filter-more-filters-content')).not.toBeInTheDocument()
   })
 
   it('renders taxonomy chips when panel is expanded', async () => {
-    const user = userEvent.setup()
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
-        updateSearch={mockUpdateSearch}
+        updateSearch={vi.fn()}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    await expandFilterPanel()
 
     expect(screen.getByText('Meals')).toBeInTheDocument()
     expect(screen.getByText('Courses')).toBeInTheDocument()
@@ -71,16 +73,14 @@ describe('FilterMoreFiltersPanel', () => {
     'taxonomy chip selection: %s → %s',
     (taxonomyType, itemId, itemName, updateKey) => {
       it(`calls updateSearch when ${itemName} chip is selected`, async () => {
-        const user = userEvent.setup()
+        const mockUpdateSearch = createMockUpdateSearch()
         render(
           <FilterMoreFiltersPanel
             {...createDefaultFilterMoreFiltersPanelProps()}
             updateSearch={mockUpdateSearch}
           />
         )
-        const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-        await user.click(toggleButton)
-
+        const user = await expandFilterPanel()
         const button = screen.getByText(itemName).closest('button')!
         await user.click(button)
 
@@ -89,19 +89,17 @@ describe('FilterMoreFiltersPanel', () => {
       })
 
       it(`deselects ${itemName} chip when clicked while active`, async () => {
-        const user = userEvent.setup()
-        const propsWithActive = {
-          ...createDefaultFilterMoreFiltersPanelProps(),
-          updateSearch: mockUpdateSearch,
-          ...(taxonomyType === 'meals' && { mealIds: [itemId] }),
-          ...(taxonomyType === 'courses' && { courseIds: [itemId] }),
-          ...(taxonomyType === 'preparations' && { preparationIds: [itemId] }),
-        }
-
-        render(<FilterMoreFiltersPanel {...propsWithActive} />)
-        const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-        await user.click(toggleButton)
-
+        const mockUpdateSearch = createMockUpdateSearch()
+        render(
+          <FilterMoreFiltersPanel
+            {...createDefaultFilterMoreFiltersPanelProps()}
+            updateSearch={mockUpdateSearch}
+            {...(taxonomyType === 'meals' && { mealIds: [itemId] })}
+            {...(taxonomyType === 'courses' && { courseIds: [itemId] })}
+            {...(taxonomyType === 'preparations' && { preparationIds: [itemId] })}
+          />
+        )
+        const user = await expandFilterPanel()
         const button = screen.getByText(itemName).closest('button')!
         await user.click(button)
 
@@ -112,30 +110,27 @@ describe('FilterMoreFiltersPanel', () => {
   )
 
   it('renders min/max servings inputs when panel is expanded', async () => {
-    const user = userEvent.setup()
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
-        updateSearch={mockUpdateSearch}
+        updateSearch={vi.fn()}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    await expandFilterPanel()
 
     expect(screen.getByTestId('filter-min-servings')).toBeInTheDocument()
     expect(screen.getByTestId('filter-max-servings')).toBeInTheDocument()
   })
 
   it('updates minServings when number is entered', async () => {
-    const user = userEvent.setup()
+    const mockUpdateSearch = createMockUpdateSearch()
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
         updateSearch={mockUpdateSearch}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    const user = await expandFilterPanel()
 
     const minInput = screen.getByTestId('filter-min-servings') as HTMLInputElement
     await user.type(minInput, '4')
@@ -143,15 +138,14 @@ describe('FilterMoreFiltersPanel', () => {
   })
 
   it('updates maxServings when number is entered', async () => {
-    const user = userEvent.setup()
+    const mockUpdateSearch = createMockUpdateSearch()
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
         updateSearch={mockUpdateSearch}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    const user = await expandFilterPanel()
 
     const maxInput = screen.getByTestId('filter-max-servings') as HTMLInputElement
     await user.type(maxInput, '8')
@@ -159,20 +153,18 @@ describe('FilterMoreFiltersPanel', () => {
   })
 
   it('preserves panel expand state when filters change', async () => {
-    const user = userEvent.setup()
     const { rerender } = render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
-        updateSearch={mockUpdateSearch}
+        updateSearch={vi.fn()}
       />
     )
-    const toggleButton = screen.getByTestId('filter-more-filters-toggle')
-    await user.click(toggleButton)
+    await expandFilterPanel()
 
     rerender(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}
-        updateSearch={mockUpdateSearch}
+        updateSearch={createMockUpdateSearch()}
         mealIds={['m1']}
       />
     )

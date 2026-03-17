@@ -1,4 +1,6 @@
 import { vi } from "vitest";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 /**
  * Common test data and factories for filter components
@@ -90,3 +92,15 @@ export const QUICK_FILTER_TOGGLE_CASES = [
     "hasImage",
   ],
 ] as const;
+
+/**
+ * Test helper: Expand the FilterMoreFiltersPanel by clicking the toggle button
+ * Assumes the component is already rendered and the toggle button is available
+ */
+export async function expandFilterPanel() {
+  const user = userEvent.setup();
+  const toggleButton = screen.getByTestId("filter-more-filters-toggle");
+  await user.click(toggleButton);
+  return user;
+}
+
