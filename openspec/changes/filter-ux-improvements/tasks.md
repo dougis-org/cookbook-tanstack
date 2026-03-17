@@ -91,7 +91,7 @@
   - Update relevant components to fetch and display counts
 - [ ] 6.3 Update components to display counts if counts data is available
   - `FilterRow2Dropdowns` displays classification/source counts
-  - `FilterAllFiltersPanel` displays taxonomy item counts
+  - `FilterMoreFiltersPanel` displays taxonomy item counts
 
 ## 7. Testing - Unit and Integration
 
