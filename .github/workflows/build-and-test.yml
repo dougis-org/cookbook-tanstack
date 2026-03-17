@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
     env:
       MONGODB_URI: mongodb://localhost:27017/cookbook
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
