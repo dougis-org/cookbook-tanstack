@@ -103,4 +103,3 @@ export async function expandFilterPanel() {
   await user.click(toggleButton);
   return user;
 }
-
