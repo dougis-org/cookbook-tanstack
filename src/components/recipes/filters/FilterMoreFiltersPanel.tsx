@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { TaxonomyChips } from './TaxonomyChips'
+import { ServingsRangeInput } from './ServingsRangeInput'
+import { TAXONOMY_CONFIGS } from './filterConfigs'
 import { type FilterConfig } from '@/lib/filterConfig'
 
 interface TaxonomyItem {
@@ -32,13 +34,18 @@ interface FilterMoreFiltersPanelProps {
   }
 }
 
+// Map taxonomy items by key for easy lookup
+const TAXONOMY_ITEMS_MAP = {
+  meals: 'allMeals' as const,
+  courses: 'allCourses' as const,
+  preparations: 'allPreparations' as const,
+}
+
 /**
  * FilterMoreFiltersPanel - Collapsible advanced filters panel
  *
  * Displays an expandable/collapsible section containing:
- * - Meals chips
- * - Courses chips
- * - Preparations chips
+ * - Meals, Courses, Preparations chips (rendered via TAXONOMY_CONFIGS)
  * - Min/Max servings range inputs
  *
  * The panel is controlled by local expand/collapse state (UI-only).
@@ -59,36 +66,44 @@ export function FilterMoreFiltersPanel({
 }: FilterMoreFiltersPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
+  // Map filter values by key for easy access
+  const filterValuesMap = {
+    meals: { ids: mealIds, items: allMeals },
+    courses: { ids: courseIds, items: allCourses },
+    preparations: { ids: preparationIds, items: allPreparations },
+  }
+
+  // Map update keys to their filter value map keys
+  const updateKeyToMapKey = {
+    mealIds: 'meals' as const,
+    courseIds: 'courses' as const,
+    preparationIds: 'preparations' as const,
+  }
+
   // Generic toggle handler factory for taxonomy items
-  const createToggle = (
-    currentIds: string[] | undefined,
-    updateKey: 'mealIds' | 'courseIds' | 'preparationIds',
-  ) => {
+  const createToggle = (updateKey: 'mealIds' | 'courseIds' | 'preparationIds') => {
     return (id: string) => {
+      const mapKey = updateKeyToMapKey[updateKey]
+      const currentIds = filterValuesMap[mapKey].ids
       const arr = currentIds ?? []
       const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
       updateSearch({ [updateKey]: next.length ? next : undefined })
     }
   }
 
-  const toggleMeal = createToggle(mealIds, 'mealIds')
-  const toggleCourse = createToggle(courseIds, 'courseIds')
-  const togglePreparation = createToggle(preparationIds, 'preparationIds')
+  // Check if filter config allows a given filter
+  const shouldShow = (filterKey: string) => !filterConfig || filterConfig.allFilters.includes(filterKey as any)
 
-  // Determine which sections to show based on config
-  const shouldShow = (key: string) => !filterConfig || filterConfig.allFilters.includes(key as any)
-  const showMeals = shouldShow('mealIds')
-  const showCourses = shouldShow('courseIds')
-  const showPreparations = shouldShow('preparationIds')
-  const showServings =
-    (!filterConfig || filterConfig.allFilters.includes('minServings')) &&
-    (!filterConfig || filterConfig.allFilters.includes('maxServings'))
-
+  // Check if any filters are currently applied
   const hasAnyFilters =
-    (showMeals && (mealIds?.length ?? 0) > 0) ||
-    (showCourses && (courseIds?.length ?? 0) > 0) ||
-    (showPreparations && (preparationIds?.length ?? 0) > 0) ||
-    (showServings && (minServings || maxServings))
+    TAXONOMY_CONFIGS.some((cfg) => {
+      const filterKey = cfg.filterKey
+      return shouldShow(filterKey) && (filterValuesMap[cfg.key].ids?.length ?? 0) > 0
+    }) ||
+    (shouldShow('minServings') || shouldShow('maxServings')) &&
+      (minServings || maxServings)
+
+  const showServings = shouldShow('minServings') && shouldShow('maxServings')
 
   return (
     <div className="border-t border-slate-700 pt-3" data-testid="filter-more-filters-panel">
@@ -105,71 +120,29 @@ export function FilterMoreFiltersPanel({
 
       {isExpanded && (
         <div className="mt-4 space-y-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700" data-testid="filter-more-filters-content">
-          {showMeals && (
-            <TaxonomyChips
-              items={allMeals}
-              selectedIds={mealIds}
-              label="Meals"
-              onToggle={toggleMeal}
-              counts={counts?.mealCounts}
-            />
-          )}
-
-          {showCourses && (
-            <TaxonomyChips
-              items={allCourses}
-              selectedIds={courseIds}
-              label="Courses"
-              onToggle={toggleCourse}
-              counts={counts?.courseCounts}
-            />
-          )}
-
-          {showPreparations && (
-            <TaxonomyChips
-              items={allPreparations}
-              selectedIds={preparationIds}
-              label="Preparations"
-              onToggle={togglePreparation}
-              counts={counts?.preparationCounts}
-            />
-          )}
+          {/* Render taxonomy chips via config iteration */}
+          {TAXONOMY_CONFIGS.map((cfg) => {
+            if (!shouldShow(cfg.filterKey)) return null
+            const { ids, items } = filterValuesMap[cfg.key]
+            return (
+              <TaxonomyChips
+                key={cfg.key}
+                items={items}
+                selectedIds={ids}
+                label={cfg.label}
+                onToggle={createToggle(cfg.filterKey)}
+                counts={counts ? (counts as any)[cfg.countKey] : undefined}
+              />
+            )
+          })}
 
           {showServings && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-300">Servings</h4>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="Min"
-                  value={minServings ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    const n = Number(v)
-                    updateSearch({ minServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
-                  }}
-                  data-testid="filter-min-servings"
-                  className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder-gray-500"
-                />
-                <span className="text-gray-600">–</span>
-                <input
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="Max"
-                  value={maxServings ?? ''}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    const n = Number(v)
-                    updateSearch({ maxServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
-                  }}
-                  data-testid="filter-max-servings"
-                  className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder-gray-500"
-                />
-              </div>
-            </div>
+            <ServingsRangeInput
+              minServings={minServings}
+              maxServings={maxServings}
+              onMinChange={(v) => updateSearch({ minServings: v })}
+              onMaxChange={(v) => updateSearch({ maxServings: v })}
+            />
           )}
         </div>
       )}

@@ -1,4 +1,5 @@
 import { type FilterConfig } from '@/lib/filterConfig'
+import { DROPDOWN_CONFIGS } from './filterConfigs'
 
 interface Classification {
   id: string
@@ -26,7 +27,8 @@ interface FilterRow2DropdownsProps {
 /**
  * FilterRow2Dropdowns - Primary filter dropdowns
  *
- * Displays dropdown selectors for Classification (Category) and Source filters.
+ * Displays dropdown selectors for Classification and Source filters.
+ * Rendered via DROPDOWN_CONFIGS to eliminate duplication.
  * Counts can be optionally displayed next to each option if provided.
  * Filters rendered are configurable via filterConfig.
  */
@@ -39,46 +41,43 @@ export function FilterRow2Dropdowns({
   filterConfig,
   counts,
 }: FilterRow2DropdownsProps) {
-  const showClassification = !filterConfig || filterConfig.row2Filters.includes('classificationId')
-  const showSource = !filterConfig || filterConfig.row2Filters.includes('sourceId')
+  // Map filter data by key for easy access
+  const dataMap = {
+    classification: { value: classificationId, options: classifications },
+    source: { value: sourceId, options: sources },
+  }
+
+  const shouldShowFilter = (filterKey: string) =>
+    !filterConfig || filterConfig.row2Filters.includes(filterKey as any)
 
   return (
     <div className="flex flex-wrap gap-2" data-testid="filter-row-2-dropdowns">
-      {showClassification && (
-        <select
-          value={classificationId ?? ''}
-          onChange={(e) => updateSearch({ classificationId: e.target.value || undefined })}
-          aria-label="Filter by category"
-          data-testid="filter-dropdown-classification"
-          className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        >
-          <option value="">All Categories</option>
-          {classifications?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-              {counts?.classificationCounts?.[c.id] ? ` (${counts.classificationCounts[c.id]})` : ''}
-            </option>
-          ))}
-        </select>
-      )}
+      {DROPDOWN_CONFIGS.map((cfg) => {
+        if (!shouldShowFilter(cfg.filterKey)) return null
 
-      {showSource && (
-        <select
-          value={sourceId ?? ''}
-          onChange={(e) => updateSearch({ sourceId: e.target.value || undefined })}
-          aria-label="Filter by source"
-          data-testid="filter-dropdown-source"
-          className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-        >
-          <option value="">All Sources</option>
-          {sources?.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-              {counts?.sourceCounts?.[s.id] ? ` (${counts.sourceCounts[s.id]})` : ''}
-            </option>
-          ))}
-        </select>
-      )}
+        const data = dataMap[cfg.key]
+        const { value, options } = data
+
+        return (
+          <select
+            key={cfg.key}
+            value={value ?? ''}
+            onChange={(e) => updateSearch({ [cfg.filterKey]: e.target.value || undefined })}
+            aria-label={cfg.ariaLabel}
+            data-testid={cfg.dataTestId}
+            className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          >
+            <option value="">{cfg.placeholder}</option>
+            {options?.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.name}
+                {(counts as any)?.[cfg.countKey]?.[opt.id] ?
+                  ` (${(counts as any)[cfg.countKey][opt.id]})` : ''}
+              </option>
+            ))}
+          </select>
+        )
+      })}
     </div>
   )
 }
