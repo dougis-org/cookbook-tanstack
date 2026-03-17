@@ -1,12 +1,16 @@
-import { useRef, useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X, Heart, User, Image } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react'
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
 import { useSession } from '@/lib/auth-client'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
+import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
+import { FilterRow2Dropdowns } from '@/components/recipes/filters/FilterRow2Dropdowns'
+import { FilterMoreFiltersPanel } from '@/components/recipes/filters/FilterMoreFiltersPanel'
+import filterConfig from '@/lib/filterConfig'
 
 const searchSchema = z.object({
   search: z.string().optional(),
@@ -31,19 +35,6 @@ export const Route = createFileRoute('/recipes/')({
   component: RecipesPage,
   validateSearch: searchSchema,
 })
-
-function FilterToggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-        active ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 /** Badge showing an active filter with an X to remove it. */
 function ActiveBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
@@ -150,12 +141,6 @@ function RecipesPage() {
 
   function clearFilters() {
     navigate({ search: (prev) => ({ search: prev.search, sort: prev.sort, page: 1, pageSize: prev.pageSize }) })
-  }
-
-  function toggleArrayFilter(key: 'mealIds' | 'courseIds' | 'preparationIds', current: string[] | undefined, id: string) {
-    const arr = current ?? []
-    const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
-    updateSearch({ [key]: next.length ? next : undefined })
   }
 
   // Build active filter badge list for display
@@ -266,92 +251,38 @@ function RecipesPage() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {isLoggedIn && (
-            <>
-              <FilterToggle active={!!myRecipes} onClick={() => updateSearch({ myRecipes: myRecipes ? undefined : true })}>
-                <User className="w-3.5 h-3.5" />
-                My Recipes
-              </FilterToggle>
-              <FilterToggle active={!!markedByMe} onClick={() => updateSearch({ markedByMe: markedByMe ? undefined : true })}>
-                <Heart className="w-3.5 h-3.5" />
-                Favorites
-              </FilterToggle>
-            </>
-          )}
-          <FilterToggle active={!!hasImage} onClick={() => updateSearch({ hasImage: hasImage ? undefined : true })}>
-            <Image className="w-3.5 h-3.5" />
-            Has Image
-          </FilterToggle>
+        {/* Row 1: Quick Filters */}
+        <FilterRow1Quick
+          myRecipes={myRecipes}
+          markedByMe={markedByMe}
+          hasImage={hasImage}
+          isLoggedIn={isLoggedIn}
+          updateSearch={updateSearch}
+        />
 
-          {/* Classification */}
-          <select
-            value={classificationId ?? ''}
-            onChange={(e) => updateSearch({ classificationId: e.target.value || undefined })}
-            aria-label="Filter by category"
-            className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          >
-            <option value="">All Categories</option>
-            {classifications?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+        {/* Row 2: Primary Dropdowns */}
+        <FilterRow2Dropdowns
+          classificationId={classificationId}
+          sourceId={sourceId}
+          classifications={classifications}
+          sources={sources}
+          updateSearch={updateSearch}
+          filterConfig={filterConfig}
+        />
 
-          {/* Source */}
-          <select
-            value={sourceId ?? ''}
-            onChange={(e) => updateSearch({ sourceId: e.target.value || undefined })}
-            aria-label="Filter by source"
-            className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          >
-            <option value="">All Sources</option>
-            {sources?.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </div>
-
-        {/* Taxonomy chips */}
-        <div className="flex flex-wrap gap-2">
-          {allMeals?.map((meal) => (
-            <button key={meal.id} data-testid="taxonomy-filter-chip"
-              onClick={() => toggleArrayFilter('mealIds', mealIds, meal.id)}
-              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${mealIds?.includes(meal.id) ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'}`}
-            >{meal.name}</button>
-          ))}
-          {allCourses?.map((course) => (
-            <button key={course.id} data-testid="taxonomy-filter-chip"
-              onClick={() => toggleArrayFilter('courseIds', courseIds, course.id)}
-              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${courseIds?.includes(course.id) ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'}`}
-            >{course.name}</button>
-          ))}
-          {allPreparations?.map((prep) => (
-            <button key={prep.id} data-testid="taxonomy-filter-chip"
-              onClick={() => toggleArrayFilter('preparationIds', preparationIds, prep.id)}
-              className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${preparationIds?.includes(prep.id) ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'}`}
-            >{prep.name}</button>
-          ))}
-        </div>
-
-        {/* Servings range */}
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-400">Servings:</span>
-          <input type="number" min={1} step={1} placeholder="Min"
-            value={minServings ?? ''}
-            onChange={(e) => {
-              const v = e.target.value
-              const n = Number(v)
-              updateSearch({ minServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
-            }}
-            className="w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          />
-          <span className="text-gray-600">–</span>
-          <input type="number" min={1} step={1} placeholder="Max"
-            value={maxServings ?? ''}
-            onChange={(e) => {
-              const v = e.target.value
-              const n = Number(v)
-              updateSearch({ maxServings: v && Number.isInteger(n) && n > 0 ? n : undefined })
-            }}
-            className="w-20 px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          />
-        </div>
+        {/* More Filters Panel */}
+        <FilterMoreFiltersPanel
+          mealIds={mealIds}
+          courseIds={courseIds}
+          preparationIds={preparationIds}
+          minServings={minServings}
+          maxServings={maxServings}
+          allMeals={allMeals}
+          allCourses={allCourses}
+          allPreparations={allPreparations}
+          updateSearch={updateSearch}
+          filterConfig={filterConfig}
+        />
 
         {/* Active filter badges */}
         {activeBadges.length > 0 && (
