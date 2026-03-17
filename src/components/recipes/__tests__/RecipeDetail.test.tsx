@@ -147,6 +147,21 @@ describe("RecipeDetail", () => {
     }
   })
 
+  it("does not render image section when imageUrl is absent", () => {
+    render(<RecipeDetail recipe={makeRecipe({ imageUrl: null })} />)
+
+    expect(screen.queryByText("No Image Available")).not.toBeInTheDocument()
+    expect(screen.queryByRole("img")).not.toBeInTheDocument()
+  })
+
+  it("renders image when imageUrl is provided", () => {
+    render(<RecipeDetail recipe={makeRecipe({ imageUrl: "https://example.com/photo.jpg", name: "Pasta" })} />)
+
+    const img = screen.getByRole("img", { name: "Pasta" })
+    expect(img).toBeInTheDocument()
+    expect(img).toHaveAttribute("src", "https://example.com/photo.jpg")
+  })
+
   it.each([
     {
       label: "as a link when sourceUrl is provided",
