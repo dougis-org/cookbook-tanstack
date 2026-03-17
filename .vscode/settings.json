@@ -9,7 +9,7 @@
     "**/routeTree.gen.ts": true
   },
   "peacock.remoteColor": "#42543d",
-  "snyk.advanced.autoSelectOrganization": false,
+  "snyk.advanced.autoSelectOrganization": true,
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#7a6af8",
     "activityBar.background": "#7a6af8",

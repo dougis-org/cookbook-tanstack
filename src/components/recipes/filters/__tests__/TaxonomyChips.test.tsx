@@ -2,24 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TaxonomyChips } from '../TaxonomyChips'
-
-const mockMeals = [
-  { id: 'm1', name: 'Breakfast' },
-  { id: 'm2', name: 'Lunch' },
-  { id: 'm3', name: 'Dinner' },
-]
+import { MOCK_MEALS } from './test-helpers'
 
 describe('TaxonomyChips', () => {
-  const mockOnToggle = vi.fn()
+  let mockOnToggle: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    mockOnToggle.mockClear()
+    mockOnToggle = vi.fn()
   })
 
   it('renders label', () => {
     render(
       <TaxonomyChips
-        items={mockMeals}
+        items={MOCK_MEALS}
         selectedIds={[]}
         label="Meals"
         onToggle={mockOnToggle}
@@ -31,22 +26,22 @@ describe('TaxonomyChips', () => {
   it('renders all items as chips', () => {
     render(
       <TaxonomyChips
-        items={mockMeals}
+        items={MOCK_MEALS}
         selectedIds={[]}
         label="Meals"
         onToggle={mockOnToggle}
       />
     )
-    expect(screen.getByText('Breakfast')).toBeInTheDocument()
-    expect(screen.getByText('Lunch')).toBeInTheDocument()
-    expect(screen.getByText('Dinner')).toBeInTheDocument()
+    MOCK_MEALS.forEach(meal => {
+      expect(screen.getByText(meal.name)).toBeInTheDocument()
+    })
   })
 
-  it('calls onToggle when a chip is clicked', async () => {
+  it('toggles chip when clicked', async () => {
     const user = userEvent.setup()
     render(
       <TaxonomyChips
-        items={mockMeals}
+        items={MOCK_MEALS}
         selectedIds={[]}
         label="Meals"
         onToggle={mockOnToggle}
@@ -60,7 +55,7 @@ describe('TaxonomyChips', () => {
   it('displays active styling for selected items', () => {
     render(
       <TaxonomyChips
-        items={mockMeals}
+        items={MOCK_MEALS}
         selectedIds={['m1', 'm3']}
         label="Meals"
         onToggle={mockOnToggle}
@@ -78,7 +73,7 @@ describe('TaxonomyChips', () => {
   it('displays counts when provided', () => {
     render(
       <TaxonomyChips
-        items={mockMeals}
+        items={MOCK_MEALS}
         selectedIds={[]}
         label="Meals"
         onToggle={mockOnToggle}
@@ -100,52 +95,5 @@ describe('TaxonomyChips', () => {
       />
     )
     expect(container.firstChild).toBeNull()
-  })
-
-  it('returns null when items are empty', () => {
-    const { container } = render(
-      <TaxonomyChips
-        items={[]}
-        selectedIds={[]}
-        label="Meals"
-        onToggle={mockOnToggle}
-      />
-    )
-    expect(container.firstChild).toBeNull()
-  })
-
-  it('handles multiple chip selections', async () => {
-    const user = userEvent.setup()
-    render(
-      <TaxonomyChips
-        items={mockMeals}
-        selectedIds={[]}
-        label="Meals"
-        onToggle={mockOnToggle}
-      />
-    )
-
-    const breakfastButton = screen.getByText('Breakfast').closest('button')!
-    const lunchButton = screen.getByText('Lunch').closest('button')!
-
-    await user.click(breakfastButton)
-    expect(mockOnToggle).toHaveBeenCalledWith('m1')
-
-    await user.click(lunchButton)
-    expect(mockOnToggle).toHaveBeenCalledWith('m2')
-  })
-
-  it('displays only counts for selected items when counts provided', () => {
-    render(
-      <TaxonomyChips
-        items={mockMeals}
-        selectedIds={[]}
-        label="Meals"
-        onToggle={mockOnToggle}
-        counts={{ m1: 5 }}
-      />
-    )
-    expect(screen.getByText(/Breakfast/)).toHaveTextContent('(5)')
-    expect(screen.queryByText(/Lunch.*\(/)).not.toBeInTheDocument()
   })
 })

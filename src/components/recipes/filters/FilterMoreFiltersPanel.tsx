@@ -59,27 +59,27 @@ export function FilterMoreFiltersPanel({
 }: FilterMoreFiltersPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const toggleMeal = (id: string) => {
-    const arr = mealIds ?? []
-    const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
-    updateSearch({ mealIds: next.length ? next : undefined })
+  // Generic toggle handler factory for taxonomy items
+  const createToggle = (
+    currentIds: string[] | undefined,
+    updateKey: 'mealIds' | 'courseIds' | 'preparationIds',
+  ) => {
+    return (id: string) => {
+      const arr = currentIds ?? []
+      const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
+      updateSearch({ [updateKey]: next.length ? next : undefined })
+    }
   }
 
-  const toggleCourse = (id: string) => {
-    const arr = courseIds ?? []
-    const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
-    updateSearch({ courseIds: next.length ? next : undefined })
-  }
+  const toggleMeal = createToggle(mealIds, 'mealIds')
+  const toggleCourse = createToggle(courseIds, 'courseIds')
+  const togglePreparation = createToggle(preparationIds, 'preparationIds')
 
-  const togglePreparation = (id: string) => {
-    const arr = preparationIds ?? []
-    const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
-    updateSearch({ preparationIds: next.length ? next : undefined })
-  }
-
-  const showMeals = !filterConfig || filterConfig.allFilters.includes('mealIds')
-  const showCourses = !filterConfig || filterConfig.allFilters.includes('courseIds')
-  const showPreparations = !filterConfig || filterConfig.allFilters.includes('preparationIds')
+  // Determine which sections to show based on config
+  const shouldShow = (key: string) => !filterConfig || filterConfig.allFilters.includes(key as any)
+  const showMeals = shouldShow('mealIds')
+  const showCourses = shouldShow('courseIds')
+  const showPreparations = shouldShow('preparationIds')
   const showServings =
     (!filterConfig || filterConfig.allFilters.includes('minServings')) &&
     (!filterConfig || filterConfig.allFilters.includes('maxServings'))

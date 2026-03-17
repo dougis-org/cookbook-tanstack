@@ -2,155 +2,109 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterRow1Quick } from '../FilterRow1Quick'
+import { createDefaultFilterRow1QuickProps, QUICK_FILTER_TOGGLE_CASES } from './test-helpers'
 
 describe('FilterRow1Quick', () => {
-  const mockUpdateSearch = vi.fn()
+  let mockUpdateSearch: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    mockUpdateSearch.mockClear()
+    mockUpdateSearch = vi.fn()
   })
 
-  it('renders Has Image toggle always', () => {
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={false}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    expect(screen.getByText('Has Image')).toBeInTheDocument()
+  describe('visibility', () => {
+    it('renders Has Image toggle always', () => {
+      render(
+        <FilterRow1Quick
+          {...createDefaultFilterRow1QuickProps()}
+          updateSearch={mockUpdateSearch}
+        />
+      )
+      expect(screen.getByText('Has Image')).toBeInTheDocument()
+    })
+
+    it('shows My Recipes and Favorites toggles when logged in', () => {
+      render(
+        <FilterRow1Quick
+          {...createDefaultFilterRow1QuickProps()}
+          isLoggedIn={true}
+          updateSearch={mockUpdateSearch}
+        />
+      )
+      expect(screen.getByText('My Recipes')).toBeInTheDocument()
+      expect(screen.getByText('Favorites')).toBeInTheDocument()
+      expect(screen.getByText('Has Image')).toBeInTheDocument()
+    })
+
+    it('hides My Recipes and Favorites toggles when not logged in', () => {
+      render(
+        <FilterRow1Quick
+          {...createDefaultFilterRow1QuickProps()}
+          isLoggedIn={false}
+          updateSearch={mockUpdateSearch}
+        />
+      )
+      expect(screen.queryByText('My Recipes')).not.toBeInTheDocument()
+      expect(screen.queryByText('Favorites')).not.toBeInTheDocument()
+    })
   })
 
-  it('shows My Recipes and Favorites toggles when logged in', () => {
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    expect(screen.getByText('My Recipes')).toBeInTheDocument()
-    expect(screen.getByText('Favorites')).toBeInTheDocument()
-    expect(screen.getByText('Has Image')).toBeInTheDocument()
-  })
+  // Data-driven toggle tests
+  describe.each(QUICK_FILTER_TOGGLE_CASES)(
+    'toggle: %s',
+    (label, icon, state, updateKey) => {
+      const isLoggedIn = label === 'My Recipes' || label === 'Favorites'
 
-  it('hides My Recipes and Favorites toggles when not logged in', () => {
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={false}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    expect(screen.queryByText('My Recipes')).not.toBeInTheDocument()
-    expect(screen.queryByText('Favorites')).not.toBeInTheDocument()
-  })
+      it(`toggles ${label} filter on click`, async () => {
+        const user = userEvent.setup()
+        render(
+          <FilterRow1Quick
+            {...createDefaultFilterRow1QuickProps()}
+            isLoggedIn={isLoggedIn}
+            updateSearch={mockUpdateSearch}
+          />
+        )
+        const button = screen.getByText(label).closest('button')!
+        await user.click(button)
+        expect(mockUpdateSearch).toHaveBeenCalledWith({ [updateKey]: true })
+      })
 
-  it('toggles My Recipes filter on click', async () => {
-    const user = userEvent.setup()
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const button = screen.getByText('My Recipes').closest('button')!
-    await user.click(button)
-    expect(mockUpdateSearch).toHaveBeenCalledWith({ myRecipes: true })
-  })
+      it(`deactivates ${label} when clicked while active`, async () => {
+        const user = userEvent.setup()
+        const activeState = {
+          ...createDefaultFilterRow1QuickProps(),
+          isLoggedIn,
+          [updateKey]: true,
+          updateSearch: mockUpdateSearch,
+        }
+        render(<FilterRow1Quick {...activeState} />)
+        const button = screen.getByText(label).closest('button')!
+        await user.click(button)
+        expect(mockUpdateSearch).toHaveBeenCalledWith({ [updateKey]: undefined })
+      })
 
-  it('toggles Favorites filter on click', async () => {
-    const user = userEvent.setup()
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const button = screen.getByText('Favorites').closest('button')!
-    await user.click(button)
-    expect(mockUpdateSearch).toHaveBeenCalledWith({ markedByMe: true })
-  })
+      it(`displays active state with cyan styling for ${label}`, () => {
+        const props = {
+          ...createDefaultFilterRow1QuickProps(),
+          isLoggedIn,
+          updateSearch: mockUpdateSearch,
+          [updateKey]: true,
+        }
+        const { container } = render(<FilterRow1Quick {...props} />)
+        const button = screen.getByText(label).closest('button')!
+        expect(button).toHaveClass('bg-cyan-500/20', 'border-cyan-500', 'text-cyan-300')
+      })
 
-  it('toggles Has Image filter on click', async () => {
-    const user = userEvent.setup()
-    render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={false}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const button = screen.getByText('Has Image').closest('button')!
-    await user.click(button)
-    expect(mockUpdateSearch).toHaveBeenCalledWith({ hasImage: true })
-  })
-
-  it('deactivates My Recipes when clicked while active', async () => {
-    const user = userEvent.setup()
-    render(
-      <FilterRow1Quick
-        myRecipes={true}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const button = screen.getByText('My Recipes').closest('button')!
-    await user.click(button)
-    expect(mockUpdateSearch).toHaveBeenCalledWith({ myRecipes: undefined })
-  })
-
-  it('displays active state with cyan styling', () => {
-    const { container } = render(
-      <FilterRow1Quick
-        myRecipes={true}
-        markedByMe={false}
-        hasImage={true}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const buttons = container.querySelectorAll('button')
-    
-    // My Recipes button should be active
-    const myRecipesButton = Array.from(buttons).find(btn => btn.textContent.includes('My Recipes'))
-    expect(myRecipesButton).toHaveClass('bg-cyan-500/20', 'border-cyan-500', 'text-cyan-300')
-    
-    // Has Image button should be active
-    const hasImageButton = Array.from(buttons).find(btn => btn.textContent.includes('Has Image'))
-    expect(hasImageButton).toHaveClass('bg-cyan-500/20', 'border-cyan-500', 'text-cyan-300')
-  })
-
-  it('displays inactive state with slate styling', () => {
-    const { container } = render(
-      <FilterRow1Quick
-        myRecipes={false}
-        markedByMe={false}
-        hasImage={false}
-        isLoggedIn={true}
-        updateSearch={mockUpdateSearch}
-      />
-    )
-    const buttons = container.querySelectorAll('button')
-    
-    // My Recipes button should be inactive
-    const myRecipesButton = Array.from(buttons).find(btn => btn.textContent.includes('My Recipes'))
-    expect(myRecipesButton).toHaveClass('bg-slate-800', 'border-slate-700', 'text-gray-400')
-  })
+      it(`displays inactive state with slate styling for ${label}`, () => {
+        const { container } = render(
+          <FilterRow1Quick
+            {...createDefaultFilterRow1QuickProps()}
+            isLoggedIn={isLoggedIn}
+            updateSearch={mockUpdateSearch}
+          />
+        )
+        const button = screen.getByText(label).closest('button')!
+        expect(button).toHaveClass('bg-slate-800', 'border-slate-700', 'text-gray-400')
+      })
+    },
+  )
 })
