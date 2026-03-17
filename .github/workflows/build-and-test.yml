@@ -41,14 +41,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          # For same-repo PRs, check out the PR head SHA so we can commit and push back.
+          # For fork PRs and push events, use the default ref (github.ref).
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: package.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm install
