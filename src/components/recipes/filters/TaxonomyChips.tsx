@@ -35,6 +35,7 @@ export function TaxonomyChips({
       <div className="flex flex-wrap gap-2">
         {items.map((item) => {
           const isSelected = selectedIds?.includes(item.id)
+          const count = counts?.[item.id]
           return (
             <button
               type="button"
@@ -48,7 +49,9 @@ export function TaxonomyChips({
               }`}
             >
               {item.name}
-              {counts?.[item.id] && <span className="ml-1 text-xs opacity-75">({counts[item.id]})</span>}
+              {count !== undefined && (
+                <span className="ml-1 text-xs opacity-75">({count})</span>
+              )}
             </button>
           )
         })}
