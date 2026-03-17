@@ -92,7 +92,8 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     if (optionValue) {
       await categorySelect.selectOption(optionValue);
       await page.waitForURL(/classificationId=/);
-      await expect(page.locator('[data-testid="recipe-card"]')).toBeDefined();
+      const firstRecipeCard = page.getByTestId("recipe-card").first();
+      await expect(firstRecipeCard).toBeVisible();
     }
   });
 
