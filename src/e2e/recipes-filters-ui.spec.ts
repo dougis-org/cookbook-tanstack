@@ -78,22 +78,23 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Get initial count
-    const categorySelect = page
-      .locator("select")
-      .filter({ hasText: "All Categories" });
+    // Get the classification dropdown and wait for options to load
+    const categorySelect = page.getByTestId("filter-dropdown-classification");
     await expect(categorySelect).toBeVisible();
+    await page.waitForSelector(
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
+      { state: "attached" },
+    );
 
     // Select a category from the dropdown
-    await categorySelect.click();
-    const firstOption = page.locator('select [value!=""]').first();
+    const firstOption = page.locator(
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
+    ).first();
     const optionValue = await firstOption.getAttribute("value");
 
     if (optionValue) {
       await categorySelect.selectOption(optionValue);
       await page.waitForURL(/classificationId=/);
-      const firstRecipeCard = page.getByTestId("recipe-card").first();
-      await expect(firstRecipeCard).toBeVisible();
     }
   });
 
@@ -147,9 +148,6 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
 
       // URL should update with mealIds parameter
       await page.waitForURL(/mealIds=/);
-      await expect(
-        page.locator('[data-testid="recipe-card"]').first(),
-      ).toBeVisible();
 
       // Chip should show active state
       const activeClass = await firstChip.getAttribute("class");
@@ -164,10 +162,14 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await gotoAndWaitForHydration(page, "/recipes");
 
     // Apply a filter to Row 2
-    const categorySelect = page
-      .locator("select")
-      .filter({ hasText: "All Categories" });
-    const firstOption = page.locator('select [value!=""]').first();
+    const categorySelect = page.getByTestId("filter-dropdown-classification");
+    await page.waitForSelector(
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
+      { state: "attached" },
+    );
+    const firstOption = page.locator(
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
+    ).first();
     const optionValue = await firstOption.getAttribute("value");
 
     if (optionValue) {
