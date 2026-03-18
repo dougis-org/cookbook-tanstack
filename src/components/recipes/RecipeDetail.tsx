@@ -40,19 +40,15 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header Image */}
-        <div className="h-96 bg-gray-200 dark:bg-gray-700">
-          {recipe.imageUrl ? (
+        {recipe.imageUrl && (
+          <div data-testid="recipe-detail-image" className="h-96 bg-gray-200 dark:bg-gray-700">
             <img
               src={recipe.imageUrl}
               alt={recipe.name}
               className="w-full h-full object-cover"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              No Image Available
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Recipe Content */}
         <div className="p-8">
