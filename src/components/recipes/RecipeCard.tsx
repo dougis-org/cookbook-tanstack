@@ -10,19 +10,15 @@ interface RecipeCardProps {
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-      <div className="h-48 bg-gray-200 dark:bg-gray-700">
-        {recipe.imageUrl ? (
+      {recipe.imageUrl && (
+        <div data-testid="recipe-card-image" className="h-48 bg-gray-200 dark:bg-gray-700">
           <img
             src={recipe.imageUrl}
             alt={recipe.name}
             className="w-full h-full object-cover"
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            No Image
-          </div>
-        )}
-      </div>
+        </div>
+      )}
       <div className="p-4">
         {recipe.classificationId && recipe.classificationName && (
           <div className="mb-2">

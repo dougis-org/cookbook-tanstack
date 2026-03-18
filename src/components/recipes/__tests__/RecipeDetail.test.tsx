@@ -148,6 +148,25 @@ describe("RecipeDetail", () => {
   })
 
   it.each([
+    { label: "null imageUrl", imageUrl: null },
+    { label: "empty string imageUrl", imageUrl: "" },
+  ])("does not render image section when imageUrl is $label", ({ imageUrl }) => {
+    render(<RecipeDetail recipe={makeRecipe({ imageUrl })} />)
+
+    expect(screen.queryByTestId("recipe-detail-image")).not.toBeInTheDocument()
+    expect(screen.queryByRole("img")).not.toBeInTheDocument()
+    expect(screen.queryByText("No Image Available")).not.toBeInTheDocument()
+  })
+
+  it("renders image section and img when imageUrl is provided", () => {
+    render(<RecipeDetail recipe={makeRecipe({ imageUrl: "https://example.com/photo.jpg", name: "Pasta" })} />)
+
+    expect(screen.getByTestId("recipe-detail-image")).toBeInTheDocument()
+    const img = screen.getByRole("img", { name: "Pasta" })
+    expect(img).toHaveAttribute("src", "https://example.com/photo.jpg")
+  })
+
+  it.each([
     {
       label: "as a link when sourceUrl is provided",
       props: { sourceName: "Bon Appétit", sourceUrl: "https://bonappetit.com" },
