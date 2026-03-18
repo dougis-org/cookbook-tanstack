@@ -51,7 +51,7 @@ describe('FilterRow1Quick', () => {
   // Data-driven toggle tests
   describe.each(QUICK_FILTER_TOGGLE_CASES)(
     'toggle: %s',
-    (label, icon, state, updateKey) => {
+    (label, _icon, _state, updateKey) => {
       const isLoggedIn = label === 'My Recipes' || label === 'Favorites'
 
       it(`toggles ${label} filter on click`, async () => {
@@ -89,13 +89,13 @@ describe('FilterRow1Quick', () => {
           updateSearch: mockUpdateSearch,
           [updateKey]: true,
         }
-        const { container } = render(<FilterRow1Quick {...props} />)
+        render(<FilterRow1Quick {...props} />)
         const button = screen.getByText(label).closest('button')!
         expect(button).toHaveClass('bg-cyan-500/20', 'border-cyan-500', 'text-cyan-300')
       })
 
       it(`displays inactive state with slate styling for ${label}`, () => {
-        const { container } = render(
+        render(
           <FilterRow1Quick
             {...createDefaultFilterRow1QuickProps()}
             isLoggedIn={isLoggedIn}

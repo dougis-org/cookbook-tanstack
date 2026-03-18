@@ -9,7 +9,7 @@
     "**/routeTree.gen.ts": true
   },
   "peacock.remoteColor": "#42543d",
-  "snyk.advanced.autoSelectOrganization": true,
+  "snyk.advanced.autoSelectOrganization": false,
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#7a6af8",
     "activityBar.background": "#7a6af8",
@@ -29,6 +29,5 @@
     "titleBar.inactiveBackground": "#4f39f699",
     "titleBar.inactiveForeground": "#e7e7e799"
   },
-  "peacock.color": "#4F39F6",
-  "snyk.advanced.organization": "3191d5e0-24a6-4c8f-b934-a88c1a5cfb2f"
+  "peacock.color": "#4F39F6"
 }

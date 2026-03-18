@@ -1,4 +1,4 @@
-import { type FilterConfig } from '@/lib/filterConfig'
+import type { FilterConfig, Row2FilterKey } from '@/lib/filterConfig'
 import { DROPDOWN_CONFIGS } from './filterConfigs'
 
 interface Classification {
@@ -47,8 +47,8 @@ export function FilterRow2Dropdowns({
     source: { value: sourceId, options: sources },
   }
 
-  const shouldShowFilter = (filterKey: string) =>
-    !filterConfig || filterConfig.row2Filters.includes(filterKey as any)
+  const shouldShowFilter = (filterKey: Row2FilterKey) =>
+    !filterConfig || filterConfig.row2Filters.includes(filterKey)
 
   return (
     <div className="flex flex-wrap gap-2" data-testid="filter-row-2-dropdowns">
@@ -71,8 +71,10 @@ export function FilterRow2Dropdowns({
             {options?.map((opt) => (
               <option key={opt.id} value={opt.id}>
                 {opt.name}
-                {(counts as any)?.[cfg.countKey]?.[opt.id] ?
-                  ` (${(counts as any)[cfg.countKey][opt.id]})` : ''}
+                {(() => {
+                  const count = (counts as any)?.[cfg.countKey]?.[opt.id]
+                  return count !== undefined ? ` (${count})` : ''
+                })()}
               </option>
             ))}
           </select>

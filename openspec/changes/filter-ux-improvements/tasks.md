@@ -44,7 +44,7 @@
   - Display counts next to each taxonomy chip
   - Include min/max servings number inputs (copy from existing implementation)
   - Style with distinct background/border to separate from Row 2
-  - Render filters based on `filterConfig.MORE_FILTERS_ITEMS`
+  - Render filters based on `filterConfig.ALL_FILTERS_ITEMS`
 - [x] 4.2 Create `src/components/recipes/filters/TaxonomyChips.tsx` reusable component
   - Accept props: `items`, `selectedIds`, `label`, `onToggle`, `counts` (optional)
   - Render items as selectable chips with consistent styling

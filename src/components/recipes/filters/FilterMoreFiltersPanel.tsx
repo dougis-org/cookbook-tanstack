@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react'
 import { TaxonomyChips } from './TaxonomyChips'
 import { ServingsRangeInput } from './ServingsRangeInput'
 import { TAXONOMY_CONFIGS } from './filterConfigs'
-import { type FilterConfig } from '@/lib/filterConfig'
+import type { FilterConfig, AllFiltersKey } from '@/lib/filterConfig'
 
 interface TaxonomyItem {
   id: string
@@ -34,12 +34,6 @@ interface FilterMoreFiltersPanelProps {
   }
 }
 
-// Map taxonomy items by key for easy lookup
-const TAXONOMY_ITEMS_MAP = {
-  meals: 'allMeals' as const,
-  courses: 'allCourses' as const,
-  preparations: 'allPreparations' as const,
-}
 
 /**
  * FilterMoreFiltersPanel - Collapsible advanced filters panel
@@ -92,7 +86,8 @@ export function FilterMoreFiltersPanel({
   }
 
   // Check if filter config allows a given filter
-  const shouldShow = (filterKey: string) => !filterConfig || filterConfig.allFilters.includes(filterKey as any)
+  const shouldShow = (filterKey: AllFiltersKey) =>
+    !filterConfig || filterConfig.allFilters.includes(filterKey)
 
   // Check if any filters are currently applied
   const hasAnyFilters =
@@ -100,15 +95,18 @@ export function FilterMoreFiltersPanel({
       const filterKey = cfg.filterKey
       return shouldShow(filterKey) && (filterValuesMap[cfg.key].ids?.length ?? 0) > 0
     }) ||
-    (shouldShow('minServings') || shouldShow('maxServings')) &&
-      (minServings || maxServings)
+    (shouldShow('minServings') && minServings !== undefined) ||
+    (shouldShow('maxServings') && maxServings !== undefined)
 
-  const showServings = shouldShow('minServings') && shouldShow('maxServings')
+  const showMinServings = shouldShow('minServings')
+  const showMaxServings = shouldShow('maxServings')
+  const showServings = showMinServings || showMaxServings
 
   return (
     <div className="border-t border-slate-700 pt-3" data-testid="filter-more-filters-panel">
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        type="button"
+        onClick={() => setIsExpanded((v) => !v)}
         className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
         aria-expanded={isExpanded}
         data-testid="filter-more-filters-toggle"
@@ -140,6 +138,8 @@ export function FilterMoreFiltersPanel({
             <ServingsRangeInput
               minServings={minServings}
               maxServings={maxServings}
+              showMin={showMinServings}
+              showMax={showMaxServings}
               onMinChange={(v) => updateSearch({ minServings: v })}
               onMaxChange={(v) => updateSearch({ maxServings: v })}
             />

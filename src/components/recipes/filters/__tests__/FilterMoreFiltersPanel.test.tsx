@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterMoreFiltersPanel } from '../FilterMoreFiltersPanel'
+import type { FilterConfig } from '@/lib/filterConfig'
 import {
   createDefaultFilterMoreFiltersPanelProps,
   createMockUpdateSearch,
@@ -195,7 +196,11 @@ describe('FilterMoreFiltersPanel', () => {
 
   it('respects filterConfig for which filters to display', async () => {
     const user = userEvent.setup()
-    const filterConfig = { quickFilters: [], row2Filters: [], allFilters: ['mealIds'] }
+    const filterConfig: FilterConfig = {
+      quickFilters: [],
+      row2Filters: [],
+      allFilters: ['mealIds'],
+    }
     render(
       <FilterMoreFiltersPanel
         {...createDefaultFilterMoreFiltersPanelProps()}

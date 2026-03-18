@@ -71,7 +71,7 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
 
     // Toggle off
     await myRecipesButton.click();
-    await page.waitForURL(/myRecipes=(?!true)/);
+    await expect(page).not.toHaveURL(/myRecipes=true/);
   });
 
   test("should filter by Classification (Category)", async ({ page }) => {
@@ -143,13 +143,13 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
 
     if (chipCount > 0) {
       const firstChip = mealChips.first();
-      const chipText = await firstChip.textContent();
-
       await firstChip.click();
 
       // URL should update with mealIds parameter
       await page.waitForURL(/mealIds=/);
-      await expect(page.locator('[data-testid="recipe-card"]')).toBeDefined();
+      await expect(
+        page.locator('[data-testid="recipe-card"]').first(),
+      ).toBeVisible();
 
       // Chip should show active state
       const activeClass = await firstChip.getAttribute("class");
