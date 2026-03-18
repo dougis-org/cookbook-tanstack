@@ -36,6 +36,7 @@ describe("RecipeCard", () => {
 
     expect(screen.queryByTestId("recipe-card-image")).not.toBeInTheDocument()
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
+    expect(screen.queryByText("No Image")).not.toBeInTheDocument()
   })
 
   it("renders image container and img when imageUrl is provided", () => {

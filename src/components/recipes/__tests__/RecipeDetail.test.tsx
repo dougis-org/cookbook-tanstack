@@ -155,6 +155,7 @@ describe("RecipeDetail", () => {
 
     expect(screen.queryByTestId("recipe-detail-image")).not.toBeInTheDocument()
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
+    expect(screen.queryByText("No Image Available")).not.toBeInTheDocument()
   })
 
   it("renders image section and img when imageUrl is provided", () => {
