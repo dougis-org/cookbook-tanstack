@@ -55,15 +55,6 @@ export function FilterMoreFiltersPanel({
     preparations: { ids: preparationIds, items: allPreparations },
   }
 
-  function createToggle(updateKey: 'mealIds' | 'courseIds' | 'preparationIds') {
-    return (id: string) => {
-      const cfg = TAXONOMY_CONFIGS.find((c) => c.filterKey === updateKey)!
-      const currentIds = filterValuesMap[cfg.key].ids ?? []
-      const next = currentIds.includes(id) ? currentIds.filter((v) => v !== id) : [...currentIds, id]
-      updateSearch({ [updateKey]: next.length ? next : undefined })
-    }
-  }
-
   const shouldShow = (filterKey: AllFiltersKey) =>
     !filterConfig || filterConfig.allFilters.includes(filterKey)
 
@@ -103,7 +94,11 @@ export function FilterMoreFiltersPanel({
                 items={items}
                 selectedIds={ids}
                 label={cfg.label}
-                onToggle={createToggle(cfg.filterKey)}
+                onToggle={(id) => {
+                  const current = ids ?? []
+                  const next = current.includes(id) ? current.filter((v) => v !== id) : [...current, id]
+                  updateSearch({ [cfg.filterKey]: next.length ? next : undefined })
+                }}
                 counts={counts?.[cfg.countKey]}
               />
             )

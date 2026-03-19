@@ -78,12 +78,9 @@ describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerN
 
       const { appRouter } = await import("@/server/trpc/router")
       const caller = appRouter.createCaller({ session: null, user: null })
-      const result = await (caller[routerName] as { list: () => Promise<{ recipeCount: number }[]> }).list()
-
-      for (const item of result) {
-        expect(typeof item.recipeCount).toBe("number")
-      }
-      const inserted = result.find((r: any) => r.slug === slug)
+      const result = await (caller[routerName] as { list: () => Promise<{ slug: string; recipeCount: number }[]> }).list()
+      const inserted = result.find((r) => r.slug === slug)
+      expect(typeof inserted?.recipeCount).toBe("number")
       expect(inserted?.recipeCount).toBe(0)
     })
   })

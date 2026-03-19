@@ -126,20 +126,18 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
       .getByTestId("filter-more-filters-content")
       .waitFor({ state: "visible" });
 
-    const mealChips = page
+    // Meal taxonomy is seeded by npm run db:seed
+    const firstChip = page
       .locator("button")
-      .filter({ hasText: /Breakfast|Lunch|Dinner|Brunch|Snack/ });
-    const chipCount = await mealChips.count();
+      .filter({ hasText: /Breakfast|Lunch|Dinner|Brunch|Snack/ })
+      .first();
+    await expect(firstChip).toBeVisible();
+    await firstChip.click();
 
-    if (chipCount > 0) {
-      const firstChip = mealChips.first();
-      await firstChip.click();
+    await page.waitForURL(/mealIds=/);
 
-      await page.waitForURL(/mealIds=/);
-
-      const activeClass = await firstChip.getAttribute("class");
-      expect(activeClass).toContain("cyan");
-    }
+    const activeClass = await firstChip.getAttribute("class");
+    expect(activeClass).toContain("cyan");
   });
 
   test("should maintain filter state through panel collapse/expand", async ({
@@ -195,15 +193,12 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     // Verify URL has filter params
     expect(page.url()).toContain("myRecipes=true");
 
-    // Click Clear All Filters button
+    // Clear All Filters button appears when filters are active
     const clearButton = page.getByTestId("clear-all-filters");
-    if (await clearButton.isVisible()) {
-      await clearButton.click();
-      await page.waitForURL((url) => !url.search.includes("myRecipes=true"));
-
-      // Verify all filters are cleared from URL
-      expect(page.url()).not.toContain("myRecipes=");
-    }
+    await expect(clearButton).toBeVisible();
+    await clearButton.click();
+    await page.waitForURL((url) => !url.search.includes("myRecipes=true"));
+    expect(page.url()).not.toContain("myRecipes=");
   });
 
   test("should display active filter badges", async ({ page }) => {
