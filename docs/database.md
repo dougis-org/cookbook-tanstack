@@ -20,7 +20,6 @@ Twelve collections organized into four groups:
 
 | Collection | Purpose |
 |------------|---------|
-| `users` | User accounts (managed by Better-Auth + username plugin) |
 | `recipes` | Recipe content, nutrition, taxonomy references |
 | `classifications` | Recipe classifications (e.g., cuisine type) |
 | `sources` | Recipe sources (books, websites, etc.) |
@@ -40,9 +39,10 @@ All taxonomy collections share the same structure: `_id` (ObjectId), `name`, `de
 
 | Collection | Purpose |
 |------------|---------|
-| `sessions` | Active user sessions with expiry |
-| `accounts` | OAuth / credential account links |
-| `verifications` | Email verification tokens |
+| `user` | User accounts (managed by Better-Auth + username plugin) |
+| `session` | Active user sessions with expiry |
+| `account` | OAuth / credential account links |
+| `verification` | Email verification tokens |
 
 ### Social Collections
 

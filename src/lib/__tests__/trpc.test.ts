@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest"
 
 vi.mock("@/db", () => ({ db: {} }))
-vi.mock("@/db/schema", () => ({ users: {}, sessions: {}, accounts: {}, verifications: {} }))
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
 describe("tRPC client setup", () => {

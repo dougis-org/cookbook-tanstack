@@ -15,7 +15,7 @@ describe("withCleanDb", () => {
     const mockDeleteMany = vi.fn().mockResolvedValue(undefined)
     const mockCollections = {
       recipes: { deleteMany: mockDeleteMany },
-      users: { deleteMany: mockDeleteMany },
+      user: { deleteMany: mockDeleteMany },
     }
 
     vi.doMock("mongoose", () => ({
