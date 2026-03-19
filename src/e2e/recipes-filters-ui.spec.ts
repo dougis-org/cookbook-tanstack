@@ -12,7 +12,6 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Verify Row 1 quick filter buttons are visible
     await expect(
       page.getByRole("button", { name: /My Recipes/i }),
     ).toBeVisible();
@@ -30,7 +29,6 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Verify Row 2 dropdowns are visible
     await expect(
       page.locator("select").filter({ hasText: "All Categories" }),
     ).toBeVisible();
@@ -78,54 +76,42 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Get the classification dropdown and wait for options to load
     const categorySelect = page.getByTestId("filter-dropdown-classification");
     await expect(categorySelect).toBeVisible();
 
     // Classifications are user-created (not seeded), so options may not exist in CI
+    const optionSelector =
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])';
     const hasOptions = await page
-      .waitForSelector(
-        '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
-        { state: "attached", timeout: 5000 },
-      )
+      .waitForSelector(optionSelector, { state: "attached", timeout: 5000 })
       .catch(() => null);
     if (!hasOptions) return;
 
-    // Select a category from the dropdown
-    const firstOption = page.locator(
-      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
-    ).first();
-    const optionValue = await firstOption.getAttribute("value");
+    const optionValue = await page
+      .locator(optionSelector)
+      .first()
+      .getAttribute("value");
+    if (!optionValue) return;
 
-    if (optionValue) {
-      await categorySelect.selectOption(optionValue);
-      await page.waitForURL(/classificationId=/);
-    }
+    await categorySelect.selectOption(optionValue);
+    await page.waitForURL(/classificationId=/);
   });
 
   test("should expand and collapse More Filters panel", async ({ page }) => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Find the toggle button for More Filters panel
     const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
     await expect(moreFiltersToggle).toBeVisible();
 
-    // Initially should be collapsed
     const moreFiltersContent = page.getByTestId("filter-more-filters-content");
-    const isInitiallyVisible = await moreFiltersContent
-      .isVisible()
-      .catch(() => false);
-    expect(isInitiallyVisible).toBe(false);
+    await expect(moreFiltersContent).toBeHidden();
 
-    // Click to expand
     await moreFiltersToggle.click();
     await expect(moreFiltersContent).toBeVisible();
 
-    // Click to collapse
     await moreFiltersToggle.click();
-    const isCollapsed = await moreFiltersContent.isVisible().catch(() => false);
-    expect(isCollapsed).toBe(false);
+    await expect(moreFiltersContent).toBeHidden();
   });
 
   test("should select taxonomy items in More Filters panel", async ({
@@ -134,14 +120,12 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Expand More Filters panel
     const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
     await moreFiltersToggle.click();
     await page
       .getByTestId("filter-more-filters-content")
       .waitFor({ state: "visible" });
 
-    // Click a meal chip (if any exist)
     const mealChips = page
       .locator("button")
       .filter({ hasText: /Breakfast|Lunch|Dinner|Brunch|Snack/ });
@@ -151,10 +135,8 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
       const firstChip = mealChips.first();
       await firstChip.click();
 
-      // URL should update with mealIds parameter
       await page.waitForURL(/mealIds=/);
 
-      // Chip should show active state
       const activeClass = await firstChip.getAttribute("class");
       expect(activeClass).toContain("cyan");
     }
@@ -166,42 +148,35 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Apply a filter to Row 2
     const categorySelect = page.getByTestId("filter-dropdown-classification");
 
     // Classifications are user-created (not seeded), so options may not exist in CI
+    const optionSelector =
+      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])';
     const hasOptions = await page
-      .waitForSelector(
-        '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
-        { state: "attached", timeout: 5000 },
-      )
+      .waitForSelector(optionSelector, { state: "attached", timeout: 5000 })
       .catch(() => null);
     if (!hasOptions) return;
 
-    const firstOption = page.locator(
-      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])',
-    ).first();
-    const optionValue = await firstOption.getAttribute("value");
+    const optionValue = await page
+      .locator(optionSelector)
+      .first()
+      .getAttribute("value");
+    if (!optionValue) return;
 
-    if (optionValue) {
-      await categorySelect.selectOption(optionValue);
-      await page.waitForURL(/classificationId=/);
+    await categorySelect.selectOption(optionValue);
+    await page.waitForURL(/classificationId=/);
 
-      // Get current URL
-      const urlBefore = page.url();
+    const urlBefore = page.url();
 
-      // Expand/collapse More Filters panel
-      const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-      await moreFiltersToggle.click();
-      await page
-        .getByTestId("filter-more-filters-content")
-        .waitFor({ state: "visible" });
-      await moreFiltersToggle.click();
+    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
+    await moreFiltersToggle.click();
+    await page
+      .getByTestId("filter-more-filters-content")
+      .waitFor({ state: "visible" });
+    await moreFiltersToggle.click();
 
-      // URL should remain unchanged
-      const urlAfter = page.url();
-      expect(urlAfter).toBe(urlBefore);
-    }
+    expect(page.url()).toBe(urlBefore);
   });
 
   test("should clear all filters button reset all three rows", async ({

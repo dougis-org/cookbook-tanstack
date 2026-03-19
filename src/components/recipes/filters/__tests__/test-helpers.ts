@@ -2,10 +2,6 @@ import { vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-/**
- * Common test data and factories for filter components
- */
-
 export const MOCK_MEALS = [
   { id: "m1", name: "Breakfast" },
   { id: "m2", name: "Lunch" },
@@ -28,9 +24,6 @@ export function createMockUpdateSearch() {
   return vi.fn();
 }
 
-/**
- * Default props for FilterMoreFiltersPanel
- */
 export function createDefaultFilterMoreFiltersPanelProps() {
   return {
     mealIds: undefined,
@@ -45,9 +38,6 @@ export function createDefaultFilterMoreFiltersPanelProps() {
   };
 }
 
-/**
- * Default props for FilterRow1Quick
- */
 export function createDefaultFilterRow1QuickProps() {
   return {
     myRecipes: false,
@@ -58,45 +48,20 @@ export function createDefaultFilterRow1QuickProps() {
   };
 }
 
-/**
- * Data-driven test cases for taxonomy chip selection
- * Tests: [itemType, itemId, itemName, expectedUpdateKey]
- */
+/** [taxonomyType, itemId, itemName, updateKey] */
 export const TAXONOMY_TOGGLE_CASES = [
   ["meals", "m1", "Breakfast", "mealIds"],
   ["courses", "c1", "Appetizer", "courseIds"],
   ["preparations", "p1", "Baked", "preparationIds"],
 ] as const;
 
-/**
- * Data-driven test cases for FilterRow1Quick toggles
- * Tests: [label, icon, initialState, updateKey]
- */
+/** [label, updateKey] */
 export const QUICK_FILTER_TOGGLE_CASES = [
-  [
-    "My Recipes",
-    "User",
-    { myRecipes: false, markedByMe: false, hasImage: false },
-    "myRecipes",
-  ],
-  [
-    "Favorites",
-    "Heart",
-    { myRecipes: false, markedByMe: false, hasImage: false },
-    "markedByMe",
-  ],
-  [
-    "Has Image",
-    "Image",
-    { myRecipes: false, markedByMe: false, hasImage: false },
-    "hasImage",
-  ],
+  ["My Recipes", "myRecipes"],
+  ["Favorites", "markedByMe"],
+  ["Has Image", "hasImage"],
 ] as const;
 
-/**
- * Test helper: Expand the FilterMoreFiltersPanel by clicking the toggle button
- * Assumes the component is already rendered and the toggle button is available
- */
 export async function expandFilterPanel() {
   const user = userEvent.setup();
   const toggleButton = screen.getByTestId("filter-more-filters-toggle");

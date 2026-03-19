@@ -1,8 +1,3 @@
-/**
- * Quick filter toggle configuration
- * Consolidates metadata about quick filter toggles
- */
-
 import { User, Heart, Image, type LucideIcon } from 'lucide-react'
 
 export interface QuickFilterToggleConfig {
@@ -35,4 +30,4 @@ export const QUICK_FILTER_TOGGLE_CONFIGS: QuickFilterToggleConfig[] = [
     filterKey: 'hasImage',
     requiresAuth: false,
   },
-] as const
+]

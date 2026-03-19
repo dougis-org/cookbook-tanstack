@@ -34,17 +34,6 @@ interface FilterMoreFiltersPanelProps {
   }
 }
 
-
-/**
- * FilterMoreFiltersPanel - Collapsible advanced filters panel
- *
- * Displays an expandable/collapsible section containing:
- * - Meals, Courses, Preparations chips (rendered via TAXONOMY_CONFIGS)
- * - Min/Max servings range inputs
- *
- * The panel is controlled by local expand/collapse state (UI-only).
- * All filter values are managed via URL search parameters.
- */
 export function FilterMoreFiltersPanel({
   mealIds,
   courseIds,
@@ -60,41 +49,28 @@ export function FilterMoreFiltersPanel({
 }: FilterMoreFiltersPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Map filter values by key for easy access
   const filterValuesMap = {
     meals: { ids: mealIds, items: allMeals },
     courses: { ids: courseIds, items: allCourses },
     preparations: { ids: preparationIds, items: allPreparations },
   }
 
-  // Map update keys to their filter value map keys
-  const updateKeyToMapKey = {
-    mealIds: 'meals' as const,
-    courseIds: 'courses' as const,
-    preparationIds: 'preparations' as const,
-  }
-
-  // Generic toggle handler factory for taxonomy items
-  const createToggle = (updateKey: 'mealIds' | 'courseIds' | 'preparationIds') => {
+  function createToggle(updateKey: 'mealIds' | 'courseIds' | 'preparationIds') {
     return (id: string) => {
-      const mapKey = updateKeyToMapKey[updateKey]
-      const currentIds = filterValuesMap[mapKey].ids
-      const arr = currentIds ?? []
-      const next = arr.includes(id) ? arr.filter((v) => v !== id) : [...arr, id]
+      const cfg = TAXONOMY_CONFIGS.find((c) => c.filterKey === updateKey)!
+      const currentIds = filterValuesMap[cfg.key].ids ?? []
+      const next = currentIds.includes(id) ? currentIds.filter((v) => v !== id) : [...currentIds, id]
       updateSearch({ [updateKey]: next.length ? next : undefined })
     }
   }
 
-  // Check if filter config allows a given filter
   const shouldShow = (filterKey: AllFiltersKey) =>
     !filterConfig || filterConfig.allFilters.includes(filterKey)
 
-  // Check if any filters are currently applied
   const hasAnyFilters =
-    TAXONOMY_CONFIGS.some((cfg) => {
-      const filterKey = cfg.filterKey
-      return shouldShow(filterKey) && (filterValuesMap[cfg.key].ids?.length ?? 0) > 0
-    }) ||
+    TAXONOMY_CONFIGS.some((cfg) =>
+      shouldShow(cfg.filterKey) && (filterValuesMap[cfg.key].ids?.length ?? 0) > 0
+    ) ||
     (shouldShow('minServings') && minServings !== undefined) ||
     (shouldShow('maxServings') && maxServings !== undefined)
 
@@ -118,7 +94,6 @@ export function FilterMoreFiltersPanel({
 
       {isExpanded && (
         <div className="mt-4 space-y-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700" data-testid="filter-more-filters-content">
-          {/* Render taxonomy chips via config iteration */}
           {TAXONOMY_CONFIGS.map((cfg) => {
             if (!shouldShow(cfg.filterKey)) return null
             const { ids, items } = filterValuesMap[cfg.key]
@@ -129,7 +104,7 @@ export function FilterMoreFiltersPanel({
                 selectedIds={ids}
                 label={cfg.label}
                 onToggle={createToggle(cfg.filterKey)}
-                counts={counts ? (counts as any)[cfg.countKey] : undefined}
+                counts={counts?.[cfg.countKey]}
               />
             )
           })}

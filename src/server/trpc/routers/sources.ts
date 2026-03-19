@@ -19,7 +19,7 @@ export const sourcesRouter = router({
     ]);
     const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
     return docs.map((s) => ({
-      id: s._id.toString() as string,
+      id: s._id.toString(),
       name: s.name as string,
       url: (s.url ?? null) as string | null,
       recipeCount: countMap.get(s._id.toString()) ?? 0,
@@ -36,7 +36,7 @@ export const sourcesRouter = router({
         .limit(10)
         .lean()) as any[];
       return docs.map((s) => ({
-        id: s._id.toString() as string,
+        id: s._id.toString(),
         name: s.name as string,
         url: (s.url ?? null) as string | null,
       }));
@@ -49,7 +49,7 @@ export const sourcesRouter = router({
       const source = (await Source.findById(input.id).lean()) as any;
       if (!source) return null;
       return {
-        id: source._id.toString() as string,
+        id: source._id.toString(),
         name: source.name as string,
         url: (source.url ?? null) as string | null,
       };

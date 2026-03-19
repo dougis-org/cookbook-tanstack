@@ -9,7 +9,6 @@ interface FilterRow1QuickProps {
   updateSearch: (updates: { myRecipes?: boolean; markedByMe?: boolean; hasImage?: boolean }) => void
 }
 
-/** Reusable toggle button component */
 function FilterToggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
     <button
@@ -24,13 +23,6 @@ function FilterToggle({ active, onClick, children }: { active: boolean; onClick:
   )
 }
 
-/**
- * FilterRow1Quick - Quick filter toggles
- *
- * Displays toggle buttons for frequently-used filters via QUICK_FILTER_TOGGLE_CONFIGS.
- * Respects auth requirements (My Recipes and Favorites only shown if logged in).
- * All state is managed externally via URL search parameters.
- */
 export function FilterRow1Quick({
   myRecipes,
   markedByMe,
@@ -38,7 +30,6 @@ export function FilterRow1Quick({
   isLoggedIn,
   updateSearch,
 }: FilterRow1QuickProps) {
-  // Map filter values by key for easy access
   const filterValuesMap = {
     myRecipes,
     markedByMe,
@@ -48,7 +39,6 @@ export function FilterRow1Quick({
   return (
     <div className="flex flex-wrap gap-2">
       {QUICK_FILTER_TOGGLE_CONFIGS.map((cfg) => {
-        // Skip filters that require auth if user is not logged in
         if (cfg.requiresAuth && !isLoggedIn) return null
 
         const Icon = cfg.icon

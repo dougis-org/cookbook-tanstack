@@ -72,7 +72,7 @@ describe('FilterMoreFiltersPanel', () => {
   // Data-driven tests for taxonomy chip selection
   describe.each(TAXONOMY_TOGGLE_CASES)(
     'taxonomy chip selection: %s → %s',
-    (taxonomyType, itemId, itemName, updateKey) => {
+    (_taxonomyType, itemId, itemName, updateKey) => {
       it(`calls updateSearch when ${itemName} chip is selected`, async () => {
         const mockUpdateSearch = createMockUpdateSearch()
         render(
@@ -95,9 +95,7 @@ describe('FilterMoreFiltersPanel', () => {
           <FilterMoreFiltersPanel
             {...createDefaultFilterMoreFiltersPanelProps()}
             updateSearch={mockUpdateSearch}
-            {...(taxonomyType === 'meals' && { mealIds: [itemId] })}
-            {...(taxonomyType === 'courses' && { courseIds: [itemId] })}
-            {...(taxonomyType === 'preparations' && { preparationIds: [itemId] })}
+            {...{ [updateKey]: [itemId] }}
           />
         )
         const user = await expandFilterPanel()

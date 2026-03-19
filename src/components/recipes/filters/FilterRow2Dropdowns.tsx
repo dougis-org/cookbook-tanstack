@@ -24,14 +24,6 @@ interface FilterRow2DropdownsProps {
   }
 }
 
-/**
- * FilterRow2Dropdowns - Primary filter dropdowns
- *
- * Displays dropdown selectors for Classification and Source filters.
- * Rendered via DROPDOWN_CONFIGS to eliminate duplication.
- * Counts can be optionally displayed next to each option if provided.
- * Filters rendered are configurable via filterConfig.
- */
 export function FilterRow2Dropdowns({
   classificationId,
   sourceId,
@@ -41,7 +33,6 @@ export function FilterRow2Dropdowns({
   filterConfig,
   counts,
 }: FilterRow2DropdownsProps) {
-  // Map filter data by key for easy access
   const dataMap = {
     classification: { value: classificationId, options: classifications },
     source: { value: sourceId, options: sources },
@@ -55,8 +46,7 @@ export function FilterRow2Dropdowns({
       {DROPDOWN_CONFIGS.map((cfg) => {
         if (!shouldShowFilter(cfg.filterKey)) return null
 
-        const data = dataMap[cfg.key]
-        const { value, options } = data
+        const { value, options } = dataMap[cfg.key]
 
         return (
           <select
@@ -68,15 +58,15 @@ export function FilterRow2Dropdowns({
             className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           >
             <option value="">{cfg.placeholder}</option>
-            {options?.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.name}
-                {(() => {
-                  const count = (counts as any)?.[cfg.countKey]?.[opt.id]
-                  return count !== undefined ? ` (${count})` : ''
-                })()}
-              </option>
-            ))}
+            {options?.map((opt) => {
+              const count = counts?.[cfg.countKey]?.[opt.id]
+              return (
+                <option key={opt.id} value={opt.id}>
+                  {opt.name}
+                  {count !== undefined ? ` (${count})` : ''}
+                </option>
+              )
+            })}
           </select>
         )
       })}

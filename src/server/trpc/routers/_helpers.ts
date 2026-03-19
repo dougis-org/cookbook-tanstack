@@ -61,7 +61,7 @@ export function createTaxonomyRouter(Model: any, arrayField: string) {
         ]);
         const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
         return docs.map((doc) => ({
-          id: doc._id.toString() as string,
+          id: doc._id.toString(),
           name: doc.name as string,
           slug: doc.slug as string,
           recipeCount: countMap.get(doc._id.toString()) ?? 0,

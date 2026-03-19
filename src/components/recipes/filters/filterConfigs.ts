@@ -1,8 +1,3 @@
-/**
- * Taxonomy configuration for FilterMoreFiltersPanel
- * Consolidates metadata about taxonomy groups to reduce duplication
- */
-
 export interface TaxonomyConfig {
   key: 'meals' | 'courses' | 'preparations'
   label: string
@@ -29,12 +24,7 @@ export const TAXONOMY_CONFIGS: TaxonomyConfig[] = [
     filterKey: 'preparationIds',
     countKey: 'preparationCounts',
   },
-] as const
-
-/**
- * Dropdown configuration for FilterRow2Dropdowns
- * Consolidates metadata about dropdown selectors
- */
+]
 
 export interface DropdownConfig {
   key: 'classification' | 'source'
@@ -65,4 +55,4 @@ export const DROPDOWN_CONFIGS: DropdownConfig[] = [
     dataTestId: 'filter-dropdown-source',
     ariaLabel: 'Filter by source',
   },
-] as const
+]

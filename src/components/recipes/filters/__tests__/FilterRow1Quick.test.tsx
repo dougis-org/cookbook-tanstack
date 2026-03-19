@@ -51,7 +51,7 @@ describe('FilterRow1Quick', () => {
   // Data-driven toggle tests
   describe.each(QUICK_FILTER_TOGGLE_CASES)(
     'toggle: %s',
-    (label, _icon, _state, updateKey) => {
+    (label, updateKey) => {
       const isLoggedIn = label === 'My Recipes' || label === 'Favorites'
 
       it(`toggles ${label} filter on click`, async () => {

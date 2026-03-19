@@ -1,8 +1,3 @@
-/**
- * ServingsRangeInput - Reusable min/max servings input component
- * Reduces duplication from FilterMoreFiltersPanel
- */
-
 interface ServingsRangeInputProps {
   minServings: number | undefined
   maxServings: number | undefined
@@ -20,7 +15,7 @@ export function ServingsRangeInput({
   showMin = true,
   showMax = true,
 }: ServingsRangeInputProps) {
-  const parseServingValue = (val: string) => {
+  function parseServingValue(val: string): number | undefined {
     const n = Number(val)
     return val && Number.isInteger(n) && n > 0 ? n : undefined
   }
@@ -45,7 +40,7 @@ export function ServingsRangeInput({
             className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder-gray-500"
           />
         )}
-        {(showMin || showMax) && <span className="text-gray-600">–</span>}
+        {showMin && showMax && <span className="text-gray-600">–</span>}
         {showMax && (
           <input
             type="number"

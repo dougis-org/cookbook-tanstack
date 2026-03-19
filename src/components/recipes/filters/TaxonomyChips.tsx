@@ -11,13 +11,6 @@ interface TaxonomyChipsProps {
   counts?: Record<string, number>
 }
 
-/**
- * TaxonomyChips - Reusable taxonomy chip selector
- *
- * Displays a set of selectable chips for taxonomy items (Meals, Courses, Preparations).
- * Can optionally display counts next to each item.
- * Used in More Filters panel and can be reused in other filter contexts.
- */
 export function TaxonomyChips({
   items,
   selectedIds,
