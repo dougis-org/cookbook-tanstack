@@ -102,7 +102,7 @@
   - Verify existing tests still pass ✓ (No unit tests for route itself; E2E tests in recipes-list.spec.ts)
   - Verify new filter integration tests pass ✓
 - [x] 7.3 Run full Vitest suite: `npm run test`
-  - Verify no regressions ✓ All 299 tests passing (40 test files)
+  - Verify no regressions ✓ All 314 tests passing (41 test files)
 
 ## 8. Testing - E2E with Playwright
 
@@ -157,12 +157,12 @@
   - Manual verification needed: run dev server and test filter UI in browser
 - [x] Run all tests before committing changes
   - ✓ All 299 unit tests passing
-- [ ] Commit with descriptive messages: `git commit -m "feat: implement two-row filter UI with configurable layout (#XX)"`
+- [x] Commit with descriptive messages: `git commit -m "feat: implement two-row filter UI with configurable layout (#XX)"`
 
 ## Validation Checklist
 
 Before creating the PR:
-- [x] All tests pass: `npm run test` → 299 tests passing ✓
+- [x] All tests pass: `npm run test` → 314 tests passing ✓
 - [x] E2E tests created: `recipes-filters-ui.spec.ts` with 11 test cases ✓
 - [x] TypeScript compiles: `npx tsc --noEmit` → No errors ✓
 - [x] Build succeeds: `npm run build` → Built in 7.34s with no warnings ✓
@@ -176,11 +176,10 @@ Before creating the PR:
 
 ## PR and Merge
 
-- [ ] Create pull request
-  - Link: https://github.com/dougis-org/cookbook-tanstack/pull/new/feat/filter-ux-improvements
-  - OR: Go to GitHub repo and click "Create Pull Request" from push notification
-- [ ] PR title: "feat: update recipe filter UI to two-row layout with More Filters panel"
-- [ ] PR description (template below):
+- [x] Create pull request
+  - PR #160: https://github.com/dougis-org/cookbook-tanstack/pull/160
+- [x] PR title: "feat: update recipe filter UI to two-row layout with More Filters panel"
+- [x] PR description (template below):
 
 ```
 ## Summary
@@ -229,7 +228,7 @@ Two-row recipe filter UI with configurable layout and More Filters panel.
 ✅ Existing E2E tests pass
 ```
 
-- [ ] Enable auto-merge after approval (if available)
+- [x] Enable auto-merge after approval (if available)
 - [ ] Resolve any review comments
 - [ ] Verify CI/CD pipeline passes
 
