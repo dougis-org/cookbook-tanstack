@@ -18,17 +18,17 @@
 - [x] 4.1 Run unit tests: `npx vitest run src/components/recipes/`
 - [x] 4.2 Run full test suite: `npm run test`
 - [x] 4.3 Run build: `npm run build` — must complete with no TypeScript errors
-- [ ] 4.4 Visually verify in dev server (`npm run dev`): recipe list and detail pages show no empty image space for imageless recipes
+- [x] 4.4 Visually verify in dev server (`npm run dev`): recipe list and detail pages show no empty image space for imageless recipes
 
 ## 5. PR and Merge
 
 - [x] 5.1 Commit changes with message referencing issue: `fix: suppress image space when no imageUrl (#159)`
 - [x] 5.2 Push branch and create PR; link to issue #159 in the PR body
 - [x] 5.3 Enable auto-merge on the PR (per CI/CD standards in `docs/standards/ci-cd.md`)
-- [ ] 5.4 Resolve any CI failures or review comments before merge
+- [x] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge
 
-- [ ] 6.1 Delete feature branch after merge
-- [ ] 6.2 Run `/opsx:archive` to archive this change
-- [ ] 6.3 Sync approved spec delta to `openspec/specs/conditional-recipe-image/spec.md`
+- [x] 6.1 Delete feature branch after merge
+- [x] 6.2 Run `/opsx:archive` to archive this change
+- [x] 6.3 Sync approved spec delta to `openspec/specs/conditional-recipe-image/spec.md`
