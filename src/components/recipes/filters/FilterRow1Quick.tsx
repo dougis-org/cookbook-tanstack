@@ -49,7 +49,7 @@ export function FilterRow1Quick({
             key={cfg.key}
             active={isActive}
             onClick={() =>
-              updateSearch({ [cfg.filterKey]: isActive ? undefined : true })
+              updateSearch({ [cfg.key]: isActive ? undefined : true })
             }
           >
             <Icon className="w-3.5 h-3.5" />

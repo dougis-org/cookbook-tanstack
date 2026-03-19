@@ -30,10 +30,10 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await gotoAndWaitForHydration(page, "/recipes");
 
     await expect(
-      page.locator("select").filter({ hasText: "All Categories" }),
+      page.getByTestId("filter-dropdown-classification"),
     ).toBeVisible();
     await expect(
-      page.locator("select").filter({ hasText: "All Sources" }),
+      page.getByTestId("filter-dropdown-source"),
     ).toBeVisible();
   });
 

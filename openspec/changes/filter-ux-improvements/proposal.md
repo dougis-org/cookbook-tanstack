@@ -5,7 +5,7 @@ The current recipe filter UI on `/recipes` is dense and cluttered, displaying al
 ## What Changes
 
 - **Row 1 (Quick Filters)**: Replace the current single-line layout with dedicated toggle buttons for "My Recipes", "Favorites", and "Has Image"
-- **Row 2 (Advanced Filters)**: Introduce a dropdown structure to consolidate category, source, meals, courses, and servings filters
+- **Row 2 (Advanced Filters)**: Introduce a dropdown structure for category and source filters
 - **"More Filters" Panel**: Add a "More Filters" option that opens a modal or collapsible panel similar to the recipe edit screen, allowing users to set any combination of filter options at once
 - The filter UI will display only two rows by default, reducing visual clutter while maintaining access to all filtering capabilities
 
