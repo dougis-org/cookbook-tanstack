@@ -84,7 +84,7 @@
   - Execute: `npm run test:e2e`
   - Verify authentication flows and user operations work correctly
 
-- [ ] 5.4 Verify database schema
+- [x] 5.4 Verify database schema
   - Start dev server: `npm run dev`
   - Connect to MongoDB and confirm legacy collections do not exist or are empty: `db.users.countDocuments()` should return 0 or error
   - Verify Better-Auth collections exist: `db.user.countDocuments()` should work
@@ -106,11 +106,11 @@
 
 ## 7. Pull Request & Merge
 
-- [ ] 7.1 Create feature branch and commit changes
+- [x] 7.1 Create feature branch and commit changes
   - Branch: `git checkout -b chore/remove-redundant-auth-collections`
   - Commit with clear message explaining removed models and why (reference issue #156)
 
-- [ ] 7.2 Create pull request
+- [x] 7.2 Create pull request
   - Title: "Chore: Remove redundant auth collections (users, sessions, accounts) - Issue #156"
   - Include link to issue  #156
   - Reference design decisions and audit results in PR body
