@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../init";
+import { Recipe } from "@/db/models";
 
 /** Validates a MongoDB ObjectId: a 24-character hexadecimal string. */
 export const objectId = z
@@ -42,18 +43,28 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 
 /**
  * Creates a simple read-only taxonomy router with a single `list` procedure.
+ * @param Model - The Mongoose model for the taxonomy (Meal, Course, Preparation)
+ * @param arrayField - The Recipe field that references this taxonomy (e.g. "mealIds")
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createTaxonomyRouter(Model: any) {
+export function createTaxonomyRouter(Model: any, arrayField: string) {
   return router({
     list: publicProcedure.query(
-      async (): Promise<{ id: string; name: string; slug: string }[]> => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const docs = (await Model.find().lean()) as any[];
+      async (): Promise<{ id: string; name: string; slug: string; recipeCount: number }[]> => {
+        const [docs, counts] = await Promise.all([
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Model.find().lean() as Promise<any[]>,
+          Recipe.aggregate<{ _id: unknown; count: number }>([
+            { $unwind: `$${arrayField}` },
+            { $group: { _id: `$${arrayField}`, count: { $sum: 1 } } },
+          ]),
+        ]);
+        const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
         return docs.map((doc) => ({
           id: doc._id.toString() as string,
           name: doc.name as string,
           slug: doc.slug as string,
+          recipeCount: countMap.get(doc._id.toString()) ?? 0,
         }));
       },
     ),

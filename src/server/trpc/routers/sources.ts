@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../init";
-import { Source } from "@/db/models";
+import { Recipe, Source } from "@/db/models";
 import { objectId } from "./_helpers";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
@@ -10,12 +10,19 @@ function escapeRegex(str: string) {
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const docs = (await Source.find().lean()) as any[];
+    const [docs, counts] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      Source.find().lean() as Promise<any[]>,
+      Recipe.aggregate<{ _id: unknown; count: number }>([
+        { $group: { _id: "$sourceId", count: { $sum: 1 } } },
+      ]),
+    ]);
+    const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
     return docs.map((s) => ({
       id: s._id.toString() as string,
       name: s.name as string,
       url: (s.url ?? null) as string | null,
+      recipeCount: countMap.get(s._id.toString()) ?? 0,
     }));
   }),
 

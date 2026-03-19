@@ -86,12 +86,13 @@
   - Decided: counts are optional for now (component supports but route doesn't fetch)
   - Future enhancement: extend tRPC recipes.list to optionally return filter counts
   - Counts will be contextual (based on active filters)
-- [ ] 6.2 If counts are needed: extend tRPC `recipes.list` query to optionally return filter counts
-  - OR create a separate `getFilterCounts` endpoint that returns counts for dropdowns/chips
-  - Update relevant components to fetch and display counts
-- [ ] 6.3 Update components to display counts if counts data is available
-  - `FilterRow2Dropdowns` displays classification/source counts
-  - `FilterMoreFiltersPanel` displays taxonomy item counts
+- [x] 6.2 If counts are needed: extend tRPC `recipes.list` query to optionally return filter counts
+  - Added `recipeCount` to `sources.list` via `$group` aggregation (mirrors `classifications.ts` pattern)
+  - Added `recipeCount` to taxonomy routers (meals/courses/preparations) via `$unwind`+`$group` aggregation in `createTaxonomyRouter`
+  - Route builds `filterCounts` object from all 5 existing queries (no extra network calls)
+- [x] 6.3 Update components to display counts if counts data is available
+  - `FilterRow2Dropdowns` receives `counts={{ classificationCounts, sourceCounts }}`
+  - `FilterMoreFiltersPanel` receives `counts={{ mealCounts, courseCounts, preparationCounts }}`
 
 ## 7. Testing - Unit and Integration
 
@@ -162,7 +163,7 @@
 ## Validation Checklist
 
 Before creating the PR:
-- [x] All tests pass: `npm run test` → 314 tests passing ✓
+- [x] All tests pass: `npm run test` → 322 tests passing ✓
 - [x] E2E tests created: `recipes-filters-ui.spec.ts` with 11 test cases ✓
 - [x] TypeScript compiles: `npx tsc --noEmit` → No errors ✓
 - [x] Build succeeds: `npm run build` → Built in 7.34s with no warnings ✓

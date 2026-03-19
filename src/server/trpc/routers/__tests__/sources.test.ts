@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { User, Source } from "@/db/models"
+import { Recipe, User, Source } from "@/db/models"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -45,6 +45,35 @@ describe("sources.list", () => {
       expect(result).toEqual(
         expect.arrayContaining([expect.objectContaining({ name: `ListSource-${id}` })]),
       )
+    })
+  })
+
+  it("includes recipeCount=0 when no recipes reference the source", async () => {
+    await withCleanDb(async () => {
+      const id = uid()
+      await new Source({ name: `NoRefSource-${id}` }).save()
+      const caller = await makeAnonCaller()
+      const result = await caller.sources.list()
+      for (const item of result) {
+        expect(typeof item.recipeCount).toBe("number")
+      }
+      const inserted = result.find((s) => s.name === `NoRefSource-${id}`)
+      expect(inserted?.recipeCount).toBe(0)
+    })
+  })
+
+  it("counts recipes that reference the source", async () => {
+    await withCleanDb(async () => {
+      const id = uid()
+      const source = await new Source({ name: `RefSource-${id}` }).save()
+      const user = await seedUser()
+      await new Recipe({ name: "R1", userId: user._id, isPublic: true, sourceId: source._id }).save()
+      await new Recipe({ name: "R2", userId: user._id, isPublic: true, sourceId: source._id }).save()
+
+      const caller = await makeAnonCaller()
+      const result = await caller.sources.list()
+      const inserted = result.find((s) => s.name === `RefSource-${id}`)
+      expect(inserted?.recipeCount).toBe(2)
     })
   })
 })

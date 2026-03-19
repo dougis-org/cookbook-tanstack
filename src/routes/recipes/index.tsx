@@ -102,6 +102,24 @@ function RecipesPage() {
 
   const recipes = data?.items ?? []
   const total = data?.total ?? 0
+
+  const filterCounts = {
+    classificationCounts: Object.fromEntries(
+      (classifications ?? []).map((c) => [c.id, c.recipeCount]),
+    ),
+    sourceCounts: Object.fromEntries(
+      (sources ?? []).map((s) => [s.id, s.recipeCount]),
+    ),
+    mealCounts: Object.fromEntries(
+      (allMeals ?? []).map((m) => [m.id, m.recipeCount]),
+    ),
+    courseCounts: Object.fromEntries(
+      (allCourses ?? []).map((c) => [c.id, c.recipeCount]),
+    ),
+    preparationCounts: Object.fromEntries(
+      (allPreparations ?? []).map((p) => [p.id, p.recipeCount]),
+    ),
+  }
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   const hasActiveFilters = !!(
@@ -268,6 +286,7 @@ function RecipesPage() {
           sources={sources}
           updateSearch={updateSearch}
           filterConfig={filterConfig}
+          counts={filterCounts}
         />
 
         {/* More Filters Panel */}
@@ -282,6 +301,7 @@ function RecipesPage() {
           allPreparations={allPreparations}
           updateSearch={updateSearch}
           filterConfig={filterConfig}
+          counts={filterCounts}
         />
 
         {/* Active filter badges */}
