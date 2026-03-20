@@ -57,10 +57,16 @@ describe("users router", () => {
     });
 
     it("updates user image and returns updated user data", async () => {
-      await expectUpdateProfile({ image: "https://example.com/avatar.jpg" }, (result, user) => {
-        expect(result).toHaveProperty("id", user.id);
-        expect(result).toHaveProperty("image", "https://example.com/avatar.jpg");
-      });
+      await expectUpdateProfile(
+        { image: "https://example.com/avatar.jpg" },
+        (result, user) => {
+          expect(result).toHaveProperty("id", user.id);
+          expect(result).toHaveProperty(
+            "image",
+            "https://example.com/avatar.jpg",
+          );
+        },
+      );
     });
 
     it("updates both name and image together", async () => {
@@ -69,14 +75,16 @@ describe("users router", () => {
         (result, user) => {
           expect(result).toHaveProperty("id", user.id);
           expect(result).toHaveProperty("name", "New Name");
-          expect(result).toHaveProperty("image", "https://example.com/new-avatar.jpg");
+          expect(result).toHaveProperty(
+            "image",
+            "https://example.com/new-avatar.jpg",
+          );
         },
       );
     });
 
     it("rejects empty input (at least one field required)", async () => {
       await withLoggedIn(async (_user, caller) => {
-
         // zod validation should fail on empty object
         await expect(caller.users.updateProfile({})).rejects.toThrow();
       });
@@ -84,7 +92,6 @@ describe("users router", () => {
 
     it("rejects invalid image URL format", async () => {
       await withLoggedIn(async (_user, caller) => {
-
         await expect(
           caller.users.updateProfile({ image: "not-a-valid-url" }),
         ).rejects.toThrow();
@@ -93,7 +100,6 @@ describe("users router", () => {
 
     it("rejects name that is too short", async () => {
       await withLoggedIn(async (_user, caller) => {
-
         await expect(
           caller.users.updateProfile({ name: "" }),
         ).rejects.toThrow();
@@ -125,7 +131,6 @@ describe("users router", () => {
 
     it("returns transformed document with id as hex string", async () => {
       await withLoggedIn(async (user, caller) => {
-
         const result = await caller.users.updateProfile({ name: "Test" });
 
         // Verify the ID is a hex string and matches the user
@@ -181,7 +186,6 @@ describe("users router", () => {
 
     it("rejects profile object with no fields provided", async () => {
       await withLoggedIn(async (_user, caller) => {
-
         // Empty object should fail the refine validation
         await expect(caller.users.updateProfile({} as never)).rejects.toThrow(
           "At least one field must be provided",
@@ -217,7 +221,6 @@ describe("users router", () => {
 
     it("clears name field when updated by clearing previous value", async () => {
       await withLoggedIn(async (_user, caller) => {
-
         // Update with an empty-looking but valid name (actually tests only image update)
         const result = await caller.users.updateProfile({
           image: "https://example.com/test.jpg",

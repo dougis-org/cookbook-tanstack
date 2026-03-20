@@ -16,7 +16,8 @@ function makeMongooseMock(
   betterAuthDelete?: ReturnType<typeof vi.fn>,
 ) {
   const sessionCollections = [...Object.keys(collections), ...extraCollections];
-  const mockBetterAuth = betterAuthDelete ?? vi.fn().mockResolvedValue(undefined);
+  const mockBetterAuth =
+    betterAuthDelete ?? vi.fn().mockResolvedValue(undefined);
 
   return {
     default: {
@@ -24,18 +25,20 @@ function makeMongooseMock(
         collections,
         db: {
           listCollections: vi.fn().mockReturnValue({
-            toArray: vi.fn().mockResolvedValue(
-              sessionCollections.map((name) => ({ name })),
-            ),
+            toArray: vi
+              .fn()
+              .mockResolvedValue(sessionCollections.map((name) => ({ name }))),
           }),
           collection: vi.fn().mockReturnValue({ deleteMany: mockBetterAuth }),
         },
         getClient: vi.fn().mockReturnValue({
           db: vi.fn().mockReturnValue({
             listCollections: vi.fn().mockReturnValue({
-              toArray: vi.fn().mockResolvedValue(
-                sessionCollections.map((name) => ({ name })),
-              ),
+              toArray: vi
+                .fn()
+                .mockResolvedValue(
+                  sessionCollections.map((name) => ({ name })),
+                ),
             }),
             collection: vi.fn().mockReturnValue({ deleteMany: mockBetterAuth }),
           }),
@@ -55,7 +58,11 @@ describe("withCleanDb", () => {
     };
 
     vi.doMock("mongoose", () =>
-      makeMongooseMock(mockCollections, ["session", "account"], mockBetterAuthDeleteMany),
+      makeMongooseMock(
+        mockCollections,
+        ["session", "account"],
+        mockBetterAuthDeleteMany,
+      ),
     );
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
@@ -76,7 +83,11 @@ describe("withCleanDb", () => {
     const mockDeleteMany = vi.fn().mockResolvedValue(undefined);
 
     vi.doMock("mongoose", () =>
-      makeMongooseMock({ col1: { deleteMany: mockDeleteMany } }, [], mockDeleteMany),
+      makeMongooseMock(
+        { col1: { deleteMany: mockDeleteMany } },
+        [],
+        mockDeleteMany,
+      ),
     );
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
@@ -86,7 +97,9 @@ describe("withCleanDb", () => {
   });
 
   it("works with no collections (empty DB)", async () => {
-    vi.doMock("mongoose", () => makeMongooseMock({}, [], vi.fn().mockResolvedValue(undefined)));
+    vi.doMock("mongoose", () =>
+      makeMongooseMock({}, [], vi.fn().mockResolvedValue(undefined)),
+    );
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
     const fn = vi.fn().mockResolvedValue("empty");

@@ -68,7 +68,9 @@ export async function resolveDefaultAdminUser(
     if (mongoClient) {
       const usersCollection = getBetterAuthCollection("user", mongoClient.db());
       const idAsObjectId = new ObjectId(lookupValue);
-      const resolvedUser = await usersCollection.findOne({ _id: idAsObjectId } as any);
+      const resolvedUser = await usersCollection.findOne({
+        _id: idAsObjectId,
+      } as any);
       if (!resolvedUser) {
         throw new Error(
           `MIGRATION_DEFAULT_ADMIN_USER_ID ${lookupValue} does not correspond to an existing user`,

@@ -13,7 +13,10 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
 const seedUser = seedUserWithBetterAuth;
 
-async function assertSourceRecipeCount(sourceName: string, expectedCount: number) {
+async function assertSourceRecipeCount(
+  sourceName: string,
+  expectedCount: number,
+) {
   const caller = await makeAnonCaller();
   const result = await caller.sources.list();
   const inserted = result.find((s) => s.name === sourceName);
@@ -38,7 +41,9 @@ describe("sources.list", () => {
       const caller = await makeAnonCaller();
       const result = await caller.sources.list();
       expect(result).toEqual(
-        expect.arrayContaining([expect.objectContaining({ name: `ListSource-${id}` })]),
+        expect.arrayContaining([
+          expect.objectContaining({ name: `ListSource-${id}` }),
+        ]),
       );
     });
   });
@@ -62,8 +67,18 @@ describe("sources.list", () => {
       const id = uid();
       const source = await new Source({ name: `RefSource-${id}` }).save();
       const user = await seedUser();
-      await new Recipe({ name: "R1", userId: user.id, isPublic: true, sourceId: source._id }).save();
-      await new Recipe({ name: "R2", userId: user.id, isPublic: true, sourceId: source._id }).save();
+      await new Recipe({
+        name: "R1",
+        userId: user.id,
+        isPublic: true,
+        sourceId: source._id,
+      }).save();
+      await new Recipe({
+        name: "R2",
+        userId: user.id,
+        isPublic: true,
+        sourceId: source._id,
+      }).save();
 
       await assertSourceRecipeCount(`RefSource-${id}`, 2);
     });

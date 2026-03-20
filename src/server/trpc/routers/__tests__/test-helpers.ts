@@ -87,18 +87,20 @@ export async function makeAuthCaller(userId: string, email = "test@test.com") {
 }
 
 export async function withSeededUser<TReturn>(
-  fn: (user: {
-    id: string;
-    email: string;
-    emailVerified: boolean;
-    name: string;
-    image: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }, caller: Awaited<ReturnType<typeof makeAuthCaller>>) => Promise<TReturn>,
+  fn: (
+    user: {
+      id: string;
+      email: string;
+      emailVerified: boolean;
+      name: string;
+      image: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    },
+    caller: Awaited<ReturnType<typeof makeAuthCaller>>,
+  ) => Promise<TReturn>,
 ): Promise<TReturn> {
   const user = await seedUserWithBetterAuth();
   const caller = await makeAuthCaller(user.id, user.email);
   return fn(user, caller);
 }
-

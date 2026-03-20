@@ -1,7 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { Meal, Course, Preparation, Recipe, User } from "@/db/models"
+import { Meal, Course, Preparation, Recipe } from "@/db/models"
+import { seedUserWithBetterAuth } from "./test-helpers"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -89,10 +90,10 @@ describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerN
     await withCleanDb(async () => {
       const slug = `${routerName}-ref-${RUN_ID}`
       const taxDoc = await new ModelMap[routerName]({ name: "Referenced", slug }).save()
-      const user = await new User({ email: `tax-${RUN_ID}@test.com`, username: `taxu-${RUN_ID}`, displayUsername: `TaxUser ${RUN_ID}` }).save()
+      const user = await seedUserWithBetterAuth()
 
-      await new Recipe({ name: "R1", userId: user._id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
-      await new Recipe({ name: "R2", userId: user._id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
+      await new Recipe({ name: "R1", userId: user.id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
+      await new Recipe({ name: "R2", userId: user.id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
 
       const { appRouter } = await import("@/server/trpc/router")
       const caller = appRouter.createCaller({ session: null, user: null })

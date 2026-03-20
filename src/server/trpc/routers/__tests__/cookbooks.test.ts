@@ -35,7 +35,9 @@ type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
 
 // ─── Ownership guard ─────────────────────────────────────────────────────────
 
-async function assertOwnershipGuard(act: (caller: Caller, cb: CookbookDoc, r: RecipeDoc) => Promise<any>) {
+async function assertOwnershipGuard(
+  act: (caller: Caller, cb: CookbookDoc, r: RecipeDoc) => Promise<any>,
+) {
   await withCleanDb(async () => {
     const owner = await seedUser();
     const other = await seedUser();
