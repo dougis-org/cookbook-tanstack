@@ -26,4 +26,39 @@ export function getMongoClient(): ReturnType<
   return mongoose.connection.getClient();
 }
 
+type BetterAuthCollectionName = "user" | "session" | "account" | "verification";
+
+export function getBetterAuthCollection(
+  name: BetterAuthCollectionName,
+  client: any = getMongoClient().db(),
+) {
+  return client.collection(name) as any;
+}
+
+export function toHexString(value: unknown): string | null {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "toHexString" in value &&
+    typeof (value as { toHexString?: () => string }).toHexString === "function"
+  ) {
+    return (value as { toHexString: () => string }).toHexString();
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "toString" in value &&
+    typeof (value as { toString?: () => string }).toString === "function"
+  ) {
+    return (value as { toString: () => string }).toString();
+  }
+
+  return null;
+}
+
 export default mongoose;

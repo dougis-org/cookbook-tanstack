@@ -12,27 +12,51 @@ beforeEach(() => {
 
 describe("withCleanDb", () => {
   it("clears all collections before running the function", async () => {
-    const mockDeleteMany = vi.fn().mockResolvedValue(undefined);
+    const mockMongooseDeleteMany = vi.fn().mockResolvedValue(undefined);
+    const mockBetterAuthDeleteMany = vi.fn().mockResolvedValue(undefined);
     const mockCollections = {
-      recipes: { deleteMany: mockDeleteMany },
-      user: { deleteMany: mockDeleteMany },
+      recipes: { deleteMany: mockMongooseDeleteMany },
+      user: { deleteMany: mockMongooseDeleteMany },
     };
 
     vi.doMock("mongoose", () => ({
       default: {
         connection: {
           collections: mockCollections,
-          getClient: vi.fn().mockReturnValue({
-            db: vi.fn().mockReturnValue({
-              databaseName: "test",
-              listCollections: vi.fn().mockReturnValue({
+          db: {
+            listCollections: vi
+              .fn()
+              .mockReturnValue({
                 toArray: vi
                   .fn()
-                  .mockResolvedValue([{ name: "recipes" }, { name: "user" }]),
+                  .mockResolvedValue([
+                    { name: "recipes" },
+                    { name: "user" },
+                    { name: "session" },
+                    { name: "account" },
+                  ]),
               }),
-              collection: vi
+            collection: vi.fn().mockReturnValue({
+              deleteMany: mockBetterAuthDeleteMany,
+            }),
+          },
+          getClient: vi.fn().mockReturnValue({
+            db: vi.fn().mockReturnValue({
+              listCollections: vi
                 .fn()
-                .mockReturnValue({ deleteMany: mockDeleteMany }),
+                .mockReturnValue({
+                  toArray: vi
+                    .fn()
+                    .mockResolvedValue([
+                      { name: "recipes" },
+                      { name: "user" },
+                      { name: "session" },
+                      { name: "account" },
+                    ]),
+                }),
+              collection: vi.fn().mockReturnValue({
+                deleteMany: mockBetterAuthDeleteMany,
+              }),
             }),
           }),
         },
@@ -44,8 +68,12 @@ describe("withCleanDb", () => {
 
     await withCleanDb(fn);
 
-    // Should clear mongoose collections and BetterAuth collections
-    expect(mockDeleteMany.mock.calls.length).toBeGreaterThan(0);
+    // Should clear the mongoose collections via their own deleteMany
+    expect(mockMongooseDeleteMany).toHaveBeenCalledTimes(2);
+
+    // Should also delete in db for non-Mongoose collections (session/account) only
+    expect(mockBetterAuthDeleteMany).toHaveBeenCalledTimes(2);
+
     expect(fn).toHaveBeenCalledOnce();
   });
 

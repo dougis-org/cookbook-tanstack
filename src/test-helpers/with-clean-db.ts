@@ -8,32 +8,28 @@
  * Mongoose auth models.
  */
 import mongoose from "mongoose";
-import { getMongoClient } from "@/db";
 
 export async function withCleanDb<T>(fn: () => Promise<T>): Promise<T> {
   // Clear Mongoose-managed collections
   const mongooseCollections = Object.values(mongoose.connection.collections);
   await Promise.all(mongooseCollections.map((c) => c.deleteMany({})));
 
-  // Also clear BetterAuth collections directly via Mongoose connection
-  // These are not managed by Mongoose models after the refactoring.
+  // Also clear other collections directly via the active Mongoose connection.
+  // This covers BetterAuth collections and any non-Mongoose collections that may be written
+  // by the app or tests, ensuring full isolation and avoiding cross-test leakage.
   const mongooseDb = mongoose.connection.db;
   if (mongooseDb) {
     const db = mongooseDb;
 
-    // Clear BetterAuth collections that are not managed by Mongoose models.
-    const betterAuthCollections = [
-      "user",
-      "session",
-      "account",
-      "verification",
-    ];
     const existingCollections = await db.listCollections().toArray();
     const existingNames = existingCollections.map((c) => c.name);
+    const mongooseNames = Object.keys(mongoose.connection.collections);
 
+    // Clear every collection not already cleaned by Mongoose and avoid system collections.
     await Promise.all(
-      betterAuthCollections
-        .filter((name) => existingNames.includes(name))
+      existingNames
+        .filter((name) => !name.startsWith("system."))
+        .filter((name) => !mongooseNames.includes(name))
         .map(async (collName) => {
           try {
             await db.collection(collName).deleteMany({});

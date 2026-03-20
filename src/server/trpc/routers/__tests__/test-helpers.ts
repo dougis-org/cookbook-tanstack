@@ -4,7 +4,6 @@
  * Uses the Mongoose connection to ensure we're on the same database as tests.
  */
 import mongoose, { Types } from "mongoose";
-import { getMongoClient } from "@/db";
 
 let seedCounter = 0;
 
@@ -29,6 +28,8 @@ export async function seedUserWithBetterAuth() {
     throw new Error("MongoDB connection has no active database");
   }
 
+  const usersCollection = db.collection("user");
+
   const user = {
     _id: userId,
     email,
@@ -39,7 +40,6 @@ export async function seedUserWithBetterAuth() {
     updatedAt: now,
   };
 
-  const usersCollection = db.collection("user");
   const insertResult = await usersCollection.insertOne(user);
 
   // Verify the insert was successful
@@ -64,3 +64,41 @@ export async function seedUserWithBetterAuth() {
     updatedAt: now,
   };
 }
+
+// Shared test helpers for TRPC router tests.
+const RUN_ID = Date.now();
+let seq = 0;
+
+export function uid() {
+  return `${RUN_ID}-${++seq}`;
+}
+
+export async function makeAnonCaller() {
+  const { appRouter } = await import("@/server/trpc/router");
+  return appRouter.createCaller({ session: null, user: null });
+}
+
+export async function makeAuthCaller(userId: string, email = "test@test.com") {
+  const { appRouter } = await import("@/server/trpc/router");
+  return appRouter.createCaller({
+    session: { id: "s1" } as never,
+    user: { id: userId, email } as never,
+  });
+}
+
+export async function withSeededUser<TReturn>(
+  fn: (user: {
+    id: string;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }, caller: Awaited<ReturnType<typeof makeAuthCaller>>) => Promise<TReturn>,
+): Promise<TReturn> {
+  const user = await seedUserWithBetterAuth();
+  const caller = await makeAuthCaller(user.id, user.email);
+  return fn(user, caller);
+}
+

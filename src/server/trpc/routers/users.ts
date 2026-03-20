@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../init";
-import { getMongoClient } from "@/db";
+import { getMongoClient, toHexString } from "@/db";
 
 interface UserDocument {
   _id: ObjectId;
@@ -39,15 +39,8 @@ function transformUserDoc(
     return null;
   }
 
-  let id: string;
-  if (typeof typed._id === "string") {
-    id = typed._id;
-  } else if (
-    typeof typed._id === "object" &&
-    typeof typed._id.toHexString === "function"
-  ) {
-    id = typed._id.toHexString();
-  } else {
+  const id = toHexString(typed._id);
+  if (!id) {
     return null;
   }
 
@@ -81,8 +74,7 @@ export const usersRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const db = getMongoClient().db();
-      const usersCollection = db.collection("user");
+      const usersCollection = getMongoClient().db().collection("user");
 
       const userId = ctx.user.id;
       let objectId: ObjectId;
@@ -118,7 +110,7 @@ export const usersRouter = router({
       // Fallback: if findOneAndUpdate didn't return the document (either because
       // it wasn't found or due to driver quirks), update separately and query back.
       // This ensures we always return the final document state after the update.
-      if (!updated || !updated.value) {
+      if (!updated) {
         await usersCollection.updateOne(
           { _id: objectId },
           { $set: updateData },
@@ -128,6 +120,6 @@ export const usersRouter = router({
         return transformUserDoc(refreshed);
       }
 
-      return transformUserDoc(updated.value);
+      return transformUserDoc(updated);
     }),
 });

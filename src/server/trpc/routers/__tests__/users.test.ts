@@ -1,29 +1,26 @@
 // @vitest-environment node
 import { describe, it, expect } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { seedUserWithBetterAuth } from "./test-helpers";
+import { withSeededUser } from "./test-helpers";
 
-async function makeAuthCaller(userId: string, email: string = "test@test.com") {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({
-    session: { id: "s1" } as never,
-    user: { id: userId, email } as never,
-  });
+async function withLoggedIn<TReturn>(
+  fn: (user: any, caller: any) => Promise<TReturn>,
+): Promise<TReturn> {
+  return withCleanDb(async () => withSeededUser(fn));
 }
 
 describe("users router", () => {
   describe("users.me", () => {
     it("returns the current user from Better-Auth session", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id, user.email);
+      await withCleanDb(async () =>
+        withSeededUser(async (user, caller) => {
+          const result = await caller.users.me();
 
-        const result = await caller.users.me();
-
-        expect(result).not.toBeNull();
-        expect(result).toHaveProperty("id", user.id);
-        expect(result).toHaveProperty("email", user.email);
-      });
+          expect(result).not.toBeNull();
+          expect(result).toHaveProperty("id", user.id);
+          expect(result).toHaveProperty("email", user.email);
+        }),
+      );
     });
 
     it("returns null for unauthenticated user (should be caught by protectedProcedure)", async () => {
@@ -42,9 +39,7 @@ describe("users router", () => {
 
   describe("users.updateProfile", () => {
     it("updates user name and returns updated user data", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id, user.email);
+      await withLoggedIn(async (user, caller) => {
         const newName = "Updated Name";
 
         const result = await caller.users.updateProfile({ name: newName });
@@ -56,9 +51,7 @@ describe("users router", () => {
     });
 
     it("updates user image and returns updated user data", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id, user.email);
+      await withLoggedIn(async (user, caller) => {
         const newImage = "https://example.com/avatar.jpg";
 
         const result = await caller.users.updateProfile({ image: newImage });
@@ -70,9 +63,7 @@ describe("users router", () => {
     });
 
     it("updates both name and image together", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id, user.email);
+      await withLoggedIn(async (user, caller) => {
         const newName = "New Name";
         const newImage = "https://example.com/new-avatar.jpg";
 
@@ -89,9 +80,7 @@ describe("users router", () => {
     });
 
     it("rejects empty input (at least one field required)", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id, user.email);
+      await withLoggedIn(async (_user, caller) => {
 
         // zod validation should fail on empty object
         await expect(caller.users.updateProfile({})).rejects.toThrow();
@@ -99,9 +88,7 @@ describe("users router", () => {
     });
 
     it("rejects invalid image URL format", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
 
         await expect(
           caller.users.updateProfile({ image: "not-a-valid-url" }),
@@ -110,9 +97,7 @@ describe("users router", () => {
     });
 
     it("rejects name that is too short", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
 
         await expect(
           caller.users.updateProfile({ name: "" }),
@@ -121,9 +106,7 @@ describe("users router", () => {
     });
 
     it("rejects name that is too long", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
         const tooLongName = "x".repeat(256);
 
         await expect(
@@ -133,9 +116,7 @@ describe("users router", () => {
     });
 
     it("preserves other user fields when updating individual fields", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (user, caller) => {
         const newName = "Updated Name";
 
         const result = await caller.users.updateProfile({ name: newName });
@@ -148,9 +129,7 @@ describe("users router", () => {
     });
 
     it("returns transformed document with id as hex string", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (user, caller) => {
 
         const result = await caller.users.updateProfile({ name: "Test" });
 
@@ -165,10 +144,8 @@ describe("users router", () => {
     });
 
     it("updates updatedAt timestamp when profile is modified", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
+      await withLoggedIn(async (user, caller) => {
         const originalUpdatedAt = new Date(user.updatedAt!);
-        const caller = await makeAuthCaller(user.id);
 
         // Wait a moment to ensure time difference
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -185,9 +162,7 @@ describe("users router", () => {
     });
 
     it("handles partial updates with only name field", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (user, caller) => {
         const originalImage = user.image;
 
         const result = await caller.users.updateProfile({ name: "New Name" });
@@ -198,9 +173,7 @@ describe("users router", () => {
     });
 
     it("handles partial updates with only image field", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (user, caller) => {
         const originalName = user.name;
 
         const newImage = "https://example.com/image.jpg";
@@ -212,9 +185,7 @@ describe("users router", () => {
     });
 
     it("rejects profile object with no fields provided", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
 
         // Empty object should fail the refine validation
         await expect(caller.users.updateProfile({} as never)).rejects.toThrow(
@@ -224,9 +195,7 @@ describe("users router", () => {
     });
 
     it("handles special characters in name", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
         const specialName = "Jean-Claude Müller-Strasse";
 
         const result = await caller.users.updateProfile({ name: specialName });
@@ -252,9 +221,7 @@ describe("users router", () => {
     });
 
     it("clears name field when updated by clearing previous value", async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth();
-        const caller = await makeAuthCaller(user.id);
+      await withLoggedIn(async (_user, caller) => {
 
         // Update with an empty-looking but valid name (actually tests only image update)
         const result = await caller.users.updateProfile({
@@ -286,10 +253,7 @@ describe("users router - error cases", () => {
   });
 
   it("updates successfully even if findOneAndUpdate has driver quirks", async () => {
-    await withCleanDb(async () => {
-      const user = await seedUserWithBetterAuth();
-      const caller = await makeAuthCaller(user.id);
-
+    await withLoggedIn(async (_user, caller) => {
       // Make multiple rapid updates to test consistency
       const result1 = await caller.users.updateProfile({ name: "Name1" });
       const result2 = await caller.users.updateProfile({ name: "Name2" });
@@ -305,19 +269,13 @@ describe("users router - error cases", () => {
   });
 
   it("enforces name validation on empty string", async () => {
-    await withCleanDb(async () => {
-      const user = await seedUserWithBetterAuth();
-      const caller = await makeAuthCaller(user.id);
-
+    await withLoggedIn(async (_user, caller) => {
       await expect(caller.users.updateProfile({ name: "" })).rejects.toThrow();
     });
   });
 
   it("rejects invalid URL in image field", async () => {
-    await withCleanDb(async () => {
-      const user = await seedUserWithBetterAuth();
-      const caller = await makeAuthCaller(user.id);
-
+    await withLoggedIn(async (_user, caller) => {
       await expect(
         caller.users.updateProfile({ image: "://invalid" }),
       ).rejects.toThrow();

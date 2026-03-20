@@ -6,8 +6,7 @@ import { getMongoClient } from "@/db";
 
 export const auth = betterAuth({
   // Workaround for nested MongoDB dependency versions (mongoose has its own mongodb package).
-  // We cast through unknown to ensure the adapter accepts the runtime DB object.
-  // If dependencies are aligned, this cast can be removed.
+  // Cast through unknown to avoid incompatible driver type declarations while retaining runtime behavior.
   database: mongodbAdapter(
     getMongoClient().db() as unknown as import("mongodb").Db,
   ),

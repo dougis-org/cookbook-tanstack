@@ -6,6 +6,8 @@ export interface AdminResolution {
   username: string;
 }
 
+import { getBetterAuthCollection, toHexString } from "@/db";
+
 export async function resolveDefaultAdminUser(
   ObjectId: {
     isValid: (value: string) => boolean;
@@ -64,9 +66,9 @@ export async function resolveDefaultAdminUser(
 
     // If a client is available, verify that the ID exists in the BetterAuth user collection.
     if (mongoClient) {
-      const usersCollection = mongoClient.db().collection("user");
+      const usersCollection = getBetterAuthCollection("user", mongoClient.db());
       const idAsObjectId = new ObjectId(lookupValue);
-      const resolvedUser = await usersCollection.findOne({ _id: idAsObjectId });
+      const resolvedUser = await usersCollection.findOne({ _id: idAsObjectId } as any);
       if (!resolvedUser) {
         throw new Error(
           `MIGRATION_DEFAULT_ADMIN_USER_ID ${lookupValue} does not correspond to an existing user`,
@@ -82,13 +84,13 @@ export async function resolveDefaultAdminUser(
     );
   } else {
     // Query MongoDB for the user by email or username
-    const usersCollection = mongoClient.db().collection("user");
+    const usersCollection = getBetterAuthCollection("user", mongoClient.db());
     const query =
       selector.mode === "email"
         ? { email: lookupValue }
         : { username: lookupValue };
 
-    const user = (await usersCollection.findOne(query)) as Record<
+    const user = (await usersCollection.findOne(query as any)) as Record<
       string,
       unknown
     > | null;
@@ -97,24 +99,12 @@ export async function resolveDefaultAdminUser(
     }
 
     // Extract the _id and convert to hex string if needed
-    const idValue = user._id;
-    if (typeof idValue === "string") {
-      resolvedId = idValue;
-    } else if (
-      idValue &&
-      typeof idValue === "object" &&
-      "toHexString" in idValue
-    ) {
-      resolvedId = (idValue as { toHexString(): string }).toHexString();
-    } else if (
-      idValue &&
-      typeof idValue === "object" &&
-      "toString" in idValue
-    ) {
-      resolvedId = (idValue as { toString(): string }).toString();
-    } else {
+    const candidateId = toHexString(user._id);
+    if (!candidateId) {
       throw new Error("Invalid user ID format in database");
     }
+
+    resolvedId = candidateId;
 
     email = typeof user.email === "string" ? user.email : email;
     username = typeof user.username === "string" ? user.username : username;

@@ -2,15 +2,14 @@
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { Recipe, Cookbook, Classification } from "@/db/models";
-import { seedUserWithBetterAuth } from "./test-helpers";
+import {
+  seedUserWithBetterAuth,
+  uid,
+  makeAnonCaller,
+  makeAuthCaller,
+} from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
-
-const RUN_ID = Date.now();
-let seq = 0;
-function uid() {
-  return `${RUN_ID}-${++seq}`;
-}
 
 const seedUser = seedUserWithBetterAuth;
 
@@ -28,19 +27,6 @@ async function seedCookbook(
 
 async function seedRecipe(userId: string) {
   return new Recipe({ name: `Recipe-${uid()}`, userId, isPublic: true }).save();
-}
-
-async function makeAnonCaller() {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null });
-}
-
-async function makeAuthCaller(userId: string) {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({
-    session: { id: "s1" } as never,
-    user: { id: userId } as never,
-  });
 }
 
 type Caller = Awaited<ReturnType<typeof makeAuthCaller>>;
