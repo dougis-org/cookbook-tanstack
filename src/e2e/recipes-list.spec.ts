@@ -68,8 +68,20 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
+    // Open the "More Filters" panel to reveal taxonomy chips
+    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
+    const moreFiltersContent = page.getByTestId("filter-more-filters-content");
+    await moreFiltersToggle.click();
+    await expect(moreFiltersContent).toBeVisible();
+
+    // Verify the toggle works (collapse/expand)
+    await moreFiltersToggle.click();
+    await expect(moreFiltersContent).not.toBeVisible();
+    await moreFiltersToggle.click();
+    await expect(moreFiltersContent).toBeVisible();
+
     // Scope to taxonomy chips only (meals, courses, preparations)
-    const filterChips = page.locator('[data-testid="taxonomy-filter-chip"]');
+    const filterChips = page.locator('[data-testid^="taxonomy-chip-"]');
     const chipCount = await filterChips.count();
 
     if (chipCount > 0) {
@@ -92,8 +104,12 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
+    // Open the "More Filters" panel to reveal taxonomy chips
+    await page.getByTestId("filter-more-filters-toggle").click();
+    await expect(page.getByTestId("filter-more-filters-content")).toBeVisible();
+
     // Scope to taxonomy chips only (meals, courses, preparations)
-    const filterChips = page.locator('[data-testid="taxonomy-filter-chip"]');
+    const filterChips = page.locator('[data-testid^="taxonomy-chip-"]');
     const chipCount = await filterChips.count();
 
     // Taxonomy data should be seeded — assert chips are present
