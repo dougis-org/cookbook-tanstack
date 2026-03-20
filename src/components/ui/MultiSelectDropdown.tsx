@@ -12,6 +12,7 @@ interface MultiSelectDropdownProps {
   onChange: (ids: string[]) => void
   placeholder: string
   label: string
+  labelPlural?: string
   counts?: Record<string, number>
   dataTestId?: string
   ariaLabel?: string
@@ -23,6 +24,7 @@ export function MultiSelectDropdown({
   onChange,
   placeholder,
   label,
+  labelPlural,
   counts,
   dataTestId,
   ariaLabel,
@@ -53,7 +55,7 @@ export function MultiSelectDropdown({
     if (selectedIds.length === 1) {
       return options.find((o) => o.id === selectedIds[0])?.name ?? placeholder
     }
-    return `${selectedIds.length} ${label}s`
+    return `${selectedIds.length} ${labelPlural ?? `${label}s`}`
   }
 
   function toggle(id: string) {
@@ -71,7 +73,7 @@ export function MultiSelectDropdown({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ? `${buttonLabel()} ${ariaLabel}` : undefined}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
           isActive
             ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
@@ -83,11 +85,14 @@ export function MultiSelectDropdown({
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-1 min-w-[180px] max-h-64 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 shadow-lg">
+        <div
+          data-testid="dropdown-panel"
+          className="absolute z-20 mt-1 min-w-[180px] max-h-64 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 shadow-lg"
+        >
           {options.length === 0 ? (
             <p className="px-3 py-2 text-sm text-gray-500">No options</p>
           ) : (
-            <ul role="listbox" aria-multiselectable="true" className="py-1">
+            <ul className="py-1">
               {options.map((opt) => {
                 const checked = selectedIds.includes(opt.id)
                 const count = counts?.[opt.id]

@@ -31,6 +31,20 @@ describe('MultiSelectDropdown', () => {
       )
       expect(screen.getByRole('button')).toHaveTextContent('2 items')
     })
+
+    it('uses labelPlural when provided instead of appending s', () => {
+      render(
+        <MultiSelectDropdown
+          options={OPTIONS}
+          selectedIds={['a', 'c']}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="category"
+          labelPlural="categories"
+        />,
+      )
+      expect(screen.getByRole('button')).toHaveTextContent('2 categories')
+    })
   })
 
   describe('dropdown panel', () => {
@@ -38,7 +52,7 @@ describe('MultiSelectDropdown', () => {
       render(
         <MultiSelectDropdown options={OPTIONS} selectedIds={[]} onChange={vi.fn()} placeholder="All Items" label="item" />,
       )
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('dropdown-panel')).not.toBeInTheDocument()
     })
 
     it('opens the checkbox panel on button click', async () => {
@@ -46,7 +60,7 @@ describe('MultiSelectDropdown', () => {
         <MultiSelectDropdown options={OPTIONS} selectedIds={[]} onChange={vi.fn()} placeholder="All Items" label="item" />,
       )
       await userEvent.click(screen.getByRole('button'))
-      expect(screen.getByRole('listbox')).toBeInTheDocument()
+      expect(screen.getByTestId('dropdown-panel')).toBeInTheDocument()
       expect(screen.getAllByRole('checkbox')).toHaveLength(3)
     })
 
@@ -56,7 +70,7 @@ describe('MultiSelectDropdown', () => {
       )
       await userEvent.click(screen.getByRole('button'))
       await userEvent.click(screen.getByRole('button'))
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('dropdown-panel')).not.toBeInTheDocument()
     })
 
     it('closes the panel when Escape is pressed', async () => {
@@ -64,9 +78,22 @@ describe('MultiSelectDropdown', () => {
         <MultiSelectDropdown options={OPTIONS} selectedIds={[]} onChange={vi.fn()} placeholder="All Items" label="item" />,
       )
       await userEvent.click(screen.getByRole('button'))
-      expect(screen.getByRole('listbox')).toBeInTheDocument()
+      expect(screen.getByTestId('dropdown-panel')).toBeInTheDocument()
       await userEvent.keyboard('{Escape}')
-      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('dropdown-panel')).not.toBeInTheDocument()
+    })
+
+    it('closes the panel when clicking outside the component', async () => {
+      render(
+        <div>
+          <MultiSelectDropdown options={OPTIONS} selectedIds={[]} onChange={vi.fn()} placeholder="All Items" label="item" />
+          <button data-testid="outside-button">Outside</button>
+        </div>,
+      )
+      await userEvent.click(screen.getByRole('button', { name: /All Items/i }))
+      expect(screen.getByTestId('dropdown-panel')).toBeInTheDocument()
+      await userEvent.click(screen.getByTestId('outside-button'))
+      expect(screen.queryByTestId('dropdown-panel')).not.toBeInTheDocument()
     })
   })
 
@@ -136,6 +163,27 @@ describe('MultiSelectDropdown', () => {
       )
       await userEvent.click(screen.getByRole('button'))
       expect(screen.getByRole('button')).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    it('includes current selection state in aria-label when ariaLabel is provided', () => {
+      render(
+        <MultiSelectDropdown
+          options={OPTIONS}
+          selectedIds={['a', 'b']}
+          onChange={vi.fn()}
+          placeholder="All Items"
+          label="item"
+          ariaLabel="filter by item"
+        />,
+      )
+      expect(screen.getByRole('button')).toHaveAttribute('aria-label', '2 items filter by item')
+    })
+
+    it('omits aria-label when ariaLabel prop is not provided', () => {
+      render(
+        <MultiSelectDropdown options={OPTIONS} selectedIds={[]} onChange={vi.fn()} placeholder="All Items" label="item" />,
+      )
+      expect(screen.getByRole('button')).not.toHaveAttribute('aria-label')
     })
   })
 })
