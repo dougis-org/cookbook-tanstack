@@ -193,4 +193,95 @@ describe("RecipeDetail", () => {
     render(<RecipeDetail recipe={{ ...makeRecipe(), ...props }} />)
     assert()
   })
+
+  it("renders RecipeMetadataHeader component with category and source", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe({ classificationId: "c1" }),
+          classificationName: "Baked Goods",
+          sourceName: "AllRecipes",
+          sourceUrl: "https://allrecipes.com",
+        }}
+      />
+    )
+
+    expect(screen.getByText("Baked Goods")).toBeInTheDocument()
+    expect(screen.getByText("AllRecipes")).toBeInTheDocument()
+  })
+
+  it("renders taxonomy badges grouped with labels", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe(),
+          meals: [{ id: "m1", name: "Breakfast" }, { id: "m2", name: "Lunch" }],
+          courses: [{ id: "c1", name: "Appetizer" }],
+          preparations: [{ id: "p1", name: "Bake" }],
+        }}
+      />
+    )
+
+    // Check for labels
+    expect(screen.getByText(/Meals:/i)).toBeInTheDocument()
+    expect(screen.getByText(/Courses:/i)).toBeInTheDocument()
+    expect(screen.getByText(/Preparations:/i)).toBeInTheDocument()
+    
+    // Check badges render after labels
+    expect(screen.getByText("Breakfast")).toBeInTheDocument()
+    expect(screen.getByText("Lunch")).toBeInTheDocument()
+    expect(screen.getByText("Appetizer")).toBeInTheDocument()
+    expect(screen.getByText("Bake")).toBeInTheDocument()
+  })
+
+  it("renders icons on taxonomy badges", () => {
+    const { container } = render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe(),
+          meals: [{ id: "m1", name: "Breakfast" }],
+          courses: [{ id: "c1", name: "Appetizer" }],
+          preparations: [{ id: "p1", name: "Bake" }],
+        }}
+      />
+    )
+
+    // Should have SVG icons for each badge type
+    const icons = container.querySelectorAll('svg[aria-hidden="true"]')
+    expect(icons.length).toBeGreaterThanOrEqual(3) // At least one per taxonomy type
+  })
+
+  it("renders category badge as non-clickable plain display", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe({ classificationId: "c1" }),
+          classificationName: "Baked Goods",
+        }}
+      />
+    )
+
+    const category = screen.getByText("Baked Goods")
+    expect(category.tagName).toBe("SPAN")
+    expect(category.closest("a")).not.toBeInTheDocument()
+  })
+
+  it("does not render classification badge when classificationName is missing", () => {
+    render(<RecipeDetail recipe={makeRecipe({ classificationId: "c1" })} />)
+    
+    expect(screen.queryByText(/Baked|Italian|Asian/)).not.toBeInTheDocument()
+  })
+
+  it("renders taxonomy section even without classification", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe(),
+          meals: [{ id: "m1", name: "Breakfast" }],
+        }}
+      />
+    )
+
+    expect(screen.getByText("Breakfast")).toBeInTheDocument()
+  })
 })

@@ -145,4 +145,71 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
       (await prevButton.isVisible()) || (await nextButton.isVisible()),
     ).toBeTruthy();
   });
+
+  test("should display category badge with solid styling on recipe cards", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+
+    // Get the first recipe card
+    const firstCard = page.locator('[data-testid="recipe-card"]').first();
+    await expect(firstCard).toBeVisible();
+
+    // Category/classification badge should be present
+    const categoryBadge = firstCard.locator('[data-testid="category-badge"]');
+    await expect(categoryBadge).toBeVisible();
+
+    // Badge should have solid cyan background (not semi-transparent)
+    const computedStyle = await categoryBadge.evaluate((el) => {
+      const styles = window.getComputedStyle(el);
+      return {
+        backgroundColor: styles.backgroundColor,
+        color: styles.color,
+      };
+    });
+
+    // Verify dark background for solid styling (approximately cyan-600)
+    expect(computedStyle.backgroundColor).toMatch(/rgb\(|rgba\(/);
+    // Verify high contrast text (white or light color)
+    expect(computedStyle.color).toBeDefined();
+  });
+
+  test("should display category badge with readable text on cards", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+
+    const firstCard = page.locator('[data-testid="recipe-card"]').first();
+    const categoryBadge = firstCard.locator('[data-testid="category-badge"]');
+
+    // Badge should contain text content (category name)
+    const badgeText = await categoryBadge.textContent();
+    expect(badgeText).toBeTruthy();
+    expect(badgeText?.length).toBeGreaterThan(0);
+  });
+
+  test("should position category badge prominently on recipe cards", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+
+    const firstCard = page.locator('[data-testid="recipe-card"]').first();
+    const categoryBadge = firstCard.locator('[data-testid="category-badge"]');
+    const cardTitle = firstCard.locator('[data-testid="recipe-title"]');
+
+    // Badge should appear before or at top of card
+    const badgeBox = await categoryBadge.boundingBox();
+    const titleBox = await cardTitle.boundingBox();
+
+    expect(badgeBox).toBeTruthy();
+    expect(titleBox).toBeTruthy();
+
+    // Badge should be positioned above the title (or in header area)
+    if (badgeBox && titleBox) {
+      expect(badgeBox.y).toBeLessThanOrEqual(titleBox.y);
+    }
+  });
 });

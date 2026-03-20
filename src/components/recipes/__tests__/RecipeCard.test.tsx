@@ -65,4 +65,30 @@ describe("RecipeCard", () => {
 
     expect(screen.getByText("easy")).toBeInTheDocument()
   })
+
+  it("renders classification badge with solid styling when provided", () => {
+    render(<RecipeCard recipe={makeRecipe({ classificationId: "c1", classificationName: "Baked Goods" })} />)
+
+    const badge = screen.getByText("Baked Goods")
+    expect(badge).toHaveClass("bg-cyan-600")
+    expect(badge).toHaveClass("text-white")
+  })
+
+  it("displays classification badge above recipe title", () => {
+    const { container } = render(<RecipeCard recipe={makeRecipe({ classificationId: "c1", classificationName: "Baked Goods", name: "Banana Bread" })} />)
+
+    const title = screen.getByText("Banana Bread")
+    const badge = screen.getByText("Baked Goods")
+    
+    // Badge should appear before title in DOM
+    const titleIndex = Array.from(container.querySelectorAll("*")).indexOf(title)
+    const badgeIndex = Array.from(container.querySelectorAll("*")).indexOf(badge)
+    expect(badgeIndex).toBeLessThan(titleIndex)
+  })
+
+  it("does not render classification badge when classificationName is absent", () => {
+    render(<RecipeCard recipe={makeRecipe({ classificationId: "c1" })} />)
+
+    expect(screen.queryByText(/Baked|Italian|Asian/)).not.toBeInTheDocument()
+  })
 })

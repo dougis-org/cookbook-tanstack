@@ -9,7 +9,7 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+    <div data-testid="recipe-card" className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
       {recipe.imageUrl && (
         <div data-testid="recipe-card-image" className="h-48 bg-gray-200 dark:bg-gray-700">
           <img
@@ -28,7 +28,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
             />
           </div>
         )}
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        <h3 data-testid="recipe-title" className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
           {recipe.name}
         </h3>
         {recipe.notes && (

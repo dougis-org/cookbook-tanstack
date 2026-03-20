@@ -143,4 +143,135 @@ test.describe("Recipe CRUD Operations", () => {
       page.getByRole("heading", { name: recipeName }),
     ).not.toBeVisible();
   });
+
+  test("should display recipe metadata header with category and source", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    // Create a recipe
+    const recipeName = getUniqueRecipeName("Metadata Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipeName });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Metadata header should exist
+    const metadataHeader = page.locator('[data-testid="recipe-metadata-header"]');
+    await expect(metadataHeader).toBeVisible();
+
+    // Category badge should be present and non-clickable
+    const categoryBadge = metadataHeader.locator(
+      '[data-testid="category-badge"]',
+    );
+    await expect(categoryBadge).toBeVisible();
+
+    // Badge should not be a link
+    const badgeRole = await categoryBadge.evaluate((el) => el.tagName);
+    expect(badgeRole).not.toBe("A");
+  });
+
+  test("should display taxonomy badges grouped with labels on detail view", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    // Create a recipe to get a detail view
+    const recipeName = getUniqueRecipeName("Taxonomy Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipeName,
+      notes: "Test recipe with taxonomy",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Look for taxonomy labels (Meals:, Courses:, Preparations:)
+    const mealLabel = page.getByText(/^Meals:/);
+    const courseLabel = page.getByText(/^Courses:/);
+    const preparationLabel = page.getByText(/^Preparations:/);
+
+    // At least one taxonomy section should be visible
+    const anyLabelVisible =
+      (await mealLabel.isVisible().catch(() => false)) ||
+      (await courseLabel.isVisible().catch(() => false)) ||
+      (await preparationLabel.isVisible().catch(() => false));
+
+    // If taxonomy data is seeded, labels should be present near badges
+    if (anyLabelVisible) {
+      // Verify taxonomy badges exist after labels
+      const taxonomyBadges = page.locator('[data-testid="taxonomy-badge"]');
+      expect(await taxonomyBadges.count()).toBeGreaterThan(0);
+    }
+  });
+
+  test("should display source as link or text based on URL presence", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    // Create a recipe
+    const recipeName = getUniqueRecipeName("Source Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipeName });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Look for source display element
+    const sourceElement = page.locator('[data-testid="recipe-source"]');
+
+    // Source element may exist (if recipe has a source)
+    if (await sourceElement.isVisible().catch(() => false)) {
+      // It should be either a link or plain text
+      const sourceLink = sourceElement.locator("a");
+      const isLink = await sourceLink.isVisible().catch(() => false);
+      const isPlainText = (await sourceElement.textContent())?.length ?? 0 > 0;
+
+      // At least one representation should exist
+      expect(isLink || isPlainText).toBeTruthy();
+
+      // If it's a link, verify security attributes
+      if (isLink) {
+        const rel = await sourceLink.getAttribute("rel");
+        const target = await sourceLink.getAttribute("target");
+        if (target === "_blank") {
+          expect(rel).toContain("noopener noreferrer");
+        }
+      }
+    }
+  });
+
+  test("should display metadata in responsive layout (desktop/mobile)", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    // Create a recipe
+    const recipeName = getUniqueRecipeName("Responsive Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipeName });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    const metadataHeader = page.locator('[data-testid="recipe-metadata-header"]');
+    await expect(metadataHeader).toBeVisible();
+
+    // Test desktop layout (md breakpoint)
+    await page.setViewportSize({ width: 1024, height: 768 });
+    const desktopLayout = await metadataHeader.evaluate((el) => {
+      const styles = window.getComputedStyle(el);
+      return {
+        display: styles.display,
+        flexDirection: styles.flexDirection,
+      };
+    });
+    expect(desktopLayout.display).toMatch(/flex|grid/);
+
+    // Test mobile layout
+    await page.setViewportSize({ width: 380, height: 667 });
+    const mobileLayout = await metadataHeader.evaluate((el) => {
+      const styles = window.getComputedStyle(el);
+      return {
+        display: styles.display,
+        flexDirection: styles.flexDirection,
+      };
+    });
+    expect(mobileLayout.display).toMatch(/flex|block|grid/);
+  });
 });

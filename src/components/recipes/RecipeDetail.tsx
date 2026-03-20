@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
-import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
+import RecipeMetadataHeader from '@/components/recipes/RecipeMetadataHeader'
 import ServingSizeAdjuster from '@/components/recipes/ServingSizeAdjuster'
 
 interface RecipeDetailProps {
@@ -56,45 +56,68 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
             {recipe.name}
           </h1>
 
-          {/* Classification + taxonomy tags */}
-          {((recipe.classificationId && recipe.classificationName) || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {recipe.classificationId && recipe.classificationName && (
-                <ClassificationBadge
-                  classificationId={recipe.classificationId}
-                  classificationName={recipe.classificationName}
-                  linkable
-                />
-              )}
-              {recipe.meals?.map((m) => (
-                <TaxonomyBadge key={m.id} name={m.name} variant="meal" />
-              ))}
-              {recipe.courses?.map((c) => (
-                <TaxonomyBadge key={c.id} name={c.name} variant="course" />
-              ))}
-              {recipe.preparations?.map((p) => (
-                <TaxonomyBadge key={p.id} name={p.name} variant="preparation" />
-              ))}
-            </div>
+          {/* Recipe Metadata Header (Category + Source) */}
+          {(recipe.classificationName || recipe.sourceName) && (
+            <RecipeMetadataHeader
+              classification={
+                recipe.classificationId && recipe.classificationName
+                  ? { id: recipe.classificationId, name: recipe.classificationName }
+                  : undefined
+              }
+              source={
+                recipe.sourceName
+                  ? { name: recipe.sourceName, url: recipe.sourceUrl || undefined }
+                  : undefined
+              }
+            />
           )}
 
-          {/* Source */}
-          {recipe.sourceName && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Source:{' '}
-              {recipe.sourceUrl ? (
-                <a
-                  href={recipe.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
-                >
-                  {recipe.sourceName}
-                </a>
-              ) : (
-                <span className="text-gray-300">{recipe.sourceName}</span>
-              )}
-            </p>
+          {/* Grouped Taxonomy Badges with Labels */}
+          {(recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
+            <div className="mb-6">
+              {recipe.meals?.length ? (
+                <div className="mb-3">
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                    Meals:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.meals.map((m) => (
+                      <span key={m.id} data-testid="taxonomy-badge">
+                        <TaxonomyBadge name={m.name} variant="meal" />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {recipe.courses?.length ? (
+                <div className="mb-3">
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                    Courses:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.courses.map((c) => (
+                      <span key={c.id} data-testid="taxonomy-badge">
+                        <TaxonomyBadge name={c.name} variant="course" />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              {recipe.preparations?.length ? (
+                <div className="mb-3">
+                  <p className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                    Preparations:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {recipe.preparations.map((p) => (
+                      <span key={p.id} data-testid="taxonomy-badge">
+                        <TaxonomyBadge name={p.name} variant="preparation" />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           )}
 
           {recipe.notes && (
