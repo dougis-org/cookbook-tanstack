@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterRow2Dropdowns } from '../FilterRow2Dropdowns'
 
@@ -15,8 +15,8 @@ const mockSources = [
 ]
 
 const defaultProps = {
-  classificationId: undefined,
-  sourceId: undefined,
+  classificationIds: undefined,
+  sourceIds: undefined,
   classifications: mockClassifications,
   sources: mockSources,
 }
@@ -29,82 +29,121 @@ describe('FilterRow2Dropdowns', () => {
   })
 
   describe('rendering', () => {
-    it('renders Classification dropdown', () => {
+    it('renders Classification dropdown button with placeholder', () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      expect(screen.getByDisplayValue('All Categories')).toBeInTheDocument()
+      expect(screen.getByTestId('filter-dropdown-classification')).toBeInTheDocument()
+      expect(screen.getByTestId('filter-dropdown-classification')).toHaveTextContent('All Categories')
     })
 
-    it('renders Source dropdown', () => {
+    it('renders Source dropdown button with placeholder', () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      expect(screen.getByDisplayValue('All Sources')).toBeInTheDocument()
+      expect(screen.getByTestId('filter-dropdown-source')).toBeInTheDocument()
+      expect(screen.getByTestId('filter-dropdown-source')).toHaveTextContent('All Sources')
     })
   })
 
   describe('classification options', () => {
-    it('displays all options', () => {
+    it('displays all options when dropdown is open', async () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      mockClassifications.forEach(c => {
+      await userEvent.click(screen.getByTestId('filter-dropdown-classification').querySelector('button')!)
+      mockClassifications.forEach((c) => {
         expect(screen.getByText(c.name)).toBeInTheDocument()
       })
     })
 
-    it('calls updateSearch when selected', async () => {
-      const user = userEvent.setup()
+    it('calls updateSearch with array when an option is selected', async () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      const select = screen.getByDisplayValue('All Categories')
-      await user.selectOptions(select, '1')
-      expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationId: '1' })
+      const wrapper = screen.getByTestId('filter-dropdown-classification')
+      await userEvent.click(wrapper.querySelector('button')!)
+      const checkboxes = within(wrapper).getAllByRole('checkbox')
+      await userEvent.click(checkboxes[0]) // Desserts
+      expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationIds: ['1'] })
     })
 
-    it('calls updateSearch with undefined when reset', async () => {
-      const user = userEvent.setup()
+    it('calls updateSearch with multiple IDs when two options are selected', async () => {
       render(
-        <FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} classificationId="1" />
+        <FilterRow2Dropdowns
+          {...defaultProps}
+          classificationIds={['1']}
+          updateSearch={mockUpdateSearch}
+        />,
       )
-      const select = screen.getByDisplayValue('Desserts')
-      await user.selectOptions(select, '')
-      expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationId: undefined })
+      const wrapper = screen.getByTestId('filter-dropdown-classification')
+      await userEvent.click(wrapper.querySelector('button')!)
+      const checkboxes = within(wrapper).getAllByRole('checkbox')
+      await userEvent.click(checkboxes[1]) // Entrees
+      expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationIds: ['1', '2'] })
     })
 
-    it('displays selected value', () => {
+    it('calls updateSearch with undefined when all selections are cleared', async () => {
       render(
-        <FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} classificationId="2" />
+        <FilterRow2Dropdowns
+          {...defaultProps}
+          classificationIds={['1']}
+          updateSearch={mockUpdateSearch}
+        />,
       )
-      expect(screen.getByDisplayValue('Entrees')).toBeInTheDocument()
+      const wrapper = screen.getByTestId('filter-dropdown-classification')
+      await userEvent.click(wrapper.querySelector('button')!)
+      const checkboxes = within(wrapper).getAllByRole('checkbox')
+      await userEvent.click(checkboxes[0]) // Deselect Desserts (the only selected one)
+      expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationIds: undefined })
+    })
+
+    it('shows selected count in button label when one item is selected', () => {
+      render(
+        <FilterRow2Dropdowns
+          {...defaultProps}
+          classificationIds={['2']}
+          updateSearch={mockUpdateSearch}
+        />,
+      )
+      expect(screen.getByTestId('filter-dropdown-classification')).toHaveTextContent('Entrees')
+    })
+
+    it('shows count label in button when multiple items are selected', () => {
+      render(
+        <FilterRow2Dropdowns
+          {...defaultProps}
+          classificationIds={['1', '3']}
+          updateSearch={mockUpdateSearch}
+        />,
+      )
+      expect(screen.getByTestId('filter-dropdown-classification')).toHaveTextContent('2 classifications')
     })
   })
 
   describe('source options', () => {
-    it('displays all options', () => {
+    it('displays all options when dropdown is open', async () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      mockSources.forEach(s => {
+      await userEvent.click(screen.getByTestId('filter-dropdown-source').querySelector('button')!)
+      mockSources.forEach((s) => {
         expect(screen.getByText(s.name)).toBeInTheDocument()
       })
     })
 
-    it('calls updateSearch when selected', async () => {
-      const user = userEvent.setup()
+    it('calls updateSearch with array when a source is selected', async () => {
       render(<FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} />)
-      const select = screen.getByDisplayValue('All Sources')
-      await user.selectOptions(select, 's1')
-      expect(mockUpdateSearch).toHaveBeenCalledWith({ sourceId: 's1' })
+      const wrapper = screen.getByTestId('filter-dropdown-source')
+      await userEvent.click(wrapper.querySelector('button')!)
+      const checkboxes = within(wrapper).getAllByRole('checkbox')
+      await userEvent.click(checkboxes[0]) // AllRecipes.com
+      expect(mockUpdateSearch).toHaveBeenCalledWith({ sourceIds: ['s1'] })
     })
 
-    it('calls updateSearch with undefined when reset', async () => {
-      const user = userEvent.setup()
+    it('calls updateSearch with undefined when all source selections are cleared', async () => {
       render(
-        <FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} sourceId="s1" />
+        <FilterRow2Dropdowns
+          {...defaultProps}
+          sourceIds={['s2']}
+          updateSearch={mockUpdateSearch}
+        />,
       )
-      const select = screen.getByDisplayValue('AllRecipes.com')
-      await user.selectOptions(select, '')
-      expect(mockUpdateSearch).toHaveBeenCalledWith({ sourceId: undefined })
-    })
-
-    it('displays selected value', () => {
-      render(
-        <FilterRow2Dropdowns {...defaultProps} updateSearch={mockUpdateSearch} sourceId="s2" />
-      )
-      expect(screen.getByDisplayValue('Food Network')).toBeInTheDocument()
+      const wrapper = screen.getByTestId('filter-dropdown-source')
+      await userEvent.click(wrapper.querySelector('button')!)
+      const checkboxes = within(wrapper).getAllByRole('checkbox')
+      await userEvent.click(checkboxes[1]) // Food Network (selected)
+      expect(mockUpdateSearch).toHaveBeenCalledWith({ sourceIds: undefined })
     })
   })
 
@@ -114,9 +153,9 @@ describe('FilterRow2Dropdowns', () => {
         {...defaultProps}
         classifications={[]}
         updateSearch={mockUpdateSearch}
-      />
+      />,
     )
-    expect(screen.getByDisplayValue('All Categories')).toBeInTheDocument()
+    expect(screen.getByTestId('filter-dropdown-classification')).toHaveTextContent('All Categories')
   })
 
   it('handles empty sources gracefully', () => {
@@ -125,8 +164,8 @@ describe('FilterRow2Dropdowns', () => {
         {...defaultProps}
         sources={[]}
         updateSearch={mockUpdateSearch}
-      />
+      />,
     )
-    expect(screen.getByDisplayValue('All Sources')).toBeInTheDocument()
+    expect(screen.getByTestId('filter-dropdown-source')).toHaveTextContent('All Sources')
   })
 })

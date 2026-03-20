@@ -246,11 +246,55 @@ describe("recipes.list", () => {
     it.each([
       ["courseIds", { courseIds: [VALID_OBJECT_ID] }],
       ["preparationIds", { preparationIds: [VALID_OBJECT_ID] }],
+      ["classificationIds", { classificationIds: [VALID_OBJECT_ID] }],
+      ["sourceIds", { sourceIds: [VALID_OBJECT_ID] }],
       ["sort", { sort: "name_asc" as const }],
     ])("accepts %s filter without error", async (_, input) => {
       await withCleanDb(async () => {
         const caller = await makeAnonCaller();
         expect(await caller.recipes.list(input)).toHaveProperty("items");
+      });
+    });
+
+    it("filters by classificationIds — returns only recipes linked to any of those classifications", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const id = uid();
+        const clsA = await new Classification({ name: "Italian", slug: `italian-${id}` }).save();
+        const clsB = await new Classification({ name: "Mexican", slug: `mexican-${id}` }).save();
+        await new Recipe({ name: "Pasta", userId: user.id, isPublic: true, classificationId: clsA.id }).save();
+        await new Recipe({ name: "Tacos", userId: user.id, isPublic: true, classificationId: clsB.id }).save();
+        await new Recipe({ name: "Plain", userId: user.id, isPublic: true }).save();
+
+        const caller = await makeAnonCaller();
+
+        // Single classification
+        const single = await caller.recipes.list({ userId: user.id, classificationIds: [clsA.id] });
+        expect(single.items).toHaveLength(1);
+        expect(single.items[0]).toMatchObject({ name: "Pasta" });
+
+        // Multiple classifications — OR semantics via $in
+        const multi = await caller.recipes.list({ userId: user.id, classificationIds: [clsA.id, clsB.id] });
+        expect(multi.items).toHaveLength(2);
+        expect(multi.items.map((r) => r.name)).toEqual(expect.arrayContaining(["Pasta", "Tacos"]));
+      });
+    });
+
+    it("filters by sourceIds — returns only recipes linked to any of those sources", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const srcA = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com" }).save();
+        const srcB = await new Source({ name: "NYT Cooking", url: "https://cooking.nytimes.com" }).save();
+        await new Recipe({ name: "Fancy Salad", userId: user.id, isPublic: true, sourceId: srcA.id }).save();
+        await new Recipe({ name: "NYC Bagel", userId: user.id, isPublic: true, sourceId: srcB.id }).save();
+        await new Recipe({ name: "Mystery Recipe", userId: user.id, isPublic: true }).save();
+
+        const caller = await makeAnonCaller();
+
+        // Multiple sources — OR semantics
+        const result = await caller.recipes.list({ userId: user.id, sourceIds: [srcA.id, srcB.id] });
+        expect(result.items).toHaveLength(2);
+        expect(result.items.map((r) => r.name)).toEqual(expect.arrayContaining(["Fancy Salad", "NYC Bagel"]));
       });
     });
   });

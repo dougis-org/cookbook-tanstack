@@ -1,7 +1,7 @@
 
 export const QUICK_FILTERS = ['myRecipes', 'markedByMe', 'hasImage'] as const
 
-export const ROW_2_FILTERS = ['classificationId', 'sourceId'] as const
+export const ROW_2_FILTERS = ['classificationIds', 'sourceIds'] as const
 
 export const ALL_FILTERS_ITEMS = [
   'mealIds',

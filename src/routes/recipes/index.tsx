@@ -17,8 +17,8 @@ const searchSchema = z.object({
   sort: z.enum(['name_asc', 'name_desc', 'newest', 'oldest', 'servings_asc', 'servings_desc', 'updated_desc']).optional(),
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().max(100).optional(),
-  classificationId: z.string().optional(),
-  sourceId: z.string().optional(),
+  classificationIds: z.array(z.string()).optional(),
+  sourceIds: z.array(z.string()).optional(),
   mealIds: z.array(z.string()).optional(),
   courseIds: z.array(z.string()).optional(),
   preparationIds: z.array(z.string()).optional(),
@@ -55,8 +55,8 @@ function RecipesPage() {
     sort = 'newest',
     page = 1,
     pageSize = 20,
-    classificationId,
-    sourceId,
+    classificationIds,
+    sourceIds,
     mealIds,
     courseIds,
     preparationIds,
@@ -81,8 +81,8 @@ function RecipesPage() {
       sort,
       page,
       pageSize,
-      classificationId,
-      sourceId,
+      classificationIds,
+      sourceIds,
       mealIds,
       courseIds,
       preparationIds,
@@ -123,7 +123,7 @@ function RecipesPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   const hasActiveFilters = !!(
-    classificationId || sourceId || mealIds?.length || courseIds?.length ||
+    classificationIds?.length || sourceIds?.length || mealIds?.length || courseIds?.length ||
     preparationIds?.length || myRecipes || markedByMe || hasImage || minServings || maxServings
   )
 
@@ -161,30 +161,39 @@ function RecipesPage() {
     navigate({ search: (prev) => ({ search: prev.search, sort: prev.sort, page: 1, pageSize: prev.pageSize }) })
   }
 
+  function arrayRemoveBadge(key: keyof Search, allIds: string[] | undefined, id: string) {
+    return () => {
+      const next = (allIds ?? []).filter((v) => v !== id)
+      updateSearch({ [key]: next.length ? next : undefined } as Partial<Search>)
+    }
+  }
+
   // Build active filter badge list for display
   const activeBadges: { label: string; onRemove: () => void }[] = [
     ...(myRecipes ? [{ label: 'My Recipes', onRemove: () => updateSearch({ myRecipes: undefined }) }] : []),
     ...(markedByMe ? [{ label: 'Favorites', onRemove: () => updateSearch({ markedByMe: undefined }) }] : []),
     ...(hasImage ? [{ label: 'Has Image', onRemove: () => updateSearch({ hasImage: undefined }) }] : []),
-    ...(classificationId
-      ? [{ label: classifications?.find((c) => c.id === classificationId)?.name ?? 'Category', onRemove: () => updateSearch({ classificationId: undefined }) }]
-      : []),
-    ...(sourceId
-      ? [{ label: sources?.find((s) => s.id === sourceId)?.name ?? 'Source', onRemove: () => updateSearch({ sourceId: undefined }) }]
-      : []),
+    ...(classificationIds ?? []).map((id) => ({
+      label: classifications?.find((c) => c.id === id)?.name ?? 'Category',
+      onRemove: arrayRemoveBadge('classificationIds', classificationIds, id),
+    })),
+    ...(sourceIds ?? []).map((id) => ({
+      label: sources?.find((s) => s.id === id)?.name ?? 'Source',
+      onRemove: arrayRemoveBadge('sourceIds', sourceIds, id),
+    })),
     ...(minServings ? [{ label: `≥ ${minServings} servings`, onRemove: () => updateSearch({ minServings: undefined }) }] : []),
     ...(maxServings ? [{ label: `≤ ${maxServings} servings`, onRemove: () => updateSearch({ maxServings: undefined }) }] : []),
     ...(mealIds ?? []).map((id) => ({
       label: allMeals?.find((m) => m.id === id)?.name ?? 'Meal',
-      onRemove: () => { const next = (mealIds ?? []).filter((v) => v !== id); updateSearch({ mealIds: next.length ? next : undefined }) },
+      onRemove: arrayRemoveBadge('mealIds', mealIds, id),
     })),
     ...(courseIds ?? []).map((id) => ({
       label: allCourses?.find((c) => c.id === id)?.name ?? 'Course',
-      onRemove: () => { const next = (courseIds ?? []).filter((v) => v !== id); updateSearch({ courseIds: next.length ? next : undefined }) },
+      onRemove: arrayRemoveBadge('courseIds', courseIds, id),
     })),
     ...(preparationIds ?? []).map((id) => ({
       label: allPreparations?.find((p) => p.id === id)?.name ?? 'Prep',
-      onRemove: () => { const next = (preparationIds ?? []).filter((v) => v !== id); updateSearch({ preparationIds: next.length ? next : undefined }) },
+      onRemove: arrayRemoveBadge('preparationIds', preparationIds, id),
     })),
   ]
 
@@ -280,8 +289,8 @@ function RecipesPage() {
 
         {/* Row 2: Primary Dropdowns */}
         <FilterRow2Dropdowns
-          classificationId={classificationId}
-          sourceId={sourceId}
+          classificationIds={classificationIds}
+          sourceIds={sourceIds}
           classifications={classifications}
           sources={sources}
           updateSearch={updateSearch}

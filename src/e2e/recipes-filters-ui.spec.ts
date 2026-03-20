@@ -76,25 +76,21 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    const categorySelect = page.getByTestId("filter-dropdown-classification");
-    await expect(categorySelect).toBeVisible();
+    const categoryDropdown = page.getByTestId("filter-dropdown-classification");
+    await expect(categoryDropdown).toBeVisible();
 
-    // Classifications are user-created (not seeded), so options may not exist in CI
-    const optionSelector =
-      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])';
-    const hasOptions = await page
-      .waitForSelector(optionSelector, { state: "attached", timeout: 5000 })
+    // Open the multi-select dropdown
+    await categoryDropdown.getByRole("button").click();
+
+    // Classifications are user-created (not seeded), so checkboxes may not exist in CI
+    const firstCheckbox = categoryDropdown.getByRole("checkbox").first();
+    const hasOptions = await firstCheckbox
+      .waitFor({ state: "attached", timeout: 5000 })
       .catch(() => null);
     if (!hasOptions) return;
 
-    const optionValue = await page
-      .locator(optionSelector)
-      .first()
-      .getAttribute("value");
-    if (!optionValue) return;
-
-    await categorySelect.selectOption(optionValue);
-    await page.waitForURL(/classificationId=/);
+    await firstCheckbox.click();
+    await page.waitForURL(/classificationIds=/);
   });
 
   test("should expand and collapse More Filters panel", async ({ page }) => {
@@ -146,24 +142,20 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    const categorySelect = page.getByTestId("filter-dropdown-classification");
+    const categoryDropdown = page.getByTestId("filter-dropdown-classification");
 
-    // Classifications are user-created (not seeded), so options may not exist in CI
-    const optionSelector =
-      '[data-testid="filter-dropdown-classification"] option[value]:not([value=""])';
-    const hasOptions = await page
-      .waitForSelector(optionSelector, { state: "attached", timeout: 5000 })
+    // Open the multi-select dropdown
+    await categoryDropdown.getByRole("button").click();
+
+    // Classifications are user-created (not seeded), so checkboxes may not exist in CI
+    const firstCheckbox = categoryDropdown.getByRole("checkbox").first();
+    const hasOptions = await firstCheckbox
+      .waitFor({ state: "attached", timeout: 5000 })
       .catch(() => null);
     if (!hasOptions) return;
 
-    const optionValue = await page
-      .locator(optionSelector)
-      .first()
-      .getAttribute("value");
-    if (!optionValue) return;
-
-    await categorySelect.selectOption(optionValue);
-    await page.waitForURL(/classificationId=/);
+    await firstCheckbox.click();
+    await page.waitForURL(/classificationIds=/);
 
     const urlBefore = page.url();
 
