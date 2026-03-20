@@ -1,29 +1,27 @@
 // @vitest-environment node
-import { describe, it, expect, vi } from "vitest"
-import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { Recipe, User, Source } from "@/db/models"
+import { describe, it, expect, vi } from "vitest";
+import { withCleanDb } from "@/test-helpers/with-clean-db";
+import { Recipe, Source } from "@/db/models";
+import {
+  seedUserWithBetterAuth,
+  uid,
+  makeAnonCaller,
+  makeAuthCaller,
+} from "./test-helpers";
 
-vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
+vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
-const RUN_ID = Date.now()
-let seq = 0
-function uid() {
-  return `${RUN_ID}-${++seq}`
-}
+const seedUser = seedUserWithBetterAuth;
 
-async function seedUser() {
-  const id = uid()
-  return new User({ email: `src-${id}@test.com`, username: `src-${id}`, displayUsername: `SrcUser ${id}` }).save()
-}
-
-async function makeAnonCaller() {
-  const { appRouter } = await import("@/server/trpc/router")
-  return appRouter.createCaller({ session: null, user: null })
-}
-
-async function makeAuthCaller(userId: string) {
-  const { appRouter } = await import("@/server/trpc/router")
-  return appRouter.createCaller({ session: { id: "s1" } as never, user: { id: userId } as never })
+async function assertSourceRecipeCount(
+  sourceName: string,
+  expectedCount: number,
+) {
+  const caller = await makeAnonCaller();
+  const result = await caller.sources.list();
+  const inserted = result.find((s) => s.name === sourceName);
+  expect(inserted).toBeDefined();
+  expect(inserted?.recipeCount).toBe(expectedCount);
 }
 
 // ─── sources.list ─────────────────────────────────────────────────────────────
@@ -31,105 +29,128 @@ async function makeAuthCaller(userId: string) {
 describe("sources.list", () => {
   it("returns an array (publicly accessible without auth)", async () => {
     await withCleanDb(async () => {
-      const caller = await makeAnonCaller()
-      expect(Array.isArray(await caller.sources.list())).toBe(true)
-    })
-  })
+      const caller = await makeAnonCaller();
+      expect(Array.isArray(await caller.sources.list())).toBe(true);
+    });
+  });
 
   it("includes a newly inserted source", async () => {
     await withCleanDb(async () => {
-      const id = uid()
-      await new Source({ name: `ListSource-${id}` }).save()
-      const caller = await makeAnonCaller()
-      const result = await caller.sources.list()
+      const id = uid();
+      await new Source({ name: `ListSource-${id}` }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.list();
       expect(result).toEqual(
-        expect.arrayContaining([expect.objectContaining({ name: `ListSource-${id}` })]),
-      )
-    })
-  })
+        expect.arrayContaining([
+          expect.objectContaining({ name: `ListSource-${id}` }),
+        ]),
+      );
+    });
+  });
 
   it("includes recipeCount=0 when no recipes reference the source", async () => {
     await withCleanDb(async () => {
-      const id = uid()
-      await new Source({ name: `NoRefSource-${id}` }).save()
-      const caller = await makeAnonCaller()
-      const result = await caller.sources.list()
+      const id = uid();
+      await new Source({ name: `NoRefSource-${id}` }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.list();
       for (const item of result) {
-        expect(typeof item.recipeCount).toBe("number")
+        expect(typeof item.recipeCount).toBe("number");
       }
-      const inserted = result.find((s) => s.name === `NoRefSource-${id}`)
-      expect(inserted?.recipeCount).toBe(0)
-    })
-  })
+      const inserted = result.find((s) => s.name === `NoRefSource-${id}`);
+      expect(inserted?.recipeCount).toBe(0);
+    });
+  });
 
   it("counts recipes that reference the source", async () => {
     await withCleanDb(async () => {
-      const id = uid()
-      const source = await new Source({ name: `RefSource-${id}` }).save()
-      const user = await seedUser()
-      await new Recipe({ name: "R1", userId: user._id, isPublic: true, sourceId: source._id }).save()
-      await new Recipe({ name: "R2", userId: user._id, isPublic: true, sourceId: source._id }).save()
+      const id = uid();
+      const source = await new Source({ name: `RefSource-${id}` }).save();
+      const user = await seedUser();
+      await new Recipe({
+        name: "R1",
+        userId: user.id,
+        isPublic: true,
+        sourceId: source._id,
+      }).save();
+      await new Recipe({
+        name: "R2",
+        userId: user.id,
+        isPublic: true,
+        sourceId: source._id,
+      }).save();
 
-      const caller = await makeAnonCaller()
-      const result = await caller.sources.list()
-      const inserted = result.find((s) => s.name === `RefSource-${id}`)
-      expect(inserted?.recipeCount).toBe(2)
-    })
-  })
-})
+      await assertSourceRecipeCount(`RefSource-${id}`, 2);
+    });
+  });
+});
 
 // ─── sources.search ───────────────────────────────────────────────────────────
 
 describe("sources.search", () => {
   it("returns sources matching query (case-insensitive partial match)", async () => {
     await withCleanDb(async () => {
-      const id = uid()
-      await new Source({ name: `BonAppetit-${id}` }).save()
-      await new Source({ name: `NewYorkTimes-${id}` }).save()
-      const caller = await makeAnonCaller()
-      const result = await caller.sources.search({ query: `bonappetit-${id}` })
-      expect(result).toHaveLength(1)
-      expect(result[0]).toMatchObject({ name: `BonAppetit-${id}` })
-    })
-  })
+      const id = uid();
+      await new Source({ name: `BonAppetit-${id}` }).save();
+      await new Source({ name: `NewYorkTimes-${id}` }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.search({ query: `bonappetit-${id}` });
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ name: `BonAppetit-${id}` });
+    });
+  });
 
   it("returns empty array when no sources match", async () => {
     await withCleanDb(async () => {
-      const caller = await makeAnonCaller()
-      expect(await caller.sources.search({ query: "no-such-source-xyz-99999" })).toEqual([])
-    })
-  })
+      const caller = await makeAnonCaller();
+      expect(
+        await caller.sources.search({ query: "no-such-source-xyz-99999" }),
+      ).toEqual([]);
+    });
+  });
 
   it("limits results to at most 10", async () => {
     await withCleanDb(async () => {
-      const id = uid()
+      const id = uid();
       await Promise.all(
-        Array.from({ length: 15 }, (_, i) => new Source({ name: `SearchLimit-${id}-${i}` }).save()),
-      )
-      const caller = await makeAnonCaller()
-      expect((await caller.sources.search({ query: `SearchLimit-${id}` })).length).toBeLessThanOrEqual(10)
-    })
-  })
-})
+        Array.from({ length: 15 }, (_, i) =>
+          new Source({ name: `SearchLimit-${id}-${i}` }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      expect(
+        (await caller.sources.search({ query: `SearchLimit-${id}` })).length,
+      ).toBeLessThanOrEqual(10);
+    });
+  });
+});
 
 // ─── sources.create ──────────────────────────────────────────────────────────
 
 describe("sources.create", () => {
   it("rejects unauthenticated requests", async () => {
     await withCleanDb(async () => {
-      const caller = await makeAnonCaller()
-      await expect(caller.sources.create({ name: "Test" })).rejects.toThrow("UNAUTHORIZED")
-    })
-  })
+      const caller = await makeAnonCaller();
+      await expect(caller.sources.create({ name: "Test" })).rejects.toThrow(
+        "UNAUTHORIZED",
+      );
+    });
+  });
 
   it.each([
-    [{ name: "My Cookbook" },                              { name: "My Cookbook" }],
-    [{ name: "Web Source", url: "https://example.com" },   { name: "Web Source", url: "https://example.com" }],
-  ])("creates source with input %o and returns the record", async (input, expected) => {
-    await withCleanDb(async () => {
-      const user = await seedUser()
-      const caller = await makeAuthCaller(user.id)
-      expect(await caller.sources.create(input)).toMatchObject(expected)
-    })
-  })
-})
+    [{ name: "My Cookbook" }, { name: "My Cookbook" }],
+    [
+      { name: "Web Source", url: "https://example.com" },
+      { name: "Web Source", url: "https://example.com" },
+    ],
+  ])(
+    "creates source with input %o and returns the record",
+    async (input, expected) => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const caller = await makeAuthCaller(user.id);
+        expect(await caller.sources.create(input)).toMatchObject(expected);
+      });
+    },
+  );
+});

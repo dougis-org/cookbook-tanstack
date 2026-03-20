@@ -2,7 +2,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import {
-  User,
   Recipe,
   Meal,
   Course,
@@ -11,6 +10,7 @@ import {
   Source,
   RecipeLike,
 } from "@/db/models";
+import { seedUserWithBetterAuth } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
@@ -23,15 +23,7 @@ function uid() {
   return `${RUN_ID}-${++seq}`;
 }
 
-/** Insert a minimal user and return it. */
-async function seedUser() {
-  const id = uid();
-  return new User({
-    email: `user-${id}@recipe.test`,
-    username: `rcp-${id}`,
-    displayUsername: `User ${id}`,
-  }).save();
-}
+const seedUser = seedUserWithBetterAuth;
 
 async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");

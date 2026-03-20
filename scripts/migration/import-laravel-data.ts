@@ -58,7 +58,6 @@ async function main() {
     const { default: mongoose } = await import("../../src/db/index");
     mongooseInstance = mongoose;
     const {
-      User,
       Classification,
       Source,
       Meal,
@@ -73,9 +72,9 @@ async function main() {
     }
 
     const adminResolution = await resolveDefaultAdminUser(
-      User,
       Types.ObjectId,
       "migration:import",
+      mongoose.connection.getClient(),
     );
     report.adminResolution = adminResolution;
     const [
@@ -108,7 +107,14 @@ async function main() {
       report,
     );
     await detectUniqueConflicts(Meal, meals, "slug", "meals", report, true);
-    await detectUniqueConflicts(Course, courses, "slug", "courses", report, true);
+    await detectUniqueConflicts(
+      Course,
+      courses,
+      "slug",
+      "courses",
+      report,
+      true,
+    );
     await detectUniqueConflicts(
       Preparation,
       preparations,
@@ -119,80 +125,80 @@ async function main() {
     );
 
     if (report.blockingFailures.length === 0) {
-    await importCollection(
-      "classifications",
-      Classification,
-      classifications,
-      (document) =>
-        prepareTaxonomyDocument(
-          document,
-          Types.ObjectId,
-          "classifications",
-          false,
-        ),
-      report,
-    );
-    await importCollection(
-      "sources",
-      Source,
-      sources,
-      (document) =>
-        prepareTaxonomyDocument(document, Types.ObjectId, "sources", true),
-      report,
-    );
-    await importCollection(
-      "meals",
-      Meal,
-      meals,
-      (document) =>
-        prepareTaxonomyDocument(document, Types.ObjectId, "meals", false),
-      report,
-    );
-    await importCollection(
-      "courses",
-      Course,
-      courses,
-      (document) =>
-        prepareTaxonomyDocument(document, Types.ObjectId, "courses", false),
-      report,
-    );
-    await importCollection(
-      "preparations",
-      Preparation,
-      preparations,
-      (document) =>
-        prepareTaxonomyDocument(
-          document,
-          Types.ObjectId,
-          "preparations",
-          false,
-        ),
-      report,
-    );
-    await importCollection(
-      "recipes",
-      Recipe,
-      recipes,
-      (document) =>
-        prepareRecipeDocument(
-          document,
-          adminResolution.resolvedId,
-          Types.ObjectId,
-        ),
-      report,
-    );
-    await importCollection(
-      "cookbooks",
-      Cookbook,
-      cookbooks,
-      (document) =>
-        prepareCookbookDocument(
-          document,
-          adminResolution.resolvedId,
-          Types.ObjectId,
-        ),
-      report,
-    );
+      await importCollection(
+        "classifications",
+        Classification,
+        classifications,
+        (document) =>
+          prepareTaxonomyDocument(
+            document,
+            Types.ObjectId,
+            "classifications",
+            false,
+          ),
+        report,
+      );
+      await importCollection(
+        "sources",
+        Source,
+        sources,
+        (document) =>
+          prepareTaxonomyDocument(document, Types.ObjectId, "sources", true),
+        report,
+      );
+      await importCollection(
+        "meals",
+        Meal,
+        meals,
+        (document) =>
+          prepareTaxonomyDocument(document, Types.ObjectId, "meals", false),
+        report,
+      );
+      await importCollection(
+        "courses",
+        Course,
+        courses,
+        (document) =>
+          prepareTaxonomyDocument(document, Types.ObjectId, "courses", false),
+        report,
+      );
+      await importCollection(
+        "preparations",
+        Preparation,
+        preparations,
+        (document) =>
+          prepareTaxonomyDocument(
+            document,
+            Types.ObjectId,
+            "preparations",
+            false,
+          ),
+        report,
+      );
+      await importCollection(
+        "recipes",
+        Recipe,
+        recipes,
+        (document) =>
+          prepareRecipeDocument(
+            document,
+            adminResolution.resolvedId,
+            Types.ObjectId,
+          ),
+        report,
+      );
+      await importCollection(
+        "cookbooks",
+        Cookbook,
+        cookbooks,
+        (document) =>
+          prepareCookbookDocument(
+            document,
+            adminResolution.resolvedId,
+            Types.ObjectId,
+          ),
+        report,
+      );
     } // end if (report.blockingFailures.length === 0)
   } catch (error) {
     report.blockingFailures.push({

@@ -5,7 +5,11 @@ import { username } from "better-auth/plugins";
 import { getMongoClient } from "@/db";
 
 export const auth = betterAuth({
-  database: mongodbAdapter(getMongoClient().db() as unknown as any),
+  // Workaround for nested MongoDB dependency versions (mongoose has its own mongodb package).
+  // Cast through unknown to avoid incompatible driver type declarations while retaining runtime behavior.
+  database: mongodbAdapter(
+    getMongoClient().db() as unknown as import("mongodb").Db,
+  ),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,

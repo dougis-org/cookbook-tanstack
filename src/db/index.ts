@@ -7,7 +7,11 @@ if (!MONGODB_URI) {
   );
 }
 
-mongoose.set("strict", true);
+// Set strict mode if the mongoose instance supports it
+// (In some test environments, mongoose may be mocked without this method)
+if (typeof mongoose.set === "function") {
+  mongoose.set("strict", true);
+}
 
 if (mongoose.connection.readyState === 0) {
   mongoose.connect(MONGODB_URI).catch((error) => {
@@ -16,8 +20,45 @@ if (mongoose.connection.readyState === 0) {
   });
 }
 
-export function getMongoClient() {
+export function getMongoClient(): ReturnType<
+  typeof mongoose.connection.getClient
+> {
   return mongoose.connection.getClient();
+}
+
+type BetterAuthCollectionName = "user" | "session" | "account" | "verification";
+
+export function getBetterAuthCollection(
+  name: BetterAuthCollectionName,
+  client: any = getMongoClient().db(),
+) {
+  return client.collection(name) as any;
+}
+
+export function toHexString(value: unknown): string | null {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "toHexString" in value &&
+    typeof (value as { toHexString?: () => string }).toHexString === "function"
+  ) {
+    return (value as { toHexString: () => string }).toHexString();
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "toString" in value &&
+    typeof (value as { toString?: () => string }).toString === "function"
+  ) {
+    return (value as { toString: () => string }).toString();
+  }
+
+  return null;
 }
 
 export default mongoose;

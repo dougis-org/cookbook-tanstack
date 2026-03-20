@@ -6,16 +6,21 @@ export interface AdminResolution {
   username: string;
 }
 
+import { getBetterAuthCollection, toHexString } from "@/db";
+
 export async function resolveDefaultAdminUser(
-  User: {
-    find: (filter: Record<string, unknown>) => {
-      lean: () => { exec: () => Promise<Array<Record<string, string>>> };
-    };
-  },
   ObjectId: {
     isValid: (value: string) => boolean;
+    new (value: string): unknown;
   },
   commandName: string,
+  mongoClient?: {
+    db: () => {
+      collection: (name: string) => {
+        findOne: (filter: unknown) => Promise<unknown>;
+      };
+    };
+  },
 ): Promise<AdminResolution> {
   const selectors = [
     {
@@ -50,23 +55,68 @@ export async function resolveDefaultAdminUser(
     );
   }
 
-  const matches = await User.find({ [selector.field]: lookupValue })
-    .lean()
-    .exec();
+  // Resolve the admin user based on the selected lookup mode
+  let resolvedId: string;
+  let email = process.env.MIGRATION_DEFAULT_ADMIN_EMAIL || "";
+  let username = process.env.MIGRATION_DEFAULT_ADMIN_USERNAME || "";
 
-  if (matches.length !== 1) {
+  if (selector.mode === "id") {
+    // Direct ObjectId provided
+    resolvedId = lookupValue;
+
+    // If a client is available, verify that the ID exists in the BetterAuth user collection.
+    if (mongoClient) {
+      const usersCollection = getBetterAuthCollection("user", mongoClient.db());
+      const idAsObjectId = new ObjectId(lookupValue);
+      const resolvedUser = await usersCollection.findOne({
+        _id: idAsObjectId,
+      } as any);
+      if (!resolvedUser) {
+        throw new Error(
+          `MIGRATION_DEFAULT_ADMIN_USER_ID ${lookupValue} does not correspond to an existing user`,
+        );
+      }
+    }
+  } else if (!mongoClient) {
+    // Email or username mode requires database access
     throw new Error(
-      `Default admin lookup using ${selector.key}=${lookupValue} resolved ${matches.length} users; expected exactly 1.`,
+      `Cannot resolve admin by ${selector.mode} without MongoDB client. ` +
+        `Either provide MIGRATION_DEFAULT_ADMIN_USER_ID as an ObjectId, ` +
+        `or ensure mongoClient is passed to resolveDefaultAdminUser()`,
     );
-  }
+  } else {
+    // Query MongoDB for the user by email or username
+    const usersCollection = getBetterAuthCollection("user", mongoClient.db());
+    const query =
+      selector.mode === "email"
+        ? { email: lookupValue }
+        : { username: lookupValue };
 
-  const [match] = matches;
+    const user = (await usersCollection.findOne(query as any)) as Record<
+      string,
+      unknown
+    > | null;
+    if (!user || !user._id) {
+      throw new Error(`Could not find user with ${selector.mode} in database`);
+    }
+
+    // Extract the _id and convert to hex string if needed
+    const candidateId = toHexString(user._id);
+    if (!candidateId) {
+      throw new Error("Invalid user ID format in database");
+    }
+
+    resolvedId = candidateId;
+
+    email = typeof user.email === "string" ? user.email : email;
+    username = typeof user.username === "string" ? user.username : username;
+  }
 
   return {
     lookupMode: selector.mode,
     lookupValue,
-    resolvedId: String(match._id),
-    email: match.email,
-    username: match.username,
+    resolvedId,
+    email,
+    username,
   };
 }

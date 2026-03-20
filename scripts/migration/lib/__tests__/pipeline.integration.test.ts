@@ -7,9 +7,9 @@
  * Task 2.3: Verification coverage — default admin ownership, recipe queries,
  *           cookbook ordering, meal filter, and no-image migration outcome.
  */
-import { describe, expect, it } from "vitest"
-import { Types } from "mongoose"
-import { withCleanDb } from "@/test-helpers/with-clean-db"
+import { describe, expect, it } from "vitest";
+import { Types } from "mongoose";
+import { withCleanDb } from "@/test-helpers/with-clean-db";
 import {
   Classification,
   Source,
@@ -18,10 +18,10 @@ import {
   Preparation,
   Recipe,
   Cookbook,
-  User,
-} from "@/db/models"
-import { buildImageAudit } from "../imageAudit"
-import { extractTables, TARGET_TABLES } from "../mysqlDump"
+} from "@/db/models";
+import { getMongoClient } from "@/db";
+import { buildImageAudit } from "../imageAudit";
+import { extractTables, TARGET_TABLES } from "../mysqlDump";
 import {
   DEFAULT_ADMIN_PLACEHOLDER,
   prepareCookbookDocument,
@@ -30,7 +30,7 @@ import {
   type CookbookDocument,
   type RecipeDocument,
   type TaxonomyDocument,
-} from "../importHelpers"
+} from "../importHelpers";
 import {
   createIdMap,
   deterministicObjectId,
@@ -43,7 +43,7 @@ import {
   resolveLegacyReference,
   slugify,
   type LegacyPivot,
-} from "../transformHelpers"
+} from "../transformHelpers";
 
 // ── Representative SQL fixture ────────────────────────────────────────────────
 //
@@ -147,44 +147,85 @@ CREATE TABLE \`cookbook_recipes\` (
   \`recipe_id\` int NOT NULL,
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB;
-INSERT INTO \`cookbook_recipes\` VALUES (1,1,2),(2,1,1);`
+INSERT INTO \`cookbook_recipes\` VALUES (1,1,2),(2,1,1);`;
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 
-type ExtractedRow = Record<string, unknown>
+type ExtractedRow = Record<string, unknown>;
 
 /**
  * Replicates the transform stage from transform-laravel-data.ts using the
  * library functions in transformHelpers.ts, without file I/O.
  */
 function buildTransformed(sql: string) {
-  const extracted = extractTables(sql, TARGET_TABLES)
-  const classifications = extracted.classifications.rows as ExtractedRow[]
-  const sources = extracted.sources.rows as ExtractedRow[]
-  const meals = extracted.meals.rows as ExtractedRow[]
-  const courses = extracted.courses.rows as ExtractedRow[]
-  const preparations = extracted.preparations.rows as ExtractedRow[]
-  const recipes = extracted.recipes.rows as ExtractedRow[]
-  const cookbooks = extracted.cookbooks.rows as ExtractedRow[]
-  const recipeMeals = extracted.recipe_meals.rows as any as LegacyPivot[]
-  const recipeCourses = extracted.recipe_courses.rows as any as LegacyPivot[]
-  const recipePreparations = extracted.recipe_preparations.rows as any as LegacyPivot[]
-  const cookbookRecipes = extracted.cookbook_recipes.rows as any as LegacyPivot[]
+  const extracted = extractTables(sql, TARGET_TABLES);
+  const classifications = extracted.classifications.rows as ExtractedRow[];
+  const sources = extracted.sources.rows as ExtractedRow[];
+  const meals = extracted.meals.rows as ExtractedRow[];
+  const courses = extracted.courses.rows as ExtractedRow[];
+  const preparations = extracted.preparations.rows as ExtractedRow[];
+  const recipes = extracted.recipes.rows as ExtractedRow[];
+  const cookbooks = extracted.cookbooks.rows as ExtractedRow[];
+  const recipeMeals = extracted.recipe_meals.rows as any as LegacyPivot[];
+  const recipeCourses = extracted.recipe_courses.rows as any as LegacyPivot[];
+  const recipePreparations = extracted.recipe_preparations
+    .rows as any as LegacyPivot[];
+  const cookbookRecipes = extracted.cookbook_recipes
+    .rows as any as LegacyPivot[];
 
   const idMaps = {
-    classifications: createIdMap("classification", classifications.map((r) => r.id as number)),
-    sources: createIdMap("source", sources.map((r) => r.id as number)),
-    meals: createIdMap("meal", meals.map((r) => r.id as number)),
-    courses: createIdMap("course", courses.map((r) => r.id as number)),
-    preparations: createIdMap("preparation", preparations.map((r) => r.id as number)),
-    recipes: createIdMap("recipe", recipes.map((r) => r.id as number)),
-    cookbooks: createIdMap("cookbook", cookbooks.map((r) => r.id as number)),
-  }
+    classifications: createIdMap(
+      "classification",
+      classifications.map((r) => r.id as number),
+    ),
+    sources: createIdMap(
+      "source",
+      sources.map((r) => r.id as number),
+    ),
+    meals: createIdMap(
+      "meal",
+      meals.map((r) => r.id as number),
+    ),
+    courses: createIdMap(
+      "course",
+      courses.map((r) => r.id as number),
+    ),
+    preparations: createIdMap(
+      "preparation",
+      preparations.map((r) => r.id as number),
+    ),
+    recipes: createIdMap(
+      "recipe",
+      recipes.map((r) => r.id as number),
+    ),
+    cookbooks: createIdMap(
+      "cookbook",
+      cookbooks.map((r) => r.id as number),
+    ),
+  };
 
-  const groupedMealIds = groupPivotIds(recipeMeals, "recipe_id", "meal_id", idMaps.meals)
-  const groupedCourseIds = groupPivotIds(recipeCourses, "recipe_id", "course_id", idMaps.courses)
-  const groupedPrepIds = groupPivotIds(recipePreparations, "recipe_id", "preparation_id", idMaps.preparations)
-  const groupedCookbookRecipes = groupCookbookRecipes(cookbookRecipes, idMaps.recipes)
+  const groupedMealIds = groupPivotIds(
+    recipeMeals,
+    "recipe_id",
+    "meal_id",
+    idMaps.meals,
+  );
+  const groupedCourseIds = groupPivotIds(
+    recipeCourses,
+    "recipe_id",
+    "course_id",
+    idMaps.courses,
+  );
+  const groupedPrepIds = groupPivotIds(
+    recipePreparations,
+    "recipe_id",
+    "preparation_id",
+    idMaps.preparations,
+  );
+  const groupedCookbookRecipes = groupCookbookRecipes(
+    cookbookRecipes,
+    idMaps.recipes,
+  );
 
   return {
     idMaps,
@@ -246,12 +287,22 @@ function buildTransformed(sql: string) {
       prepTime: null,
       cookTime: null,
       difficulty: null,
-      sourceId: resolveLegacyReference((row.source_id as number | null) ?? null, idMaps.sources),
-      classificationId: resolveLegacyReference((row.classification_id as number | null) ?? null, idMaps.classifications),
+      sourceId: resolveLegacyReference(
+        (row.source_id as number | null) ?? null,
+        idMaps.sources,
+      ),
+      classificationId: resolveLegacyReference(
+        (row.classification_id as number | null) ?? null,
+        idMaps.classifications,
+      ),
       dateAdded: normalizeTimestamp((row.date_added as string | null) ?? null),
-      calories: normalizeNumber((row.calories as string | number | null) ?? null),
+      calories: normalizeNumber(
+        (row.calories as string | number | null) ?? null,
+      ),
       fat: normalizeNumber((row.fat as string | number | null) ?? null),
-      cholesterol: normalizeNumber((row.cholesterol as string | number | null) ?? null),
+      cholesterol: normalizeNumber(
+        (row.cholesterol as string | number | null) ?? null,
+      ),
       sodium: normalizeNumber((row.sodium as string | number | null) ?? null),
       protein: normalizeNumber((row.protein as string | number | null) ?? null),
       imageUrl: null,
@@ -277,7 +328,7 @@ function buildTransformed(sql: string) {
       createdAt: normalizeTimestamp((row.created_at as string) ?? null),
       updatedAt: normalizeTimestamp((row.updated_at as string) ?? null),
     })) as CookbookDocument[],
-  }
+  };
 }
 
 /** Replicates the importCollection bulkWrite logic from import-laravel-data.ts */
@@ -287,36 +338,54 @@ async function bulkUpsert(
   documents: Record<string, unknown>[],
 ) {
   if (documents.length === 0) {
-    return { matchedCount: 0, modifiedCount: 0, upsertedCount: 0 }
+    return { matchedCount: 0, modifiedCount: 0, upsertedCount: 0 };
   }
   const operations = documents.map((doc) => ({
     replaceOne: { filter: { _id: doc._id }, replacement: doc, upsert: true },
-  }))
+  }));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return model.collection.bulkWrite(operations as any[], { ordered: true })
+  return model.collection.bulkWrite(operations as any[], { ordered: true });
 }
 
-function prepareTaxonomy(docs: TaxonomyDocument[], collectionName: string, allowUrl = false) {
+function prepareTaxonomy(
+  docs: TaxonomyDocument[],
+  collectionName: string,
+  allowUrl = false,
+) {
   return docs.flatMap((doc) => {
-    const result = prepareTaxonomyDocument(doc, Types.ObjectId, collectionName, allowUrl)
-    return result.document ? [result.document as Record<string, unknown>] : []
-  })
+    const result = prepareTaxonomyDocument(
+      doc,
+      Types.ObjectId,
+      collectionName,
+      allowUrl,
+    );
+    return result.document ? [result.document as Record<string, unknown>] : [];
+  });
 }
 
-async function runImport(adminId: string, transformed: ReturnType<typeof buildTransformed>) {
-  const preparedClassifications = prepareTaxonomy(transformed.classifications, "classifications")
-  const preparedSources = prepareTaxonomy(transformed.sources, "sources", true)
-  const preparedMeals = prepareTaxonomy(transformed.meals, "meals")
-  const preparedCourses = prepareTaxonomy(transformed.courses, "courses")
-  const preparedPreparations = prepareTaxonomy(transformed.preparations, "preparations")
+async function runImport(
+  adminId: string,
+  transformed: ReturnType<typeof buildTransformed>,
+) {
+  const preparedClassifications = prepareTaxonomy(
+    transformed.classifications,
+    "classifications",
+  );
+  const preparedSources = prepareTaxonomy(transformed.sources, "sources", true);
+  const preparedMeals = prepareTaxonomy(transformed.meals, "meals");
+  const preparedCourses = prepareTaxonomy(transformed.courses, "courses");
+  const preparedPreparations = prepareTaxonomy(
+    transformed.preparations,
+    "preparations",
+  );
   const preparedRecipes = transformed.recipes.flatMap((doc) => {
-    const result = prepareRecipeDocument(doc, adminId, Types.ObjectId)
-    return result.document ? [result.document as Record<string, unknown>] : []
-  })
+    const result = prepareRecipeDocument(doc, adminId, Types.ObjectId);
+    return result.document ? [result.document as Record<string, unknown>] : [];
+  });
   const preparedCookbooks = transformed.cookbooks.flatMap((doc) => {
-    const result = prepareCookbookDocument(doc, adminId, Types.ObjectId)
-    return result.document ? [result.document as Record<string, unknown>] : []
-  })
+    const result = prepareCookbookDocument(doc, adminId, Types.ObjectId);
+    return result.document ? [result.document as Record<string, unknown>] : [];
+  });
 
   const [
     classResult,
@@ -334,67 +403,86 @@ async function runImport(adminId: string, transformed: ReturnType<typeof buildTr
     bulkUpsert(Preparation, preparedPreparations),
     bulkUpsert(Recipe, preparedRecipes),
     bulkUpsert(Cookbook, preparedCookbooks),
-  ])
+  ]);
 
-  return { classResult, sourceResult, mealResult, courseResult, prepResult, recipeResult, cbResult }
+  return {
+    classResult,
+    sourceResult,
+    mealResult,
+    courseResult,
+    prepResult,
+    recipeResult,
+    cbResult,
+  };
 }
 
 async function createAdminUser() {
-  const user = await User.create({
+  const userId = new Types.ObjectId();
+  const now = new Date();
+
+  const db = getMongoClient().db();
+  await db.collection("user").insertOne({
+    _id: userId,
     email: "admin@test.com",
     emailVerified: true,
-    username: "admin",
-    displayUsername: "Admin",
-  })
-  return String(user._id)
+    name: "Admin",
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return String(userId);
 }
 
 // ── Task 2.2 — Full pipeline and idempotency ──────────────────────────────────
 
+async function buildAndSeed(): Promise<{
+  adminId: string;
+  transformed: ReturnType<typeof buildTransformed>;
+}> {
+  const adminId = await createAdminUser();
+  const transformed = buildTransformed(FIXTURE_SQL);
+  await runImport(adminId, transformed);
+  return { adminId, transformed };
+}
+
 describe("migration pipeline — full pipeline and idempotency", () => {
   it("imports all fixture collections with correct document counts", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      await buildAndSeed();
 
-      const [classCount, sourceCount, mealCount, courseCount, prepCount, recipeCount, cbCount] =
-        await Promise.all([
-          Classification.countDocuments(),
-          Source.countDocuments(),
-          Meal.countDocuments(),
-          Course.countDocuments(),
-          Preparation.countDocuments(),
-          Recipe.countDocuments(),
-          Cookbook.countDocuments(),
-        ])
+      const [
+        classCount,
+        sourceCount,
+        mealCount,
+        courseCount,
+        prepCount,
+        recipeCount,
+        cbCount,
+      ] = await Promise.all([
+        Classification.countDocuments(),
+        Source.countDocuments(),
+        Meal.countDocuments(),
+        Course.countDocuments(),
+        Preparation.countDocuments(),
+        Recipe.countDocuments(),
+        Cookbook.countDocuments(),
+      ]);
 
-      expect(classCount).toBe(1)
-      expect(sourceCount).toBe(1)
-      expect(mealCount).toBe(1)
-      expect(courseCount).toBe(1)
-      expect(prepCount).toBe(1)
-      expect(recipeCount).toBe(2)
-      expect(cbCount).toBe(1)
-    })
-  })
+      expect(classCount).toBe(1);
+      expect(sourceCount).toBe(1);
+      expect(mealCount).toBe(1);
+      expect(courseCount).toBe(1);
+      expect(prepCount).toBe(1);
+      expect(recipeCount).toBe(2);
+      expect(cbCount).toBe(1);
+    });
+  });
 
   it("second import run produces no additional documents (idempotent)", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
+      const { adminId, transformed } = await buildAndSeed();
 
-      const first = await runImport(adminId, transformed)
-      const firstUpserted =
-        first.classResult.upsertedCount +
-        first.sourceResult.upsertedCount +
-        first.mealResult.upsertedCount +
-        first.courseResult.upsertedCount +
-        first.prepResult.upsertedCount +
-        first.recipeResult.upsertedCount +
-        first.cbResult.upsertedCount
-
-      const second = await runImport(adminId, transformed)
+      const second = await runImport(adminId, transformed);
       const secondUpserted =
         second.classResult.upsertedCount +
         second.sourceResult.upsertedCount +
@@ -402,100 +490,103 @@ describe("migration pipeline — full pipeline and idempotency", () => {
         second.courseResult.upsertedCount +
         second.prepResult.upsertedCount +
         second.recipeResult.upsertedCount +
-        second.cbResult.upsertedCount
+        second.cbResult.upsertedCount;
 
-      // All 8 documents (1+1+1+1+1+2+1) are upserted on first run
-      expect(firstUpserted).toBe(8)
       // No new documents created on re-run
-      expect(secondUpserted).toBe(0)
+      expect(secondUpserted).toBe(0);
       // Collection counts unchanged after second import
-      expect(await Recipe.countDocuments()).toBe(2)
-      expect(await Cookbook.countDocuments()).toBe(1)
-    })
-  })
-})
+      expect(await Recipe.countDocuments()).toBe(2);
+      expect(await Cookbook.countDocuments()).toBe(1);
+    });
+  });
+});
 
 // ── Task 2.3 — Post-import verification ──────────────────────────────────────
 
 describe("migration pipeline — post-import verification", () => {
   it("all imported recipes are owned by the default admin user", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      const adminId = await createAdminUser();
+      const transformed = buildTransformed(FIXTURE_SQL);
+      await runImport(adminId, transformed);
 
-      const recipes = await Recipe.find().lean().exec()
-      expect(recipes).toHaveLength(2)
+      const recipes = await Recipe.find().lean().exec();
+      expect(recipes).toHaveLength(2);
       for (const recipe of recipes) {
-        expect(String(recipe.userId)).toBe(adminId)
+        expect(String(recipe.userId)).toBe(adminId);
       }
-    })
-  })
+    });
+  });
 
   it("all imported cookbooks are owned by the default admin user", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      const adminId = await createAdminUser();
+      const transformed = buildTransformed(FIXTURE_SQL);
+      await runImport(adminId, transformed);
 
-      const cookbooks = await Cookbook.find().lean().exec()
-      expect(cookbooks).toHaveLength(1)
-      expect(String(cookbooks[0].userId)).toBe(adminId)
-    })
-  })
+      const cookbooks = await Cookbook.find().lean().exec();
+      expect(cookbooks).toHaveLength(1);
+      expect(String(cookbooks[0].userId)).toBe(adminId);
+    });
+  });
 
   it("all imported recipes are queryable as public", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      const adminId = await createAdminUser();
+      const transformed = buildTransformed(FIXTURE_SQL);
+      await runImport(adminId, transformed);
 
-      const publicRecipes = await Recipe.find({ isPublic: true }).lean().exec()
-      expect(publicRecipes).toHaveLength(2)
-    })
-  })
+      const publicRecipes = await Recipe.find({ isPublic: true }).lean().exec();
+      expect(publicRecipes).toHaveLength(2);
+    });
+  });
 
   it("cookbook recipe entries respect insertion order via ascending orderIndex", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      const adminId = await createAdminUser();
+      const transformed = buildTransformed(FIXTURE_SQL);
+      await runImport(adminId, transformed);
 
-      const cookbook = await Cookbook.findOne().lean().exec()
-      expect(cookbook).not.toBeNull()
-      const entries = cookbook!.recipes as Array<{ recipeId: unknown; orderIndex: number }>
-      expect(entries).toHaveLength(2)
-      expect(entries[0].orderIndex).toBe(0)
-      expect(entries[1].orderIndex).toBe(1)
+      const cookbook = await Cookbook.findOne().lean().exec();
+      expect(cookbook).not.toBeNull();
+      const entries = cookbook!.recipes as Array<{
+        recipeId: unknown;
+        orderIndex: number;
+      }>;
+      expect(entries).toHaveLength(2);
+      expect(entries[0].orderIndex).toBe(0);
+      expect(entries[1].orderIndex).toBe(1);
 
       // cookbook_recipes inserts recipe 2 first (orderIndex 0) then recipe 1
-      const recipe2Id = deterministicObjectId("recipe", 2)
-      const recipe1Id = deterministicObjectId("recipe", 1)
-      expect(String(entries[0].recipeId)).toBe(recipe2Id)
-      expect(String(entries[1].recipeId)).toBe(recipe1Id)
-    })
-  })
+      const recipe2Id = deterministicObjectId("recipe", 2);
+      const recipe1Id = deterministicObjectId("recipe", 1);
+      expect(String(entries[0].recipeId)).toBe(recipe2Id);
+      expect(String(entries[1].recipeId)).toBe(recipe1Id);
+    });
+  });
 
   it("recipes can be filtered by meal association", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser()
-      const transformed = buildTransformed(FIXTURE_SQL)
-      await runImport(adminId, transformed)
+      const adminId = await createAdminUser();
+      const transformed = buildTransformed(FIXTURE_SQL);
+      await runImport(adminId, transformed);
 
       // Both fixture recipes are linked to meal 1 in recipe_meals
-      const mealObjectId = new Types.ObjectId(deterministicObjectId("meal", 1))
-      const recipesForMeal = await Recipe.find({ mealIds: mealObjectId }).lean().exec()
-      expect(recipesForMeal).toHaveLength(2)
-    })
-  })
+      const mealObjectId = new Types.ObjectId(deterministicObjectId("meal", 1));
+      const recipesForMeal = await Recipe.find({ mealIds: mealObjectId })
+        .lean()
+        .exec();
+      expect(recipesForMeal).toHaveLength(2);
+    });
+  });
 
   it("fixture SQL contains no legacy image migration requirement", () => {
-    const extracted = extractTables(FIXTURE_SQL, TARGET_TABLES)
+    const extracted = extractTables(FIXTURE_SQL, TARGET_TABLES);
     // buildImageAudit accepts any Record<string, { schema: { columns }, rows }>
     const audit = buildImageAudit(
       extracted as Parameters<typeof buildImageAudit>[0],
-    )
-    expect(audit.requiresImageMigration).toBe(false)
-    expect(audit.outcome).toBe("no-image-migration-required")
-  })
-})
+    );
+    expect(audit.requiresImageMigration).toBe(false);
+    expect(audit.outcome).toBe("no-image-migration-required");
+  });
+});
