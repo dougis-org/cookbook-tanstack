@@ -10,6 +10,41 @@ beforeEach(() => {
   vi.resetModules();
 });
 
+function makeMongooseMock(
+  collections: Record<string, { deleteMany: ReturnType<typeof vi.fn> }>,
+  extraCollections: string[] = [],
+  betterAuthDelete?: ReturnType<typeof vi.fn>,
+) {
+  const sessionCollections = [...Object.keys(collections), ...extraCollections];
+  const mockBetterAuth = betterAuthDelete ?? vi.fn().mockResolvedValue(undefined);
+
+  return {
+    default: {
+      connection: {
+        collections,
+        db: {
+          listCollections: vi.fn().mockReturnValue({
+            toArray: vi.fn().mockResolvedValue(
+              sessionCollections.map((name) => ({ name })),
+            ),
+          }),
+          collection: vi.fn().mockReturnValue({ deleteMany: mockBetterAuth }),
+        },
+        getClient: vi.fn().mockReturnValue({
+          db: vi.fn().mockReturnValue({
+            listCollections: vi.fn().mockReturnValue({
+              toArray: vi.fn().mockResolvedValue(
+                sessionCollections.map((name) => ({ name })),
+              ),
+            }),
+            collection: vi.fn().mockReturnValue({ deleteMany: mockBetterAuth }),
+          }),
+        }),
+      },
+    },
+  };
+}
+
 describe("withCleanDb", () => {
   it("clears all collections before running the function", async () => {
     const mockMongooseDeleteMany = vi.fn().mockResolvedValue(undefined);
@@ -19,49 +54,9 @@ describe("withCleanDb", () => {
       user: { deleteMany: mockMongooseDeleteMany },
     };
 
-    vi.doMock("mongoose", () => ({
-      default: {
-        connection: {
-          collections: mockCollections,
-          db: {
-            listCollections: vi
-              .fn()
-              .mockReturnValue({
-                toArray: vi
-                  .fn()
-                  .mockResolvedValue([
-                    { name: "recipes" },
-                    { name: "user" },
-                    { name: "session" },
-                    { name: "account" },
-                  ]),
-              }),
-            collection: vi.fn().mockReturnValue({
-              deleteMany: mockBetterAuthDeleteMany,
-            }),
-          },
-          getClient: vi.fn().mockReturnValue({
-            db: vi.fn().mockReturnValue({
-              listCollections: vi
-                .fn()
-                .mockReturnValue({
-                  toArray: vi
-                    .fn()
-                    .mockResolvedValue([
-                      { name: "recipes" },
-                      { name: "user" },
-                      { name: "session" },
-                      { name: "account" },
-                    ]),
-                }),
-              collection: vi.fn().mockReturnValue({
-                deleteMany: mockBetterAuthDeleteMany,
-              }),
-            }),
-          }),
-        },
-      },
-    }));
+    vi.doMock("mongoose", () =>
+      makeMongooseMock(mockCollections, ["session", "account"], mockBetterAuthDeleteMany),
+    );
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
     const fn = vi.fn().mockResolvedValue("result");
@@ -80,24 +75,9 @@ describe("withCleanDb", () => {
   it("returns the function's result", async () => {
     const mockDeleteMany = vi.fn().mockResolvedValue(undefined);
 
-    vi.doMock("mongoose", () => ({
-      default: {
-        connection: {
-          collections: { col1: { deleteMany: mockDeleteMany } },
-          getClient: vi.fn().mockReturnValue({
-            db: vi.fn().mockReturnValue({
-              databaseName: "test",
-              listCollections: vi.fn().mockReturnValue({
-                toArray: vi.fn().mockResolvedValue([{ name: "col1" }]),
-              }),
-              collection: vi
-                .fn()
-                .mockReturnValue({ deleteMany: mockDeleteMany }),
-            }),
-          }),
-        },
-      },
-    }));
+    vi.doMock("mongoose", () =>
+      makeMongooseMock({ col1: { deleteMany: mockDeleteMany } }, [], mockDeleteMany),
+    );
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
     const result = await withCleanDb(async () => 42);
@@ -106,24 +86,7 @@ describe("withCleanDb", () => {
   });
 
   it("works with no collections (empty DB)", async () => {
-    vi.doMock("mongoose", () => ({
-      default: {
-        connection: {
-          collections: {},
-          getClient: vi.fn().mockReturnValue({
-            db: vi.fn().mockReturnValue({
-              databaseName: "test",
-              listCollections: vi.fn().mockReturnValue({
-                toArray: vi.fn().mockResolvedValue([]),
-              }),
-              collection: vi.fn().mockReturnValue({
-                deleteMany: vi.fn().mockResolvedValue(undefined),
-              }),
-            }),
-          }),
-        },
-      },
-    }));
+    vi.doMock("mongoose", () => makeMongooseMock({}, [], vi.fn().mockResolvedValue(undefined)));
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
     const fn = vi.fn().mockResolvedValue("empty");
@@ -133,21 +96,8 @@ describe("withCleanDb", () => {
   });
 
   it("propagates errors thrown by the function", async () => {
-    vi.doMock("mongoose", () => ({
-      default: {
-        connection: {
-          collections: {},
-          getClient: vi.fn().mockReturnValue({
-            db: vi.fn().mockReturnValue({
-              databaseName: "test",
-              collection: vi.fn().mockReturnValue({
-                deleteMany: vi.fn().mockResolvedValue(undefined),
-              }),
-            }),
-          }),
-        },
-      },
-    }));
+    const mockDeleteMany = vi.fn().mockResolvedValue(undefined);
+    vi.doMock("mongoose", () => makeMongooseMock({}, [], mockDeleteMany));
 
     const { withCleanDb } = await import("@/test-helpers/with-clean-db");
     const fn = vi.fn().mockRejectedValue(new Error("fn error"));

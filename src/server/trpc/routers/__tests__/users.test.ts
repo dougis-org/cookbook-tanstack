@@ -9,6 +9,17 @@ async function withLoggedIn<TReturn>(
   return withCleanDb(async () => withSeededUser(fn));
 }
 
+async function expectUpdateProfile(
+  update: Record<string, unknown>,
+  callback: (result: any, user: any) => void,
+) {
+  await withLoggedIn(async (user, caller) => {
+    const result = await caller.users.updateProfile(update);
+    expect(result).not.toBeNull();
+    callback(result, user);
+  });
+}
+
 describe("users router", () => {
   describe("users.me", () => {
     it("returns the current user from Better-Auth session", async () => {
@@ -39,44 +50,28 @@ describe("users router", () => {
 
   describe("users.updateProfile", () => {
     it("updates user name and returns updated user data", async () => {
-      await withLoggedIn(async (user, caller) => {
-        const newName = "Updated Name";
-
-        const result = await caller.users.updateProfile({ name: newName });
-
-        expect(result).not.toBeNull();
+      await expectUpdateProfile({ name: "Updated Name" }, (result, user) => {
         expect(result).toHaveProperty("id", user.id);
-        expect(result).toHaveProperty("name", newName);
+        expect(result).toHaveProperty("name", "Updated Name");
       });
     });
 
     it("updates user image and returns updated user data", async () => {
-      await withLoggedIn(async (user, caller) => {
-        const newImage = "https://example.com/avatar.jpg";
-
-        const result = await caller.users.updateProfile({ image: newImage });
-
-        expect(result).not.toBeNull();
+      await expectUpdateProfile({ image: "https://example.com/avatar.jpg" }, (result, user) => {
         expect(result).toHaveProperty("id", user.id);
-        expect(result).toHaveProperty("image", newImage);
+        expect(result).toHaveProperty("image", "https://example.com/avatar.jpg");
       });
     });
 
     it("updates both name and image together", async () => {
-      await withLoggedIn(async (user, caller) => {
-        const newName = "New Name";
-        const newImage = "https://example.com/new-avatar.jpg";
-
-        const result = await caller.users.updateProfile({
-          name: newName,
-          image: newImage,
-        });
-
-        expect(result).not.toBeNull();
-        expect(result).toHaveProperty("id", user.id);
-        expect(result).toHaveProperty("name", newName);
-        expect(result).toHaveProperty("image", newImage);
-      });
+      await expectUpdateProfile(
+        { name: "New Name", image: "https://example.com/new-avatar.jpg" },
+        (result, user) => {
+          expect(result).toHaveProperty("id", user.id);
+          expect(result).toHaveProperty("name", "New Name");
+          expect(result).toHaveProperty("image", "https://example.com/new-avatar.jpg");
+        },
+      );
     });
 
     it("rejects empty input (at least one field required)", async () => {

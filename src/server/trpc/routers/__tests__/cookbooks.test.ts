@@ -35,6 +35,17 @@ type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
 
 // ─── Ownership guard ─────────────────────────────────────────────────────────
 
+async function assertOwnershipGuard(act: (caller: Caller, cb: CookbookDoc, r: RecipeDoc) => Promise<any>) {
+  await withCleanDb(async () => {
+    const owner = await seedUser();
+    const other = await seedUser();
+    const cb = await seedCookbook(owner.id);
+    const r = await seedRecipe(owner.id);
+    const caller = await makeAuthCaller(other.id);
+    await expect(act(caller, cb, r)).rejects.toThrow("Not your cookbook");
+  });
+}
+
 describe("ownership guard — non-owner is rejected", () => {
   it.each([
     {
@@ -66,14 +77,7 @@ describe("ownership guard — non-owner is rejected", () => {
         }),
     },
   ])("$label", async ({ act }) => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const other = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(other.id);
-      await expect(act(caller, cb, r)).rejects.toThrow("Not your cookbook");
-    });
+    await assertOwnershipGuard(act);
   });
 });
 

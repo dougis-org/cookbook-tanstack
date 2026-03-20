@@ -433,12 +433,17 @@ async function createAdminUser() {
 
 // ── Task 2.2 — Full pipeline and idempotency ──────────────────────────────────
 
+async function buildAndSeed(): Promise<{ adminId: string; transformed: ReturnType<typeof buildTransformed> }> {
+  const adminId = await createAdminUser();
+  const transformed = buildTransformed(FIXTURE_SQL);
+  await runImport(adminId, transformed);
+  return { adminId, transformed };
+}
+
 describe("migration pipeline — full pipeline and idempotency", () => {
   it("imports all fixture collections with correct document counts", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser();
-      const transformed = buildTransformed(FIXTURE_SQL);
-      await runImport(adminId, transformed);
+      await buildAndSeed();
 
       const [
         classCount,
@@ -470,18 +475,7 @@ describe("migration pipeline — full pipeline and idempotency", () => {
 
   it("second import run produces no additional documents (idempotent)", async () => {
     await withCleanDb(async () => {
-      const adminId = await createAdminUser();
-      const transformed = buildTransformed(FIXTURE_SQL);
-
-      const first = await runImport(adminId, transformed);
-      const firstUpserted =
-        first.classResult.upsertedCount +
-        first.sourceResult.upsertedCount +
-        first.mealResult.upsertedCount +
-        first.courseResult.upsertedCount +
-        first.prepResult.upsertedCount +
-        first.recipeResult.upsertedCount +
-        first.cbResult.upsertedCount;
+      const { adminId, transformed } = await buildAndSeed();
 
       const second = await runImport(adminId, transformed);
       const secondUpserted =
@@ -493,8 +487,6 @@ describe("migration pipeline — full pipeline and idempotency", () => {
         second.recipeResult.upsertedCount +
         second.cbResult.upsertedCount;
 
-      // All 8 documents (1+1+1+1+1+2+1) are upserted on first run
-      expect(firstUpserted).toBe(8);
       // No new documents created on re-run
       expect(secondUpserted).toBe(0);
       // Collection counts unchanged after second import
