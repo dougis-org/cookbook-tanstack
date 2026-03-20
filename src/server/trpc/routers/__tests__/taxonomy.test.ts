@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
-import { Meal, Course, Preparation } from "@/db/models"
+import { Meal, Course, Preparation, Recipe, User } from "@/db/models"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -10,10 +10,16 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 const RUN_ID = Date.now()
 
 describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerName) => {
-  const ModelMap = {
+    const ModelMap = {
     meals: Meal,
     courses: Course,
     preparations: Preparation,
+  } as const
+
+  const fieldMap = {
+    meals: "mealIds",
+    courses: "courseIds",
+    preparations: "preparationIds",
   } as const
 
   it("includes an inserted row in the result with a string id field", async () => {
@@ -62,6 +68,38 @@ describe.each(["meals", "courses", "preparations"] as const)("%s.list", (routerN
       const caller = appRouter.createCaller({ session: null, user: null })
       const result = await (caller[routerName] as { list: () => Promise<unknown[]> }).list()
       expect(Array.isArray(result)).toBe(true)
+    })
+  })
+
+  it("includes recipeCount=0 when no recipes reference the taxonomy item", async () => {
+    await withCleanDb(async () => {
+      const slug = `${routerName}-noref-${RUN_ID}`
+      await new ModelMap[routerName]({ name: "Unused", slug }).save()
+
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<{ slug: string; recipeCount: number }[]> }).list()
+      const inserted = result.find((r) => r.slug === slug)
+      expect(typeof inserted?.recipeCount).toBe("number")
+      expect(inserted?.recipeCount).toBe(0)
+    })
+  })
+
+  it("counts recipes that reference the taxonomy item", async () => {
+    await withCleanDb(async () => {
+      const slug = `${routerName}-ref-${RUN_ID}`
+      const taxDoc = await new ModelMap[routerName]({ name: "Referenced", slug }).save()
+      const user = await new User({ email: `tax-${RUN_ID}@test.com`, username: `taxu-${RUN_ID}`, displayUsername: `TaxUser ${RUN_ID}` }).save()
+
+      await new Recipe({ name: "R1", userId: user._id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
+      await new Recipe({ name: "R2", userId: user._id, isPublic: true, [fieldMap[routerName]]: [taxDoc._id] }).save()
+
+      const { appRouter } = await import("@/server/trpc/router")
+      const caller = appRouter.createCaller({ session: null, user: null })
+      const result = await (caller[routerName] as { list: () => Promise<{ slug: string; recipeCount: number }[]> }).list()
+
+      const inserted = result.find((r) => r.slug === slug)
+      expect(inserted?.recipeCount).toBe(2)
     })
   })
 })

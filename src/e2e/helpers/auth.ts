@@ -21,9 +21,18 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
   const email = opts.email ?? `testuser${suffix}@example.com`;
   const password = opts.password ?? "ValidPassword123!";
 
+  // Ensure the app is running and we have a page origin.
+  await gotoAndWaitForHydration(page, "/");
+
+  // Better Auth validates Origin against the configured BETTER_AUTH_URL.
+  // Prefer that value when available (e.g., in test environments).
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : new URL(page.url()).origin;
+
   const response = await page.request.post("/api/auth/sign-up/email", {
     data: { email, password, name, username, displayUsername: username },
-    headers: { Origin: "http://localhost:3000" },
+    headers: { Origin: origin },
   });
 
   if (!response.ok()) {
@@ -33,7 +42,7 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
 
   const signInResponse = await page.request.post("/api/auth/sign-in/email", {
     data: { email, password },
-    headers: { Origin: "http://localhost:3000" },
+    headers: { Origin: origin },
   });
 
   if (!signInResponse.ok()) {
