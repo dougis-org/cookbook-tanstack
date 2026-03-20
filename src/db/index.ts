@@ -20,7 +20,9 @@ if (mongoose.connection.readyState === 0) {
   });
 }
 
-export function getMongoClient() {
+export function getMongoClient(): ReturnType<
+  typeof mongoose.connection.getClient
+> {
   return mongoose.connection.getClient();
 }
 

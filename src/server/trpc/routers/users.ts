@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../init";
 import { getMongoClient } from "@/db";
 
@@ -23,19 +24,35 @@ interface TransformedUser {
   updatedAt: Date;
 }
 
-function transformUserDoc(doc: Record<string, unknown>): TransformedUser | null {
+function transformUserDoc(
+  doc: Record<string, unknown>,
+): TransformedUser | null {
   // Validate required fields exist before transformation
   if (!doc || typeof doc !== "object") {
     return null;
   }
-  
-  const typed = doc as Partial<UserDocument>;
-  if (!typed._id || typeof typed._id !== "object" || !("toHexString" in typed._id)) {
+
+  const typed = doc as Partial<UserDocument> & {
+    _id?: string | { toHexString?: () => string };
+  };
+  if (!typed._id) {
+    return null;
+  }
+
+  let id: string;
+  if (typeof typed._id === "string") {
+    id = typed._id;
+  } else if (
+    typeof typed._id === "object" &&
+    typeof typed._id.toHexString === "function"
+  ) {
+    id = typed._id.toHexString();
+  } else {
     return null;
   }
 
   return {
-    id: (typed._id as ObjectId).toHexString(),
+    id,
     email: String(typed.email ?? ""),
     emailVerified: Boolean(typed.emailVerified),
     name: typeof typed.name === "string" ? typed.name : null,
@@ -73,11 +90,16 @@ export const usersRouter = router({
         objectId = new ObjectId(userId);
       } catch {
         // protectedProcedure ensures ctx.user exists, so an invalid ObjectId
-        // indicates a problem with the session/context and should surface as an error.
-        throw new Error("Invalid user ID in session context");
+        // indicates a problem with the session/context and should surface as an explicit error.
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid user ID in session context",
+        });
       }
 
-      const updateData: Partial<Pick<UserDocument, "name" | "image" | "updatedAt">> = { updatedAt: new Date() };
+      const updateData: Partial<
+        Pick<UserDocument, "name" | "image" | "updatedAt">
+      > = { updatedAt: new Date() };
       if (input.name !== undefined) {
         updateData.name = input.name;
       }

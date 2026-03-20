@@ -23,18 +23,11 @@ export async function seedUserWithBetterAuth() {
     throw new Error("MongoDB connection not ready");
   }
 
-  // Get the database name from the Mongoose URI to ensure test worker isolation
-  // Each worker gets test_worker_${VITEST_POOL_ID} as described in db-connect.ts
-  const mongoUri = process.env.MONGODB_URI;
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI not set");
+  // Use the active Mongoose connection database directly to ensure test writes/read use the same database.
+  const db = mongoose.connection.db;
+  if (!db) {
+    throw new Error("MongoDB connection has no active database");
   }
-  const url = new URL(mongoUri);
-  const dbName = url.pathname.slice(1); // Remove leading slash
-
-  // Use the MongoDB client from the Mongoose connection, requesting the correct database
-  const mongoClient = getMongoClient();
-  const db = mongoClient.db(dbName);
 
   const user = {
     _id: userId,

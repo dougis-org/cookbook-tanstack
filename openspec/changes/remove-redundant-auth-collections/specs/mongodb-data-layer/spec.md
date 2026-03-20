@@ -60,7 +60,7 @@ The system SHALL pass a code audit verifying that the legacy plurally-named auth
 
 #### Scenario: Database documentation reflects single source of truth
 - **WHEN** `docs/database.md` is reviewed
-- **THEN** it lists only the 8 active collections (users, recipes, classifications, sources, cookbooks, meals, courses, preparations, recipelikes, and Better-Auth's 4) with no mention of legacy `users`, `sessions`, or `accounts`
+- **THEN** it lists the 8 active non-auth collections (recipes, classifications, sources, cookbooks, meals, courses, preparations, recipelikes) plus Better-Auth's 4 singular auth collections (`user`, `session`, `account`, `verification`), with no mention of legacy `users`, `sessions`, or `accounts`
 
 ### Requirement: Seed and initialization scripts do not create legacy collections
 The system SHALL remove or update any seed scripts, database initialization code, or Docker entrypoints that attempt to create documents in the legacy `users`, `sessions`, or `accounts` collections.

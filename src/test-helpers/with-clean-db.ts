@@ -15,27 +15,36 @@ export async function withCleanDb<T>(fn: () => Promise<T>): Promise<T> {
   const mongooseCollections = Object.values(mongoose.connection.collections);
   await Promise.all(mongooseCollections.map((c) => c.deleteMany({})));
 
-  // Also clear BetterAuth collections directly via MongoDB driver
-  // These are not managed by Mongoose models after the refactoring
-  const mongoClient = getMongoClient();
+  // Also clear BetterAuth collections directly via Mongoose connection
+  // These are not managed by Mongoose models after the refactoring.
   const mongooseDb = mongoose.connection.db;
   if (mongooseDb) {
-    const db = mongoClient.db(mongooseDb.databaseName);
+    const db = mongooseDb;
+
+    // Clear BetterAuth collections that are not managed by Mongoose models.
     const betterAuthCollections = [
       "user",
       "session",
       "account",
       "verification",
     ];
+    const existingCollections = await db.listCollections().toArray();
+    const existingNames = existingCollections.map((c) => c.name);
+
     await Promise.all(
-      betterAuthCollections.map((collName) =>
-        db
-          .collection(collName)
-          .deleteMany({})
-          .catch(() => {
-            // Collection might not exist yet, ignore
-          }),
-      ),
+      betterAuthCollections
+        .filter((name) => existingNames.includes(name))
+        .map(async (collName) => {
+          try {
+            await db.collection(collName).deleteMany({});
+          } catch (error: unknown) {
+            const err = error as { code?: number; codeName?: string };
+            if (err.code === 26 || err.codeName === "NamespaceNotFound") {
+              return;
+            }
+            throw error;
+          }
+        }),
     );
   }
 

@@ -14,15 +14,12 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test-setup.ts", "./src/test-helpers/db-connect.ts"],
     exclude: ["**/node_modules/**", "**/e2e/**", "**/*.e2e.*"],
-    // Configure to run tests with single worker thread for proper MongoDB isolation
-    // The per-worker database naming (test_worker_${VITEST_POOL_ID}) works correctly
-    // with this configuration, ensuring each test gets a clean database state
+    // Use threads pool with Vitest defaults. Per-worker isolation is managed via db-connect.ts
+    // and the shared DB cleanup helper in with-clean-db.ts.
     pool: "threads",
-    poolOptions: {
-      threads: {
-        maxThreads: 1,
-      },
-    },
+    // Keep maxThreads as default so performance is not unduly constrained.
+    // If test leakage occurs, adjust database cleanup instead of forcing serial execution.
+
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov", "json"],

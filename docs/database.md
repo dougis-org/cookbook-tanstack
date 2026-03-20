@@ -123,9 +123,6 @@ All Mongoose models live in `src/db/models/`:
 ```
 src/db/models/
 ├── columns.ts          # Shared helpers (ObjectIdType)
-├── user.ts
-├── session.ts
-├── account.ts
 ├── verification.ts
 ├── classification.ts
 ├── source.ts
