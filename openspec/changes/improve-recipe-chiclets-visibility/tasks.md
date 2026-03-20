@@ -163,7 +163,7 @@
 
 - [x] 3.1.1 Run TypeScript compiler: `npx tsc --noEmit` (no errors)
 
-- [ ] 3.1.2 Run linter (if available): `npm run lint --fix` to auto-fix issues
+- [x] 3.1.2 Run linter (if available): `npm run lint --fix` to auto-fix issues
 
 - [ ] 3.1.3 Verify all component exports are correct and consistent
 
@@ -229,7 +229,7 @@
 
 ## 5. PR and Merge
 
-- [ ] 5.1 Create pull request with clear title and description linking to issue #166
+- [x] 5.1 Create pull request with clear title and description linking to issue #166
   - Title: "Improve recipe chiclet visibility (2-column layout, enhanced opacity)"
   - Description: Link to #166, summary of design decisions
 
