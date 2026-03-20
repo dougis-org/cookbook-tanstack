@@ -17,8 +17,8 @@ const searchSchema = z.object({
   sort: z.enum(['name_asc', 'name_desc', 'newest', 'oldest', 'servings_asc', 'servings_desc', 'updated_desc']).optional(),
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().max(100).optional(),
-  classificationId: z.string().optional(),
-  sourceId: z.string().optional(),
+  classificationIds: z.array(z.string()).optional(),
+  sourceIds: z.array(z.string()).optional(),
   mealIds: z.array(z.string()).optional(),
   courseIds: z.array(z.string()).optional(),
   preparationIds: z.array(z.string()).optional(),
@@ -55,8 +55,8 @@ function RecipesPage() {
     sort = 'newest',
     page = 1,
     pageSize = 20,
-    classificationId,
-    sourceId,
+    classificationIds,
+    sourceIds,
     mealIds,
     courseIds,
     preparationIds,
@@ -81,8 +81,8 @@ function RecipesPage() {
       sort,
       page,
       pageSize,
-      classificationId,
-      sourceId,
+      classificationIds,
+      sourceIds,
       mealIds,
       courseIds,
       preparationIds,
@@ -123,7 +123,7 @@ function RecipesPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   const hasActiveFilters = !!(
-    classificationId || sourceId || mealIds?.length || courseIds?.length ||
+    classificationIds?.length || sourceIds?.length || mealIds?.length || courseIds?.length ||
     preparationIds?.length || myRecipes || markedByMe || hasImage || minServings || maxServings
   )
 
@@ -166,12 +166,14 @@ function RecipesPage() {
     ...(myRecipes ? [{ label: 'My Recipes', onRemove: () => updateSearch({ myRecipes: undefined }) }] : []),
     ...(markedByMe ? [{ label: 'Favorites', onRemove: () => updateSearch({ markedByMe: undefined }) }] : []),
     ...(hasImage ? [{ label: 'Has Image', onRemove: () => updateSearch({ hasImage: undefined }) }] : []),
-    ...(classificationId
-      ? [{ label: classifications?.find((c) => c.id === classificationId)?.name ?? 'Category', onRemove: () => updateSearch({ classificationId: undefined }) }]
-      : []),
-    ...(sourceId
-      ? [{ label: sources?.find((s) => s.id === sourceId)?.name ?? 'Source', onRemove: () => updateSearch({ sourceId: undefined }) }]
-      : []),
+    ...(classificationIds ?? []).map((id) => ({
+      label: classifications?.find((c) => c.id === id)?.name ?? 'Category',
+      onRemove: () => { const next = (classificationIds ?? []).filter((v) => v !== id); updateSearch({ classificationIds: next.length ? next : undefined }) },
+    })),
+    ...(sourceIds ?? []).map((id) => ({
+      label: sources?.find((s) => s.id === id)?.name ?? 'Source',
+      onRemove: () => { const next = (sourceIds ?? []).filter((v) => v !== id); updateSearch({ sourceIds: next.length ? next : undefined }) },
+    })),
     ...(minServings ? [{ label: `≥ ${minServings} servings`, onRemove: () => updateSearch({ minServings: undefined }) }] : []),
     ...(maxServings ? [{ label: `≤ ${maxServings} servings`, onRemove: () => updateSearch({ maxServings: undefined }) }] : []),
     ...(mealIds ?? []).map((id) => ({
@@ -280,8 +282,8 @@ function RecipesPage() {
 
         {/* Row 2: Primary Dropdowns */}
         <FilterRow2Dropdowns
-          classificationId={classificationId}
-          sourceId={sourceId}
+          classificationIds={classificationIds}
+          sourceIds={sourceIds}
           classifications={classifications}
           sources={sources}
           updateSearch={updateSearch}

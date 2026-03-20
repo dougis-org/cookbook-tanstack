@@ -47,8 +47,8 @@ export const recipesRouter = router({
     .input(
       z
         .object({
-          classificationId: objectId.optional(),
-          sourceId: objectId.optional(),
+          classificationIds: z.array(objectId).optional(),
+          sourceIds: z.array(objectId).optional(),
           userId: objectId.optional(),
           isPublic: z.boolean().optional(),
           search: z.string().optional(),
@@ -85,9 +85,10 @@ export const recipesRouter = router({
         Object.assign(filter, visibilityFilter(ctx.user));
       }
 
-      if (input?.classificationId)
-        filter.classificationId = input.classificationId;
-      if (input?.sourceId) filter.sourceId = input.sourceId;
+      if (input?.classificationIds?.length)
+        filter.classificationId = { $in: input.classificationIds };
+      if (input?.sourceIds?.length)
+        filter.sourceId = { $in: input.sourceIds };
       if (input?.userId) filter.userId = input.userId;
 
       if (input?.search) {

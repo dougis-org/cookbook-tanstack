@@ -30,7 +30,7 @@ export interface DropdownConfig {
   key: 'classification' | 'source'
   label: string
   placeholder: string
-  filterKey: 'classificationId' | 'sourceId'
+  filterKey: 'classificationIds' | 'sourceIds'
   countKey: 'classificationCounts' | 'sourceCounts'
   dataTestId: string
   ariaLabel: string
@@ -41,7 +41,7 @@ export const DROPDOWN_CONFIGS: DropdownConfig[] = [
     key: 'classification',
     label: 'Classification',
     placeholder: 'All Categories',
-    filterKey: 'classificationId',
+    filterKey: 'classificationIds',
     countKey: 'classificationCounts',
     dataTestId: 'filter-dropdown-classification',
     ariaLabel: 'Filter by category',
@@ -50,7 +50,7 @@ export const DROPDOWN_CONFIGS: DropdownConfig[] = [
     key: 'source',
     label: 'Source',
     placeholder: 'All Sources',
-    filterKey: 'sourceId',
+    filterKey: 'sourceIds',
     countKey: 'sourceCounts',
     dataTestId: 'filter-dropdown-source',
     ariaLabel: 'Filter by source',

@@ -1,5 +1,6 @@
 import type { FilterConfig, Row2FilterKey } from '@/lib/filterConfig'
 import { DROPDOWN_CONFIGS } from './filterConfigs'
+import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown'
 
 interface Classification {
   id: string
@@ -12,11 +13,11 @@ interface Source {
 }
 
 interface FilterRow2DropdownsProps {
-  classificationId: string | undefined
-  sourceId: string | undefined
+  classificationIds: string[] | undefined
+  sourceIds: string[] | undefined
   classifications: Classification[] | undefined
   sources: Source[] | undefined
-  updateSearch: (updates: { classificationId?: string; sourceId?: string }) => void
+  updateSearch: (updates: { classificationIds?: string[]; sourceIds?: string[] }) => void
   filterConfig?: FilterConfig
   counts?: {
     classificationCounts?: Record<string, number>
@@ -25,8 +26,8 @@ interface FilterRow2DropdownsProps {
 }
 
 export function FilterRow2Dropdowns({
-  classificationId,
-  sourceId,
+  classificationIds,
+  sourceIds,
   classifications,
   sources,
   updateSearch,
@@ -34,8 +35,8 @@ export function FilterRow2Dropdowns({
   counts,
 }: FilterRow2DropdownsProps) {
   const dataMap = {
-    classification: { value: classificationId, options: classifications },
-    source: { value: sourceId, options: sources },
+    classification: { selectedIds: classificationIds ?? [], options: classifications ?? [] },
+    source: { selectedIds: sourceIds ?? [], options: sources ?? [] },
   }
 
   const shouldShowFilter = (filterKey: Row2FilterKey) =>
@@ -46,28 +47,20 @@ export function FilterRow2Dropdowns({
       {DROPDOWN_CONFIGS.map((cfg) => {
         if (!shouldShowFilter(cfg.filterKey)) return null
 
-        const { value, options } = dataMap[cfg.key]
+        const { selectedIds, options } = dataMap[cfg.key]
 
         return (
-          <select
+          <MultiSelectDropdown
             key={cfg.key}
-            value={value ?? ''}
-            onChange={(e) => updateSearch({ [cfg.filterKey]: e.target.value || undefined })}
-            aria-label={cfg.ariaLabel}
-            data-testid={cfg.dataTestId}
-            className="px-3 py-1.5 text-sm bg-slate-800 border border-slate-700 rounded-lg text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          >
-            <option value="">{cfg.placeholder}</option>
-            {options?.map((opt) => {
-              const count = counts?.[cfg.countKey]?.[opt.id]
-              return (
-                <option key={opt.id} value={opt.id}>
-                  {opt.name}
-                  {count !== undefined ? ` (${count})` : ''}
-                </option>
-              )
-            })}
-          </select>
+            options={options}
+            selectedIds={selectedIds}
+            onChange={(ids) => updateSearch({ [cfg.filterKey]: ids.length ? ids : undefined })}
+            placeholder={cfg.placeholder}
+            label={cfg.label.toLowerCase()}
+            counts={counts?.[cfg.countKey]}
+            dataTestId={cfg.dataTestId}
+            ariaLabel={cfg.ariaLabel}
+          />
         )
       })}
     </div>
