@@ -1,10 +1,14 @@
+export type FilterKey = 'classification' | 'source' | 'meal' | 'course' | 'preparation'
+export type FilterParamKey = 'classificationIds' | 'sourceIds' | 'mealIds' | 'courseIds' | 'preparationIds'
+export type FilterCountKey = 'classificationCounts' | 'sourceCounts' | 'mealCounts' | 'courseCounts' | 'preparationCounts'
+
 export interface FilterDropdownConfig {
-  key: string
+  key: FilterKey
   label: string
   labelPlural?: string
   placeholder: string
-  filterKey: string
-  countKey: string
+  filterKey: FilterParamKey
+  countKey: FilterCountKey
   dataTestId: string
   ariaLabel: string
 }

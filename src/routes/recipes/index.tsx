@@ -286,9 +286,9 @@ function RecipesPage() {
           preparationIds={preparationIds}
           classifications={classifications}
           sources={sources}
-          allMeals={allMeals}
-          allCourses={allCourses}
-          allPreparations={allPreparations}
+          meals={allMeals}
+          courses={allCourses}
+          preparations={allPreparations}
           updateSearch={updateSearch}
           counts={filterCounts}
         />

@@ -37,7 +37,7 @@ Replace the split `DropdownConfig`/`TaxonomyConfig` with a single `FilterDropdow
 ```typescript
 export interface FilterDropdownConfig {
   key: string                    // unique key for mapping
-  label: string                  // display label (lowercase for aria)
+  label: string                  // display label
   placeholder: string            // dropdown button default text
   filterKey: string              // URL search param key
   countKey: string               // key into filterCounts object
@@ -63,15 +63,16 @@ export const FILTER_DROPDOWN_CONFIGS: FilterDropdownConfig[] = [
 The config-driven approach is chosen specifically because it unlocks per-user customization without any component changes. The future path looks like:
 
 ```
-Today:
-  <FilterDropdowns configs={FILTER_DROPDOWN_CONFIGS} ... />
+Today (default order):
+  <FilterDropdowns ... />
+  // configs prop omitted → defaults to FILTER_DROPDOWN_CONFIGS
 
 Future (user preferences stored in DB):
   const orderedConfigs = useUserFilterOrder(FILTER_DROPDOWN_CONFIGS)
   <FilterDropdowns configs={orderedConfigs} ... />
 ```
 
-`FilterDropdowns` accepts the config array as a prop (or reads from the module constant) — either way, the component is order-agnostic. The global `FILTER_DROPDOWN_CONFIGS` remains the source of truth for config *shape*; user preferences need only store an ordered list of `key` strings to express a custom order.
+`FilterDropdowns` accepts an optional `configs` prop that defaults to `FILTER_DROPDOWN_CONFIGS`. The component iterates over whatever it receives, making it order-agnostic. The global `FILTER_DROPDOWN_CONFIGS` remains the source of truth for config *shape*; user preferences need only store an ordered list of `key` strings to express a custom order.
 
 ### lib/filterConfig.ts (simplified or removed)
 

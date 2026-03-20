@@ -1,4 +1,4 @@
-import { FILTER_DROPDOWN_CONFIGS } from './filterConfigs'
+import { FILTER_DROPDOWN_CONFIGS, type FilterDropdownConfig } from './filterConfigs'
 import { MultiSelectDropdown } from '@/components/ui/MultiSelectDropdown'
 
 interface Option {
@@ -14,9 +14,9 @@ interface FilterDropdownsProps {
   preparationIds: string[] | undefined
   classifications: Option[] | undefined
   sources: Option[] | undefined
-  allMeals: Option[] | undefined
-  allCourses: Option[] | undefined
-  allPreparations: Option[] | undefined
+  meals: Option[] | undefined
+  courses: Option[] | undefined
+  preparations: Option[] | undefined
   updateSearch: (updates: {
     classificationIds?: string[]
     sourceIds?: string[]
@@ -31,6 +31,7 @@ interface FilterDropdownsProps {
     courseCounts?: Record<string, number>
     preparationCounts?: Record<string, number>
   }
+  configs?: FilterDropdownConfig[]
 }
 
 export function FilterDropdowns({
@@ -41,23 +42,24 @@ export function FilterDropdowns({
   preparationIds,
   classifications,
   sources,
-  allMeals,
-  allCourses,
-  allPreparations,
+  meals,
+  courses,
+  preparations,
   updateSearch,
   counts,
+  configs = FILTER_DROPDOWN_CONFIGS,
 }: FilterDropdownsProps) {
-  const dataMap: Record<string, { selectedIds: string[]; options: Option[] }> = {
+  const dataMap = {
     classification: { selectedIds: classificationIds ?? [], options: classifications ?? [] },
     source: { selectedIds: sourceIds ?? [], options: sources ?? [] },
-    meal: { selectedIds: mealIds ?? [], options: allMeals ?? [] },
-    course: { selectedIds: courseIds ?? [], options: allCourses ?? [] },
-    preparation: { selectedIds: preparationIds ?? [], options: allPreparations ?? [] },
+    meal: { selectedIds: mealIds ?? [], options: meals ?? [] },
+    course: { selectedIds: courseIds ?? [], options: courses ?? [] },
+    preparation: { selectedIds: preparationIds ?? [], options: preparations ?? [] },
   }
 
   return (
     <div className="flex flex-wrap gap-2" data-testid="filter-dropdowns">
-      {FILTER_DROPDOWN_CONFIGS.map((cfg) => {
+      {configs.map((cfg) => {
         const { selectedIds, options } = dataMap[cfg.key]
 
         return (
@@ -69,7 +71,7 @@ export function FilterDropdowns({
             placeholder={cfg.placeholder}
             label={cfg.label.toLowerCase()}
             labelPlural={cfg.labelPlural}
-            counts={counts?.[cfg.countKey as keyof typeof counts] as Record<string, number> | undefined}
+            counts={counts?.[cfg.countKey]}
             dataTestId={cfg.dataTestId}
             ariaLabel={cfg.ariaLabel}
           />

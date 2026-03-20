@@ -40,9 +40,9 @@ The system SHALL read the display order of dropdown filters from a single `FILTE
 - **WHEN** a developer swaps the order of two entries in `FILTER_DROPDOWN_CONFIGS`
 - **THEN** the UI reflects the new order without any changes to component logic
 
-#### Scenario: Future user preference can override order without component changes
+#### Scenario: Future user preference can override order via the configs prop
 - **WHEN** a future feature stores a user's preferred filter order
-- **THEN** the caller can sort `FILTER_DROPDOWN_CONFIGS` by the user's preferred key order and pass the result to `FilterDropdowns`, with no changes required to the component itself
+- **THEN** the caller passes a reordered array to the optional `configs` prop of `FilterDropdowns`, with no changes required to the component itself
 
 ---
 

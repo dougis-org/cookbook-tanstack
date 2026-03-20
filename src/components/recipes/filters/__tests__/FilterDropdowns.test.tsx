@@ -37,9 +37,9 @@ const defaultProps = {
   preparationIds: undefined,
   classifications: mockClassifications,
   sources: mockSources,
-  allMeals: mockMeals,
-  allCourses: mockCourses,
-  allPreparations: mockPreparations,
+  meals: mockMeals,
+  courses: mockCourses,
+  preparations: mockPreparations,
 }
 
 describe('FilterDropdowns', () => {
@@ -228,17 +228,17 @@ describe('FilterDropdowns', () => {
 
   describe('empty options', () => {
     it('handles empty meals gracefully', () => {
-      render(<FilterDropdowns {...defaultProps} allMeals={[]} updateSearch={mockUpdateSearch} />)
+      render(<FilterDropdowns {...defaultProps} meals={[]} updateSearch={mockUpdateSearch} />)
       expect(screen.getByTestId('filter-dropdown-meal')).toHaveTextContent('All Meals')
     })
 
     it('handles empty courses gracefully', () => {
-      render(<FilterDropdowns {...defaultProps} allCourses={[]} updateSearch={mockUpdateSearch} />)
+      render(<FilterDropdowns {...defaultProps} courses={[]} updateSearch={mockUpdateSearch} />)
       expect(screen.getByTestId('filter-dropdown-course')).toHaveTextContent('All Courses')
     })
 
     it('handles empty preparations gracefully', () => {
-      render(<FilterDropdowns {...defaultProps} allPreparations={[]} updateSearch={mockUpdateSearch} />)
+      render(<FilterDropdowns {...defaultProps} preparations={[]} updateSearch={mockUpdateSearch} />)
       expect(screen.getByTestId('filter-dropdown-preparation')).toHaveTextContent('All Preparations')
     })
   })
