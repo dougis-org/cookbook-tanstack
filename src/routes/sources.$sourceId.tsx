@@ -17,7 +17,7 @@ function SourceDetailPage() {
   )
 
   const { data: recipes, isLoading: loadingRecipes } = useQuery(
-    trpc.recipes.list.queryOptions({ sourceId }),
+    trpc.recipes.list.queryOptions({ sourceIds: [sourceId] }),
   )
 
   const isLoading = loadingSource || loadingRecipes

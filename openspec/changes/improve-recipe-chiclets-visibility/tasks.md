@@ -2,17 +2,17 @@
 
 ## 0. Setup & Branch Preparation
 
-- [ ] 0.1 Switch to main branch: `git checkout main`
+- [x] 0.1 Switch to main branch: `git checkout main`
 
-- [ ] 0.2 Pull latest changes from remote: `git pull origin main`
+- [x] 0.2 Pull latest changes from remote: `git pull origin main`
 
-- [ ] 0.3 Create feature branch: `git checkout -b improve-recipe-chiclets-visibility`
+- [x] 0.3 Create feature branch: `git checkout -b improve-recipe-chiclets-visibility`
 
 ## 1. RED Phase: Write Failing Tests
 
 ### 1.1 Unit Tests - TaxonomyBadge
 
-- [ ] 1.1.1 Create/update tests for TaxonomyBadge (`src/components/ui/__tests__/TaxonomyBadge.test.ts`)
+- [x] 1.1.1 Create/update tests for TaxonomyBadge (`src/components/ui/__tests__/TaxonomyBadge.test.ts`)
   - Test opacity is 60-70% and text color is dark variant (amber-900, violet-900, emerald-900)
   - Test icon is rendered before badge text
   - Test all three variants: meal (Utensils icon), course (BookOpen icon), preparation (Timer icon)
@@ -20,7 +20,7 @@
 
 ### 1.2 Unit Tests - ClassificationBadge
 
-- [ ] 1.2.1 Create/update tests for ClassificationBadge (`src/components/ui/__tests__/ClassificationBadge.test.ts`)
+- [x] 1.2.1 Create/update tests for ClassificationBadge (`src/components/ui/__tests__/ClassificationBadge.test.ts`)
   - Test solid background styling (`bg-cyan-600 text-white`)
   - Test `plain` variant renders as non-clickable span
   - Test `linkable` variant renders as Link component
@@ -28,7 +28,7 @@
 
 ### 1.3 Unit Tests - RecipeMetadataHeader
 
-- [ ] 1.3.1 Create tests for RecipeMetadataHeader (`src/components/recipes/__tests__/RecipeMetadataHeader.test.ts`)
+- [x] 1.3.1 Create tests for RecipeMetadataHeader (`src/components/recipes/__tests__/RecipeMetadataHeader.test.ts`)
   - Test 2-column layout rendering on desktop (md breakpoint+)
   - Test stacked layout on mobile (below md breakpoint)
   - Test category badge displays non-linkable with solid styling
@@ -39,7 +39,7 @@
 
 ### 1.4 Unit Tests - RecipeDetail
 
-- [ ] 1.4.1 Update tests for RecipeDetail (`src/components/recipes/__tests__/RecipeDetail.test.ts`)
+- [x] 1.4.1 Update tests for RecipeDetail (`src/components/recipes/__tests__/RecipeDetail.test.ts`)
   - Test RecipeMetadataHeader is integrated at top of content
   - Test taxonomy badges grouped with labels ("Meals:", "Courses:", "Preparations:")
   - Test category badge is not linkable (no navigation on click)
@@ -49,20 +49,20 @@
 
 ### 1.5 Unit Tests - RecipeCard
 
-- [ ] 1.5.1 Update tests for RecipeCard (`src/components/recipes/__tests__/RecipeCard.test.ts`)
+- [x] 1.5.1 Update tests for RecipeCard (`src/components/recipes/__tests__/RecipeCard.test.ts`)
   - Test ClassificationBadge with new solid styling is applied
   - Test category badge is prominent/visible above recipe title
 
 ### 1.6 E2E Tests - Recipe List
 
-- [ ] 1.6.1 Update E2E tests (`src/e2e/recipes-list.spec.ts`)
+- [x] 1.6.1 Update E2E tests (`src/e2e/recipes-list.spec.ts`)
   - Test category badge is visible and readable on recipe cards
   - Test badge shows solid background (not semi-transparent)
   - Test badge text is clearly legible
 
 ### 1.7 E2E Tests - Recipe Detail
 
-- [ ] 1.7.1 Update E2E tests (`src/e2e/recipes-crud.spec.ts`)
+- [x] 1.7.1 Update E2E tests (`src/e2e/recipes-crud.spec.ts`)
   - Test 2-column metadata header displays on wide screens
   - Test category badge appears left, source appears right
   - Test category badge is not clickable (clicking doesn't navigate)
@@ -73,95 +73,95 @@
 
 ### 1.8 Run Tests to Confirm Failures
 
-- [ ] 1.8.1 Run all tests: `npm run test && npm run test:e2e` (all should fail—RED phase)
+- [x] 1.8.1 Run all tests: `npm run test && npm run test:e2e` (all should fail—RED phase)
 
-- [ ] 1.8.2 Verify specific test names match tasks (aids in tracking during GREEN phase)
+- [x] 1.8.2 Verify specific test names match tasks (aids in tracking during GREEN phase)
 
 ## 2. GREEN Phase: Implement Code to Pass Tests
 
 ### 2.1 Update TaxonomyBadge Component
 
-- [ ] 2.1.1 Update `src/components/ui/TaxonomyBadge.tsx` to pass opacity + text color tests
+- [x] 2.1.1 Update `src/components/ui/TaxonomyBadge.tsx` to pass opacity + text color tests
   - Change opacity from 20% to 60-70%
   - Update text color to dark variants: `text-amber-900`, `text-violet-900`, `text-emerald-900`
   - Update background opacity: `bg-amber-500/60`, `bg-violet-500/60`, `bg-emerald-500/60`
 
-- [ ] 2.1.2 Add icon imports (Utensils, BookOpen, Timer from lucide-react)
+- [x] 2.1.2 Add icon imports (Utensils, BookOpen, Timer from lucide-react)
 
-- [ ] 2.1.3 Modify TaxonomyBadge props to accept icon variant parameter
+- [x] 2.1.3 Modify TaxonomyBadge props to accept icon variant parameter
 
-- [ ] 2.1.4 Render icon before badge text with `aria-hidden="true"`
+- [x] 2.1.4 Render icon before badge text with `aria-hidden="true"`
 
-- [ ] 2.1.5 Run tests to confirm TaxonomyBadge tests pass: `npm run test -- TaxonomyBadge`
+- [x] 2.1.5 Run tests to confirm TaxonomyBadge tests pass: `npm run test -- TaxonomyBadge`
 
 ### 2.2 Update ClassificationBadge Component
 
-- [ ] 2.2.1 Update `src/components/ui/ClassificationBadge.tsx` with solid background styling
+- [x] 2.2.1 Update `src/components/ui/ClassificationBadge.tsx` with solid background styling
   - Change to `bg-cyan-600 text-white`
   - Increase text size from `text-xs` to `text-sm`
   - Add padding: `px-3 py-1.5`
 
-- [ ] 2.2.2 Add variant support (`plain` default, `linkable` for links)
+- [x] 2.2.2 Add variant support (`plain` default, `linkable` for links)
   - `plain` variant: renders as non-clickable `<span>`
   - `linkable` variant: renders as `<Link>` component
 
-- [ ] 2.2.3 Add icon import and render with `aria-hidden="true"`
+- [x] 2.2.3 Add icon import and render with `aria-hidden="true"`
 
-- [ ] 2.2.4 Run tests to confirm ClassificationBadge tests pass: `npm run test -- ClassificationBadge`
+- [x] 2.2.4 Run tests to confirm ClassificationBadge tests pass: `npm run test -- ClassificationBadge`
 
 ### 2.3 Create RecipeMetadataHeader Component
 
-- [ ] 2.3.1 Create `src/components/recipes/RecipeMetadataHeader.tsx`
+- [x] 2.3.1 Create `src/components/recipes/RecipeMetadataHeader.tsx`
   - Accept props: categoryId, categoryName, sourceName, sourceUrl
   - Render 2-column layout on `md` and above using Tailwind flex
   - Render stacked layout below `md` using `flex-col`
 
-- [ ] 2.3.2 Left column: Category badge using ClassificationBadge with `plain` variant
+- [x] 2.3.2 Left column: Category badge using ClassificationBadge with `plain` variant
 
-- [ ] 2.3.3 Right column: Source info
+- [x] 2.3.3 Right column: Source info
   - Render Link/ExternalLink icon with `aria-hidden="true"`
   - If sourceUrl provided: render as `<a>` with `target="_blank"` and `rel="noopener noreferrer"`
   - If no sourceUrl: render as plain text
 
-- [ ] 2.3.4 Run tests to confirm RecipeMetadataHeader tests pass: `npm run test -- RecipeMetadataHeader`
+- [x] 2.3.4 Run tests to confirm RecipeMetadataHeader tests pass: `npm run test -- RecipeMetadataHeader`
 
 ### 2.4 Refactor RecipeDetail Component
 
-- [ ] 2.4.1 Update `src/components/recipes/RecipeDetail.tsx` to use RecipeMetadataHeader
+- [x] 2.4.1 Update `src/components/recipes/RecipeDetail.tsx` to use RecipeMetadataHeader
   - Place metadata header at top of recipe content (below title)
   - Remove old inline source rendering
 
-- [ ] 2.4.2 Reorganize taxonomy badges into visual groups:
+- [x] 2.4.2 Reorganize taxonomy badges into visual groups:
   - Section "Meals:" followed by meal badges
   - Section "Courses:" followed by course badges
   - Section "Preparations:" followed by preparation badges
 
-- [ ] 2.4.3 Ensure all TaxonomyBadge calls pass icon variant parameter
+- [x] 2.4.3 Ensure all TaxonomyBadge calls pass icon variant parameter
 
-- [ ] 2.4.4 Run tests to confirm RecipeDetail tests pass: `npm run test -- RecipeDetail`
+- [x] 2.4.4 Run tests to confirm RecipeDetail tests pass: `npm run test -- RecipeDetail`
 
 ### 2.5 Update RecipeCard Component
 
-- [ ] 2.5.1 Modify `src/components/recipes/RecipeCard.tsx`
+- [x] 2.5.1 Modify `src/components/recipes/RecipeCard.tsx`
   - Use ClassificationBadge with solid styling
   - Ensure category badge is positioned above recipe title
   - Adjust spacing if needed (don't crimp the badge)
 
-- [ ] 2.5.2 Run tests to confirm RecipeCard tests pass: `npm run test -- RecipeCard`
+- [x] 2.5.2 Run tests to confirm RecipeCard tests pass: `npm run test -- RecipeCard`
 
 ### 2.6 Run Full Test Suite - GREEN
 
-- [ ] 2.6.1 Run unit tests: `npm run test` (all unit tests should pass)
+- [x] 2.6.1 Run unit tests: `npm run test` (all unit tests should pass)
 
-- [ ] 2.6.2 Run E2E tests: `npm run test:e2e` (all E2E tests should pass)
+- [x] 2.6.2 Run E2E tests: `npm run test:e2e` (all E2E tests should pass)
 
-- [ ] 2.6.3 Fix any failing tests before proceeding to REFACTOR phase
+- [x] 2.6.3 Fix any failing tests before proceeding to REFACTOR phase
 
 ## 3. REFACTOR Phase: Improve Code Quality
 
 ### 3.1 Type Safety & Build Validation
 
-- [ ] 3.1.1 Run TypeScript compiler: `npx tsc --noEmit` (no errors)
+- [x] 3.1.1 Run TypeScript compiler: `npx tsc --noEmit` (no errors)
 
 - [ ] 3.1.2 Run linter (if available): `npm run lint --fix` to auto-fix issues
 
@@ -169,27 +169,27 @@
 
 ### 3.2 Accessibility Validation
 
-- [ ] 3.2.1 Verify WCAG AA contrast ratios for all badge colors:
+- [x] 3.2.1 Verify WCAG AA contrast ratios for all badge colors:
   - `bg-cyan-600 text-white` → 4.5:1+ on white background ✓
   - `bg-amber-500/60 text-amber-900` → 4.5:1+ on white background ✓
   - `bg-violet-500/60 text-violet-900` → 4.5:1+ on white background ✓
   - `bg-emerald-500/60 text-emerald-900` → 4.5:1+ on white background ✓
 
-- [ ] 3.2.2 Confirm `aria-hidden="true"` on all decorative icons
+- [x] 3.2.2 Confirm `aria-hidden="true"` on all decorative icons
 
-- [ ] 3.2.3 Verify source link has proper `rel="noopener noreferrer"`
+- [x] 3.2.3 Verify source link has proper `rel="noopener noreferrer"`
 
 ### 3.3 Code Review & Refactoring
 
-- [ ] 3.3.1 Review component implementations for:
+- [x] 3.3.1 Review component implementations for:
   - Unnecessary re-renders
   - Duplicate logic
   - Clarity and maintainability
   - Consistent naming and structure
 
-- [ ] 3.3.2 Refactor any identified issues without breaking tests
+- [x] 3.3.2 Refactor any identified issues without breaking tests
 
-- [ ] 3.3.3 Re-run tests after refactoring: `npm run test && npm run test:e2e`
+- [x] 3.3.3 Re-run tests after refactoring: `npm run test && npm run test:e2e`
 
 ### 3.4 Manual Testing & Edge Cases
 
@@ -215,17 +215,17 @@
 
 ### 3.5 Final Validation
 
-- [ ] 3.5.1 Run full test suite: `npm run test && npm run test:e2e`
+- [x] 3.5.1 Run full test suite: `npm run test && npm run test:e2e`
 
 - [ ] 3.5.2 Build project: `npm run build` (no errors)
 
-- [ ] 3.5.3 Verify TypeScript: `npx tsc --noEmit` (no errors)
+- [x] 3.5.3 Verify TypeScript: `npx tsc --noEmit` (no errors)
 
 ## 4. Execution Summary
 
-- [ ] 4.1 Verify you're on the feature branch: `git branch` (should show `improve-recipe-chiclets-visibility` with `*`)
+- [x] 4.1 Verify you're on the feature branch: `git branch` (should show `improve-recipe-chiclets-visibility` with `*`)
 
-- [ ] 4.2 Run final test suite before moving to PR: `npm run test && npm run test:e2e`
+- [x] 4.2 Run final test suite before moving to PR: `npm run test && npm run test:e2e`
 
 ## 5. PR and Merge
 
