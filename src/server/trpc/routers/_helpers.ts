@@ -47,7 +47,7 @@ export async function verifyOwnership<T extends { userId: unknown }>(
  * @param arrayField - The Recipe field that references this taxonomy (e.g. "mealIds")
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createTaxonomyRouter(Model: any, arrayField: string) {
+export function createTaxonomyRouter(Model: any, arrayField: 'mealIds' | 'courseIds' | 'preparationIds') {
   return router({
     list: publicProcedure.query(
       async (): Promise<{ id: string; name: string; slug: string; recipeCount: number }[]> => {
@@ -55,6 +55,7 @@ export function createTaxonomyRouter(Model: any, arrayField: string) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           Model.find().lean() as Promise<any[]>,
           Recipe.aggregate<{ _id: unknown; count: number }>([
+            { $match: { isPublic: true } },
             { $unwind: `$${arrayField}` },
             { $group: { _id: `$${arrayField}`, count: { $sum: 1 } } },
           ]),

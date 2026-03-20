@@ -76,6 +76,7 @@ export function FilterMoreFiltersPanel({
         onClick={() => setIsExpanded((v) => !v)}
         className="inline-flex items-center gap-2 text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors"
         aria-expanded={isExpanded}
+        aria-controls="more-filters-content"
         data-testid="filter-more-filters-toggle"
       >
         More Filters
@@ -84,7 +85,7 @@ export function FilterMoreFiltersPanel({
       </button>
 
       {isExpanded && (
-        <div className="mt-4 space-y-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700" data-testid="filter-more-filters-content">
+        <div id="more-filters-content" className="mt-4 space-y-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700" data-testid="filter-more-filters-content">
           {TAXONOMY_CONFIGS.map((cfg) => {
             if (!shouldShow(cfg.filterKey)) return null
             const { ids, items } = filterValuesMap[cfg.key]

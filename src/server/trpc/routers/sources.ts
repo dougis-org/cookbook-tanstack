@@ -14,6 +14,7 @@ export const sourcesRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Source.find().lean() as Promise<any[]>,
       Recipe.aggregate<{ _id: unknown; count: number }>([
+        { $match: { isPublic: true } },
         { $group: { _id: "$sourceId", count: { $sum: 1 } } },
       ]),
     ]);

@@ -26,7 +26,9 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
 
   // Better Auth validates Origin against the configured BETTER_AUTH_URL.
   // Prefer that value when available (e.g., in test environments).
-  const origin = process.env.BETTER_AUTH_URL ?? new URL(page.url()).origin;
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : new URL(page.url()).origin;
 
   const response = await page.request.post("/api/auth/sign-up/email", {
     data: { email, password, name, username, displayUsername: username },
