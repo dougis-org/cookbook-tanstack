@@ -1,7 +1,7 @@
 # recipe-filter-layer-ui Specification
 
 ## Purpose
-TBD - created by archiving change filter-ux-improvements. Update Purpose after archive.
+Defines the two-section filter UI on the recipe list page: Row 1 quick toggles (My Recipes, Favorites, Has Image) and a unified flowing dropdown bar covering Category, Source, Meal, Course, and Preparation. Updated by `refactor-filter-display` (GH #164) to remove the "More Filters" panel and servings filter, and to extend the dropdown bar to all five filter types.
 ## Requirements
 ### Requirement: Display quick filters in Row 1
 The system SHALL display a dedicated first row of quick-access filter toggles that allow users to rapidly apply common filters without navigating to advanced options.
@@ -34,66 +34,31 @@ The system SHALL display a dedicated first row of quick-access filter toggles th
 - **WHEN** a user activates "My Recipes" and "Favorites" toggles together
 - **THEN** the URL reflects both `myRecipes=true` and `markedByMe=true`, and both toggles display as active
 
-### Requirement: Display advanced filters in Row 2
-The system SHALL display a second row of multi-select dropdown filter controls for classification and source, allowing users to select multiple values simultaneously without overwhelming the interface.
+### Requirement: Display all five dropdown filters in a unified flowing bar
+The system SHALL display multi-select dropdown filter controls for Category, Source, Meal, Course, and Preparation in a single `flex-wrap` container below Row 1, covering all taxonomy-style filter dimensions. See `recipe-filter-unified-dropdowns` spec for full requirements on this section.
 
-#### Scenario: Row 2 displays classification multi-select dropdown
+#### Scenario: All five dropdowns appear below Row 1
 - **WHEN** a user views the recipe list page
-- **THEN** Row 2 displays a `MultiSelectDropdown` labeled "All Categories" with options for each classification
+- **THEN** five `MultiSelectDropdown` controls appear below the Row 1 toggles, in configured order: Category, Source, Meal, Course, Preparation
 
-#### Scenario: Row 2 displays source multi-select dropdown
-- **WHEN** a user views the recipe list page
-- **THEN** Row 2 displays a `MultiSelectDropdown` labeled "All Sources" with options for each source
-
-#### Scenario: Selecting one or more classifications from Row 2 filters the list
-- **WHEN** a user selects one or more items from the classification dropdown in Row 2
-- **THEN** the URL search param `classificationIds` is set to the array of selected IDs, and the recipe list filters to show only recipes in those categories
-
-#### Scenario: Selecting one or more sources from Row 2 filters the list
-- **WHEN** a user selects one or more items from the source dropdown in Row 2
-- **THEN** the URL search param `sourceIds` is set to the array of selected IDs, and the recipe list filters accordingly
-
-#### Scenario: Row 2 dropdowns display counts next to options
-- **WHEN** a user opens a Row 2 filter dropdown
-- **THEN** each option displays a count of recipes matching that filter value (e.g., "Breakfast (12)", "AllRecipes.com (5)")
+#### Scenario: Dropdowns wrap naturally on narrow screens
+- **WHEN** a user views the page on a narrow screen
+- **THEN** the dropdown controls wrap to additional lines without hiding any filter
 
 #### Scenario: Deselecting all items in a dropdown clears the filter
-- **WHEN** a user unchecks all items in a Row 2 dropdown
+- **WHEN** a user unchecks all items in any dropdown
 - **THEN** the corresponding URL param is removed and the recipe list is no longer filtered by that field
 
-#### Scenario: Multiple classifications and sources can be active simultaneously
-- **WHEN** a user selects two classifications and one source
-- **THEN** the URL contains `classificationIds=[id1,id2]` and `sourceIds=[id3]`, and the recipe list shows only recipes matching any of the selected classifications AND the selected source
-
-### Requirement: Filter layout is configurable
-The system SHALL implement filter layout (which filters appear in Row 2 vs More Filters) via a configuration file, allowing easy iteration and future support for user filter preferences.
+### Requirement: Filter order is driven by a single configuration array
+The system SHALL read filter display order from `FILTER_DROPDOWN_CONFIGS` in `filterConfigs.ts`. The `FilterDropdowns` component is order-agnostic, enabling future per-user order customization without component changes.
 
 #### Scenario: Filter placement is defined by configuration
 - **WHEN** the application initializes
-- **THEN** it reads filter configuration (e.g., `filterConfig.ts` or similar) to determine which filters appear in Row 2 vs More Filters
+- **THEN** it renders dropdown filters in the order defined in `FILTER_DROPDOWN_CONFIGS`
 
-#### Scenario: Moving a filter between rows requires only configuration change
-- **WHEN** a developer updates the filter configuration to move a filter from Row 2 to More Filters (or vice versa)
-- **THEN** the UI automatically reflects the change without modifying component logic
-
-#### Scenario: More Filters panel shows items not in Row 2
-- **WHEN** the filter configuration specifies certain filters for Row 2 and others for More Filters
-- **THEN** Row 2 displays only the configured filters, and the More Filters panel displays the remaining filters
-
-#### Scenario: Clearing a Row 2 dropdown selection removes the filter
-- **WHEN** a user resets a Row 2 dropdown to "All Categories" or "All Sources"
-- **THEN** the corresponding URL search param is removed and the recipe list updates accordingly
-
-### Requirement: Display servings range inputs in Row 2
-The system SHALL allow users to filter recipes by servings range using min/max number inputs in Row 2.
-
-#### Scenario: User sets minimum servings filter
-- **WHEN** a user enters "4" in the "Min servings" input in Row 2
-- **THEN** the URL search param `minServings=4` is added and the recipe list shows only recipes with 4+ servings
-
-#### Scenario: User sets maximum servings filter
-- **WHEN** a user enters "8" in the "Max servings" input in Row 2
-- **THEN** the URL search param `maxServings=8` is added and the recipe list shows only recipes with 8 or fewer servings
+#### Scenario: Reordering filters requires only a configuration change
+- **WHEN** a developer swaps the order of entries in `FILTER_DROPDOWN_CONFIGS`
+- **THEN** the UI reflects the new order without modifying component logic
 
 #### Scenario: User can set both min and max servings together
 - **WHEN** a user enters "4" for min and "8" for max servings
@@ -125,23 +90,15 @@ The system SHALL render Row 2 filters responsively, adapting layout for small, m
 - **WHEN** a user views the recipe list on a tablet or desktop (≥ 640px width)
 - **THEN** Row 2 dropdowns display in a horizontal flex-wrap layout, and the filters remain compact and scannable
 
-### Requirement: URL params for Row 2 filters use array form
-The system SHALL represent Category and Source filter selections in the URL as string arrays, enabling multi-value filtering and consistent URL state.
+### Requirement: URL params for all dropdown filters use array form
+The system SHALL represent all five dropdown filter selections in the URL as string arrays.
 
-#### Scenario: URL reflects array of selected classification IDs
-- **WHEN** a user selects multiple classifications
-- **THEN** the URL contains `classificationIds` as an array parameter (e.g., `?classificationIds[]=abc&classificationIds[]=def`)
+#### Scenario: URL reflects array of selected IDs for each filter type
+- **WHEN** a user selects multiple items from any dropdown filter
+- **THEN** the URL contains the corresponding param as an array (e.g., `classificationIds`, `sourceIds`, `mealIds`, `courseIds`, `preparationIds`)
 
-#### Scenario: URL reflects array of selected source IDs
-- **WHEN** a user selects multiple sources
-- **THEN** the URL contains `sourceIds` as an array parameter
-
-#### Scenario: Old scalar params `classificationId`/`sourceId` are no longer used
-- **WHEN** the recipe list page initializes
-- **THEN** the URL schema does not include `classificationId` or `sourceId` as valid params (only the plural array forms are recognized)
-
-### Requirement: Active filter badges show one badge per selected category or source
-The system SHALL render a separate active filter badge for each selected classification ID and each selected source ID, consistent with how taxonomy filter badges (mealIds, courseIds, preparationIds) are already handled.
+### Requirement: Active filter badges show one badge per selected item across all dropdown filters
+The system SHALL render a separate active filter badge for each selected ID across all five dropdown filter types.
 
 #### Scenario: One badge per selected classification
 - **WHEN** a user has selected two classifications
