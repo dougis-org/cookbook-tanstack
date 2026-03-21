@@ -59,6 +59,7 @@ function CookbooksPage() {
           ))}
         </div>
       )}
+      <Outlet />
     </PageLayout>
   )
 }

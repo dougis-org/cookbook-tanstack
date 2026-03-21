@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
@@ -35,6 +35,7 @@ function CategoriesPage() {
           ))}
         </div>
       )}
+      <Outlet />
     </PageLayout>
   )
 }
