@@ -18,11 +18,11 @@ interface FilterDropdownsProps {
   courses: Option[] | undefined
   preparations: Option[] | undefined
   updateSearch: (updates: {
-    classificationIds?: string[]
-    sourceIds?: string[]
-    mealIds?: string[]
-    courseIds?: string[]
-    preparationIds?: string[]
+    classificationIds?: string[] | undefined
+    sourceIds?: string[] | undefined
+    mealIds?: string[] | undefined
+    courseIds?: string[] | undefined
+    preparationIds?: string[] | undefined
   }) => void
   counts?: {
     classificationCounts?: Record<string, number>
