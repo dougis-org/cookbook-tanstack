@@ -49,9 +49,9 @@ jobs:
           commit_msg="$(git show -s --format=%B)"
           echo "Detected commit message: $commit_msg"
           if echo "$commit_msg" | grep -q "\[ci-auto-lock-update\]"; then
-            echo "CI_UPDATED_LOCKFILE=true" >> $GITHUB_ENV
+            echo "CI_UPDATED_LOCKFILE=true" >> "$GITHUB_ENV"
           else
-            echo "CI_UPDATED_LOCKFILE=false" >> $GITHUB_ENV
+            echo "CI_UPDATED_LOCKFILE=false" >> "$GITHUB_ENV"
           fi
 
       - name: Setup Node.js
