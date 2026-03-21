@@ -67,6 +67,11 @@ export function MultiSelectDropdown({
 
   const isActive = selectedIds.length > 0
 
+  const sortedOptions = [
+    ...options.filter((o) => selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
+    ...options.filter((o) => !selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
+  ]
+
   return (
     <div ref={containerRef} className="relative" data-testid={dataTestId}>
       <button
@@ -93,7 +98,7 @@ export function MultiSelectDropdown({
             <p className="px-3 py-2 text-sm text-gray-500">No options</p>
           ) : (
             <ul className="py-1">
-              {options.map((opt) => {
+              {sortedOptions.map((opt) => {
                 const checked = selectedIds.includes(opt.id)
                 const count = counts?.[opt.id]
                 return (

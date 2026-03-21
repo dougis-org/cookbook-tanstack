@@ -31,8 +31,8 @@ vi.mock("@/lib/trpc", () => ({
       list: { queryOptions: () => ({ queryKey: ["preparations"], queryFn: () => [{ id: "p1", name: "Baked" }] }) },
     },
     sources: {
+      list: { queryOptions: () => ({ queryKey: ["sources", "list"], queryFn: () => [{ id: "src1", name: "Serious Eats", url: null }] }) },
       search: { queryOptions: () => ({ queryKey: ["sources", "search"], queryFn: () => [] }) },
-      create: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
     },
   },
 }))
@@ -146,6 +146,50 @@ describe("RecipeForm", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/name is required/i)).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("source picker", () => {
+    it("renders source picker dropdown trigger", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(screen.getByRole("button", { name: /select a source/i })).toBeInTheDocument()
+    })
+
+    it("shows selected source name when initialData has a sourceId and sourceName", () => {
+      renderWithProviders(
+        <RecipeForm initialData={{ ...makeRecipe({ sourceId: "src1" }), sourceName: "Serious Eats" }} />,
+      )
+      expect(screen.getByRole("button", { name: /serious eats/i })).toBeInTheDocument()
+    })
+  })
+
+  describe("taxonomy dropdowns", () => {
+    it("renders taxonomy dropdown triggers after difficulty", async () => {
+      renderWithProviders(<RecipeForm />)
+
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: /all meals/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: /all courses/i })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: /all preparations/i })).toBeInTheDocument()
+      })
+    })
+
+    it("shows pre-selected meal in edit mode", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe(),
+            meals: [{ id: "m1", name: "Breakfast" }],
+            courses: [],
+            preparations: [],
+          }}
+        />,
+      )
+
+      await waitFor(() => {
+        // Button label shows the selected item name when exactly 1 is selected
+        expect(screen.getByRole("button", { name: /breakfast/i })).toBeInTheDocument()
       })
     })
   })

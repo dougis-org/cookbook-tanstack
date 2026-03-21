@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
@@ -13,6 +13,7 @@ interface RecipeDetailProps {
     sourceName?: string | null
     sourceUrl?: string | null
   }
+  actions?: ReactNode
 }
 
 /** Split a text blob into non-empty lines for display. */
@@ -21,7 +22,7 @@ function splitLines(text: string | null): string[] {
   return text.split('\n').filter((line) => line.trim().length > 0)
 }
 
-export default function RecipeDetail({ recipe }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
@@ -52,9 +53,12 @@ export default function RecipeDetail({ recipe }: RecipeDetailProps) {
 
         {/* Recipe Content */}
         <div className="p-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            {recipe.name}
-          </h1>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              {recipe.name}
+            </h1>
+            {actions && <div className="shrink-0">{actions}</div>}
+          </div>
 
           {/* Classification + taxonomy tags */}
           {((recipe.classificationId && recipe.classificationName) || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (

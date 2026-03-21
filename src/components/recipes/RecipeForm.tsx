@@ -6,7 +6,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
-import SourceSelector from "@/components/ui/SourceSelector"
+import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
+import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
@@ -63,6 +64,9 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   )
   const [selectedSourceId, setSelectedSourceId] = useState<string>(
     initialData?.sourceId ?? "",
+  )
+  const [selectedSourceName, setSelectedSourceName] = useState<string>(
+    initialData?.sourceName ?? "",
   )
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
@@ -199,10 +203,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Source (cookbook, website, etc.)
             </label>
-            <SourceSelector
+            <SourcePickerDropdown
               value={selectedSourceId}
-              initialName={initialData?.sourceName ?? ""}
-              onChange={setSelectedSourceId}
+              selectedName={selectedSourceName}
+              onChange={(id, name) => {
+                setSelectedSourceId(id)
+                setSelectedSourceName(name)
+              }}
             />
           </div>
 
@@ -278,95 +285,28 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
 
           {/* Taxonomy selectors */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Categories</h3>
-
-            {allMeals?.length ? (
-              <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Meals</p>
-                <div className="flex flex-wrap gap-2">
-                  {allMeals.map((meal) => {
-                    const active = selectedMealIds.includes(meal.id)
-                    return (
-                      <button
-                        key={meal.id}
-                        type="button"
-                        onClick={() =>
-                          setSelectedMealIds((prev) =>
-                            active ? prev.filter((id) => id !== meal.id) : [...prev, meal.id],
-                          )
-                        }
-                        className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                          active
-                            ? "bg-cyan-500/20 border-cyan-500 text-cyan-300"
-                            : "bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600"
-                        }`}
-                      >
-                        {meal.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            {allCourses?.length ? (
-              <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Courses</p>
-                <div className="flex flex-wrap gap-2">
-                  {allCourses.map((course) => {
-                    const active = selectedCourseIds.includes(course.id)
-                    return (
-                      <button
-                        key={course.id}
-                        type="button"
-                        onClick={() =>
-                          setSelectedCourseIds((prev) =>
-                            active ? prev.filter((id) => id !== course.id) : [...prev, course.id],
-                          )
-                        }
-                        className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                          active
-                            ? "bg-cyan-500/20 border-cyan-500 text-cyan-300"
-                            : "bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600"
-                        }`}
-                      >
-                        {course.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            {allPreparations?.length ? (
-              <div>
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preparations</p>
-                <div className="flex flex-wrap gap-2">
-                  {allPreparations.map((prep) => {
-                    const active = selectedPrepIds.includes(prep.id)
-                    return (
-                      <button
-                        key={prep.id}
-                        type="button"
-                        onClick={() =>
-                          setSelectedPrepIds((prev) =>
-                            active ? prev.filter((id) => id !== prep.id) : [...prev, prep.id],
-                          )
-                        }
-                        className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                          active
-                            ? "bg-cyan-500/20 border-cyan-500 text-cyan-300"
-                            : "bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600"
-                        }`}
-                      >
-                        {prep.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ) : null}
+          <div className="flex flex-wrap gap-2">
+            <MultiSelectDropdown
+              options={allMeals ?? []}
+              selectedIds={selectedMealIds}
+              onChange={setSelectedMealIds}
+              placeholder="All Meals"
+              label="meal"
+            />
+            <MultiSelectDropdown
+              options={allCourses ?? []}
+              selectedIds={selectedCourseIds}
+              onChange={setSelectedCourseIds}
+              placeholder="All Courses"
+              label="course"
+            />
+            <MultiSelectDropdown
+              options={allPreparations ?? []}
+              selectedIds={selectedPrepIds}
+              onChange={setSelectedPrepIds}
+              placeholder="All Preparations"
+              label="preparation"
+            />
           </div>
 
           {/* Public toggle */}
