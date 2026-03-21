@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown, X } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
@@ -18,8 +18,17 @@ export default function SourcePickerDropdown({
 }: SourcePickerDropdownProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const debounceSearch = useCallback((value: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300)
+  }, [])
+
+  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
   useEffect(() => {
     if (!open) return
@@ -41,18 +50,23 @@ export default function SourcePickerDropdown({
     }
   }, [open])
 
-  const { data: allSources = [] } = useQuery(trpc.sources.list.queryOptions())
-  const { data: searchResults = [] } = useQuery({
-    ...trpc.sources.search.queryOptions({ query: search }),
-    enabled: search.length > 0,
+  const { data: allSources = [] } = useQuery({
+    ...trpc.sources.list.queryOptions(),
+    enabled: open && debouncedSearch.length === 0,
   })
 
-  const displayedSources = search.length > 0 ? searchResults : allSources
+  const { data: searchResults = [] } = useQuery({
+    ...trpc.sources.search.queryOptions({ query: debouncedSearch }),
+    enabled: open && debouncedSearch.length > 0,
+  })
+
+  const displayedSources = debouncedSearch.length > 0 ? searchResults : allSources
 
   function selectSource(id: string, name: string) {
     onChange(id, name)
     setOpen(false)
     setSearch('')
+    setDebouncedSearch('')
   }
 
   function clearSource(e: React.MouseEvent) {
@@ -99,7 +113,11 @@ export default function SourcePickerDropdown({
               role="searchbox"
               placeholder="Search sources…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value
+                setSearch(val)
+                debounceSearch(val)
+              }}
               className="w-full px-2 py-1 text-sm bg-slate-900 border border-slate-600 rounded text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-500"
             />
           </div>
@@ -112,7 +130,7 @@ export default function SourcePickerDropdown({
                 <li key={source.id}>
                   <button
                     type="button"
-                    onMouseDown={() => selectSource(source.id, source.name)}
+                    onClick={() => selectSource(source.id, source.name)}
                     className={`w-full text-left px-3 py-1.5 text-sm hover:bg-slate-700 transition-colors ${
                       source.id === value ? 'text-cyan-300' : 'text-gray-300'
                     }`}

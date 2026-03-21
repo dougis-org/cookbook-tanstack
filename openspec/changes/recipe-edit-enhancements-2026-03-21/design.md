@@ -70,11 +70,17 @@ interface SourcePickerDropdownProps {
 
 **Implementation:**
 ```ts
-const sortedOptions = [
-  ...options.filter(o => selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
-  ...options.filter(o => !selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
-]
+const sortedOptions = useMemo(() => {
+  const selectedSet = new Set(selectedIds)
+  return [...options].sort((a, b) => {
+    const aSelected = selectedSet.has(a.id)
+    const bSelected = selectedSet.has(b.id)
+    if (aSelected !== bSelected) return aSelected ? -1 : 1
+    return a.name.localeCompare(b.name)
+  })
+}, [options, selectedIds])
 ```
+Single O(n log n) pass using a `Set` for O(1) lookup; `useMemo` avoids re-sorting on unrelated renders (e.g. `open` toggle).
 
 ## Risks / Trade-offs
 

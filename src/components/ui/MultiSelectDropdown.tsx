@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 interface Option {
@@ -67,10 +67,15 @@ export function MultiSelectDropdown({
 
   const isActive = selectedIds.length > 0
 
-  const sortedOptions = [
-    ...options.filter((o) => selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
-    ...options.filter((o) => !selectedIds.includes(o.id)).sort((a, b) => a.name.localeCompare(b.name)),
-  ]
+  const sortedOptions = useMemo(() => {
+    const selectedSet = new Set(selectedIds)
+    return [...options].sort((a, b) => {
+      const aSelected = selectedSet.has(a.id)
+      const bSelected = selectedSet.has(b.id)
+      if (aSelected !== bSelected) return aSelected ? -1 : 1
+      return a.name.localeCompare(b.name)
+    })
+  }, [options, selectedIds])
 
   return (
     <div ref={containerRef} className="relative" data-testid={dataTestId}>
