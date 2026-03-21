@@ -42,11 +42,11 @@
 
 ## 8. PR and Merge
 
-- [ ] 8.1 Push branch and open PR referencing issue #174; title: `feat: recipe edit enhancements (edit button, source picker, taxonomy dropdowns)`
-- [ ] 8.2 Enable auto-merge on the PR
-- [ ] 8.3 Resolve any CI failures or review comments before merge
+- [x] 8.1 Push branch and open PR referencing issue #174; title: `feat: recipe edit enhancements (edit button, source picker, taxonomy dropdowns)`
+- [x] 8.2 Enable auto-merge on the PR
+- [x] 8.3 Resolve any CI failures or review comments before merge
 
 ## 9. Post-Merge
 
-- [ ] 9.1 Run `/opsx:archive` to archive this change and sync spec deltas to `openspec/specs/`
-- [ ] 9.2 Delete the local feature branch after merge is confirmed
+- [x] 9.1 Run `/opsx:archive` to archive this change and sync spec deltas to `openspec/specs/`
+- [x] 9.2 Delete the local feature branch after merge is confirmed
