@@ -3,7 +3,7 @@ import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { submitRecipeForm } from "./helpers/recipes";
 
-test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () => {
+test.describe("Recipe Filter UI — Unified Filter Dropdowns", () => {
   test.beforeEach(async ({ page }) => {
     await page.context().clearCookies();
   });
@@ -23,18 +23,17 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     ).toBeVisible();
   });
 
-  test("should display Row 2 (Dropdown Filters) correctly", async ({
-    page,
-  }) => {
+  test("should display all five dropdown filters", async ({ page }) => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
     await expect(
       page.getByTestId("filter-dropdown-classification"),
     ).toBeVisible();
-    await expect(
-      page.getByTestId("filter-dropdown-source"),
-    ).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-source")).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-meal")).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-course")).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-preparation")).toBeVisible();
   });
 
   test("should toggle My Recipes quick filter", async ({ page }) => {
@@ -93,50 +92,30 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await page.waitForURL(/classificationIds=/);
   });
 
-  test("should expand and collapse More Filters panel", async ({ page }) => {
+  test("should filter by Meal type using dropdown", async ({ page }) => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-    await expect(moreFiltersToggle).toBeVisible();
+    const mealDropdown = page.getByTestId("filter-dropdown-meal");
+    await expect(mealDropdown).toBeVisible();
 
-    const moreFiltersContent = page.getByTestId("filter-more-filters-content");
-    await expect(moreFiltersContent).toBeHidden();
-
-    await moreFiltersToggle.click();
-    await expect(moreFiltersContent).toBeVisible();
-
-    await moreFiltersToggle.click();
-    await expect(moreFiltersContent).toBeHidden();
-  });
-
-  test("should select taxonomy items in More Filters panel", async ({
-    page,
-  }) => {
-    await registerAndLogin(page);
-    await gotoAndWaitForHydration(page, "/recipes");
-
-    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-    await moreFiltersToggle.click();
-    await page
-      .getByTestId("filter-more-filters-content")
-      .waitFor({ state: "visible" });
+    // Open the meal dropdown
+    await mealDropdown.getByRole("button").click();
 
     // Meal taxonomy is seeded by npm run db:seed
-    const firstChip = page
-      .locator("button")
-      .filter({ hasText: /Breakfast|Lunch|Dinner|Brunch|Snack/ })
-      .first();
-    await expect(firstChip).toBeVisible();
-    await firstChip.click();
+    const firstCheckbox = mealDropdown.getByRole("checkbox").first();
+    await expect(firstCheckbox).toBeVisible();
+    await firstCheckbox.click();
 
     await page.waitForURL(/mealIds=/);
 
-    const activeClass = await firstChip.getAttribute("class");
-    expect(activeClass).toContain("cyan");
+    // Meal dropdown button should reflect the selection (active styling)
+    const mealButton = mealDropdown.getByRole("button");
+    const classList = await mealButton.getAttribute("class");
+    expect(classList).toContain("cyan");
   });
 
-  test("should maintain filter state through panel collapse/expand", async ({
+  test("should maintain filter state when applying multiple filters", async ({
     page,
   }) => {
     await registerAndLogin(page);
@@ -157,19 +136,29 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await firstCheckbox.click();
     await page.waitForURL(/classificationIds=/);
 
-    const urlBefore = page.url();
+    const urlWithFilter = page.url();
 
-    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-    await moreFiltersToggle.click();
-    await page
-      .getByTestId("filter-more-filters-content")
-      .waitFor({ state: "visible" });
-    await moreFiltersToggle.click();
+    // Apply a quick filter on top — classification filter should remain
+    const hasImageButton = page
+      .getByRole("button", { name: /Has Image/i })
+      .first();
+    await hasImageButton.click();
+    await page.waitForURL(/hasImage=true/);
 
-    expect(page.url()).toBe(urlBefore);
+    expect(page.url()).toContain("classificationIds=");
+    expect(page.url()).toContain("hasImage=true");
+
+    // Remove the quick filter — classification should still be there
+    await hasImageButton.click();
+    await page.waitForURL((url) => !url.search.includes("hasImage=true"));
+
+    expect(page.url()).toContain("classificationIds=");
+    expect(page.url()).not.toContain("hasImage=");
+
+    void urlWithFilter; // referenced for intent clarity
   });
 
-  test("should clear all filters button reset all three rows", async ({
+  test("should clear all filters button reset all filters", async ({
     page,
   }) => {
     await registerAndLogin(page);
@@ -226,13 +215,10 @@ test.describe("Recipe Filter UI — Two-Row Layout with More Filters Panel", () 
     await myRecipesButton.click();
     await page.waitForURL(/myRecipes=true/);
 
-    // More Filters panel should still be expandable
-    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-    await expect(moreFiltersToggle).toBeVisible();
-    await moreFiltersToggle.click();
-    await page
-      .getByTestId("filter-more-filters-content")
-      .waitFor({ state: "visible" });
+    // All five dropdowns should still be accessible on mobile
+    await expect(page.getByTestId("filter-dropdown-meal")).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-course")).toBeVisible();
+    await expect(page.getByTestId("filter-dropdown-preparation")).toBeVisible();
   });
 
   test("logged-out user should see only Has Image quick filter", async ({
