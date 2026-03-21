@@ -25,6 +25,8 @@ The desired end state (eventually) is a user-selectable theme. The immediate nee
 
 - Add `@custom-variant dark (&:where(.dark, .dark *));` to `src/styles.css` to switch Tailwind v4 from media-query mode to class-based dark mode.
 - Add `className="dark"` to the `<html>` element in `src/routes/__root.tsx` to unconditionally activate the dark class.
+- Add `data-testid="recipe-card"` to the root element of `src/components/recipes/RecipeCard.tsx` to enable stable E2E selection.
+- Add `src/e2e/dark-theme.spec.ts` with three E2E scenarios verifying dark class presence, SSR rendering, and card dark background.
 
 ### Out of Scope
 
@@ -36,6 +38,8 @@ The desired end state (eventually) is a user-selectable theme. The immediate nee
 
 - `src/styles.css` — one line added: `@custom-variant dark (&:where(.dark, .dark *));`
 - `src/routes/__root.tsx` — `<html lang="en">` → `<html lang="en" className="dark">`
+- `src/components/recipes/RecipeCard.tsx` — add `data-testid="recipe-card"` to root element (testability only, no visual change)
+- `src/e2e/dark-theme.spec.ts` — new E2E spec with three dark-mode verification scenarios
 
 ## Risks
 

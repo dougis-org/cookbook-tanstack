@@ -20,15 +20,13 @@ test.describe("Dark Theme", () => {
   test("dark class is present in server-rendered HTML before hydration", async ({
     page,
   }) => {
-    // waitUntil: 'commit' resolves as soon as the response is received and
-    // the initial HTML begins parsing — before any scripts execute.
-    // The dark class must be present at this point (SSR, not client-side JS).
-    await page.goto("/", { waitUntil: "commit" });
+    // Inspect the raw HTML response body to confirm the dark class is emitted
+    // by the server, not added client-side by JavaScript.
+    const response = await page.goto("/", { waitUntil: "commit" });
+    expect(response).not.toBeNull();
 
-    const hasDarkClass = await page.evaluate(() =>
-      document.documentElement.classList.contains("dark")
-    );
-    expect(hasDarkClass).toBe(true);
+    const html = await response!.text();
+    expect(html).toMatch(/<html[^>]*class=["'][^"']*\bdark\b[^"']*["']/);
   });
 
   test("recipe cards render with dark background when dark mode is active", async ({
@@ -48,7 +46,9 @@ test.describe("Dark Theme", () => {
     const backgroundColor = await card.evaluate(
       (el) => window.getComputedStyle(el).backgroundColor
     );
-    // Tailwind v4 reports colors in oklch; assert it is not the light-mode white background.
+    // Tailwind v4 reports colors in oklch; assert it is neither the light-mode
+    // white background nor transparent (which would be a false-negative miss).
     expect(backgroundColor).not.toBe("rgb(255, 255, 255)");
+    expect(backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
   });
 });

@@ -12,8 +12,8 @@
 
 - [x] 3.1 Create `src/e2e/dark-theme.spec.ts` with the following three scenarios (use `gotoAndWaitForHydration` from `src/e2e/helpers/app` for navigation):
   - **root dark class** — navigate to `/`; assert `document.documentElement.classList.contains('dark')` is `true`
-  - **dual-mode components render dark** — navigate to `/recipes`; wait for a recipe card to be visible; assert its computed `background-color` matches `rgb(30, 41, 59)` (Tailwind `slate-800`), not `rgb(255, 255, 255)` (white)
-  - **no FOIT** — navigate to `/`; assert the `dark` class is already present on `<html>` at `domcontentloaded`, before full hydration (use `page.evaluate` inside a `page.on('domcontentloaded', ...)` handler)
+  - **dual-mode components render dark** — navigate to `/recipes`; wait for a recipe card to be visible; assert its computed `background-color` is not `rgb(255, 255, 255)` (white) and not `rgba(0, 0, 0, 0)` (transparent — guards against false-negative if selector misses or stylesheet fails to load)
+  - **no FOIT** — navigate to `/` with `{ waitUntil: 'commit' }`; inspect the raw HTML response body via `response.text()` and assert it matches `/<html[^>]*class=["'][^"']*\bdark\b/` — this confirms the class is emitted by the server, not added by client-side JS
 
 ## 4. Validation
 
@@ -28,9 +28,9 @@
 
 ## 5. PR and Merge
 
-- [ ] 5.1 Commit with message: `feat: enforce dark mode via class-based Tailwind variant`
-- [ ] 5.2 Push branch and open PR
-- [ ] 5.3 Enable auto-merge on the PR (per `docs/standards/ci-cd.md`)
+- [x] 5.1 Commit with message: `feat: enforce dark mode via class-based Tailwind variant`
+- [x] 5.2 Push branch and open PR
+- [x] 5.3 Enable auto-merge on the PR (per `docs/standards/ci-cd.md`)
 - [ ] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge

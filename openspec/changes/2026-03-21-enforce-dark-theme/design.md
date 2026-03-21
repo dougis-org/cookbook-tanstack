@@ -72,14 +72,15 @@ Scenario 1 — root element carries the dark class:
 - Assert `await page.evaluate(() => document.documentElement.classList.contains('dark'))` returns `true`
 
 Scenario 2 — dual-mode components render dark styles:
-- Navigate to `/recipes` (seeded data must include at least one recipe)
+- Register and log in, create a recipe, then navigate to `/recipes`
 - Wait for at least one recipe card to be visible
-- Assert the first recipe card's computed `background-color` is **not** `rgb(255, 255, 255)` (white)
-- Note: Tailwind v4 uses the `oklch` color space, so browsers report colors in `oklch()` format rather than `rgb()`. Assert against "not white" rather than a specific oklch value to remain resilient to future Tailwind color adjustments.
+- Assert the first recipe card's computed `background-color` is **not** `rgb(255, 255, 255)` (white) and not `rgba(0, 0, 0, 0)` (transparent — guards against false-negative if the selector misses or the stylesheet fails to load)
+- Note: Tailwind v4 uses the `oklch` color space, so browsers report colors in `oklch()` format rather than `rgb()`. Assert against "not white/transparent" rather than a specific oklch value to remain resilient to future Tailwind color adjustments.
 
 Scenario 3 — no flash-of-incorrect-theme (FOIT):
-- Navigate to `/`
-- Assert the `dark` class is present on `<html>` before any JavaScript executes by checking it in the `domcontentloaded` event (use Playwright's `page.on('domcontentloaded', ...)` or a `waitForFunction` with `{ timeout: 0 }` before hydration completes)
+- Navigate to `/` with `{ waitUntil: 'commit' }` and capture the `Response` object
+- Inspect the raw HTML response body via `response.text()` and assert it matches `/<html[^>]*class=["'][^"']*\bdark\b/`
+- This confirms the `dark` class is emitted by the server in the initial HTML payload, not added by client-side JS after parsing (which `page.evaluate` alone cannot distinguish)
 
 ## Risks / Trade-offs
 
