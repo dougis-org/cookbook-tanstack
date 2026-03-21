@@ -20,7 +20,7 @@
 - [x] 4.1 Run unit/integration tests: `npm run test` — all must pass
 - [x] 4.2 Run E2E tests: `npm run test:e2e` — all must pass (including the new `dark-theme.spec.ts`)
 - [x] 4.3 Run type check + build: `npm run build` — must complete with no TypeScript errors
-- [ ] 4.4 Visually verify in dev server (`npm run dev`):
+- [x] 4.4 Visually verify in dev server (`npm run dev`):
   - Recipe list page: cards render with dark backgrounds (not white)
   - Recipe detail page: content areas render dark (not white)
   - Header and PageLayout: unchanged (still dark)
@@ -31,13 +31,13 @@
 - [x] 5.1 Commit with message: `feat: enforce dark mode via class-based Tailwind variant`
 - [x] 5.2 Push branch and open PR
 - [x] 5.3 Enable auto-merge on the PR (per `docs/standards/ci-cd.md`)
-- [ ] 5.4 Resolve any CI failures or review comments before merge
+- [x] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge
 
-- [ ] 6.1 Delete feature branch after merge
-- [ ] 6.2 Add a note to `CLAUDE.md` under Conventions → Styling: "Dark mode is class-based (`@custom-variant dark`). The `.dark` class is applied statically to `<html>` in `__root.tsx`. Do not use `prefers-color-scheme` for dark mode detection."
-- [ ] 6.3 Run `/opsx:archive` to archive this change
+- [x] 6.1 Delete feature branch after merge
+- [x] 6.2 Add a note to `CLAUDE.md` under Conventions → Styling: "Dark mode is class-based (`@custom-variant dark`). The `.dark` class is applied statically to `<html>` in `__root.tsx`. Do not use `prefers-color-scheme` for dark mode detection."
+- [x] 6.3 Run `/opsx:archive` to archive this change
 
 Ownership metadata:
 - Implementer: —

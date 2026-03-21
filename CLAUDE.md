@@ -104,6 +104,7 @@ Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. For typ
 - Dark backgrounds use `slate-800`/`slate-900` gradients
 - Always include `dark:` variants on color properties
 - Mobile-first responsive using `sm:`, `md:`, `lg:` breakpoints
+- **Dark mode is class-based** (`@custom-variant dark` in `src/styles.css`). The `.dark` class is applied statically to `<html>` in `src/routes/__root.tsx`. Do not use `prefers-color-scheme` for dark mode detection — it is overridden by the custom variant. When the user theme toggle is built, manage the class on `document.documentElement` rather than relying on the media query.
 
 ### Vite Plugin Order
 The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPaths → tailwindcss → tanstackStart → react.
