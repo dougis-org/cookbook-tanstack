@@ -24,5 +24,10 @@ export default defineConfig(({ mode }) => {
       tanstackStart(),
       viteReact(),
     ],
+    server: {
+      watch: {
+        ignored: ['**/node_modules/**', '**/openspec/**', '**/.claude/**', '**/coverage/**', '**/dist/**', '**/build/**', '**/.git/**', '**/test-results/**', '**/playwright-report/**', '**/data/**', '**/docs/**'],
+      },
+    },
   }
 })

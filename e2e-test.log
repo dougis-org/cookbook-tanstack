@@ -1,0 +1,37 @@
+
+> test:e2e
+> playwright test
+
+[1A[2K[2m[WebServer] [22mnode:internal/fs/watchers:316
+[2m[WebServer] [22m    const error = new UVException({
+[2m[WebServer] [22m                  ^
+[2m[WebServer] [22m
+[2m[WebServer] [22mError: ENOSPC: System limit for number of file watchers reached, watch '/home/doug/dev2/cookbook-tanstack/.claude/skills/openspec-propose'
+[2m[WebServer] [22m[90m    at FSWatcher.<computed> (node:internal/fs/watchers:316:19)[39m
+[2m[WebServer] [22m[90m    at Object.watch (node:fs:2521:36)[39m
+[2m[WebServer] [22m    at createFsWatchInstance [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:12942:16[90m)[39m
+[2m[WebServer] [22m    at setFsWatchListener [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:12984:14[90m)[39m
+[2m[WebServer] [22m    at NodeFsHandler$1._watchWithNodeFs [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:13098:20[90m)[39m
+[2m[WebServer] [22m    at NodeFsHandler$1._handleDir [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:13261:19[90m)[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+[2m[WebServer] [22m    at async NodeFsHandler$1._addToNodeFs [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:13304:15[90m)[39m
+[2m[WebServer] [22mEmitted 'error' event on FSWatcher instance at:
+[2m[WebServer] [22m    at FSWatcher._handleError [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:14117:148[90m)[39m
+[2m[WebServer] [22m    at NodeFsHandler$1._addToNodeFs [90m(file:///home/doug/dev2/cookbook-tanstack/[39mnode_modules/[4mvite[24m/dist/node/chunks/config.js:13321:18[90m)[39m
+[2m[WebServer] [22m[90m    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)[39m {
+[2m[WebServer] [22m  errno: [33m-28[39m,
+[2m[WebServer] [22m  syscall: [32m'watch'[39m,
+[2m[WebServer] [22m  code: [32m'ENOSPC'[39m,
+[2m[WebServer] [22m  path: [32m'/home/doug/dev2/cookbook-tanstack/.claude/skills/openspec-propose'[39m,
+[2m[WebServer] [22m  filename: [32m'/home/doug/dev2/cookbook-tanstack/.claude/skills/openspec-propose'[39m
+[2m[WebServer] [22m}
+[2m[WebServer] [22m
+[2m[WebServer] [22mNode.js v25.6.1
+
+Error: Process from config.webServer was not able to start. Exit code: 1
+
+[1A[2K
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

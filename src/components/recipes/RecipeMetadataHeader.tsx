@@ -49,8 +49,9 @@ export default function RecipeMetadataHeader({
               <span>{source.name}</span>
             </a>
           ) : (
-            <span className="text-slate-700 dark:text-slate-300">
-              {source.name}
+            <span className="inline-flex items-center gap-2 text-slate-700 dark:text-slate-300">
+              <Link className="w-4 h-4" aria-hidden="true" />
+              <span>{source.name}</span>
             </span>
           )}
         </div>

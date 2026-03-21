@@ -19,7 +19,7 @@ export default function ClassificationBadge({
       className="classification-badge inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-cyan-600 text-white"
     >
       <Tag className="w-3 h-3" aria-hidden="true" />
-      {classificationName}
+      {classificationName ? classificationName : null}
     </span>
   )
 
