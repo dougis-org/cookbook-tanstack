@@ -9,6 +9,14 @@ const OPTIONS = [
   { id: 'c', name: 'Gamma' },
 ]
 
+const MIXED_OPTIONS = [
+  { id: 'z', name: 'Zucchini' },
+  { id: 'm', name: 'Mango' },
+  { id: 'a', name: 'Apple' },
+  { id: 'b', name: 'Banana' },
+  { id: 'p', name: 'Peach' },
+]
+
 describe('MultiSelectDropdown', () => {
   describe('button label', () => {
     it('shows placeholder when no items selected', () => {
@@ -146,6 +154,89 @@ describe('MultiSelectDropdown', () => {
       )
       await userEvent.click(screen.getByRole('button'))
       expect(screen.queryByText(/\(\d+\)/)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('selected-first sort order', () => {
+    function getOptionNames() {
+      return screen.getAllByRole('checkbox').map((cb) => cb.closest('label')!.textContent?.trim() ?? '')
+    }
+
+    it('renders selected options before unselected options', async () => {
+      render(
+        <MultiSelectDropdown
+          options={MIXED_OPTIONS}
+          selectedIds={['z', 'a']}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="item"
+        />,
+      )
+      await userEvent.click(screen.getByRole('button'))
+      const names = getOptionNames()
+      // Selected: Apple (a), Zucchini (z) — alpha order
+      // Unselected: Banana (b), Mango (m), Peach (p) — alpha order
+      expect(names).toEqual(['Apple', 'Zucchini', 'Banana', 'Mango', 'Peach'])
+    })
+
+    it('sorts selected options alphabetically among themselves', async () => {
+      render(
+        <MultiSelectDropdown
+          options={MIXED_OPTIONS}
+          selectedIds={['z', 'p', 'a']}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="item"
+        />,
+      )
+      await userEvent.click(screen.getByRole('button'))
+      const names = getOptionNames()
+      expect(names.slice(0, 3)).toEqual(['Apple', 'Peach', 'Zucchini'])
+    })
+
+    it('sorts unselected options alphabetically among themselves', async () => {
+      render(
+        <MultiSelectDropdown
+          options={MIXED_OPTIONS}
+          selectedIds={['a']}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="item"
+        />,
+      )
+      await userEvent.click(screen.getByRole('button'))
+      const names = getOptionNames()
+      expect(names.slice(1)).toEqual(['Banana', 'Mango', 'Peach', 'Zucchini'])
+    })
+
+    it('shows all options in alphabetical order when none are selected', async () => {
+      render(
+        <MultiSelectDropdown
+          options={MIXED_OPTIONS}
+          selectedIds={[]}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="item"
+        />,
+      )
+      await userEvent.click(screen.getByRole('button'))
+      const names = getOptionNames()
+      expect(names).toEqual(['Apple', 'Banana', 'Mango', 'Peach', 'Zucchini'])
+    })
+
+    it('shows all options in alphabetical order when all are selected', async () => {
+      render(
+        <MultiSelectDropdown
+          options={MIXED_OPTIONS}
+          selectedIds={['z', 'm', 'a', 'b', 'p']}
+          onChange={vi.fn()}
+          placeholder="All"
+          label="item"
+        />,
+      )
+      await userEvent.click(screen.getByRole('button'))
+      const names = getOptionNames()
+      expect(names).toEqual(['Apple', 'Banana', 'Mango', 'Peach', 'Zucchini'])
     })
   })
 

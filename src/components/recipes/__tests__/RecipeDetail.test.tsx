@@ -147,6 +147,34 @@ describe("RecipeDetail", () => {
     }
   })
 
+  describe("actions prop", () => {
+    it("renders provided actions content in the title row", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ name: "Pasta" })}
+          actions={<a href="/edit" data-testid="edit-link">Edit Recipe</a>}
+        />,
+      )
+      expect(screen.getByTestId("edit-link")).toBeInTheDocument()
+    })
+
+    it("renders the recipe name alongside the actions", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ name: "Pasta" })}
+          actions={<button>Edit</button>}
+        />,
+      )
+      expect(screen.getByText("Pasta")).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument()
+    })
+
+    it("renders normally when no actions prop is provided", () => {
+      render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
+      expect(screen.getByText("Pasta")).toBeInTheDocument()
+    })
+  })
+
   it.each([
     { label: "null imageUrl", imageUrl: null },
     { label: "empty string imageUrl", imageUrl: "" },

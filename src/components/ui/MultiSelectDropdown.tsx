@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 interface Option {
@@ -67,6 +67,16 @@ export function MultiSelectDropdown({
 
   const isActive = selectedIds.length > 0
 
+  const sortedOptions = useMemo(() => {
+    const selectedSet = new Set(selectedIds)
+    return [...options].sort((a, b) => {
+      const aSelected = selectedSet.has(a.id)
+      const bSelected = selectedSet.has(b.id)
+      if (aSelected !== bSelected) return aSelected ? -1 : 1
+      return a.name.localeCompare(b.name)
+    })
+  }, [options, selectedIds])
+
   return (
     <div ref={containerRef} className="relative" data-testid={dataTestId}>
       <button
@@ -93,7 +103,7 @@ export function MultiSelectDropdown({
             <p className="px-3 py-2 text-sm text-gray-500">No options</p>
           ) : (
             <ul className="py-1">
-              {options.map((opt) => {
+              {sortedOptions.map((opt) => {
                 const checked = selectedIds.includes(opt.id)
                 const count = counts?.[opt.id]
                 return (

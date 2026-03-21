@@ -97,26 +97,30 @@ function RecipeDetailPage() {
         )}
       </div>
 
-      <RecipeDetail recipe={recipe} />
+      <RecipeDetail
+        recipe={recipe}
+        actions={
+          isOwner ? (
+            <Link
+              to="/recipes/$recipeId/edit"
+              params={{ recipeId }}
+              className="print:hidden px-4 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-lg transition-colors"
+            >
+              Edit Recipe
+            </Link>
+          ) : undefined
+        }
+      />
 
       <div className="mt-8 flex justify-center gap-4">
         <ExportButton recipeId={recipeId} />
         {isOwner && (
-          <>
-            <Link
-              to="/recipes/$recipeId/edit"
-              params={{ recipeId }}
-              className="print:hidden px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Edit Recipe
-            </Link>
-            <button
-              onClick={() => setShowDelete(true)}
-              className="print:hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Delete Recipe
-            </button>
-          </>
+          <button
+            onClick={() => setShowDelete(true)}
+            className="print:hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+          >
+            Delete Recipe
+          </button>
         )}
       </div>
 
