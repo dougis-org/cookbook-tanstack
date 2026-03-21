@@ -62,64 +62,48 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await expect(page).toHaveURL(/sort=name_desc/);
   });
 
-  test("should filter by taxonomy chips and show active state", async ({
+  test("should filter by meal dropdown and show active state", async ({
     page,
   }) => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Open the "More Filters" panel to reveal taxonomy chips
-    const moreFiltersToggle = page.getByTestId("filter-more-filters-toggle");
-    const moreFiltersContent = page.getByTestId("filter-more-filters-content");
-    await moreFiltersToggle.click();
-    await expect(moreFiltersContent).toBeVisible();
+    const mealDropdown = page.getByTestId("filter-dropdown-meal");
+    await expect(mealDropdown).toBeVisible();
 
-    // Verify the toggle works (collapse/expand)
-    await moreFiltersToggle.click();
-    await expect(moreFiltersContent).not.toBeVisible();
-    await moreFiltersToggle.click();
-    await expect(moreFiltersContent).toBeVisible();
+    // Open the meal dropdown and select the first option
+    // Meal taxonomy is seeded by npm run db:seed
+    await mealDropdown.getByRole("button").click();
+    const firstCheckbox = mealDropdown.getByRole("checkbox").first();
+    await expect(firstCheckbox).toBeVisible();
+    await firstCheckbox.click();
 
-    // Scope to taxonomy chips only (meals, courses, preparations)
-    const filterChips = page.locator('[data-testid^="taxonomy-chip-"]');
-    const chipCount = await filterChips.count();
+    // URL should contain mealIds filter param
+    await expect(page).toHaveURL(/mealIds=/);
 
-    if (chipCount > 0) {
-      const chipText = await filterChips.first().textContent();
-      expect(chipText).toBeTruthy();
+    // Meal dropdown button should reflect active state
+    const mealButton = mealDropdown.getByRole("button");
+    await expect(mealButton).toHaveClass(/cyan/);
 
-      // Click to activate filter — verify URL updates with filter param
-      await filterChips.first().click();
-      await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/);
-
-      // Click again to deactivate
-      await filterChips.first().click();
-
-      // URL should no longer have the filter param
-      await expect(page).not.toHaveURL(/(mealIds|courseIds|preparationIds)=/);
-    }
+    // Deselect — URL should no longer have the filter param
+    await firstCheckbox.click();
+    await expect(page).not.toHaveURL(/mealIds=/);
   });
 
   test("should clear all filters", async ({ page }) => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    // Open the "More Filters" panel to reveal taxonomy chips
-    await page.getByTestId("filter-more-filters-toggle").click();
-    await expect(page.getByTestId("filter-more-filters-content")).toBeVisible();
-
-    // Scope to taxonomy chips only (meals, courses, preparations)
-    const filterChips = page.locator('[data-testid^="taxonomy-chip-"]');
-    const chipCount = await filterChips.count();
-
-    // Taxonomy data should be seeded — assert chips are present
-    expect(chipCount).toBeGreaterThan(0);
-
-    // Apply a filter by clicking the first chip
-    await filterChips.first().click();
+    // Apply a meal filter via the dropdown
+    // Meal taxonomy is seeded by npm run db:seed
+    const mealDropdown = page.getByTestId("filter-dropdown-meal");
+    await mealDropdown.getByRole("button").click();
+    const firstCheckbox = mealDropdown.getByRole("checkbox").first();
+    await expect(firstCheckbox).toBeVisible();
+    await firstCheckbox.click();
 
     // URL should contain a filter query param
-    await expect(page).toHaveURL(/(mealIds|courseIds|preparationIds)=/);
+    await expect(page).toHaveURL(/mealIds=/);
 
     // "Clear all" button should appear
     const clearButton = page.getByTestId("clear-all-filters");
@@ -132,7 +116,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await expect(clearButton).not.toBeVisible();
 
     // Filter-related query params should be removed from the URL
-    await expect(page).not.toHaveURL(/(mealIds|courseIds|preparationIds)=/);
+    await expect(page).not.toHaveURL(/mealIds=/);
   });
 
   test("should display pagination when enough recipes exist", async ({
