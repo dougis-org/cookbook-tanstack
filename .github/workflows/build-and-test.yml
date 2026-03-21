@@ -44,6 +44,16 @@ jobs:
           # For fork PRs and push events, use the default ref (github.ref).
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.ref }}
 
+      - name: Detect automation-triggered lockfile update
+        run: |
+          commit_msg="$(git show -s --format=%B)"
+          echo "Detected commit message: $commit_msg"
+          if echo "$commit_msg" | grep -q "\[ci-auto-lock-update\]"; then
+            echo "CI_UPDATED_LOCKFILE=true" >> "$GITHUB_ENV"
+          else
+            echo "CI_UPDATED_LOCKFILE=false" >> "$GITHUB_ENV"
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -62,7 +72,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add package-lock.json
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update package-lock.json [skip ci]"
+            # Mark lockfile auto-updates so triggered workflows can detect them.
+            git commit -m "chore: update package-lock.json [ci-auto-lock-update]"
             # Only push if the remote branch is still at the SHA this run was triggered by.
             # --force-with-lease=<ref>:<sha> prevents overwriting concurrent pushes.
             git push origin HEAD:${{ github.head_ref }} \
