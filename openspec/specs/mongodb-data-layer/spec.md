@@ -12,13 +12,13 @@ The system SHALL establish a single Mongoose connection to MongoDB using `MONGOD
 - **THEN** Mongoose connects and the db module exports the mongoose instance without error
 
 ### Requirement: Mongoose models replace Drizzle schema
-The system SHALL define Mongoose models in `src/db/models/` covering all entities: User, Session, Account, Verification, Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, RecipeLike. Each model SHALL be exported from a barrel `src/db/models/index.ts`.
+The system SHALL define Mongoose models in `src/db/models/` covering only non-authentication entities: Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, RecipeLike. The Verification model MAY be retained if referenced by custom Better-Auth hooks; otherwise it should also be removed. Each model SHALL be exported from a barrel `src/db/models/index.ts`. Authentication entities (User, Session, Account, Verification) are exclusively managed by Better-Auth's MongoDB adapter and SHALL NOT have corresponding Mongoose models.
 
-#### Scenario: Recipe model has embedded taxonomy arrays
+#### Scenario: Recipe model with embedded taxonomy arrays exists
 - **WHEN** a Recipe document is created
 - **THEN** it SHALL contain `mealIds`, `courseIds`, and `preparationIds` as arrays of ObjectId references, replacing the junction collections
 
-#### Scenario: Cookbook model has embedded recipe entries
+#### Scenario: Cookbook model with embedded recipe entries exists
 - **WHEN** a Cookbook document is created
 - **THEN** it SHALL contain a `recipes` array of `{ recipeId: ObjectId, orderIndex: number }` subdocuments, replacing the `cookbook_recipes` junction collection
 
@@ -26,14 +26,22 @@ The system SHALL define Mongoose models in `src/db/models/` covering all entitie
 - **WHEN** a user likes a recipe
 - **THEN** a RecipeLike document is created in its own collection with `userId`, `recipeId`, and `createdAt` fields
 
-### Requirement: Better-Auth uses MongoDB adapter
-The system SHALL configure Better-Auth using `mongodbAdapter` (native MongoDB driver) by deriving a `MongoClient` from the active Mongoose connection. The `drizzleAdapter` and `advanced.database.generateId` config SHALL be removed.
+#### Scenario: No application-defined User, Session, or Account models
+- **WHEN** the application initializes
+- **THEN** `src/db/models/index.ts` SHALL NOT export User, Session, or Account models; all authentication state is delegated to Better-Auth
 
-#### Scenario: Auth tables stored in MongoDB
+### Requirement: Better-Auth uses MongoDB adapter (single source of truth)
+The system SHALL configure Better-Auth using `mongodbAdapter` (native MongoDB driver) as the exclusive manager of authentication collections. All user, session, account, and verification data SHALL reside in Better-Auth's MongoDB collections (singular names: `user`, `session`, `account`, `verification`). Application code SHALL NOT directly query or write to the legacy `users`, `sessions`, or `accounts` collections.
+
+#### Scenario: Auth tables stored exclusively in Better-Auth collections
 - **WHEN** a user registers or logs in
-- **THEN** Better-Auth reads and writes user, session, account, and verification documents from the MongoDB database
+- **THEN** Better-Auth reads and writes user, session, account, and verification documents to its own singular-named collections in MongoDB
 
-#### Scenario: No separate auth DB connection
+#### Scenario: No direct queries to legacy auth collections
+- **WHEN** the application code runs
+- **THEN** all references to the legacy plurally-named `users`, `sessions`, and `accounts` collections are removed; grep/audit confirms zero references
+
+#### Scenario: No separation of auth DB connection
 - **WHEN** the application initializes
 - **THEN** Better-Auth shares the MongoDB connection established by Mongoose (no second connection string or client instantiation)
 
@@ -80,3 +88,25 @@ The environment configuration SHALL replace `DATABASE_URL` (PostgreSQL connectio
 #### Scenario: Atlas connection string accepted
 - **WHEN** `MONGODB_URI` is set to a valid MongoDB Atlas SRV connection string
 - **THEN** the application connects to Atlas without code changes
+
+### Requirement: Code audit confirms legacy collections not referenced
+The system SHALL pass a code audit verifying that the legacy plurally-named auth collections (`users`, `sessions`, `accounts`) are not referenced in any production code, server logic, tRPC procedures, middleware, routes, tests, or documentation.
+
+#### Scenario: Grep audit shows zero references
+- **WHEN** the development team runs grep/search for "users", "sessions", and "accounts" collection references
+- **THEN** no production code, server files, or active test files contain references to these collections
+
+#### Scenario: Database documentation reflects single source of truth
+- **WHEN** `docs/database.md` is reviewed
+- **THEN** it lists the 8 active non-auth collections (recipes, classifications, sources, cookbooks, meals, courses, preparations, recipelikes) plus Better-Auth's 4 singular auth collections (`user`, `session`, `account`, `verification`), with no mention of legacy `users`, `sessions`, or `accounts`
+
+### Requirement: Seed and initialization scripts do not create legacy collections
+The system SHALL remove or update any seed scripts, database initialization code, or Docker entrypoints that attempt to create documents in the legacy `users`, `sessions`, or `accounts` collections.
+
+#### Scenario: Seed scripts only target taxonomy
+- **WHEN** `npm run db:seed` executes
+- **THEN** only meal, course, and preparation taxonomy documents are created; no legacy auth collections are touched
+
+#### Scenario: Database DDL/migration does not define legacy collections
+- **WHEN** database schema is initialized from migration scripts or `.env` defaults
+- **THEN** only non-auth collections are created; legacy `users`, `sessions`, `accounts` collections are not auto-generated

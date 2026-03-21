@@ -34,3 +34,5 @@ data/legacy-migration/manifests/*
 !data/legacy-migration/manifests/.gitkeep
 data/legacy-migration/reports/*
 !data/legacy-migration/reports/.gitkeep
+
+.vscode/

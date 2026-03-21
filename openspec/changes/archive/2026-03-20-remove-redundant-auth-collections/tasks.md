@@ -121,20 +121,20 @@
   - Ensure CI/CD checks pass (tests, TypeScript, linting, security scans)
   - Re-run tests if changes made
 
-- [ ] 7.4 Monitor auto-merge
+- [x] 7.4 Monitor auto-merge
   - Verify PR merges automatically once all status checks pass and comments resolved
   - Check that branch is deleted after merge
 
 ## 8. Post-Merge
 
-- [ ] 8.1 Archive the change
+- [x] 8.1 Archive the change
   - Run: `openspec archive change "remove-redundant-auth-collections"`
   - This syncs the delta spec back to `openspec/specs/mongodb-data-layer/spec.md`
 
-- [ ] 8.2 Communicate cleanup to team
+- [x] 8.2 Communicate cleanup to team
   - Post in team chat/issue that legacy collections have been removed
   - Include optional cleanup script for developers
 
-- [ ] 8.3 Verify deployed state
+- [x] 8.3 Verify deployed state
   - If applicable, verify on staging/production that no attempts to access legacy collections occur
   - Monitor logs for any lingering references or errors

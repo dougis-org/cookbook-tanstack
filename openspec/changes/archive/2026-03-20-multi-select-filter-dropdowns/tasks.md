@@ -54,5 +54,5 @@
 
 ## 9. Post-Merge
 
-- [ ] 9.1 Run `/openspec-archive-change` to sync spec deltas to `openspec/specs/` and archive this change
-- [ ] 9.2 Delete local feature branch after archive
+- [x] 9.1 Run `/openspec-archive-change` to sync spec deltas to `openspec/specs/` and archive this change
+- [x] 9.2 Delete local feature branch after archive
