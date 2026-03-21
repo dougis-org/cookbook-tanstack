@@ -8,9 +8,7 @@ import { useSession } from '@/lib/auth-client'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
-import { FilterRow2Dropdowns } from '@/components/recipes/filters/FilterRow2Dropdowns'
-import { FilterMoreFiltersPanel } from '@/components/recipes/filters/FilterMoreFiltersPanel'
-import filterConfig from '@/lib/filterConfig'
+import { FilterDropdowns } from '@/components/recipes/filters/FilterDropdowns'
 
 const searchSchema = z.object({
   search: z.string().optional(),
@@ -25,8 +23,6 @@ const searchSchema = z.object({
   myRecipes: z.boolean().optional(),
   markedByMe: z.boolean().optional(),
   hasImage: z.boolean().optional(),
-  minServings: z.number().int().positive().optional(),
-  maxServings: z.number().int().positive().optional(),
 })
 
 type Search = z.infer<typeof searchSchema>
@@ -63,8 +59,6 @@ function RecipesPage() {
     myRecipes,
     markedByMe,
     hasImage,
-    minServings,
-    maxServings,
   } = Route.useSearch()
 
   const { data: session } = useSession()
@@ -89,8 +83,6 @@ function RecipesPage() {
       userId: myRecipes ? session?.user?.id : undefined,
       markedByMe,
       hasImage,
-      minServings,
-      maxServings,
     }),
   )
 
@@ -124,7 +116,7 @@ function RecipesPage() {
 
   const hasActiveFilters = !!(
     classificationIds?.length || sourceIds?.length || mealIds?.length || courseIds?.length ||
-    preparationIds?.length || myRecipes || markedByMe || hasImage || minServings || maxServings
+    preparationIds?.length || myRecipes || markedByMe || hasImage
   )
 
   const updateSearch = useCallback(
@@ -181,8 +173,6 @@ function RecipesPage() {
       label: sources?.find((s) => s.id === id)?.name ?? 'Source',
       onRemove: arrayRemoveBadge('sourceIds', sourceIds, id),
     })),
-    ...(minServings ? [{ label: `≥ ${minServings} servings`, onRemove: () => updateSearch({ minServings: undefined }) }] : []),
-    ...(maxServings ? [{ label: `≤ ${maxServings} servings`, onRemove: () => updateSearch({ maxServings: undefined }) }] : []),
     ...(mealIds ?? []).map((id) => ({
       label: allMeals?.find((m) => m.id === id)?.name ?? 'Meal',
       onRemove: arrayRemoveBadge('mealIds', mealIds, id),
@@ -287,29 +277,19 @@ function RecipesPage() {
           updateSearch={updateSearch}
         />
 
-        {/* Row 2: Primary Dropdowns */}
-        <FilterRow2Dropdowns
+        {/* Dropdown Filters */}
+        <FilterDropdowns
           classificationIds={classificationIds}
           sourceIds={sourceIds}
-          classifications={classifications}
-          sources={sources}
-          updateSearch={updateSearch}
-          filterConfig={filterConfig}
-          counts={filterCounts}
-        />
-
-        {/* More Filters Panel */}
-        <FilterMoreFiltersPanel
           mealIds={mealIds}
           courseIds={courseIds}
           preparationIds={preparationIds}
-          minServings={minServings}
-          maxServings={maxServings}
-          allMeals={allMeals}
-          allCourses={allCourses}
-          allPreparations={allPreparations}
+          classifications={classifications}
+          sources={sources}
+          meals={allMeals}
+          courses={allCourses}
+          preparations={allPreparations}
           updateSearch={updateSearch}
-          filterConfig={filterConfig}
           counts={filterCounts}
         />
 
