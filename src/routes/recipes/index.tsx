@@ -201,7 +201,7 @@ function RecipesPage() {
               placeholder="Search recipes..."
               value={searchValue}
               onChange={(e) => { setSearchValue(e.target.value); debouncedSearch(e.target.value) }}
-              className="w-full pl-10 pr-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ function RecipesPage() {
             value={sort}
             onChange={(e) => updateSearch({ sort: e.target.value as typeof sort })}
             aria-label="Sort recipes"
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -225,7 +225,7 @@ function RecipesPage() {
           <select
             value={pageSize}
             onChange={(e) => updateSearch({ pageSize: Number(e.target.value), page: 1 })}
-            className="px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             aria-label="Results per page"
           >
             <option value={10}>10 / page</option>
@@ -257,11 +257,11 @@ function RecipesPage() {
 
       {/* Filter bar */}
       <div className="print:hidden mb-4 space-y-3">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
           <Filter className="w-4 h-4" />
           <span>Filters</span>
           {hasActiveFilters && (
-            <button data-testid="clear-all-filters" onClick={clearFilters} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-700 text-gray-300 hover:bg-slate-600 transition-colors text-xs">
+            <button data-testid="clear-all-filters" onClick={clearFilters} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors text-xs">
               <X className="w-3 h-3" />
               Clear all
             </button>
@@ -305,14 +305,14 @@ function RecipesPage() {
 
       {/* Result count */}
       {!isLoading && (
-        <p className="text-sm text-gray-400 mb-4">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           {total === 0 ? 'No recipes found' : `${total} recipe${total === 1 ? '' : 's'}`}
         </p>
       )}
 
       {/* Recipe grid */}
       {isLoading ? (
-        <div className="text-center py-12"><p className="text-gray-400">Loading recipes...</p></div>
+        <div className="text-center py-12"><p className="text-gray-500 dark:text-gray-400">Loading recipes...</p></div>
       ) : recipes.length === 0 ? (
         <div className="text-center py-12">
           {hasActiveFilters || search ? (
@@ -339,27 +339,27 @@ function RecipesPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-500 dark:text-gray-300">
                 Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total} recipes
               </p>
               <div className="flex items-center gap-1">
                 <button disabled={page <= 1} onClick={() => updateSearch({ page: 1 })}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-white disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="First page"
                 ><ChevronsLeft className="w-4 h-4" /></button>
                 <button disabled={page <= 1} onClick={() => updateSearch({ page: page - 1 })}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-white disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Previous page"
                 ><ChevronLeft className="w-4 h-4" /></button>
-                <span className="px-3 py-1 text-sm text-gray-300 min-w-[90px] text-center">
+                <span className="px-3 py-1 text-sm text-gray-500 dark:text-gray-300 min-w-[90px] text-center">
                   Page {page} of {totalPages}
                 </span>
                 <button disabled={page >= totalPages} onClick={() => updateSearch({ page: page + 1 })}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-white disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Next page"
                 ><ChevronRight className="w-4 h-4" /></button>
                 <button disabled={page >= totalPages} onClick={() => updateSearch({ page: totalPages })}
-                  className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-white disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                   aria-label="Last page"
                 ><ChevronsRight className="w-4 h-4" /></button>
               </div>
