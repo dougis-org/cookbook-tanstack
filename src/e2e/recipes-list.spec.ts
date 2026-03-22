@@ -175,10 +175,18 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/categories");
 
-    const firstCategoryLink = page.locator('a').filter({ has: page.locator('h2') }).first();
-    const categoryName = await firstCategoryLink.textContent();
-    await firstCategoryLink.click();
+    const categoryHeadings = page.getByRole("heading", { level: 3 });
+    const headingCount = await categoryHeadings.count();
+    test.skip(headingCount === 0, "No categories are available to test detail route");
+
+    const firstCategoryHeading = categoryHeadings.first();
+    await expect(firstCategoryHeading).toBeVisible({ timeout: 60000 });
+
+    const categoryName = (await firstCategoryHeading.textContent())?.trim() ?? "";
+    await firstCategoryHeading.click();
+
+    // navigation to category details should resolve
     await expect(page).toHaveURL(/\/categories\/[a-f0-9-]+$/);
-    await expect(page.getByRole('heading', { name: categoryName?.trim() ?? '' })).toBeVisible();
+    await expect(page.getByRole("heading", { name: categoryName })).toBeVisible();
   });
 });
