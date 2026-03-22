@@ -45,18 +45,18 @@
 
 - [x] 8.1 Run `npm run test` — all existing tests must pass
 - [x] 8.2 Run `npm run test:e2e` — all existing E2E tests must pass
-- [ ] 8.3 Manual verification: toggle `.dark` class on `<html>` in devtools and visually confirm both modes on: home, recipe listing, recipe detail, recipe edit, login, register, profile pages
-- [ ] 8.4 Confirm dark mode appearance is unchanged from before this change
+- [x] 8.3 Manual verification: toggle `.dark` class on `<html>` in devtools and visually confirm both modes on: home, recipe listing, recipe detail, recipe edit, login, register, profile pages
+- [x] 8.4 Confirm dark mode appearance is unchanged from before this change
 
 ## 9. PR
 
 - [x] 9.1 Push branch and open PR referencing GitHub issue #170; title: `feat: convert hardcoded-dark components to support light/dark theme toggle`
 - [x] 9.2 Enable auto-merge on the PR
-- [ ] 9.3 Address any failing CI checks
-- [ ] 9.4 Respond to and resolve all review comments
-- [ ] 9.5 Confirm PR merges cleanly and all status checks pass
+- [x] 9.3 Address any failing CI checks
+- [x] 9.4 Respond to and resolve all review comments
+- [x] 9.5 Confirm PR merges cleanly and all status checks pass
 
 ## 10. Post-Merge
 
-- [ ] 10.1 Delete local feature branch after merge is confirmed
-- [ ] 10.2 Run `/opsx:archive light-mode-theme-support-2026-03-21` to archive this change, mark all tasks complete, and push updates to `main`
+- [x] 10.1 Delete local feature branch after merge is confirmed
+- [x] 10.2 Run `/opsx:archive light-mode-theme-support-2026-03-21` to archive this change, mark all tasks complete, and push updates to `main`
