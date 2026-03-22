@@ -50,8 +50,8 @@
 
 ## 9. PR
 
-- [ ] 9.1 Push branch and open PR referencing GitHub issue #170; title: `feat: convert hardcoded-dark components to support light/dark theme toggle`
-- [ ] 9.2 Enable auto-merge on the PR
+- [x] 9.1 Push branch and open PR referencing GitHub issue #170; title: `feat: convert hardcoded-dark components to support light/dark theme toggle`
+- [x] 9.2 Enable auto-merge on the PR
 - [ ] 9.3 Address any failing CI checks
 - [ ] 9.4 Respond to and resolve all review comments
 - [ ] 9.5 Confirm PR merges cleanly and all status checks pass
