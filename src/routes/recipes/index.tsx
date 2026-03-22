@@ -187,6 +187,8 @@ function RecipesPage() {
     })),
   ]
 
+  const paginationBtnClass = 'p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors'
+
   return (
     <PageLayout title="Recipes" description="Browse and discover delicious recipes">
       {/* Search + Sort + Page-size bar */}
@@ -344,22 +346,22 @@ function RecipesPage() {
               </p>
               <div className="flex items-center gap-1">
                 <button disabled={page <= 1} onClick={() => updateSearch({ page: 1 })}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className={paginationBtnClass}
                   aria-label="First page"
                 ><ChevronsLeft className="w-4 h-4" /></button>
                 <button disabled={page <= 1} onClick={() => updateSearch({ page: page - 1 })}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className={paginationBtnClass}
                   aria-label="Previous page"
                 ><ChevronLeft className="w-4 h-4" /></button>
                 <span className="px-3 py-1 text-sm text-gray-500 dark:text-gray-300 min-w-[90px] text-center">
                   Page {page} of {totalPages}
                 </span>
                 <button disabled={page >= totalPages} onClick={() => updateSearch({ page: page + 1 })}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className={paginationBtnClass}
                   aria-label="Next page"
                 ><ChevronRight className="w-4 h-4" /></button>
                 <button disabled={page >= totalPages} onClick={() => updateSearch({ page: totalPages })}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                  className={paginationBtnClass}
                   aria-label="Last page"
                 ><ChevronsRight className="w-4 h-4" /></button>
               </div>

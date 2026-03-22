@@ -86,7 +86,7 @@ export function MultiSelectDropdown({
         aria-label={ariaLabel ? `${buttonLabel()} ${ariaLabel}` : undefined}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
           isActive
-            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
+            ? 'bg-cyan-100 dark:bg-cyan-500/20 border-cyan-400 dark:border-cyan-500 text-cyan-700 dark:text-cyan-300'
             : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-400 hover:border-gray-400 dark:hover:border-slate-600'
         }`}
       >

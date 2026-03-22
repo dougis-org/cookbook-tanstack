@@ -7,9 +7,9 @@ export default function ProfileInfo() {
   if (isPending) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-20 w-20 rounded-full bg-slate-700" />
-        <div className="h-4 w-48 bg-slate-700 rounded" />
-        <div className="h-4 w-64 bg-slate-700 rounded" />
+        <div className="h-20 w-20 rounded-full bg-gray-200 dark:bg-slate-700" />
+        <div className="h-4 w-48 bg-gray-200 dark:bg-slate-700 rounded" />
+        <div className="h-4 w-64 bg-gray-200 dark:bg-slate-700 rounded" />
       </div>
     )
   }
@@ -28,7 +28,7 @@ export default function ProfileInfo() {
             className="w-20 h-20 rounded-full object-cover border-2 border-cyan-500"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border-2 border-cyan-500">
+          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-200 dark:bg-slate-700 flex items-center justify-center border-2 border-cyan-500">
             <User className="w-10 h-10 text-gray-500 dark:text-gray-400" />
           </div>
         )}
