@@ -238,7 +238,7 @@ function RecipesPage() {
             <>
               <Link
                 to="/import"
-                className="flex items-center gap-2 px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                className="flex items-center gap-2 px-5 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 Import Recipe
@@ -316,7 +316,7 @@ function RecipesPage() {
       ) : recipes.length === 0 ? (
         <div className="text-center py-12">
           {hasActiveFilters || search ? (
-            <button onClick={() => navigate({ search: {} })} className="inline-flex items-center gap-2 px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors">
+            <button onClick={() => navigate({ search: {} })} className="inline-flex items-center gap-2 px-6 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors">
               Clear all filters
             </button>
           ) : isLoggedIn ? (
