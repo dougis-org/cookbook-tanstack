@@ -86,8 +86,8 @@ export function MultiSelectDropdown({
         aria-label={ariaLabel ? `${buttonLabel()} ${ariaLabel}` : undefined}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
           isActive
-            ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
-            : 'bg-slate-800 border-slate-700 text-gray-400 hover:border-slate-600'
+            ? 'bg-cyan-100 dark:bg-cyan-500/20 border-cyan-400 dark:border-cyan-500 text-cyan-700 dark:text-cyan-300'
+            : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-400 hover:border-gray-400 dark:hover:border-slate-600'
         }`}
       >
         <span>{buttonLabel()}</span>
@@ -97,7 +97,7 @@ export function MultiSelectDropdown({
       {open && (
         <div
           data-testid="dropdown-panel"
-          className="absolute z-20 mt-1 min-w-[180px] max-h-64 overflow-y-auto rounded-lg border border-slate-700 bg-slate-800 shadow-lg"
+          className="absolute z-20 mt-1 min-w-[180px] max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg"
         >
           {options.length === 0 ? (
             <p className="px-3 py-2 text-sm text-gray-500">No options</p>
@@ -108,17 +108,17 @@ export function MultiSelectDropdown({
                 const count = counts?.[opt.id]
                 return (
                   <li key={opt.id}>
-                    <label className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-slate-700 transition-colors">
+                    <label className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggle(opt.id)}
                         className="accent-cyan-500 w-3.5 h-3.5"
                       />
-                      <span className={checked ? 'text-cyan-300' : 'text-gray-300'}>
+                      <span className={checked ? 'text-cyan-600 dark:text-cyan-300' : 'text-gray-900 dark:text-gray-300'}>
                         {opt.name}
                         {count !== undefined && (
-                          <span className="ml-1 text-gray-500">({count})</span>
+                          <span className="ml-1 text-gray-400 dark:text-gray-500">({count})</span>
                         )}
                       </span>
                     </label>

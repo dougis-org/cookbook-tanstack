@@ -55,7 +55,7 @@ export default function RegisterForm() {
       <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldErrors.email} />
       <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
       <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
-      <p className="text-center text-gray-400 text-sm">
+      <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
         Already have an account?{" "}
         <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Sign in</Link>
       </p>
