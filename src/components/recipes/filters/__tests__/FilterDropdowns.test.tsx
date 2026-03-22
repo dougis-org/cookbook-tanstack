@@ -75,7 +75,7 @@ describe('FilterDropdowns', () => {
       const wrapper = screen.getByTestId('filter-dropdown-classification')
       await userEvent.click(wrapper.querySelector('button')!)
       const checkboxes = within(wrapper).getAllByRole('checkbox')
-      await userEvent.click(checkboxes[0]) // Desserts
+      await userEvent.click(checkboxes[1]) // Desserts (sorted after Appetizers alphabetically)
       expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationIds: ['1'] })
     })
 
@@ -84,7 +84,7 @@ describe('FilterDropdowns', () => {
       const wrapper = screen.getByTestId('filter-dropdown-classification')
       await userEvent.click(wrapper.querySelector('button')!)
       const checkboxes = within(wrapper).getAllByRole('checkbox')
-      await userEvent.click(checkboxes[1]) // Entrees
+      await userEvent.click(checkboxes[2]) // Entrees (index 2: Desserts selected first, then Appetizers, Entrees)
       expect(mockUpdateSearch).toHaveBeenCalledWith({ classificationIds: ['1', '2'] })
     })
 
@@ -118,7 +118,7 @@ describe('FilterDropdowns', () => {
       const wrapper = screen.getByTestId('filter-dropdown-source')
       await userEvent.click(wrapper.querySelector('button')!)
       const checkboxes = within(wrapper).getAllByRole('checkbox')
-      await userEvent.click(checkboxes[1]) // Deselect Food Network
+      await userEvent.click(checkboxes[0]) // Deselect Food Network (floats to top as selected item)
       expect(mockUpdateSearch).toHaveBeenCalledWith({ sourceIds: undefined })
     })
   })
