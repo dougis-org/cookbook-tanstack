@@ -4,45 +4,51 @@ const path = require('path')
 const routesDir = path.join(__dirname, '..', 'src', 'routes')
 const files = fs.readdirSync(routesDir).filter((f) => f.endsWith('.tsx'))
 
-const childRoutes = new Map()
-
+// Collect all route definitions once
+const routes = new Map() // Map<routePath, { file, content }>
 for (const file of files) {
-  const content = fs.readFileSync(path.join(routesDir, file), 'utf8')
+  const filePath = path.join(routesDir, file)
+  const content = fs.readFileSync(filePath, 'utf8')
   const matchRoute = content.match(/createFileRoute\('([^']+)'\)/)
   if (!matchRoute) continue
-  const routePath = matchRoute[1]
 
-  if (routePath.includes('$')) {
-    const segments = routePath.split('/')
-    const dollarIndex = segments.findIndex((segment) => segment.startsWith('$'))
-    // Only treat as a child route if there are additional segments beyond the param segment.
-    if (dollarIndex !== -1 && dollarIndex < segments.length - 1) {
-      const parent = segments.slice(0, dollarIndex + 1).join('/') || '/'
-      childRoutes.set(routePath, { file, parent })
-    }
+  const routePath = matchRoute[1]
+  routes.set(routePath, { file, content })
+}
+
+// Build parent -> children map based on path hierarchy
+// Note: route path '/' is not treated as a parent for this lint because
+// the real app-level parent is __root.tsx, not src/routes/index.tsx.
+const parentChildren = new Map()
+for (const routePath of routes.keys()) {
+  if (routePath === '/') continue
+
+  const parentPath = path.posix.dirname(routePath)
+  if (parentPath === '/') continue
+  if (!routes.has(parentPath)) continue
+
+  if (!parentChildren.has(parentPath)) {
+    parentChildren.set(parentPath, [])
   }
+  parentChildren.get(parentPath).push(routePath)
 }
 
 let errors = 0
-for (const [childPath, info] of childRoutes.entries()) {
-  const parentFile = files.find((file) => {
-    const content = fs.readFileSync(path.join(routesDir, file), 'utf8')
-    const matchRoute = content.match(/createFileRoute\('([^']+)'\)/)
-    if (!matchRoute) return false
-    return matchRoute[1] === info.parent
-  })
+for (const [parentPath, children] of parentChildren.entries()) {
+  const parentRoute = routes.get(parentPath)
+  if (!parentRoute) continue
 
-  if (!parentFile) continue
-
-  const parentContent = fs.readFileSync(path.join(routesDir, parentFile), 'utf8')
-  if (!parentContent.includes('<Outlet />') && !parentContent.includes('Outlet')) {
-    console.error(`✖ Parent route ${info.parent} (${parentFile}) has child ${childPath} but no <Outlet />`)
+  const hasOutlet = /<Outlet\s*\/?\s*>/.test(parentRoute.content) || parentRoute.content.includes('Outlet')
+  if (!hasOutlet) {
+    console.error(
+      `✖ Parent route ${parentPath} (${parentRoute.file}) has child route(s) ${children.join(', ')} but no <Outlet />`
+    )
     errors++
   }
 }
 
 if (errors > 0) {
-  console.error(`${errors} route outlet issue(s) found`)
+  console.error(`\n${errors} route outlet issue(s) found.`)
   process.exit(1)
 }
 
