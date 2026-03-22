@@ -28,7 +28,7 @@ export default function ProfileInfo() {
             className="w-20 h-20 rounded-full object-cover border-2 border-cyan-500"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-200 dark:bg-slate-700 flex items-center justify-center border-2 border-cyan-500">
+          <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border-2 border-cyan-500">
             <User className="w-10 h-10 text-gray-500 dark:text-gray-400" />
           </div>
         )}
