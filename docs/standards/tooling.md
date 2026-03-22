@@ -125,4 +125,5 @@ When modifying tool configuration:
 - Run one tool category at a time (security → quality → style)
 - Document tool limitations and false positives
 - Keep tool configurations in version control
+- For route-based apps, enforce route nesting rules (e.g., parent routes with child routes must render `<Outlet />`) via lint hooks or scripts.
 - Report persistent tool issues to support channels

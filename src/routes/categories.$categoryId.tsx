@@ -17,7 +17,7 @@ function CategoryDetailPage() {
   )
 
   const { data: recipes, isLoading: loadingRecipes } = useQuery(
-    trpc.recipes.list.queryOptions({ classificationId: categoryId }),
+    trpc.recipes.list.queryOptions({ classificationIds: [categoryId] }),
   )
 
   const isLoading = loadingClassification || loadingRecipes

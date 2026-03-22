@@ -145,4 +145,48 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
       (await prevButton.isVisible()) || (await nextButton.isVisible()),
     ).toBeTruthy();
   });
+
+  test("cookbook route transitions and TOC view", async ({ page }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/cookbooks");
+
+    // Create a new cookbook so the workflow is deterministic.
+    const uniqueCookbook = `Test Cookbook ${Date.now()}`;
+    await page.click('button:has-text("New Cookbook")');
+    await page.getByLabel('Name').fill(uniqueCookbook);
+    await page.getByLabel('Description').fill('e2e test cookbook');
+    await page.click('button:has-text("Create")');
+
+    // Wait for cookbook card to appear in the list.
+    await expect(page.getByText(uniqueCookbook)).toBeVisible();
+
+    // Navigate to detail view.
+    await page.click(`a:has-text("${uniqueCookbook}")`);
+    await expect(page).toHaveURL(/\/cookbooks\/[a-f0-9-]+$/);
+    await expect(page.getByRole('heading', { name: uniqueCookbook })).toBeVisible();
+
+    // Table of Contents subroute.
+    await page.click('a:has-text("Table of Contents")');
+    await expect(page).toHaveURL(/\/cookbooks\/[a-f0-9-]+\/toc$/);
+    await expect(page.getByText('Table of Contents')).toBeVisible();
+  });
+
+  test("category detail route rendering", async ({ page }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/categories");
+
+    const categoryHeadings = page.getByRole("heading", { level: 3 });
+    const headingCount = await categoryHeadings.count();
+    test.skip(headingCount === 0, "No categories are available to test detail route");
+
+    const firstCategoryHeading = categoryHeadings.first();
+    await expect(firstCategoryHeading).toBeVisible({ timeout: 60000 });
+
+    const categoryName = (await firstCategoryHeading.textContent())?.trim() ?? "";
+    await firstCategoryHeading.click();
+
+    // navigation to category details should resolve
+    await expect(page).toHaveURL(/\/categories\/[a-f0-9-]+$/);
+    await expect(page.getByRole("heading", { name: categoryName })).toBeVisible();
+  });
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
@@ -59,6 +59,7 @@ function CookbooksPage() {
           ))}
         </div>
       )}
+      <Outlet />
     </PageLayout>
   )
 }
