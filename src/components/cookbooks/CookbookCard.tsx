@@ -17,9 +17,9 @@ export default function CookbookCard({ cookbook }: CookbookCardProps) {
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
       <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-gray-200 dark:bg-gray-700" />
       <div className="p-4">
-        <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+        <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-1">
           {!cookbook.imageUrl && <BookOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />}
-          {cookbook.name}
+          <span className="truncate min-w-0 flex-1">{cookbook.name}</span>
         </h3>
         {cookbook.description && (
           <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
