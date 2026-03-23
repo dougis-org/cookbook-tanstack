@@ -51,15 +51,29 @@ describe("CookbookCard", () => {
     expect(img).toHaveAttribute("src", "https://example.com/img.jpg")
   })
 
-  it("renders placeholder icon when imageUrl is null", () => {
-    const { container } = render(<CookbookCard cookbook={makeCookbook({ imageUrl: null })} />)
-    expect(container.querySelector("svg")).toBeInTheDocument()
+  it("renders no image header when imageUrl is null", () => {
+    render(<CookbookCard cookbook={makeCookbook({ imageUrl: null })} />)
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
   })
 
-  it("shows Private badge for non-public cookbooks", () => {
+  it("renders BookOpen icon in title area when imageUrl is null", () => {
+    const { container } = render(<CookbookCard cookbook={makeCookbook({ imageUrl: null, name: "No Photo" })} />)
+    const heading = screen.getByText("No Photo").closest("h3")
+    expect(heading?.querySelector("svg")).toBeInTheDocument()
+  })
+
+  it("does not render BookOpen icon in title when imageUrl is provided", () => {
+    render(<CookbookCard cookbook={makeCookbook({ imageUrl: "https://example.com/img.jpg", name: "Photo Cookbook" })} />)
+    const heading = screen.getByText("Photo Cookbook").closest("h3")
+    expect(heading?.querySelector("svg")).not.toBeInTheDocument()
+  })
+
+  it("shows Private badge in card body for non-public cookbooks", () => {
     render(<CookbookCard cookbook={makeCookbook({ isPublic: false })} />)
-    expect(screen.getByText("Private")).toBeInTheDocument()
+    const badge = screen.getByText("Private")
+    expect(badge).toBeInTheDocument()
+    // Badge should be in the card body (p-4 div), not an image overlay
+    expect(badge.closest(".p-4")).toBeInTheDocument()
   })
 
   it("does not show Private badge for public cookbooks", () => {

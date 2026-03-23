@@ -20,6 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
+import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, Printer, List } from 'lucide-react'
@@ -320,13 +321,7 @@ function SortableRecipeRow({
 
       <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
 
-      <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
-        {recipe.imageUrl ? (
-          <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">—</div>
-        )}
-      </div>
+      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
 
       <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
         <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
@@ -409,9 +404,7 @@ function AddRecipeModal({
                   onClick={() => addMutation.mutate({ cookbookId, recipeId: r.id })}
                   className="w-full flex items-center gap-3 p-3 rounded-lg text-left bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
                 >
-                  <div className="h-10 w-10 bg-gray-600 rounded overflow-hidden flex-shrink-0">
-                    {r.imageUrl && <img src={r.imageUrl} alt={r.name} className="w-full h-full object-cover" />}
-                  </div>
+                  <CardImage src={r.imageUrl} alt={r.name} className="h-10 w-10 bg-gray-600 rounded overflow-hidden flex-shrink-0" />
                   <span className="flex-1 text-white font-medium truncate">{r.name}</span>
                   <Plus className="w-4 h-4 text-cyan-400 flex-shrink-0" />
                 </button>
