@@ -1,3 +1,5 @@
+> **Superseded by [`conditional-image-display`](../conditional-image-display/spec.md)** — requirements below are now covered by the broader spec.
+
 ### Requirement: RecipeCard image container hidden when no image
 The `RecipeCard` component SHALL NOT render the image container when `recipe.imageUrl` is absent (null, undefined, or empty string). No placeholder text or empty space SHALL be shown in place of the image.
 
