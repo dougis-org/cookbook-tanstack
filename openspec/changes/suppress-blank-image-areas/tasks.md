@@ -37,8 +37,8 @@
 
 ## 8. PR and Merge
 
-- [ ] 8.1 Push branch and open PR targeting `main`
-- [ ] 8.2 Enable auto-merge on the PR
+- [x] 8.1 Push branch and open PR targeting `main`
+- [x] 8.2 Enable auto-merge on the PR
 - [ ] 8.3 Resolve any CI failures or review comments before merge
 
 ## 9. Post-Merge
