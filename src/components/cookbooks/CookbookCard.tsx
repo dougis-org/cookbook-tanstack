@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react'
+import CardImage from '@/components/ui/CardImage'
 
 interface CookbookCardProps {
   cookbook: {
@@ -14,26 +15,10 @@ interface CookbookCardProps {
 export default function CookbookCard({ cookbook }: CookbookCardProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
-      <div className="h-40 bg-gray-200 dark:bg-gray-700 relative">
-        {cookbook.imageUrl ? (
-          <img
-            src={cookbook.imageUrl}
-            alt={cookbook.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <BookOpen className="w-12 h-12" />
-          </div>
-        )}
-        {!cookbook.isPublic && (
-          <span className="absolute top-2 right-2 px-2 py-0.5 text-xs bg-slate-900/70 text-gray-300 rounded">
-            Private
-          </span>
-        )}
-      </div>
+      <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-gray-200 dark:bg-gray-700" />
       <div className="p-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+        <h3 className="flex items-center gap-2 text-xl font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">
+          {!cookbook.imageUrl && <BookOpen className="w-5 h-5 text-gray-400 flex-shrink-0" />}
           {cookbook.name}
         </h3>
         {cookbook.description && (
@@ -41,9 +26,14 @@ export default function CookbookCard({ cookbook }: CookbookCardProps) {
             {cookbook.description}
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {cookbook.recipeCount ?? 0} {cookbook.recipeCount === 1 ? 'recipe' : 'recipes'}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {cookbook.recipeCount ?? 0} {cookbook.recipeCount === 1 ? 'recipe' : 'recipes'}
+          </p>
+          {!cookbook.isPublic && (
+            <span className="text-xs px-2 py-0.5 bg-slate-700 text-gray-300 rounded">Private</span>
+          )}
+        </div>
       </div>
     </div>
   )

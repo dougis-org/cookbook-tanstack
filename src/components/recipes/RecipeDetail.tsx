@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
+import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
 import ServingSizeAdjuster from '@/components/recipes/ServingSizeAdjuster'
 
@@ -41,15 +42,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header Image */}
-        {recipe.imageUrl && (
-          <div data-testid="recipe-detail-image" className="h-96 bg-gray-200 dark:bg-gray-700">
-            <img
-              src={recipe.imageUrl}
-              alt={recipe.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
+        <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-96 bg-gray-200 dark:bg-gray-700" data-testid="recipe-detail-image" />
 
         {/* Recipe Content */}
         <div className="p-8">

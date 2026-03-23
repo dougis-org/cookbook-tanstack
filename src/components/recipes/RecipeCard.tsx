@@ -1,5 +1,6 @@
 import type { Recipe } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
+import CardImage from '@/components/ui/CardImage'
 
 interface RecipeCardProps {
   recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
@@ -10,15 +11,7 @@ interface RecipeCardProps {
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   return (
     <div data-testid="recipe-card" className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-      {recipe.imageUrl && (
-        <div data-testid="recipe-card-image" className="h-48 bg-gray-200 dark:bg-gray-700">
-          <img
-            src={recipe.imageUrl}
-            alt={recipe.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
+      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-gray-200 dark:bg-gray-700" data-testid="recipe-card-image" />
       <div className="p-4">
         {recipe.classificationId && recipe.classificationName && (
           <div className="mb-2">
