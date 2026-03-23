@@ -28,8 +28,12 @@ function normalizeRoutePath(routePath) {
 const routeRegex = /createFileRoute\(\s*(['"])([^'"]+)\1\s*\)/g;
 const files = collectRouteFiles(routesDir);
 
-// Collect all route definitions once
-const routes = new Map(); // Map<routePath, { file, content }>
+// Collect all route definitions.
+// Multiple files can normalize to the same path (e.g. a layout route at
+// "/cookbooks" and an index route at "/cookbooks/"). Track whether each entry
+// is an index route (trailing slash) or a layout route (no trailing slash).
+// Only layout routes can be required to provide <Outlet /> for their children.
+const routes = new Map(); // Map<routePath, { file, content, isLayout }[]>
 for (const filePath of files) {
   const content = fs.readFileSync(filePath, "utf8");
 
@@ -37,7 +41,12 @@ for (const filePath of files) {
     const rawRoutePath = matchRoute[2];
     const routePath = normalizeRoutePath(rawRoutePath);
     const file = path.relative(routesDir, filePath);
-    routes.set(routePath, { file, content });
+    // A trailing slash in the raw path marks this as an index route, not a layout.
+    const isLayout = rawRoutePath === "/" || !rawRoutePath.endsWith("/");
+    if (!routes.has(routePath)) {
+      routes.set(routePath, []);
+    }
+    routes.get(routePath).push({ file, content, isLayout });
   }
 }
 
@@ -61,13 +70,20 @@ for (const routePath of routes.keys()) {
 const outletRegex = /<\s*Outlet(?:\s|\/|>)/;
 let errors = 0;
 for (const [parentPath, children] of parentChildren.entries()) {
-  const parentRoute = routes.get(parentPath);
-  if (!parentRoute) continue;
+  const parentRoutes = routes.get(parentPath);
+  if (!parentRoutes) continue;
 
-  const hasOutlet = outletRegex.test(parentRoute.content);
+  // Only layout routes (non-trailing-slash paths) are required to render
+  // <Outlet />. If every file at this path is an index route, the children
+  // are actually root siblings in TanStack Router — skip the check.
+  const layoutRoutes = parentRoutes.filter((r) => r.isLayout);
+  if (layoutRoutes.length === 0) continue;
+
+  const hasOutlet = layoutRoutes.some((r) => outletRegex.test(r.content));
   if (!hasOutlet) {
+    const files = layoutRoutes.map((r) => r.file).join(", ");
     console.error(
-      `✖ Parent route ${parentPath} (${parentRoute.file}) has child route(s) ${children.join(", ")} but no <Outlet />`,
+      `✖ Parent route ${parentPath} (${files}) has child route(s) ${children.join(", ")} but no <Outlet />`,
     );
     errors++;
   }

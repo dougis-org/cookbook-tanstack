@@ -155,7 +155,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await page.click('button:has-text("New Cookbook")');
     await page.getByLabel("Name").fill(uniqueCookbook);
     await page.getByLabel("Description").fill("e2e test cookbook");
-    await page.click('button:has-text("Create")');
+    await page.getByRole("button", { name: "Create", exact: true }).click();
 
     // Wait for cookbook card to appear in the list.
     await expect(page.getByText(uniqueCookbook)).toBeVisible();
