@@ -15,6 +15,17 @@ interface RecipeDetailProps {
     sourceUrl?: string | null
   }
   actions?: ReactNode
+  hideServingAdjuster?: boolean
+}
+
+function TaxonomyBadges({
+  items,
+  variant,
+}: {
+  items?: TaxonomyItem[]
+  variant: 'meal' | 'course' | 'preparation'
+}) {
+  return <>{items?.map((item) => <TaxonomyBadge key={item.id} name={item.name} variant={variant} />)}</>
 }
 
 /** Split a text blob into non-empty lines for display. */
@@ -23,7 +34,7 @@ function splitLines(text: string | null): string[] {
   return text.split('\n').filter((line) => line.trim().length > 0)
 }
 
-export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
@@ -63,15 +74,9 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   linkable
                 />
               )}
-              {recipe.meals?.map((m) => (
-                <TaxonomyBadge key={m.id} name={m.name} variant="meal" />
-              ))}
-              {recipe.courses?.map((c) => (
-                <TaxonomyBadge key={c.id} name={c.name} variant="course" />
-              ))}
-              {recipe.preparations?.map((p) => (
-                <TaxonomyBadge key={p.id} name={p.name} variant="preparation" />
-              ))}
+              <TaxonomyBadges items={recipe.meals} variant="meal" />
+              <TaxonomyBadges items={recipe.courses} variant="course" />
+              <TaxonomyBadges items={recipe.preparations} variant="preparation" />
             </div>
           )}
 
@@ -133,7 +138,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Ingredients
             </h2>
-            {recipe.servings && ingredientLines.length > 0 && (
+            {!hideServingAdjuster && recipe.servings && ingredientLines.length > 0 && (
               <ServingSizeAdjuster
                 originalServings={recipe.servings}
                 ingredients={ingredientLines}

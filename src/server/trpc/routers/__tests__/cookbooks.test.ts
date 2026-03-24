@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { Recipe, Cookbook, Classification } from "@/db/models";
+import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   uid,
@@ -365,6 +365,108 @@ describe("cookbooks.removeRecipe", () => {
       expect(
         (await caller.cookbooks.byId({ id: cb.id }))!.recipes,
       ).toHaveLength(0);
+    });
+  });
+});
+
+// ─── cookbooks.printById ──────────────────────────────────────────────────────
+
+describe("cookbooks.printById", () => {
+  it("returns full recipe fields: ingredients, instructions, notes, prepTime, cookTime, servings, difficulty, calories, classificationName, sourceName, meals, courses, preparations", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+
+      const cls = await new Classification({ name: "Italian", slug: `italian-${uid()}` }).save();
+      const src = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com" }).save();
+      const meal = await new Meal({ name: "Dinner", slug: `dinner-${uid()}` }).save();
+      const course = await new Course({ name: "Entree", slug: `entree-${uid()}` }).save();
+      const prep = await new Preparation({ name: "Bake", slug: `bake-${uid()}` }).save();
+
+      const recipe = await new Recipe({
+        name: `FullRecipe-${uid()}`,
+        userId: owner.id,
+        isPublic: true,
+        ingredients: "Flour\nSugar",
+        instructions: "Mix\nBake",
+        notes: "Great recipe",
+        prepTime: 10,
+        cookTime: 20,
+        servings: 4,
+        difficulty: "easy",
+        calories: 300,
+        classificationId: cls.id,
+        sourceId: src.id,
+        mealIds: [meal.id],
+        courseIds: [course.id],
+        preparationIds: [prep.id],
+      }).save();
+
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
+      });
+
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.printById({ id: cb.id });
+
+      expect(result).not.toBeNull();
+      const r = result!.recipes[0];
+      expect(r).toMatchObject({
+        ingredients: "Flour\nSugar",
+        instructions: "Mix\nBake",
+        notes: "Great recipe",
+        prepTime: 10,
+        cookTime: 20,
+        servings: 4,
+        difficulty: "easy",
+        calories: 300,
+        classificationName: "Italian",
+        sourceName: "Bon Appétit",
+      });
+      expect(r.meals).toEqual([{ id: meal.id, name: "Dinner" }]);
+      expect(r.courses).toEqual([{ id: course.id, name: "Entree" }]);
+      expect(r.preparations).toEqual([{ id: prep.id, name: "Bake" }]);
+    });
+  });
+
+  it("returns recipes in orderIndex order", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const r1 = await seedRecipe(owner.id);
+      const r2 = await seedRecipe(owner.id);
+
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        recipes: [
+          { recipeId: r1.id, orderIndex: 1 },
+          { recipeId: r2.id, orderIndex: 0 },
+        ],
+      });
+
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.printById({ id: cb.id });
+      expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
+    });
+  });
+
+  it.each([
+    {
+      label: "unknown cookbook ID",
+      setup: async () => "000000000000000000000000",
+    },
+    {
+      label: "private cookbook for anon user",
+      setup: async () => {
+        const owner = await seedUser();
+        const cb = await seedCookbook(owner.id, { isPublic: false });
+        return cb.id;
+      },
+    },
+  ])("returns null for $label", async ({ setup }) => {
+    await withCleanDb(async () => {
+      const id = await setup();
+      const caller = await makeAnonCaller();
+      expect(await caller.cookbooks.printById({ id })).toBeNull();
     });
   });
 });

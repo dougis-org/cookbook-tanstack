@@ -175,6 +175,37 @@ describe("RecipeDetail", () => {
     })
   })
 
+  describe("hideServingAdjuster prop", () => {
+    it("does not render ServingSizeAdjuster when hideServingAdjuster is true", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, ingredients: "Flour\nSugar" })}
+          hideServingAdjuster
+        />,
+      )
+      expect(
+        screen.queryByRole("button", { name: /increase servings/i }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole("button", { name: /decrease servings/i }),
+      ).not.toBeInTheDocument()
+    })
+
+    it("still renders ServingSizeAdjuster when hideServingAdjuster is not set (regression guard)", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, ingredients: "Flour\nSugar" })}
+        />,
+      )
+      expect(
+        screen.getByRole("button", { name: /increase servings/i }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", { name: /decrease servings/i }),
+      ).toBeInTheDocument()
+    })
+  })
+
   it.each([
     { label: "null imageUrl", imageUrl: null },
     { label: "empty string imageUrl", imageUrl: "" },

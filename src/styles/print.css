@@ -40,4 +40,9 @@
     color: #000 !important;
     border-color: #000 !important;
   }
+
+  .cookbook-recipe-section {
+    break-before: page;
+    page-break-before: always;
+  }
 }
