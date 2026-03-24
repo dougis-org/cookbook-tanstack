@@ -56,10 +56,10 @@
 - [x] 5.1 Commit changes referencing the issue: `fix(cookbooks): hide owner-only controls from non-owners (closes #199)`
 - [x] 5.2 Push branch and open PR; reference issue #199 in the PR body
 - [x] 5.3 Enable auto-merge on the PR
-- [ ] 5.4 Resolve any CI failures or review comments before merge
+- [x] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge
 
-- [ ] 6.1 Archive this change: `/opsx:archive`
-- [ ] 6.2 Sync approved spec to `openspec/specs/cookbook-detail-owner-gating/spec.md`
-- [ ] 6.3 Delete local feature branch after merge
+- [x] 6.1 Archive this change: `/opsx:archive`
+- [x] 6.2 Sync approved spec to `openspec/specs/cookbook-detail-owner-gating/spec.md`
+- [x] 6.3 Delete local feature branch after merge
