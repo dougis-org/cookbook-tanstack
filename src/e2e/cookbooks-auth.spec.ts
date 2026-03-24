@@ -19,6 +19,35 @@ async function createCookbook(page: Page, cookbookName: string): Promise<string>
   return page.url();
 }
 
+/**
+ * Create a recipe, then a cookbook, then add the recipe to the cookbook.
+ * Returns the cookbook URL and names for use in assertions.
+ * Assumes the user is already logged in.
+ */
+async function createCookbookWithRecipe(
+  page: Page,
+  label: string,
+): Promise<{ cookbookUrl: string; cookbookName: string; recipeName: string }> {
+  const recipeName = getUniqueRecipeName(label);
+  await gotoAndWaitForHydration(page, "/recipes/new");
+  await submitRecipeForm(page, { name: recipeName });
+  await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+  const cookbookName = getUniqueCookbookName(label);
+  const cookbookUrl = await createCookbook(page, cookbookName);
+
+  await page.getByRole("button", { name: "Add Recipe" }).click();
+  await page
+    .getByRole("dialog")
+    .getByPlaceholder("Search recipes…")
+    .fill(recipeName);
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: recipeName }).click();
+  await page.waitForLoadState("networkidle");
+
+  return { cookbookUrl, cookbookName, recipeName };
+}
+
 test.describe("Cookbook Detail Owner Controls", () => {
   test.beforeEach(async ({ page }) => {
     await page.context().clearCookies();
@@ -125,23 +154,11 @@ test.describe("Cookbook Detail Owner Controls", () => {
     page,
   }) => {
     await registerAndLogin(page);
+    const { cookbookUrl, cookbookName } = await createCookbookWithRecipe(
+      page,
+      "Drag Hidden Logged Out",
+    );
 
-    // Create a recipe to add to the cookbook
-    const recipeName = getUniqueRecipeName("Drag Hidden Logged Out");
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, { name: recipeName });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    // Create cookbook and add the recipe
-    const cookbookName = getUniqueCookbookName("Drag Hidden Logged Out");
-    const cookbookUrl = await createCookbook(page, cookbookName);
-    await page.getByRole("button", { name: "Add Recipe" }).click();
-    await page.getByRole("dialog").getByPlaceholder("Search recipes…").fill(recipeName);
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: recipeName }).click();
-    await page.waitForLoadState("networkidle");
-
-    // Log out and revisit
     await page.context().clearCookies();
     await gotoAndWaitForHydration(page, cookbookUrl);
 
@@ -160,23 +177,11 @@ test.describe("Cookbook Detail Owner Controls", () => {
     page,
   }) => {
     await registerAndLogin(page);
+    const { cookbookUrl, cookbookName } = await createCookbookWithRecipe(
+      page,
+      "Drag Hidden Non-Owner",
+    );
 
-    // Create a recipe as user A
-    const recipeName = getUniqueRecipeName("Drag Hidden Non-Owner");
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, { name: recipeName });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    // Create cookbook and add the recipe as user A
-    const cookbookName = getUniqueCookbookName("Drag Hidden Non-Owner");
-    const cookbookUrl = await createCookbook(page, cookbookName);
-    await page.getByRole("button", { name: "Add Recipe" }).click();
-    await page.getByRole("dialog").getByPlaceholder("Search recipes…").fill(recipeName);
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: recipeName }).click();
-    await page.waitForLoadState("networkidle");
-
-    // Login as user B
     await page.context().clearCookies();
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, cookbookUrl);
@@ -196,21 +201,7 @@ test.describe("Cookbook Detail Owner Controls", () => {
     page,
   }) => {
     await registerAndLogin(page);
-
-    // Create a recipe to add to the cookbook
-    const recipeName = getUniqueRecipeName("Drag Visible Owner");
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, { name: recipeName });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    // Create cookbook and add the recipe
-    const cookbookName = getUniqueCookbookName("Drag Visible Owner");
-    await createCookbook(page, cookbookName);
-    await page.getByRole("button", { name: "Add Recipe" }).click();
-    await page.getByRole("dialog").getByPlaceholder("Search recipes…").fill(recipeName);
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("button", { name: recipeName }).click();
-    await page.waitForLoadState("networkidle");
+    await createCookbookWithRecipe(page, "Drag Visible Owner");
 
     await expect(
       page.getByRole("button", { name: "Drag to reorder" }),

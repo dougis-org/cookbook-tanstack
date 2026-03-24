@@ -308,7 +308,30 @@ function CookbookDetailPage() {
   )
 }
 
-// ─── Sortable Recipe Row ──────────────────────────────────────────────────────
+// ─── Shared recipe row content (image, link, metadata) ───────────────────────
+
+function RecipeRowContent({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
+  return (
+    <>
+      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
+
+      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
+
+      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
+        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
+        <p className="text-xs text-gray-400">
+          {[
+            recipe.prepTime && `Prep ${recipe.prepTime}m`,
+            recipe.cookTime && `Cook ${recipe.cookTime}m`,
+            recipe.servings && `${recipe.servings} servings`,
+          ].filter(Boolean).join(' · ')}
+        </p>
+      </Link>
+    </>
+  )
+}
+
+// ─── Sortable Recipe Row (owners) ─────────────────────────────────────────────
 
 function SortableRecipeRow({
   recipe,
@@ -337,20 +360,7 @@ function SortableRecipeRow({
         <GripVertical className="w-5 h-5" />
       </button>
 
-      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
-
-      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
-
-      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
-        <p className="text-xs text-gray-400">
-          {[
-            recipe.prepTime && `Prep ${recipe.prepTime}m`,
-            recipe.cookTime && `Cook ${recipe.cookTime}m`,
-            recipe.servings && `${recipe.servings} servings`,
-          ].filter(Boolean).join(' · ')}
-        </p>
-      </Link>
+      <RecipeRowContent recipe={recipe} index={index} />
 
       <button
         onClick={onRemove}
@@ -368,20 +378,7 @@ function SortableRecipeRow({
 function StaticRecipeRow({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
   return (
     <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3">
-      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
-
-      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
-
-      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
-        <p className="text-xs text-gray-400">
-          {[
-            recipe.prepTime && `Prep ${recipe.prepTime}m`,
-            recipe.cookTime && `Cook ${recipe.cookTime}m`,
-            recipe.servings && `${recipe.servings} servings`,
-          ].filter(Boolean).join(' · ')}
-        </p>
-      </Link>
+      <RecipeRowContent recipe={recipe} index={index} />
     </div>
   )
 }
