@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSession } from '@/lib/auth-client'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
@@ -11,8 +12,10 @@ export const Route = createFileRoute('/cookbooks')({
   component: CookbooksPage,
 })
 
-function CookbooksPage() {
+export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
+  const { data: session } = useSession()
+  const isLoggedIn = !!session?.user
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
 
   return (
@@ -21,13 +24,15 @@ function CookbooksPage() {
         <span className="text-gray-400">
           {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
         </span>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          New Cookbook
-        </button>
+        {isLoggedIn && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New Cookbook
+          </button>
+        )}
       </div>
 
       {showCreate && (
@@ -43,12 +48,14 @@ function CookbooksPage() {
       ) : cookbooks.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-gray-400 text-lg mb-4">No cookbooks yet.</p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-          >
-            Create your first cookbook
-          </button>
+          {isLoggedIn && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+            >
+              Create your first cookbook
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
