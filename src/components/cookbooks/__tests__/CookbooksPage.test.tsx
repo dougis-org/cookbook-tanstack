@@ -43,7 +43,7 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
-import { CookbooksPage } from '@/routes/cookbooks'
+import { CookbooksPage } from '@/routes/cookbooks/index'
 
 function renderPage() {
   mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })

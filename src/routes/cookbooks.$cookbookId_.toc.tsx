@@ -4,7 +4,7 @@ import { trpc } from '@/lib/trpc'
 import { Printer, ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
-export const Route = createFileRoute('/cookbooks/$cookbookId/toc')({
+export const Route = createFileRoute('/cookbooks/$cookbookId_/toc')({
   component: CookbookTocPage,
 })
 
