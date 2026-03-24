@@ -22,7 +22,7 @@ describe("setup", () => {
     const mockConnect = vi.fn().mockResolvedValue(undefined)
 
     vi.doMock("mongodb-memory-server", () => ({
-      MongoMemoryServer: { create: mockCreate },
+      MongoMemoryReplSet: { create: mockCreate },
     }))
     vi.doMock("mongoose", () => ({
       default: { connect: mockConnect, disconnect: vi.fn().mockResolvedValue(undefined) },
@@ -31,7 +31,7 @@ describe("setup", () => {
     const { setup } = await import("@/test-helpers/db-global-setup")
     await setup()
 
-    expect(mockCreate).toHaveBeenCalledOnce()
+    expect(mockCreate).toHaveBeenCalledWith({ replSet: { count: 1 } })
     expect(process.env.MONGODB_URI).toBe(mockUri)
     expect(mockConnect).toHaveBeenCalledWith(mockUri)
   })
@@ -65,7 +65,7 @@ describe("teardown", () => {
     const mockDisconnect = vi.fn().mockResolvedValue(undefined)
 
     vi.doMock("mongodb-memory-server", () => ({
-      MongoMemoryServer: { create: mockCreate },
+      MongoMemoryReplSet: { create: mockCreate },
     }))
     vi.doMock("mongoose", () => ({
       default: { connect: vi.fn().mockResolvedValue(undefined), disconnect: mockDisconnect },

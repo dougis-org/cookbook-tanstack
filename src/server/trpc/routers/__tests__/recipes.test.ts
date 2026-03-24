@@ -9,6 +9,7 @@ import {
   Classification,
   Source,
   RecipeLike,
+  Cookbook,
 } from "@/db/models";
 import { seedUserWithBetterAuth } from "./test-helpers";
 
@@ -619,6 +620,90 @@ describe("recipes.delete", () => {
 
       expect(result).toEqual({ success: true });
       expect(await caller.recipes.byId({ id: recipe.id })).toBeNull();
+    });
+  });
+
+  it("removes the recipe from any cookbook's recipes array", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Cascaded Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+      const cookbook = await new Cookbook({
+        name: "My Cookbook",
+        userId: user.id,
+        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const updated = await Cookbook.findById(cookbook.id).lean();
+      expect(updated?.recipes).toHaveLength(0);
+    });
+  });
+
+  it("removes all RecipeLike documents for the recipe", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Liked Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+      await new RecipeLike({ userId: user.id, recipeId: recipe.id }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const remaining = await RecipeLike.countDocuments({ recipeId: recipe.id });
+      expect(remaining).toBe(0);
+    });
+  });
+
+  it("cleans up both cookbook entries and likes in a single delete", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Full Cascade",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+      const cookbook = await new Cookbook({
+        name: "Cascade Cookbook",
+        userId: user.id,
+        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
+      }).save();
+      await new RecipeLike({ userId: user.id, recipeId: recipe.id }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.delete({ id: recipe.id });
+
+      expect(result).toEqual({ success: true });
+
+      const updated = await Cookbook.findById(cookbook.id).lean();
+      expect(updated?.recipes).toHaveLength(0);
+
+      const likes = await RecipeLike.countDocuments({ recipeId: recipe.id });
+      expect(likes).toBe(0);
+    });
+  });
+
+  it("succeeds when the recipe has no cookbook or like references", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Orphan Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.delete({ id: recipe.id });
+
+      expect(result).toEqual({ success: true });
     });
   });
 });
