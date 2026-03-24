@@ -53,9 +53,9 @@
 
 ## 5. PR and Merge
 
-- [ ] 5.1 Commit changes referencing the issue: `fix(cookbooks): hide owner-only controls from non-owners (closes #199)`
-- [ ] 5.2 Push branch and open PR; reference issue #199 in the PR body
-- [ ] 5.3 Enable auto-merge on the PR
+- [x] 5.1 Commit changes referencing the issue: `fix(cookbooks): hide owner-only controls from non-owners (closes #199)`
+- [x] 5.2 Push branch and open PR; reference issue #199 in the PR body
+- [x] 5.3 Enable auto-merge on the PR
 - [ ] 5.4 Resolve any CI failures or review comments before merge
 
 ## 6. Post-Merge
