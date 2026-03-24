@@ -12,7 +12,7 @@ export const Route = createFileRoute('/cookbooks/')({
   component: CookbooksPage,
 })
 
-function CookbooksPage() {
+export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
   const { data: session } = useSession()
   const isLoggedIn = !!session?.user
