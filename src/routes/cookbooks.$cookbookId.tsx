@@ -18,6 +18,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useSession } from '@/lib/auth-client'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CardImage from '@/components/ui/CardImage'
@@ -97,9 +98,13 @@ function CookbookDetailPage() {
   const closeModal = () => setModal({ kind: 'none' })
   const invalidate = () => queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
 
+  const { data: session } = useSession()
+
   const { data: cookbook, isLoading } = useQuery(
     trpc.cookbooks.byId.queryOptions({ id: cookbookId }),
   )
+
+  const isOwner = session?.user?.id === cookbook?.userId
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({
@@ -193,20 +198,24 @@ function CookbookDetailPage() {
               <Printer className="w-4 h-4" />
               Print
             </button>
-            <button
-              onClick={() => setModal({ kind: 'editCookbook' })}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-            >
-              <Pencil className="w-4 h-4" />
-              Edit
-            </button>
-            <button
-              onClick={() => setModal({ kind: 'deleteCookbook' })}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-900/50 hover:bg-red-800/50 text-red-300 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
+            {isOwner && (
+              <>
+                <button
+                  onClick={() => setModal({ kind: 'editCookbook' })}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setModal({ kind: 'deleteCookbook' })}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-900/50 hover:bg-red-800/50 text-red-300 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -251,26 +260,30 @@ function CookbookDetailPage() {
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold text-white">Recipes</h2>
-          <button
-            onClick={() => setModal({ kind: 'addRecipe' })}
-            className="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Add Recipe
-          </button>
+          {isOwner && (
+            <button
+              onClick={() => setModal({ kind: 'addRecipe' })}
+              className="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors text-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Add Recipe
+            </button>
+          )}
         </div>
 
         {orderedRecipes.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-400 mb-4">No recipes in this cookbook yet.</p>
-            <button
-              onClick={() => setModal({ kind: 'addRecipe' })}
-              className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
-            >
-              Add your first recipe
-            </button>
+            {isOwner && (
+              <button
+                onClick={() => setModal({ kind: 'addRecipe' })}
+                className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              >
+                Add your first recipe
+              </button>
+            )}
           </div>
-        ) : (
+        ) : isOwner ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={orderedIds} strategy={verticalListSortingStrategy}>
               {orderedRecipes.map((recipe, index) => (
@@ -283,13 +296,42 @@ function CookbookDetailPage() {
               ))}
             </SortableContext>
           </DndContext>
+        ) : (
+          <div className="space-y-3">
+            {orderedRecipes.map((recipe, index) => (
+              <StaticRecipeRow key={recipe.id} recipe={recipe} index={index} />
+            ))}
+          </div>
         )}
       </div>
     </PageLayout>
   )
 }
 
-// ─── Sortable Recipe Row ──────────────────────────────────────────────────────
+// ─── Shared recipe row content (image, link, metadata) ───────────────────────
+
+function RecipeRowContent({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
+  return (
+    <>
+      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
+
+      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
+
+      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
+        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
+        <p className="text-xs text-gray-400">
+          {[
+            recipe.prepTime && `Prep ${recipe.prepTime}m`,
+            recipe.cookTime && `Cook ${recipe.cookTime}m`,
+            recipe.servings && `${recipe.servings} servings`,
+          ].filter(Boolean).join(' · ')}
+        </p>
+      </Link>
+    </>
+  )
+}
+
+// ─── Sortable Recipe Row (owners) ─────────────────────────────────────────────
 
 function SortableRecipeRow({
   recipe,
@@ -318,20 +360,7 @@ function SortableRecipeRow({
         <GripVertical className="w-5 h-5" />
       </button>
 
-      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
-
-      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
-
-      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
-        <p className="text-xs text-gray-400">
-          {[
-            recipe.prepTime && `Prep ${recipe.prepTime}m`,
-            recipe.cookTime && `Cook ${recipe.cookTime}m`,
-            recipe.servings && `${recipe.servings} servings`,
-          ].filter(Boolean).join(' · ')}
-        </p>
-      </Link>
+      <RecipeRowContent recipe={recipe} index={index} />
 
       <button
         onClick={onRemove}
@@ -340,6 +369,16 @@ function SortableRecipeRow({
       >
         <X className="w-4 h-4" />
       </button>
+    </div>
+  )
+}
+
+// ─── Static Recipe Row (non-owners: no drag handle, no Remove) ───────────────
+
+function StaticRecipeRow({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
+  return (
+    <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3">
+      <RecipeRowContent recipe={recipe} index={index} />
     </div>
   )
 }
