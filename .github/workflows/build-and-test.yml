@@ -25,18 +25,16 @@ jobs:
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
 
-    services:
-      mongodb:
-        image: mongo:7
-        options: >-
-          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh localhost:27017/test --quiet"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 27017:27017
-
     steps:
+      - name: Start MongoDB replica set
+        run: |
+          docker run -d --name mongodb -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
+          echo "Waiting for MongoDB to be ready..."
+          timeout 60 bash -c 'until docker exec mongodb mongosh --eval "db.adminCommand(\"ping\")" --quiet 2>/dev/null; do sleep 2; done'
+          docker exec mongodb mongosh --eval "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]})"
+          echo "Waiting for replica set to elect primary..."
+          timeout 30 bash -c 'until docker exec mongodb mongosh --eval "rs.isMaster().ismaster" --quiet 2>/dev/null | grep -q true; do sleep 1; done'
+
       - name: Checkout
         uses: actions/checkout@v6
         with:
