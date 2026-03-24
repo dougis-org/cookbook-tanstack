@@ -33,17 +33,17 @@
 
 - [x] 7.1 Run `npm run test` — all unit tests pass
 - [x] 7.2 Run `npm run test:e2e` — all E2E tests pass
-- [ ] 7.3 Visually verify in browser: recipe cards (with/without image), recipe detail, category cards, cookbook cards (with/without image), cookbook recipe list, add-recipe picker
+- [x] 7.3 Visually verify in browser: recipe cards (with/without image), recipe detail, category cards, cookbook cards (with/without image), cookbook recipe list, add-recipe picker
 
 ## 8. PR and Merge
 
 - [x] 8.1 Push branch and open PR targeting `main`
 - [x] 8.2 Enable auto-merge on the PR
-- [ ] 8.3 Resolve any CI failures or review comments before merge
+- [x] 8.3 Resolve any CI failures or review comments before merge
 
 ## 9. Post-Merge
 
-- [ ] 9.1 Promote `openspec/changes/suppress-blank-image-areas/specs/conditional-image-display/spec.md` to `openspec/specs/conditional-image-display/spec.md`
-- [ ] 9.2 Archive or supersede `openspec/specs/conditional-recipe-image/spec.md` (requirements now covered by `conditional-image-display`)
-- [ ] 9.3 Run `/opsx:archive` to archive the change
-- [ ] 9.4 Delete the local feature branch
+- [x] 9.1 Promote `openspec/changes/suppress-blank-image-areas/specs/conditional-image-display/spec.md` to `openspec/specs/conditional-image-display/spec.md`
+- [x] 9.2 Archive or supersede `openspec/specs/conditional-recipe-image/spec.md` (requirements now covered by `conditional-image-display`)
+- [x] 9.3 Run `/opsx:archive` to archive the change
+- [x] 9.4 Delete the local feature branch
