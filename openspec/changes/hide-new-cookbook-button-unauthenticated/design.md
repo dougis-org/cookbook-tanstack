@@ -49,7 +49,7 @@ Use `const { data: session } = useSession()` and `const isLoggedIn = !!session?.
 
 ## Risks / Trade-offs
 
-- **Session flash on load**: Buttons may briefly appear while `useSession` resolves. Low impact — acceptable per Decision 2. Mitigation: if this proves problematic, add `|| isPending` to the guard.
+- **Button flash-in for logged-in users**: `isLoggedIn` is `false` while `useSession` resolves, so buttons are hidden on initial render and appear once the session loads. Logged-out users see no flash. Low impact — acceptable per Decision 2. Mitigation: if this proves problematic, suppress buttons during `isPending` by also checking `!isPending`.
 - **CI blocking policy**: If any CI check fails, investigate root cause before bypassing. Do not use `--no-verify` or skip lint/type checks.
 
 ## Open Questions

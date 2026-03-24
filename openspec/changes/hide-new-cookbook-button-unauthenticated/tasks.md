@@ -12,7 +12,7 @@
 
 ## 3. Validation
 
-- [x] 3.1 Run unit tests: `npx vitest run src/routes/__tests__/cookbooks.test.ts` (or nearest equivalent — add tests if file doesn't exist)
+- [x] 3.1 Run unit tests: `npx vitest run src/components/cookbooks/__tests__/CookbooksPage.test.tsx`
 - [x] 3.2 Write unit test: "New Cookbook button not rendered when logged out"
 - [x] 3.3 Write unit test: "New Cookbook button rendered when logged in"
 - [x] 3.4 Write unit test: "Create your first cookbook button not rendered when logged out (empty state)"
@@ -22,9 +22,9 @@
 
 ## 4. PR and Merge
 
-- [ ] 4.1 Commit changes with message referencing issue: `fix(cookbooks): hide create buttons from unauthenticated users (closes #190)`
-- [ ] 4.2 Push branch and open PR; reference issue #190 in the PR body
-- [ ] 4.3 Enable auto-merge on the PR
+- [x] 4.1 Commit changes with message referencing issue: `fix(cookbooks): hide create buttons from unauthenticated users (closes #190)`
+- [x] 4.2 Push branch and open PR; reference issue #190 in the PR body
+- [x] 4.3 Enable auto-merge on the PR
 - [ ] 4.4 Resolve any CI failures or review comments before merge
 
 ## 5. Post-Merge
