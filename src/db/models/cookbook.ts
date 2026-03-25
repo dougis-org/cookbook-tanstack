@@ -1,8 +1,15 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
+export interface ICookbookChapter {
+  _id: Types.ObjectId;
+  name: string;
+  orderIndex: number;
+}
+
 export interface ICookbookRecipeEntry {
   recipeId: Types.ObjectId;
   orderIndex?: number;
+  chapterId?: Types.ObjectId;
 }
 
 export interface ICookbook extends Document {
@@ -12,6 +19,7 @@ export interface ICookbook extends Document {
   isPublic: boolean;
   imageUrl?: string;
   recipes: ICookbookRecipeEntry[];
+  chapters: ICookbookChapter[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +39,13 @@ const cookbookSchema = new Schema<ICookbook>(
           required: true,
         },
         orderIndex: { type: Number },
+        chapterId: { type: Schema.Types.ObjectId },
+      },
+    ],
+    chapters: [
+      {
+        name: { type: String, required: true },
+        orderIndex: { type: Number, required: true },
       },
     ],
   },

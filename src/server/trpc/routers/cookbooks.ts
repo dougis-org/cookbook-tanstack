@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
@@ -58,8 +59,54 @@ function cookbookCoreFields(cb: any) {
 
 /** Safe accessor for the embedded recipes array on a lean cookbook doc. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getRecipeStubs(cookbook: any): Array<{ recipeId: unknown; orderIndex?: number }> {
+function getRecipeStubs(cookbook: any): Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }> {
   return Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+}
+
+/** Safe accessor for the embedded chapters array on a lean cookbook doc. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIndex: number }> {
+  return Array.isArray(cookbook.chapters) ? cookbook.chapters : [];
+}
+
+/** Transform embedded chapters to the public-facing shape, sorted by orderIndex. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function transformChapters(cookbook: any): { id: string; name: string; orderIndex: number }[] {
+  return getChapters(cookbook)
+    .slice()
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .map((ch) => ({ id: String(ch._id), name: ch.name, orderIndex: ch.orderIndex }));
+}
+
+/** Build a recipe stub for $set operations. Pass chapterId to assign a chapter. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: unknown): { recipeId: unknown; orderIndex: number; chapterId?: unknown } {
+  const stub: { recipeId: unknown; orderIndex: number; chapterId?: unknown } = {
+    recipeId: s.recipeId,
+    orderIndex: s.orderIndex ?? 0,
+  };
+  if (chapterId !== undefined) stub.chapterId = chapterId;
+  return stub;
+}
+
+/** Fetch a cookbook by ID and verify ownership. Returns the full lean doc. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchOwnedCookbook(cookbookId: string, userId: string): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return verifyOwnership(
+    async () => (await Cookbook.findById(cookbookId).lean()) as any,
+    userId,
+    "Cookbook",
+  );
+}
+
+/** Verify cookbook ownership without returning the document. */
+async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<void> {
+  await verifyOwnership(
+    async () => (await Cookbook.findById(cookbookId).lean()) as { userId: unknown } | null,
+    userId,
+    "Cookbook",
+  );
 }
 
 async function fetchCookbookWithOrderedStubs(
@@ -69,12 +116,12 @@ async function fetchCookbookWithOrderedStubs(
 ): Promise<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cookbook: any;
-  stubs: Array<{ recipeId: unknown; orderIndex: number }>;
+  stubs: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }>;
 } | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cookbook = (await Cookbook.findOne({ _id: id, ...visFilter }).lean()) as any;
   if (!cookbook) return null;
-  const stubs: Array<{ recipeId: unknown; orderIndex: number }> = Array.isArray(cookbook.recipes)
+  const stubs: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }> = Array.isArray(cookbook.recipes)
     ? [...cookbook.recipes].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
     : [];
   return { cookbook, stubs };
@@ -94,6 +141,7 @@ export const cookbooksRouter = router({
       isPublic: cb.isPublic as boolean,
       imageUrl: (cb.imageUrl ?? null) as string | null,
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
+      chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
     }));
   }),
 
@@ -117,7 +165,7 @@ export const cookbooksRouter = router({
         .populate("classificationId", "name")
         .lean();
 
-      // Re-map to preserve orderIndex from the stub
+      // Re-map to preserve orderIndex and chapterId from the stub
       const recipeById = indexByStringId(recipeDocs);
       const recipes = stubs
         .map((stub) => {
@@ -134,12 +182,15 @@ export const cookbooksRouter = router({
               (d.classificationId as { name?: string } | null)?.name ??
               (null as string | null),
             orderIndex: stub.orderIndex,
+            chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
           };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
+      const chapters = transformChapters(cb);
+
       return {
         ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
@@ -147,6 +198,7 @@ export const cookbooksRouter = router({
         createdAt: cb.createdAt as Date,
         updatedAt: cb.updatedAt as Date,
         recipes,
+        chapters,
       };
     }),
 
@@ -213,13 +265,16 @@ export const cookbooksRouter = router({
             createdAt: d.createdAt as Date,
             updatedAt: d.updatedAt as Date,
             orderIndex: stub.orderIndex,
+            chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
           };
         })
         .filter((r): r is NonNullable<typeof r> => r !== null);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
-      return { ...cookbookCoreFields(cb), recipes };
+      const chapters = transformChapters(cb);
+
+      return { ...cookbookCoreFields(cb), recipes, chapters };
     }),
 
   create: protectedProcedure
@@ -239,6 +294,7 @@ export const cookbooksRouter = router({
         isPublic: input.isPublic,
         imageUrl: input.imageUrl ?? null,
         recipes: [],
+        chapters: [],
       }).save();
       return {
         ...cookbook.toObject({ virtuals: true }),
@@ -265,14 +321,7 @@ export const cookbooksRouter = router({
         ),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.id).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.id, ctx.user.id);
 
       const { id, ...data } = input;
       const updated = await Cookbook.findByIdAndUpdate(
@@ -286,27 +335,15 @@ export const cookbooksRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.id).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.id, ctx.user.id);
       await Cookbook.findByIdAndDelete(input.id);
       return { success: true };
     }),
 
   addRecipe: protectedProcedure
-    .input(z.object({ cookbookId: objectId, recipeId: objectId }))
+    .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
 
       const recipeVisFilter = visibilityFilter(ctx.user);
       const accessible = await Recipe.findOne({
@@ -319,6 +356,14 @@ export const cookbooksRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" });
       }
 
+      const chapters = getChapters(cookbook);
+      const hasChapters = chapters.length > 0;
+
+      if (hasChapters) {
+        if (!input.chapterId) throw new TRPCError({ code: "BAD_REQUEST", message: "chapterId is required when the cookbook has chapters" });
+        if (!chapters.some((ch) => String(ch._id) === input.chapterId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Chapter not found in cookbook" });
+      }
+
       // Check for duplicate, then push with next orderIndex
       const recipes = getRecipeStubs(cookbook);
       const alreadyIn = recipes.some(
@@ -326,10 +371,15 @@ export const cookbooksRouter = router({
         (r: any) => r.recipeId?.toString() === input.recipeId,
       );
       if (!alreadyIn) {
+        const newEntry: { recipeId: string; orderIndex: number; chapterId?: string } = {
+          recipeId: input.recipeId,
+          orderIndex: recipes.length,
+        };
+        if (hasChapters && input.chapterId) {
+          newEntry.chapterId = input.chapterId;
+        }
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
-          $push: {
-            recipes: { recipeId: input.recipeId, orderIndex: recipes.length },
-          },
+          $push: { recipes: newEntry },
         });
       }
 
@@ -339,14 +389,7 @@ export const cookbooksRouter = router({
   removeRecipe: protectedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.cookbookId).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $pull: { recipes: { recipeId: input.recipeId } },
       });
@@ -355,42 +398,206 @@ export const cookbooksRouter = router({
 
   reorderRecipes: protectedProcedure
     .input(
+      z
+        .object({
+          cookbookId: objectId,
+          // New chapter-aware format: full state replacement per chapter
+          chapters: z
+            .array(
+              z.object({
+                chapterId: objectId,
+                recipeIds: z.array(objectId),
+              }),
+            )
+            .optional(),
+          // Legacy flat format: kept for chapter-free cookbooks
+          recipeIds: z
+            .array(objectId)
+            .min(1)
+            .refine((ids) => new Set(ids).size === ids.length, {
+              message: "Duplicate recipe IDs in reorder list",
+            })
+            .optional(),
+        })
+        .refine((data) => (data.chapters !== undefined) !== (data.recipeIds !== undefined), {
+          message: "Provide exactly one of 'chapters' or 'recipeIds'",
+        }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const existingStubs = getRecipeStubs(cookbook);
+
+      if (input.chapters !== undefined) {
+        // Chapter-aware reorder: rebuild from chapter groups
+        const chapters = getChapters(cookbook);
+        if (chapters.length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot use chapters format on a cookbook with no chapters" });
+        }
+        const validChapterIds = new Set(chapters.map((ch) => String(ch._id)));
+        const invalidChapter = input.chapters.find((ch) => !validChapterIds.has(ch.chapterId));
+        if (invalidChapter) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: `Chapter ${invalidChapter.chapterId} does not belong to this cookbook` });
+        }
+
+        const stubByRecipeId = new Map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          existingStubs.map((s: any) => [String(s.recipeId), s]),
+        );
+
+        // Validate: unique IDs, no unknown IDs, all existing included
+        const incomingIds = input.chapters.flatMap((ch) => ch.recipeIds);
+        const uniqueIncoming = new Set(incomingIds);
+        if (uniqueIncoming.size !== incomingIds.length || uniqueIncoming.size !== stubByRecipeId.size || [...uniqueIncoming].some((id) => !stubByRecipeId.has(id))) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Reorder request must contain all existing recipe IDs exactly once" });
+        }
+
+        const updatedRecipes: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }> = [];
+        let globalIndex = 0;
+        for (const chapter of input.chapters) {
+          for (const recipeId of chapter.recipeIds) {
+            updatedRecipes.push({
+              recipeId: stubByRecipeId.get(recipeId)?.recipeId ?? recipeId,
+              orderIndex: globalIndex++,
+              chapterId: new Types.ObjectId(chapter.chapterId),
+            });
+          }
+        }
+
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $set: { recipes: updatedRecipes },
+        });
+      } else if (input.recipeIds !== undefined) {
+        // Legacy flat reorder: update orderIndex values only
+        const updatedRecipes = existingStubs.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (stub: any) => {
+            const newIndex = input.recipeIds!.indexOf(stub.recipeId?.toString() ?? "");
+            return {
+              recipeId: stub.recipeId,
+              orderIndex: newIndex >= 0 ? newIndex : (stub.orderIndex ?? 0),
+              ...(stub.chapterId != null ? { chapterId: stub.chapterId } : {}),
+            };
+          },
+        );
+
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $set: { recipes: updatedRecipes },
+        });
+      }
+
+      return { success: true };
+    }),
+
+  createChapter: protectedProcedure
+    .input(z.object({ cookbookId: objectId }))
+    .mutation(async ({ ctx, input }) => {
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const chapters = getChapters(cookbook);
+      const isFirstChapter = chapters.length === 0;
+      const newChapterId = new Types.ObjectId();
+      const maxOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
+      const newChapter = {
+        _id: newChapterId,
+        name: `Chapter ${chapters.length + 1}`,
+        orderIndex: maxOrderIndex + 1,
+      };
+
+      if (isFirstChapter) {
+        // Migrate all existing unchaptered recipes to this new chapter atomically
+        const existingStubs = getRecipeStubs(cookbook);
+        const migratedRecipes = existingStubs.map((s) => recipeStub(s, newChapterId));
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $push: { chapters: newChapter },
+          $set: { recipes: migratedRecipes },
+        });
+      } else {
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $push: { chapters: newChapter },
+        });
+      }
+
+      return { success: true, chapterId: newChapterId.toString() };
+    }),
+
+  renameChapter: protectedProcedure
+    .input(z.object({ cookbookId: objectId, chapterId: objectId, name: z.string().min(1).max(255) }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
+
+      const updated = await Cookbook.findOneAndUpdate(
+        { _id: input.cookbookId, "chapters._id": input.chapterId },
+        { $set: { "chapters.$.name": input.name } },
+      );
+
+      if (!updated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Chapter not found" });
+      }
+
+      return { success: true };
+    }),
+
+  deleteChapter: protectedProcedure
+    .input(z.object({ cookbookId: objectId, chapterId: objectId }))
+    .mutation(async ({ ctx, input }) => {
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const chapters = getChapters(cookbook);
+      const chapterExists = chapters.some((ch) => String(ch._id) === input.chapterId);
+      if (!chapterExists) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Chapter not found" });
+      }
+
+      const remainingChapters = chapters
+        .filter((ch) => String(ch._id) !== input.chapterId)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((ch, i) => ({ ...ch, orderIndex: i }));
+
+      const existingStubs = getRecipeStubs(cookbook);
+
+      if (remainingChapters.length === 0) {
+        // Deleting the last chapter — clear chapterId from all recipes
+        const clearedRecipes = existingStubs.map((s) => recipeStub(s));
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $set: { chapters: [], recipes: clearedRecipes },
+        });
+      } else {
+        // Reassign recipes from deleted chapter to the first remaining chapter
+        const targetChapterId = remainingChapters[0]._id;
+        const updatedRecipes = existingStubs.map((s) =>
+          String(s.chapterId) === input.chapterId
+            ? recipeStub(s, targetChapterId)
+            : recipeStub(s, s.chapterId),
+        );
+        await Cookbook.findByIdAndUpdate(input.cookbookId, {
+          $set: { chapters: remainingChapters, recipes: updatedRecipes },
+        });
+      }
+
+      return { success: true };
+    }),
+
+  reorderChapters: protectedProcedure
+    .input(
       z.object({
         cookbookId: objectId,
-        recipeIds: z
-          .array(objectId)
-          .min(1)
-          .refine((ids) => new Set(ids).size === ids.length, {
-            message: "Duplicate recipe IDs in reorder list",
-          }),
+        chapterIds: z.array(objectId).min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const chapters = getChapters(cookbook);
+      const existingIds = new Set(chapters.map((ch) => String(ch._id)));
+      if (new Set(input.chapterIds).size !== chapters.length || input.chapterIds.some((id) => !existingIds.has(id))) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "chapterIds must be a permutation of the cookbook's chapter IDs" });
+      }
 
-      const recipes = getRecipeStubs(cookbook);
-
-      // Rebuild the recipes array with updated orderIndex values
-      const updatedRecipes = recipes.map(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (stub: any) => {
-          const newIndex = input.recipeIds.indexOf(
-            stub.recipeId?.toString() ?? "",
-          );
-          return {
-            recipeId: stub.recipeId,
-            orderIndex: newIndex >= 0 ? newIndex : (stub.orderIndex ?? 0),
-          };
-        },
-      );
+      const updatedChapters = chapters.map((ch) => ({
+        _id: ch._id,
+        name: ch.name,
+        orderIndex: input.chapterIds.indexOf(String(ch._id)),
+      }));
 
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
-        $set: { recipes: updatedRecipes },
+        $set: { chapters: updatedChapters },
       });
 
       return { success: true };

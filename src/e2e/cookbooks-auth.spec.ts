@@ -209,3 +209,124 @@ test.describe("Cookbook Detail Owner Controls", () => {
     await expect(page.getByRole("button", { name: /Remove/ })).toBeVisible();
   });
 });
+
+test.describe("Cookbook Chapters", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.context().clearCookies();
+  });
+
+  // ─── Chapter creation and rename ─────────────────────────────────────────
+
+  test("should create a chapter and rename it", async ({ page }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl } = await createCookbookWithRecipe(
+      page,
+      "Chapters Create Rename",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Create first chapter — chapter header appears once there are recipes
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+
+    // Hover to reveal owner icons, then click rename
+    await page.getByRole("heading", { name: "Chapter 1" }).hover();
+    await page.getByLabel(/Rename Chapter 1/).click({ force: true });
+    await expect(page.getByRole("textbox", { name: "Chapter name" })).toBeVisible();
+    await page.getByRole("textbox", { name: "Chapter name" }).fill("Starters");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("heading", { name: "Starters" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).not.toBeVisible();
+  });
+
+  test("should show New Chapter button only for owner", async ({ page }) => {
+    await registerAndLogin(page);
+    const cookbookName = getUniqueCookbookName("Chapters Owner Only");
+    const cookbookUrl = await createCookbook(page, cookbookName);
+
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeVisible();
+
+    // Non-owner should not see it
+    await page.context().clearCookies();
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await expect(page.getByRole("button", { name: "New Chapter" })).not.toBeVisible();
+  });
+
+  // ─── Chapter deletion (last chapter → unchaptered) ───────────────────────
+
+  test("should delete last chapter and unchapter all recipes", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
+      page,
+      "Chapters Delete Last",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Create a chapter (migrates existing recipe into it)
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText(recipeName)).toBeVisible();
+
+    // Hover to reveal delete icon, then delete the only chapter
+    await page.getByRole("heading", { name: "Chapter 1" }).hover();
+    await page.getByLabel(/Delete Chapter 1/).click({ force: true });
+    // Confirm deletion in the modal
+    await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+    // Use heading role to avoid strict-mode violation with modal body text during mutation
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).not.toBeVisible({ timeout: 20000 });
+    await expect(page.getByText(recipeName)).toBeVisible();
+  });
+
+  // ─── Cross-chapter recipe drag ───────────────────────────────────────────
+
+  test("should show drag handles for recipes within chapters", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl } = await createCookbookWithRecipe(
+      page,
+      "Cross Chapter Drag",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Create a chapter — recipe migrates into it
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+
+    // Recipe drag handle should still be visible within the chapter
+    await expect(
+      page.getByRole("button", { name: "Drag to reorder" }),
+    ).toBeVisible();
+  });
+
+  // ─── Chapter-sort (collapsed mode) ───────────────────────────────────────
+
+  test("should toggle collapsed mode and show chapter rows", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl } = await createCookbookWithRecipe(
+      page,
+      "Chapters Collapse",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Create two chapters (recipe migrates to Chapter 1, Chapter 2 starts empty)
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 2" })).toBeVisible({ timeout: 20000 });
+
+    // Collapse toggle appears once there are chapters
+    const collapseBtn = page.getByRole("button", { name: /Collapse to chapter view|Expand recipe list/ });
+    await expect(collapseBtn).toBeVisible();
+    await collapseBtn.click();
+
+    // In collapsed mode both chapter rows remain visible
+    await expect(page.getByText("Chapter 1")).toBeVisible();
+    await expect(page.getByText("Chapter 2")).toBeVisible();
+  });
+});
