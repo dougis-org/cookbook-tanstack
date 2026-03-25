@@ -12,15 +12,25 @@ import "@/db/models/preparation";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pluckIds(arr: unknown): string[] {
-  return Array.isArray(arr) ? (arr as any[]).map((item) => item._id?.toString() as string) : [];
+  if (!Array.isArray(arr)) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (arr as any[])
+    .map((item) => (item?._id ?? item)?.toString())
+    .filter((id): id is string => typeof id === "string" && id.length > 0);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pluckItems(arr: unknown): { id: string; name: string }[] {
-  return Array.isArray(arr)
-    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (arr as any[]).map((item) => ({ id: item._id.toString() as string, name: item.name as string }))
-    : [];
+  if (!Array.isArray(arr)) return [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (arr as any[])
+    .map((item) => {
+      const id = (item?._id ?? item)?.toString();
+      const name = item?.name;
+      if (typeof id !== "string" || id.length === 0 || typeof name !== "string") return null;
+      return { id, name: name as string };
+    })
+    .filter((entry): entry is { id: string; name: string } => entry !== null);
 }
 
 /** Build a lookup map from recipe docs keyed by stringified _id. */
@@ -65,7 +75,7 @@ async function fetchCookbookWithOrderedStubs(
   const cookbook = (await Cookbook.findOne({ _id: id, ...visFilter }).lean()) as any;
   if (!cookbook) return null;
   const stubs: Array<{ recipeId: unknown; orderIndex: number }> = Array.isArray(cookbook.recipes)
-    ? [...cookbook.recipes].sort((a, b) => a.orderIndex - b.orderIndex)
+    ? [...cookbook.recipes].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
     : [];
   return { cookbook, stubs };
 }
@@ -152,7 +162,7 @@ export const cookbooksRouter = router({
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
-        ...visibilityFilter(ctx.user),
+        ...visFilter,
       })
         .populate("classificationId", "name")
         .populate("sourceId", "name url")
