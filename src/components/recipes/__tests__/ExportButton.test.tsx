@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ExportButton from "@/components/recipes/ExportButton";
 import type { Recipe } from "@/types/recipe";
@@ -42,6 +42,10 @@ describe("ExportButton", () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("exports recipe JSON with a slugified filename", () => {
     render(<ExportButton recipe={mockRecipe} />);
     fireEvent.click(screen.getByRole("button", { name: /export/i }));
@@ -56,5 +60,19 @@ describe("ExportButton", () => {
     });
     expect(filename).toBe("best-chili-ever.json");
     expect(mimeType).toBe("application/json");
+  });
+
+  it("logs an error and does not throw when downloadBlob fails", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    downloadBlob.mockImplementation(() => {
+      throw new Error("blob error");
+    });
+
+    render(<ExportButton recipe={mockRecipe} />);
+    expect(() =>
+      fireEvent.click(screen.getByRole("button", { name: /export/i }))
+    ).not.toThrow();
+
+    expect(consoleError).toHaveBeenCalledWith("Export failed", expect.any(Error));
   });
 });

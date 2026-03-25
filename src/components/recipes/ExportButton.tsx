@@ -19,8 +19,12 @@ function makeExportFilename(recipe: Recipe): string {
 
 export default function ExportButton({ recipe }: ExportButtonProps) {
   function onExport() {
-    const json = exportRecipeToJson(recipe)
-    downloadBlob(json, makeExportFilename(recipe), 'application/json')
+    try {
+      const json = exportRecipeToJson(recipe)
+      downloadBlob(json, makeExportFilename(recipe), 'application/json')
+    } catch (err) {
+      console.error('Export failed', err)
+    }
   }
 
   return (
