@@ -9,6 +9,7 @@ interface CookbookCardProps {
     isPublic: boolean
     imageUrl?: string | null
     recipeCount?: number
+    chapterCount?: number
   }
 }
 
@@ -29,6 +30,9 @@ export default function CookbookCard({ cookbook }: CookbookCardProps) {
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {cookbook.recipeCount ?? 0} {cookbook.recipeCount === 1 ? 'recipe' : 'recipes'}
+            {(cookbook.chapterCount ?? 0) > 0 && (
+              <> · {cookbook.chapterCount} {cookbook.chapterCount === 1 ? 'chapter' : 'chapters'}</>
+            )}
           </p>
           {!cookbook.isPublic && (
             <span className="text-xs px-2 py-0.5 bg-slate-700 text-gray-300 rounded">Private</span>

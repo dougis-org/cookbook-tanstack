@@ -10,6 +10,7 @@ function makeCookbook(overrides: Partial<Parameters<typeof CookbookCard>[0]["coo
     isPublic: true,
     imageUrl: null,
     recipeCount: 0,
+    chapterCount: 0,
     ...overrides,
   }
 }
@@ -79,5 +80,22 @@ describe("CookbookCard", () => {
   it("does not show Private badge for public cookbooks", () => {
     render(<CookbookCard cookbook={makeCookbook({ isPublic: true })} />)
     expect(screen.queryByText("Private")).not.toBeInTheDocument()
+  })
+
+  it("shows only recipe count when chapterCount is 0", () => {
+    render(<CookbookCard cookbook={makeCookbook({ recipeCount: 5, chapterCount: 0 })} />)
+    expect(screen.getByText("5 recipes")).toBeInTheDocument()
+    expect(screen.queryByText(/chapter/)).not.toBeInTheDocument()
+  })
+
+  it("shows recipe and chapter counts when chapterCount > 0", () => {
+    render(<CookbookCard cookbook={makeCookbook({ recipeCount: 12, chapterCount: 3 })} />)
+    expect(screen.getByText(/12 recipes/)).toBeInTheDocument()
+    expect(screen.getByText(/3 chapters/)).toBeInTheDocument()
+  })
+
+  it("shows singular 'chapter' for chapterCount of 1", () => {
+    render(<CookbookCard cookbook={makeCookbook({ recipeCount: 2, chapterCount: 1 })} />)
+    expect(screen.getByText(/1 chapter/)).toBeInTheDocument()
   })
 })
