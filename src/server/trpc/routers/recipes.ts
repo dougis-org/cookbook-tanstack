@@ -293,7 +293,8 @@ export const recipesRouter = router({
       const session = await mongoose.startSession();
       try {
         await session.withTransaction(async () => {
-          await Recipe.findByIdAndDelete(input.id, { session });
+          // Use updateOne (not findByIdAndUpdate) to bypass the pre-find middleware
+          await Recipe.updateOne({ _id: input.id }, { $set: { deleted: true } }, { session });
           await Cookbook.updateMany(
             { "recipes.recipeId": input.id },
             { $pull: { recipes: { recipeId: input.id } } },
