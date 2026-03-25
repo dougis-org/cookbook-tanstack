@@ -16,16 +16,14 @@ async function createCookbookAndGetId(page: Page, name: string, isPublic = true)
   const cookbookLink = page.getByRole("link").filter({ hasText: name }).first();
   await cookbookLink.waitFor({ state: "visible" });
   const href = await cookbookLink.getAttribute("href");
-  if (!href) {
-    throw new Error(`Failed to read href for cookbook link with name "${name}".`);
-  }
-  const match = href.match(/\/cookbooks\/([a-f0-9]+)/);
-  if (!match || !match[1]) {
-    throw new Error(`Failed to parse cookbook id from href "${href}" for cookbook "${name}".`);
+  expect(href, `Failed to read href for cookbook link with name "${name}".`).toBeTruthy();
+  const match = href!.match(/\/cookbooks\/([a-f0-9]{24})\b/);
+  if (!match || !match[1] || match[1].length !== 24) {
+    throw new Error(`Failed to parse 24-character cookbook id from href "${href}" for cookbook "${name}".`);
   }
   const cookbookId = match[1];
   await cookbookLink.click();
-  await page.waitForURL(/\/cookbooks\/[a-f0-9]+$/);
+  await page.waitForURL(/\/cookbooks\/[a-f0-9]{24}$/);
   return cookbookId;
 }
 
