@@ -39,8 +39,8 @@
 ## 6. PR and Merge
 
 - [x] 6.1 Commit all changes with a descriptive message referencing issue #212
-- [ ] 6.2 Push branch and open PR against `main`
-- [ ] 6.3 Enable auto-merge on the PR
+- [x] 6.2 Push branch and open PR against `main`
+- [x] 6.3 Enable auto-merge on the PR
 - [ ] 6.4 Verify CI uploads both `coverage/lcov.info` and `e2e-coverage/lcov.info` in the Codacy upload step logs
 - [ ] 6.5 Resolve any CI failures or review comments before merge
 
