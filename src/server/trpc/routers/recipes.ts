@@ -301,7 +301,8 @@ export const recipesRouter = router({
           );
           await RecipeLike.deleteMany({ recipeId: input.id }, { session });
         });
-      } catch {
+      } catch (error) {
+        console.error("Recipe delete transaction failed:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to delete recipe. Please try again.",
