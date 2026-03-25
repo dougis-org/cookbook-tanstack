@@ -20,6 +20,7 @@ function RecipeDetailPage() {
   const queryClient = useQueryClient()
   const { data: session } = useSession()
   const [showDelete, setShowDelete] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | undefined>()
 
   const { data: recipe, isLoading } = useQuery(
     trpc.recipes.byId.queryOptions({ id: recipeId }),
@@ -40,9 +41,11 @@ function RecipeDetailPage() {
   const deleteMutation = useMutation(
     trpc.recipes.delete.mutationOptions({
       onSuccess: () => {
+        setDeleteError(undefined)
         queryClient.invalidateQueries({ queryKey: [['recipes']] })
         navigate({ to: '/recipes' })
       },
+      onError: (err) => setDeleteError(err.message),
     }),
   )
 
@@ -128,8 +131,9 @@ function RecipeDetailPage() {
         open={showDelete}
         recipeName={recipe.name}
         onConfirm={() => deleteMutation.mutate({ id: recipeId })}
-        onCancel={() => setShowDelete(false)}
+        onCancel={() => { setShowDelete(false); setDeleteError(undefined) }}
         isPending={deleteMutation.isPending}
+        error={deleteError}
       />
     </PageLayout>
   )

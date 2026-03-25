@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import FormError from "@/components/ui/FormError"
 
 interface DeleteConfirmModalProps {
   open: boolean
@@ -6,6 +7,7 @@ interface DeleteConfirmModalProps {
   onConfirm: () => void
   onCancel: () => void
   isPending: boolean
+  error?: string
 }
 
 export default function DeleteConfirmModal({
@@ -14,6 +16,7 @@ export default function DeleteConfirmModal({
   onConfirm,
   onCancel,
   isPending,
+  error,
 }: DeleteConfirmModalProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
 
@@ -48,6 +51,7 @@ export default function DeleteConfirmModal({
         <p className="text-gray-300 mb-6">
           Are you sure you want to delete <span className="font-semibold text-white">{recipeName}</span>? This action cannot be undone.
         </p>
+        <FormError message={error} />
         <div className="flex justify-end gap-3">
           <button
             ref={cancelRef}

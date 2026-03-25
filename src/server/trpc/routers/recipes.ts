@@ -2,7 +2,8 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
-import { Recipe, RecipeLike } from "@/db/models";
+import { Recipe, RecipeLike, Cookbook } from "@/db/models";
+import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
 import "@/db/models/source";
 import "@/db/models/classification";
@@ -288,7 +289,28 @@ export const recipesRouter = router({
         ctx.user.id,
         "Recipe",
       );
-      await Recipe.findByIdAndDelete(input.id);
+
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          await Recipe.findByIdAndDelete(input.id, { session });
+          await Cookbook.updateMany(
+            { "recipes.recipeId": input.id },
+            { $pull: { recipes: { recipeId: input.id } } },
+            { session },
+          );
+          await RecipeLike.deleteMany({ recipeId: input.id }, { session });
+        });
+      } catch (error) {
+        console.error("Recipe delete transaction failed:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete recipe. Please try again.",
+        });
+      } finally {
+        await session.endSession();
+      }
+
       return { success: true };
     }),
 

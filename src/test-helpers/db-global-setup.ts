@@ -6,13 +6,13 @@
  * Workers inherit process.env from the parent process, so setting
  * MONGODB_URI here makes it visible to every test file.
  */
-import { MongoMemoryServer } from "mongodb-memory-server"
+import { MongoMemoryReplSet } from "mongodb-memory-server"
 import mongoose from "mongoose"
 
-let mongod: MongoMemoryServer
+let mongod: MongoMemoryReplSet
 
 export async function setup() {
-  mongod = await MongoMemoryServer.create()
+  mongod = await MongoMemoryReplSet.create({ replSet: { count: 1 } })
   const uri = mongod.getUri()
   process.env.MONGODB_URI = uri
   await mongoose.connect(uri)
