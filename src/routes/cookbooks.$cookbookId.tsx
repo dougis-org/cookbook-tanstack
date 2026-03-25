@@ -32,6 +32,41 @@ export const Route = createFileRoute('/cookbooks/$cookbookId')({
   component: CookbookDetailPage,
 })
 
+// ─── Pure helpers (module-level) ──────────────────────────────────────────────
+
+function computeChapterReorder(
+  activeId: string,
+  overId: string,
+  activeChapterId: string,
+  overChapterId: string,
+  sortedChapters: Chapter[],
+  getIds: (chapterId: string) => string[],
+): Map<string, string[]> {
+  const currentActive = getIds(activeChapterId)
+  const currentOver = getIds(overChapterId)
+
+  if (activeChapterId === overChapterId) {
+    const newIds = arrayMove(
+      currentActive,
+      currentActive.indexOf(activeId),
+      currentActive.indexOf(overId),
+    )
+    return new Map(sortedChapters.map((ch) => [ch.id, ch.id === activeChapterId ? newIds : getIds(ch.id)]))
+  }
+
+  // Cross-chapter move
+  const newActiveIds = currentActive.filter((id) => id !== activeId)
+  const overIndex = currentOver.indexOf(overId)
+  const newOverIds = [...currentOver.slice(0, overIndex + 1), activeId, ...currentOver.slice(overIndex + 1)]
+  return new Map(
+    sortedChapters.map((ch) => {
+      if (ch.id === activeChapterId) return [ch.id, newActiveIds]
+      if (ch.id === overChapterId) return [ch.id, newOverIds]
+      return [ch.id, getIds(ch.id)]
+    })
+  )
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Chapter {
@@ -227,33 +262,14 @@ function CookbookDetailPage() {
 
       if (!activeChapterId || !overChapterId) return
 
-      const currentActive = getRecipeIdsForChapter(activeChapterId)
-      const currentOver = getRecipeIdsForChapter(overChapterId)
-
-      let newLocalOrder: Map<string, string[]>
-      if (activeChapterId === overChapterId) {
-        // Within same chapter
-        const newIds = arrayMove(
-          currentActive,
-          currentActive.indexOf(active.id as string),
-          currentActive.indexOf(over.id as string),
-        )
-        newLocalOrder = new Map(
-          sortedChapters.map((ch) => [ch.id, ch.id === activeChapterId ? newIds : getRecipeIdsForChapter(ch.id)])
-        )
-      } else {
-        // Cross-chapter move
-        const newActiveIds = currentActive.filter((id) => id !== active.id)
-        const overIndex = currentOver.indexOf(over.id as string)
-        const newOverIds = [...currentOver.slice(0, overIndex + 1), active.id as string, ...currentOver.slice(overIndex + 1)]
-        newLocalOrder = new Map(
-          sortedChapters.map((ch) => {
-            if (ch.id === activeChapterId) return [ch.id, newActiveIds]
-            if (ch.id === overChapterId) return [ch.id, newOverIds]
-            return [ch.id, getRecipeIdsForChapter(ch.id)]
-          })
-        )
-      }
+      const newLocalOrder = computeChapterReorder(
+        active.id as string,
+        over.id as string,
+        activeChapterId,
+        overChapterId,
+        sortedChapters,
+        getRecipeIdsForChapter,
+      )
 
       setLocalOrder(newLocalOrder)
       const chaptersPayload = sortedChapters.map((ch) => ({

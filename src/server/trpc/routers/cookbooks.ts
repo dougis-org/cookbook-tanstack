@@ -69,6 +69,25 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
   return Array.isArray(cookbook.chapters) ? cookbook.chapters : [];
 }
 
+/** Transform embedded chapters to the public-facing shape, sorted by orderIndex. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function transformChapters(cookbook: any): { id: string; name: string; orderIndex: number }[] {
+  return getChapters(cookbook)
+    .sort((a, b) => a.orderIndex - b.orderIndex)
+    .map((ch) => ({ id: String(ch._id), name: ch.name, orderIndex: ch.orderIndex }));
+}
+
+/** Build a recipe stub for $set operations. Pass chapterId to assign a chapter. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: unknown): { recipeId: unknown; orderIndex: number; chapterId?: unknown } {
+  const stub: { recipeId: unknown; orderIndex: number; chapterId?: unknown } = {
+    recipeId: s.recipeId,
+    orderIndex: s.orderIndex ?? 0,
+  };
+  if (chapterId !== undefined) stub.chapterId = chapterId;
+  return stub;
+}
+
 async function fetchCookbookWithOrderedStubs(
   id: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,13 +168,7 @@ export const cookbooksRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
-      const chapters = getChapters(cb)
-        .sort((a, b) => a.orderIndex - b.orderIndex)
-        .map((ch) => ({
-          id: String(ch._id),
-          name: ch.name,
-          orderIndex: ch.orderIndex,
-        }));
+      const chapters = transformChapters(cb);
 
       return {
         ...cookbookCoreFields(cb),
@@ -238,13 +251,7 @@ export const cookbooksRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
-      const chapters = getChapters(cb)
-        .sort((a, b) => a.orderIndex - b.orderIndex)
-        .map((ch) => ({
-          id: String(ch._id),
-          name: ch.name,
-          orderIndex: ch.orderIndex,
-        }));
+      const chapters = transformChapters(cb);
 
       return { ...cookbookCoreFields(cb), recipes, chapters };
     }),
@@ -508,11 +515,7 @@ export const cookbooksRouter = router({
       if (isFirstChapter) {
         // Migrate all existing unchaptered recipes to this new chapter atomically
         const existingStubs = getRecipeStubs(cookbook);
-        const migratedRecipes = existingStubs.map((s) => ({
-          recipeId: s.recipeId,
-          orderIndex: s.orderIndex ?? 0,
-          chapterId: newChapterId,
-        }));
+        const migratedRecipes = existingStubs.map((s) => recipeStub(s, newChapterId));
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
           $push: { chapters: newChapter },
           $set: { recipes: migratedRecipes },
@@ -574,22 +577,18 @@ export const cookbooksRouter = router({
 
       if (remainingChapters.length === 0) {
         // Deleting the last chapter — clear chapterId from all recipes
-        const clearedRecipes = existingStubs.map((s) => ({
-          recipeId: s.recipeId,
-          orderIndex: s.orderIndex ?? 0,
-        }));
+        const clearedRecipes = existingStubs.map((s) => recipeStub(s));
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
           $set: { chapters: [], recipes: clearedRecipes },
         });
       } else {
         // Reassign recipes from deleted chapter to the first remaining chapter
         const targetChapterId = remainingChapters[0]._id;
-        const updatedRecipes = existingStubs.map((s) => {
-          if (String(s.chapterId) === input.chapterId) {
-            return { recipeId: s.recipeId, orderIndex: s.orderIndex ?? 0, chapterId: targetChapterId };
-          }
-          return { recipeId: s.recipeId, orderIndex: s.orderIndex ?? 0, chapterId: s.chapterId };
-        });
+        const updatedRecipes = existingStubs.map((s) =>
+          String(s.chapterId) === input.chapterId
+            ? recipeStub(s, targetChapterId)
+            : recipeStub(s, s.chapterId),
+        );
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
           $pull: { chapters: { _id: input.chapterId } },
           $set: { recipes: updatedRecipes },

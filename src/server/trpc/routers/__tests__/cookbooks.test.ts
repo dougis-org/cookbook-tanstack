@@ -33,6 +33,7 @@ type Caller = Awaited<ReturnType<typeof makeAuthCaller>>;
 type CookbookDoc = Awaited<ReturnType<typeof seedCookbook>>;
 type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
 type AnonCaller = Awaited<ReturnType<typeof makeAnonCaller>>;
+type UserDoc = Awaited<ReturnType<typeof seedUser>>;
 
 /** Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). */
 async function seedCookbookWithRecipes(cookbookId: string, ...recipeIds: string[]) {
@@ -87,6 +88,30 @@ async function assertOwnershipGuard(
     const caller = await makeAuthCaller(other.id);
     await expect(act(caller, cb, r)).rejects.toThrow("Not your cookbook");
   });
+}
+
+type SetupCtx = { owner: UserDoc; cb: CookbookDoc; caller: Caller }
+type SetupCtxWithRecipe = SetupCtx & { r: RecipeDoc }
+
+// Convenience wrapper: seeds owner + cookbook + caller inside a clean DB.
+async function withCookbookTest(fn: (ctx: SetupCtx) => Promise<void>): Promise<void> {
+  await withCleanDb(async () => {
+    const owner = await seedUser()
+    const cb = await seedCookbook(owner.id)
+    const caller = await makeAuthCaller(owner.id)
+    await fn({ owner, cb, caller })
+  })
+}
+
+// Same as above but also seeds a recipe.
+async function withCookbookAndRecipeTest(fn: (ctx: SetupCtxWithRecipe) => Promise<void>): Promise<void> {
+  await withCleanDb(async () => {
+    const owner = await seedUser()
+    const cb = await seedCookbook(owner.id)
+    const r = await seedRecipe(owner.id)
+    const caller = await makeAuthCaller(owner.id)
+    await fn({ owner, cb, r, caller })
+  })
 }
 
 describe("ownership guard — non-owner is rejected", () => {
@@ -176,20 +201,14 @@ describe("cookbooks.list", () => {
   });
 
   it("returns chapterCount = 0 for cookbook with no chapters", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      await seedCookbook(owner.id);
-      const caller = await makeAuthCaller(owner.id);
+    await withCookbookTest(async ({ caller }) => {
       const results = await caller.cookbooks.list();
       expect(results[0].chapterCount).toBe(0);
     });
   });
 
   it("returns chapterCount matching the number of chapters", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const caller = await makeAuthCaller(owner.id);
+    await withCookbookTest(async ({ cb, caller }) => {
       await caller.cookbooks.createChapter({ cookbookId: cb.id });
       await caller.cookbooks.createChapter({ cookbookId: cb.id });
       const results = await caller.cookbooks.list();
@@ -636,15 +655,9 @@ describe("cookbooks.reorderRecipes", () => {
 
 describe("cookbooks.createChapter", () => {
   it("creates first chapter named 'Chapter 1' and migrates existing recipes", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       await seedCookbookWithRecipes(cb.id, r.id);
-
-      const caller = await makeAuthCaller(owner.id);
       const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters).toHaveLength(1);
       expect(result!.chapters[0]).toMatchObject({ name: "Chapter 1", orderIndex: 0 });
@@ -653,20 +666,14 @@ describe("cookbooks.createChapter", () => {
   });
 
   it("creates a second chapter empty without reassigning recipes", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
-
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       const { chapterId: ch1Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId: ch1Id });
       await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters).toHaveLength(2);
       expect(result!.chapters[1]).toMatchObject({ name: "Chapter 2", orderIndex: 1 });
-      expect(result!.recipes[0].chapterId).toBe(ch1Id); // still in chapter 1
+      expect(result!.recipes[0].chapterId).toBe(ch1Id);
     });
   });
 });
@@ -675,14 +682,9 @@ describe("cookbooks.createChapter", () => {
 
 describe("cookbooks.renameChapter", () => {
   it("owner can rename a chapter", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const caller = await makeAuthCaller(owner.id);
+    await withCookbookTest(async ({ cb, caller }) => {
       const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
       await caller.cookbooks.renameChapter({ cookbookId: cb.id, chapterId, name: "Starters" });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters[0].name).toBe("Starters");
     });
@@ -693,18 +695,11 @@ describe("cookbooks.renameChapter", () => {
 
 describe("cookbooks.deleteChapter", () => {
   it("deletes a chapter and moves its recipes to the first remaining chapter", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
-
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       const { chapterId: ch1Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       const { chapterId: ch2Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId: ch2Id });
-
       await caller.cookbooks.deleteChapter({ cookbookId: cb.id, chapterId: ch2Id });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters).toHaveLength(1);
       expect(result!.chapters[0].id).toBe(ch1Id);
@@ -713,16 +708,10 @@ describe("cookbooks.deleteChapter", () => {
   });
 
   it("deletes the last chapter and clears chapterId from all recipes", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
-
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId });
       await caller.cookbooks.deleteChapter({ cookbookId: cb.id, chapterId });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters).toHaveLength(0);
       expect(result!.recipes[0].chapterId).toBeNull();
@@ -734,20 +723,11 @@ describe("cookbooks.deleteChapter", () => {
 
 describe("cookbooks.reorderChapters", () => {
   it("owner can reorder chapters", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const caller = await makeAuthCaller(owner.id);
-
+    await withCookbookTest(async ({ cb, caller }) => {
       const { chapterId: ch1Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       const { chapterId: ch2Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       const { chapterId: ch3Id } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
-      await caller.cookbooks.reorderChapters({
-        cookbookId: cb.id,
-        chapterIds: [ch3Id, ch1Id, ch2Id],
-      });
-
+      await caller.cookbooks.reorderChapters({ cookbookId: cb.id, chapterIds: [ch3Id, ch1Id, ch2Id] });
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters.map((c) => c.id)).toEqual([ch3Id, ch1Id, ch2Id]);
     });
@@ -758,28 +738,17 @@ describe("cookbooks.reorderChapters", () => {
 
 describe("cookbooks.addRecipe (chapter-aware)", () => {
   it("adds recipe with chapterId when chapters exist", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes[0].chapterId).toBe(chapterId);
     });
   });
 
   it("throws BAD_REQUEST when chapters exist but chapterId is missing", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       await caller.cookbooks.createChapter({ cookbookId: cb.id });
-
       await expect(
         caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id }),
       ).rejects.toThrow("chapterId is required");
@@ -787,14 +756,8 @@ describe("cookbooks.addRecipe (chapter-aware)", () => {
   });
 
   it("adds recipe without chapterId when no chapters exist", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r = await seedRecipe(owner.id);
-      const caller = await makeAuthCaller(owner.id);
-
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id });
-
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes[0].chapterId).toBeNull();
     });
