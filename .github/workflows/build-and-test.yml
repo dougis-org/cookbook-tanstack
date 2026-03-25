@@ -125,10 +125,13 @@ jobs:
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
 
+          partials_uploaded=0
+
           # Upload Vitest coverage report if it exists
           if [ -f coverage/lcov.info ]; then
             ./codacy-coverage-reporter.sh report --partial -l Javascript -r coverage/lcov.info
             ./codacy-coverage-reporter.sh report --partial -l TypeScript -r coverage/lcov.info
+            partials_uploaded=1
           else
             echo "No Vitest coverage report found at coverage/lcov.info"
           fi
@@ -138,11 +141,16 @@ jobs:
           if [ -f e2e-coverage/lcov.info ] && [ -s e2e-coverage/lcov.info ]; then
             ./codacy-coverage-reporter.sh report --partial -l Javascript -r e2e-coverage/lcov.info
             ./codacy-coverage-reporter.sh report --partial -l TypeScript -r e2e-coverage/lcov.info
+            partials_uploaded=1
           else
             echo "No E2E coverage report found or file is empty at e2e-coverage/lcov.info"
           fi
 
-          ./codacy-coverage-reporter.sh final
+          if [ "$partials_uploaded" -eq 1 ]; then
+            ./codacy-coverage-reporter.sh final
+          else
+            echo "No coverage reports were uploaded; skipping final"
+          fi
 
       - name: Comment PR on failure
         if: failure() && github.event_name == 'pull_request'
