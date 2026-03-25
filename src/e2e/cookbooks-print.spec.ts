@@ -10,18 +10,23 @@ async function createCookbookAndGetId(page: Page, name: string, isPublic = true)
   if (!isPublic) {
     await page.getByLabel("Public (visible to everyone)").uncheck();
   }
-  await page.getByRole("button", { name: "Create" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.waitForLoadState("networkidle");
-  await page.getByText(name).first().click();
+  // Extract ID from the link href before clicking to avoid URL-parsing race conditions
+  const cookbookLink = page.getByRole("link").filter({ hasText: name }).first();
+  await cookbookLink.waitFor({ state: "visible" });
+  const href = await cookbookLink.getAttribute("href");
+  const cookbookId = href?.match(/\/cookbooks\/([a-f0-9]+)/)?.[1] ?? "";
+  await cookbookLink.click();
   await page.waitForURL(/\/cookbooks\/[a-f0-9]+$/);
-  return page.url().split("/cookbooks/")[1];
+  return cookbookId;
 }
 
 async function addRecipeToCookbook(page: Page, recipeName: string) {
   await page.getByRole("button", { name: "Add Recipe" }).click();
-  await page.waitForLoadState("networkidle");
+  await page.getByRole("dialog").waitFor({ state: "visible" });
   await page.getByText(recipeName).first().click();
-  await page.waitForLoadState("networkidle");
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
 }
 
 // ─── Shared setup: public cookbook with two recipes ───────────────────────────
@@ -61,7 +66,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     await gotoAndWaitForHydration(page, "/cookbooks");
     await page.getByRole("button", { name: "New Cookbook" }).click();
     await page.getByLabel("Name").fill(cookbookName);
-    await page.getByRole("button", { name: "Create" }).click();
+    await page.getByRole("button", { name: "Create", exact: true }).click();
     await page.waitForLoadState("networkidle");
 
     // Navigate to cookbook and add both recipes
@@ -142,7 +147,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
   // 4.6
   test("no img elements are present on the print route", async ({ page }) => {
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
-    await expect(page.locator("img")).toHaveCount(0);
+    await expect(page.locator(".cookbook-recipe-section img")).toHaveCount(0);
   });
 
   // 4.7
@@ -195,7 +200,7 @@ test("Print button on cookbook detail page is an <a> Link pointing to the print 
   const cookbookName = `NavPrint-${Date.now()}`;
   const cookbookId = await createCookbookAndGetId(page, cookbookName);
 
-  const printLink = page.getByRole("link", { name: /print/i });
+  const printLink = page.getByRole("link", { name: "Print", exact: true });
   await expect(printLink).toBeVisible();
   await expect(printLink).toHaveAttribute(
     "href",

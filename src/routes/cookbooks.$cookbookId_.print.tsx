@@ -6,6 +6,8 @@ import {
   CookbookPageNotFound,
   CookbookPageChrome,
   CookbookPageHeader,
+  CookbookStandalonePage,
+  RecipeTimeSpan,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
@@ -26,8 +28,8 @@ function CookbookPrintPage() {
   const { name, description, recipes } = printData
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 print:bg-white print:text-black">
-      <div className="max-w-4xl mx-auto px-6 py-10">
+    <CookbookStandalonePage maxWidth="4xl">
+      <div>
         <CookbookPageChrome
           cookbookId={cookbookId}
           cookbookName={name}
@@ -50,14 +52,7 @@ function CookbookPrintPage() {
                   <span className="flex-1 text-white print:text-black">
                     {recipe.name}
                   </span>
-                  <span className="text-gray-500 print:text-gray-400 text-xs">
-                    {[
-                      recipe.prepTime && `${recipe.prepTime}m prep`,
-                      recipe.cookTime && `${recipe.cookTime}m cook`,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </span>
+                  <RecipeTimeSpan prepTime={recipe.prepTime} cookTime={recipe.cookTime} />
                 </div>
               </li>
             ))}
@@ -86,6 +81,6 @@ function CookbookPrintPage() {
           )
         })}
       </div>
-    </div>
+    </CookbookStandalonePage>
   )
 }

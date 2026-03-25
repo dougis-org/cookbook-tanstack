@@ -6,6 +6,8 @@ import {
   CookbookPageNotFound,
   CookbookPageChrome,
   CookbookPageHeader,
+  CookbookStandalonePage,
+  RecipeTimeSpan,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/toc')({
@@ -24,8 +26,8 @@ function CookbookTocPage() {
   const recipes = cookbook.recipes ?? []
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 print:bg-white print:text-black">
-      <div className="max-w-2xl mx-auto px-6 py-10">
+    <CookbookStandalonePage>
+      <div>
         <CookbookPageChrome
           cookbookId={cookbookId}
           cookbookName={cookbook.name}
@@ -50,14 +52,7 @@ function CookbookTocPage() {
                   <span className="flex-1 text-white print:text-black group-hover:text-cyan-400 transition-colors print:group-hover:text-black">
                     {recipe.name}
                   </span>
-                  <span className="text-gray-500 print:text-gray-400 text-xs">
-                    {[
-                      recipe.prepTime && `${recipe.prepTime}m prep`,
-                      recipe.cookTime && `${recipe.cookTime}m cook`,
-                    ]
-                      .filter(Boolean)
-                      .join(', ')}
-                  </span>
+                  <RecipeTimeSpan prepTime={recipe.prepTime} cookTime={recipe.cookTime} />
                 </Link>
               </li>
             ))}
@@ -68,6 +63,6 @@ function CookbookTocPage() {
           {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
         </footer>
       </div>
-    </div>
+    </CookbookStandalonePage>
   )
 }

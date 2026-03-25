@@ -10,6 +10,19 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function pluckIds(arr: unknown): string[] {
+  return Array.isArray(arr) ? (arr as any[]).map((item) => item._id?.toString() as string) : [];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function pluckItems(arr: unknown): { id: string; name: string }[] {
+  return Array.isArray(arr)
+    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (arr as any[]).map((item) => ({ id: item._id.toString() as string, name: item.name as string }))
+    : [];
+}
+
 async function fetchCookbookWithOrderedStubs(
   id: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -169,30 +182,12 @@ export const cookbooksRouter = router({
             imageUrl: null as null,
             isPublic: d.isPublic as boolean,
             marked: (d.marked ?? false) as boolean,
-            mealIds: Array.isArray(d.mealIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.mealIds.map((m: any) => m._id?.toString() as string)
-              : ([] as string[]),
-            courseIds: Array.isArray(d.courseIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.courseIds.map((c: any) => c._id?.toString() as string)
-              : ([] as string[]),
-            preparationIds: Array.isArray(d.preparationIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.preparationIds.map((p: any) => p._id?.toString() as string)
-              : ([] as string[]),
-            meals: Array.isArray(d.mealIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.mealIds.map((m: any) => ({ id: m._id.toString() as string, name: m.name as string }))
-              : ([] as { id: string; name: string }[]),
-            courses: Array.isArray(d.courseIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.courseIds.map((c: any) => ({ id: c._id.toString() as string, name: c.name as string }))
-              : ([] as { id: string; name: string }[]),
-            preparations: Array.isArray(d.preparationIds)
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                d.preparationIds.map((p: any) => ({ id: p._id.toString() as string, name: p.name as string }))
-              : ([] as { id: string; name: string }[]),
+            mealIds: pluckIds(d.mealIds),
+            courseIds: pluckIds(d.courseIds),
+            preparationIds: pluckIds(d.preparationIds),
+            meals: pluckItems(d.mealIds),
+            courses: pluckItems(d.courseIds),
+            preparations: pluckItems(d.preparationIds),
             createdAt: d.createdAt as Date,
             updatedAt: d.updatedAt as Date,
             orderIndex: stub.orderIndex,

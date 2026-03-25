@@ -32,6 +32,45 @@ async function seedRecipe(userId: string) {
 type Caller = Awaited<ReturnType<typeof makeAuthCaller>>;
 type CookbookDoc = Awaited<ReturnType<typeof seedCookbook>>;
 type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
+type AnonCaller = Awaited<ReturnType<typeof makeAnonCaller>>;
+
+/** Seed a cookbook with two recipes inserted in reverse orderIndex (r1→1, r2→0). */
+async function seedCookbookWithOrderedPair(ownerId: string) {
+  const cb = await seedCookbook(ownerId);
+  const r1 = await seedRecipe(ownerId);
+  const r2 = await seedRecipe(ownerId);
+  await Cookbook.findByIdAndUpdate(cb.id, {
+    recipes: [
+      { recipeId: r1.id, orderIndex: 1 },
+      { recipeId: r2.id, orderIndex: 0 },
+    ],
+  });
+  return { cb, r1, r2 };
+}
+
+/** Register shared null-case tests for any public read procedure. */
+function itNullCases(query: (caller: AnonCaller, id: string) => Promise<unknown>) {
+  it.each([
+    {
+      label: "unknown cookbook ID",
+      setup: async () => "000000000000000000000000",
+    },
+    {
+      label: "private cookbook for anon user",
+      setup: async () => {
+        const owner = await seedUser();
+        const cb = await seedCookbook(owner.id, { isPublic: false });
+        return cb.id;
+      },
+    },
+  ])("returns null for $label", async ({ setup }) => {
+    await withCleanDb(async () => {
+      const id = await setup();
+      const caller = await makeAnonCaller();
+      expect(await query(caller, id)).toBeNull();
+    });
+  });
+}
 
 // ─── Ownership guard ─────────────────────────────────────────────────────────
 
@@ -108,41 +147,12 @@ describe("cookbooks.list", () => {
 // ─── cookbooks.byId ──────────────────────────────────────────────────────────
 
 describe("cookbooks.byId", () => {
-  it.each([
-    {
-      label: "non-existent id",
-      setup: async () => "000000000000000000000000",
-    },
-    {
-      label: "private cookbook for anon user",
-      setup: async () => {
-        const owner = await seedUser();
-        const cb = await seedCookbook(owner.id, { isPublic: false });
-        return cb.id;
-      },
-    },
-  ])("returns null for $label", async ({ setup }) => {
-    await withCleanDb(async () => {
-      const id = await setup();
-      const caller = await makeAnonCaller();
-      expect(await caller.cookbooks.byId({ id })).toBeNull();
-    });
-  });
+  itNullCases((caller, id) => caller.cookbooks.byId({ id }));
 
   it("returns cookbook with recipes ordered by orderIndex", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r1 = await seedRecipe(owner.id);
-      const r2 = await seedRecipe(owner.id);
-
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 1 },
-          { recipeId: r2.id, orderIndex: 0 },
-        ],
-      });
-
+      const { cb, r1, r2 } = await seedCookbookWithOrderedPair(owner.id);
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
@@ -432,43 +442,14 @@ describe("cookbooks.printById", () => {
   it("returns recipes in orderIndex order", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r1 = await seedRecipe(owner.id);
-      const r2 = await seedRecipe(owner.id);
-
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 1 },
-          { recipeId: r2.id, orderIndex: 0 },
-        ],
-      });
-
+      const { cb, r1, r2 } = await seedCookbookWithOrderedPair(owner.id);
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.printById({ id: cb.id });
       expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
     });
   });
 
-  it.each([
-    {
-      label: "unknown cookbook ID",
-      setup: async () => "000000000000000000000000",
-    },
-    {
-      label: "private cookbook for anon user",
-      setup: async () => {
-        const owner = await seedUser();
-        const cb = await seedCookbook(owner.id, { isPublic: false });
-        return cb.id;
-      },
-    },
-  ])("returns null for $label", async ({ setup }) => {
-    await withCleanDb(async () => {
-      const id = await setup();
-      const caller = await makeAnonCaller();
-      expect(await caller.cookbooks.printById({ id })).toBeNull();
-    });
-  });
+  itNullCases((caller, id) => caller.cookbooks.printById({ id }));
 });
 
 // ─── cookbooks.reorderRecipes ────────────────────────────────────────────────

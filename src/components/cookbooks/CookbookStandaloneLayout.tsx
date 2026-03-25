@@ -1,9 +1,40 @@
+import { type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Printer, ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
 const pageBaseClass =
   'min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900'
+
+export function CookbookStandalonePage({
+  children,
+  maxWidth = '2xl',
+}: {
+  children: ReactNode
+  maxWidth?: '2xl' | '4xl'
+}) {
+  return (
+    <div className={`${pageBaseClass} print:bg-white print:text-black`}>
+      <div className={`max-w-${maxWidth} mx-auto px-6 py-10`}>{children}</div>
+    </div>
+  )
+}
+
+export function RecipeTimeSpan({
+  prepTime,
+  cookTime,
+}: {
+  prepTime?: number | null
+  cookTime?: number | null
+}) {
+  const label = [
+    prepTime && `${prepTime}m prep`,
+    cookTime && `${cookTime}m cook`,
+  ]
+    .filter(Boolean)
+    .join(', ')
+  return <span className="text-gray-500 print:text-gray-400 text-xs">{label}</span>
+}
 
 export function CookbookPageLoading() {
   return (

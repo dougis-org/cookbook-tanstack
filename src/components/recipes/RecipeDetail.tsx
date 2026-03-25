@@ -18,6 +18,23 @@ interface RecipeDetailProps {
   hideServingAdjuster?: boolean
 }
 
+function RecipeMetaItem({
+  label,
+  value,
+  className = '',
+}: {
+  label: string
+  value: string
+  className?: string
+}) {
+  return (
+    <div>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`text-lg font-semibold text-gray-900 dark:text-white ${className}`}>{value}</p>
+    </div>
+  )
+}
+
 function TaxonomyBadges({
   items,
   variant,
@@ -107,30 +124,10 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
 
           {/* Recipe Meta */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Prep Time</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Cook Time</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Servings</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.servings ?? 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Difficulty</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                {recipe.difficulty ?? 'N/A'}
-              </p>
-            </div>
+            <RecipeMetaItem label="Prep Time" value={recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'} />
+            <RecipeMetaItem label="Cook Time" value={recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'} />
+            <RecipeMetaItem label="Servings" value={recipe.servings?.toString() ?? 'N/A'} />
+            <RecipeMetaItem label="Difficulty" value={recipe.difficulty ?? 'N/A'} className="capitalize" />
           </div>
 
           {/* Ingredients Section */}
