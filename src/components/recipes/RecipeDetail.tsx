@@ -153,7 +153,7 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             )}
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
-                {(recipe.servings ? scaledIngredientLines : ingredientLines).map((line, i) => (
+                {(recipe.servings && !hideServingAdjuster ? scaledIngredientLines : ingredientLines).map((line, i) => (
                   <li
                     key={i}
                     className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"

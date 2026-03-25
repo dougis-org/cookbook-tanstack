@@ -58,7 +58,7 @@ function cookbookCoreFields(cb: any) {
 
 /** Safe accessor for the embedded recipes array on a lean cookbook doc. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getRecipeStubs(cookbook: any): Array<{ recipeId: unknown; orderIndex: number }> {
+function getRecipeStubs(cookbook: any): Array<{ recipeId: unknown; orderIndex?: number }> {
   return Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
 }
 
@@ -384,7 +384,7 @@ export const cookbooksRouter = router({
           );
           return {
             recipeId: stub.recipeId,
-            orderIndex: newIndex >= 0 ? newIndex : stub.orderIndex,
+            orderIndex: newIndex >= 0 ? newIndex : (stub.orderIndex ?? 0),
           };
         },
       );

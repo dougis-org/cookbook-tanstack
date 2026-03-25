@@ -76,8 +76,10 @@ test.describe("Cookbook Print Route — public cookbook", () => {
 
     // Navigate to cookbook and add both recipes
     await page.getByText(cookbookName).first().click();
-    await page.waitForURL(/\/cookbooks\/[a-f0-9]+$/);
-    cookbookId = page.url().split("/cookbooks/")[1];
+    await page.waitForURL(/\/cookbooks\/[a-f0-9]{24}$/);
+    const idMatch = page.url().match(/\/cookbooks\/([a-f0-9]{24})$/);
+    if (!idMatch) throw new Error(`Failed to parse cookbook id from URL "${page.url()}"`);
+    cookbookId = idMatch[1];
 
     await addRecipeToCookbook(page, recipe1Name);
     await addRecipeToCookbook(page, recipe2Name);
@@ -120,10 +122,10 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     page,
   }) => {
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
-    await page.emulateMedia({ media: 'print' });
-    const section = page.locator('.cookbook-recipe-section').first();
-    await expect(section).toHaveCSS('break-before', 'page');
-    await page.emulateMedia({ media: 'screen' });
+    await page.emulateMedia({ media: "print" });
+    const section = page.locator(".cookbook-recipe-section").first();
+    await expect(section).toHaveCSS("break-before", "page");
+    await page.emulateMedia({ media: "screen" });
   });
 
   // 4.6
