@@ -8,6 +8,17 @@ exclude_patterns:
   - .next/**
   - node_modules/**
   - .codacy/**
+  - .agent/**
+  - .claude/**
+  - .codex/**
+  - .gemini/**
+  - .github/agents/**
+  - .github/instructions/**
+  - .github/prompts/**
+  - .github/skills/**
+  - .github/workflows/**
+  - .opencode/**
+  - .kiro/**
 
 # Exclude SQL migration files from SQL Server-specific analysis
 exclude_paths:
