@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
+  useDroppable,
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
@@ -256,9 +257,11 @@ function CookbookDetailPage() {
       }
 
       // Chapter-aware reorder
-      // Detect which chapter each item belongs to
+      // Detect which chapter each item belongs to; also handle drops onto empty chapter containers
       const activeChapterId = (active.data.current as { sortable?: { containerId?: string } })?.sortable?.containerId
-      const overChapterId = (over.data.current as { sortable?: { containerId?: string } })?.sortable?.containerId
+      const overChapterId =
+        (over.data.current as { sortable?: { containerId?: string } })?.sortable?.containerId ??
+        (sortedChapters.some((ch) => ch.id === String(over.id)) ? String(over.id) : undefined)
 
       if (!activeChapterId || !overChapterId) return
 
@@ -540,7 +543,7 @@ function CookbookDetailPage() {
                         />
                       ))}
                       {chapterRecipes.length === 0 && (
-                        <p className="text-gray-500 text-sm pl-3 py-2">No recipes in this chapter.</p>
+                        <EmptyChapterDropZone chapterId={chapter.id} />
                       )}
                     </SortableContext>
                   ) : (
@@ -591,6 +594,22 @@ function CookbookDetailPage() {
         )}
       </div>
     </PageLayout>
+  )
+}
+
+// ─── Empty Chapter Drop Zone ──────────────────────────────────────────────────
+
+function EmptyChapterDropZone({ chapterId }: { chapterId: string }) {
+  const { setNodeRef, isOver } = useDroppable({ id: chapterId })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`text-sm pl-3 py-4 rounded-lg border-2 border-dashed transition-colors ${
+        isOver ? 'border-cyan-500 text-cyan-400' : 'border-gray-700 text-gray-500'
+      }`}
+    >
+      Drop a recipe here
+    </div>
   )
 }
 

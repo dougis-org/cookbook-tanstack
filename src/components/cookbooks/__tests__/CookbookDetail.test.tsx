@@ -28,6 +28,7 @@ vi.mock('@dnd-kit/core', () => ({
   useSensor: vi.fn(),
   useSensors: () => [],
   DragOverlay: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useDroppable: () => ({ setNodeRef: vi.fn(), isOver: false }),
 }))
 
 vi.mock('@dnd-kit/sortable', () => ({

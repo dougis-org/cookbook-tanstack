@@ -88,6 +88,26 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
   return stub;
 }
 
+/** Fetch a cookbook by ID and verify ownership. Returns the full lean doc. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchOwnedCookbook(cookbookId: string, userId: string): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return verifyOwnership(
+    async () => (await Cookbook.findById(cookbookId).lean()) as any,
+    userId,
+    "Cookbook",
+  );
+}
+
+/** Verify cookbook ownership without returning the document. */
+async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<void> {
+  await verifyOwnership(
+    async () => (await Cookbook.findById(cookbookId).lean()) as { userId: unknown } | null,
+    userId,
+    "Cookbook",
+  );
+}
+
 async function fetchCookbookWithOrderedStubs(
   id: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,14 +320,7 @@ export const cookbooksRouter = router({
         ),
     )
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.id).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.id, ctx.user.id);
 
       const { id, ...data } = input;
       const updated = await Cookbook.findByIdAndUpdate(
@@ -321,14 +334,7 @@ export const cookbooksRouter = router({
   delete: protectedProcedure
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.id).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.id, ctx.user.id);
       await Cookbook.findByIdAndDelete(input.id);
       return { success: true };
     }),
@@ -336,12 +342,7 @@ export const cookbooksRouter = router({
   addRecipe: protectedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
 
       const recipeVisFilter = visibilityFilter(ctx.user);
       const accessible = await Recipe.findOne({
@@ -358,19 +359,8 @@ export const cookbooksRouter = router({
       const hasChapters = chapters.length > 0;
 
       if (hasChapters) {
-        // chapterId is required when chapters exist
-        if (!input.chapterId) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "chapterId is required when the cookbook has chapters",
-          });
-        }
-        const chapterExists = chapters.some(
-          (ch) => String(ch._id) === input.chapterId,
-        );
-        if (!chapterExists) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Chapter not found in cookbook" });
-        }
+        if (!input.chapterId) throw new TRPCError({ code: "BAD_REQUEST", message: "chapterId is required when the cookbook has chapters" });
+        if (!chapters.some((ch) => String(ch._id) === input.chapterId)) throw new TRPCError({ code: "BAD_REQUEST", message: "Chapter not found in cookbook" });
       }
 
       // Check for duplicate, then push with next orderIndex
@@ -398,14 +388,7 @@ export const cookbooksRouter = router({
   removeRecipe: protectedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.cookbookId).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $pull: { recipes: { recipeId: input.recipeId } },
       });
@@ -440,13 +423,7 @@ export const cookbooksRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
-
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
       const existingStubs = getRecipeStubs(cookbook);
 
       if (input.chapters !== undefined) {
@@ -455,6 +432,13 @@ export const cookbooksRouter = router({
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           existingStubs.map((s: any) => [String(s.recipeId), s]),
         );
+
+        // Validate: unique IDs, no unknown IDs, all existing included
+        const incomingIds = input.chapters.flatMap((ch) => ch.recipeIds);
+        const uniqueIncoming = new Set(incomingIds);
+        if (uniqueIncoming.size !== incomingIds.length || uniqueIncoming.size !== stubByRecipeId.size || [...uniqueIncoming].some((id) => !stubByRecipeId.has(id))) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Reorder request must contain all existing recipe IDs exactly once" });
+        }
 
         const updatedRecipes: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }> = [];
         let globalIndex = 0;
@@ -496,13 +480,7 @@ export const cookbooksRouter = router({
   createChapter: protectedProcedure
     .input(z.object({ cookbookId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
-
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const isFirstChapter = chapters.length === 0;
       const newChapterId = new Types.ObjectId();
@@ -532,14 +510,7 @@ export const cookbooksRouter = router({
   renameChapter: protectedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId, name: z.string().min(1).max(255) }))
     .mutation(async ({ ctx, input }) => {
-      await verifyOwnership(
-        async () =>
-          (await Cookbook.findById(input.cookbookId).lean()) as {
-            userId: unknown;
-          } | null,
-        ctx.user.id,
-        "Cookbook",
-      );
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
 
       const updated = await Cookbook.findOneAndUpdate(
         { _id: input.cookbookId, "chapters._id": input.chapterId },
@@ -556,13 +527,7 @@ export const cookbooksRouter = router({
   deleteChapter: protectedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
-
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const chapterExists = chapters.some((ch) => String(ch._id) === input.chapterId);
       if (!chapterExists) {
@@ -606,25 +571,11 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cookbook = await verifyOwnership(
-        async () => (await Cookbook.findById(input.cookbookId).lean()) as any,
-        ctx.user.id,
-        "Cookbook",
-      );
-
+      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const existingIds = new Set(chapters.map((ch) => String(ch._id)));
-      const inputIds = new Set(input.chapterIds);
-      const isValidPermutation =
-        input.chapterIds.length === chapters.length &&
-        input.chapterIds.length === inputIds.size &&
-        input.chapterIds.every((id) => existingIds.has(id));
-      if (!isValidPermutation) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "chapterIds must be a permutation of the cookbook's chapter IDs",
-        });
+      if (new Set(input.chapterIds).size !== chapters.length || input.chapterIds.some((id) => !existingIds.has(id))) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "chapterIds must be a permutation of the cookbook's chapter IDs" });
       }
 
       const updatedChapters = chapters.map((ch) => ({
