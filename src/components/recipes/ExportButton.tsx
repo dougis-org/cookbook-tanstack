@@ -1,12 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { Download } from 'lucide-react'
-import { trpc } from '@/lib/trpc'
 import type { Recipe } from '@/types/recipe'
 import { exportRecipeToJson } from '@/lib/export'
 import { downloadBlob } from '@/lib/download'
 
 interface ExportButtonProps {
-  recipeId: string
+  recipe: Recipe
 }
 
 function makeExportFilename(recipe: Recipe): string {
@@ -19,17 +17,14 @@ function makeExportFilename(recipe: Recipe): string {
   return `${base || recipe.id}.json`
 }
 
-export default function ExportButton({ recipeId }: ExportButtonProps) {
-  const queryClient = useQueryClient()
-
+export default function ExportButton({ recipe }: ExportButtonProps) {
   function onExport() {
-    const queryOptions = trpc.recipes.byId.queryOptions({ id: recipeId })
-    const recipe = queryClient.getQueryData(queryOptions.queryKey) as Recipe | undefined
-
-    if (!recipe) return
-
-    const json = exportRecipeToJson(recipe)
-    downloadBlob(json, makeExportFilename(recipe), 'application/json')
+    try {
+      const json = exportRecipeToJson(recipe)
+      downloadBlob(json, makeExportFilename(recipe), 'application/json')
+    } catch (err) {
+      console.error('Export failed', err)
+    }
   }
 
   return (

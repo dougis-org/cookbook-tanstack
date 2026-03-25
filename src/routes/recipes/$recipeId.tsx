@@ -116,7 +116,7 @@ function RecipeDetailPage() {
       />
 
       <div className="mt-8 flex justify-center gap-4">
-        <ExportButton recipeId={recipeId} />
+        <ExportButton recipe={recipe} />
         {isOwner && (
           <button
             onClick={() => setShowDelete(true)}
