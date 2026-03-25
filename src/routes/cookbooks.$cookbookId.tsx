@@ -191,13 +191,14 @@ function CookbookDetailPage() {
               <List className="w-4 h-4" />
               Table of Contents
             </Link>
-            <button
-              onClick={() => window.print()}
+            <Link
+              to="/cookbooks/$cookbookId/print"
+              params={{ cookbookId }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
             >
               <Printer className="w-4 h-4" />
               Print
-            </button>
+            </Link>
             {isOwner && (
               <>
                 <button

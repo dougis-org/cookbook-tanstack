@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { Recipe, Cookbook, Classification } from "@/db/models";
+import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   uid,
@@ -32,6 +32,47 @@ async function seedRecipe(userId: string) {
 type Caller = Awaited<ReturnType<typeof makeAuthCaller>>;
 type CookbookDoc = Awaited<ReturnType<typeof seedCookbook>>;
 type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
+type AnonCaller = Awaited<ReturnType<typeof makeAnonCaller>>;
+
+/** Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). */
+async function seedCookbookWithRecipes(cookbookId: string, ...recipeIds: string[]) {
+  await Cookbook.findByIdAndUpdate(cookbookId, {
+    recipes: recipeIds.map((id, i) => ({ recipeId: id, orderIndex: i })),
+  });
+}
+
+/** Seed a cookbook with two recipes inserted in reverse orderIndex (r1→1, r2→0). */
+async function seedCookbookWithOrderedPair(ownerId: string) {
+  const cb = await seedCookbook(ownerId);
+  const r1 = await seedRecipe(ownerId);
+  const r2 = await seedRecipe(ownerId);
+  await seedCookbookWithRecipes(cb.id, r2.id, r1.id); // r2→0, r1→1
+  return { cb, r1, r2 };
+}
+
+/** Register shared null-case tests for any public read procedure. */
+function itNullCases(query: (caller: AnonCaller, id: string) => Promise<unknown>) {
+  it.each([
+    {
+      label: "unknown cookbook ID",
+      setup: async () => "000000000000000000000000",
+    },
+    {
+      label: "private cookbook for anon user",
+      setup: async () => {
+        const owner = await seedUser();
+        const cb = await seedCookbook(owner.id, { isPublic: false });
+        return cb.id;
+      },
+    },
+  ])("returns null for $label", async ({ setup }) => {
+    await withCleanDb(async () => {
+      const id = await setup();
+      const caller = await makeAnonCaller();
+      expect(await query(caller, id)).toBeNull();
+    });
+  });
+}
 
 // ─── Ownership guard ─────────────────────────────────────────────────────────
 
@@ -108,41 +149,12 @@ describe("cookbooks.list", () => {
 // ─── cookbooks.byId ──────────────────────────────────────────────────────────
 
 describe("cookbooks.byId", () => {
-  it.each([
-    {
-      label: "non-existent id",
-      setup: async () => "000000000000000000000000",
-    },
-    {
-      label: "private cookbook for anon user",
-      setup: async () => {
-        const owner = await seedUser();
-        const cb = await seedCookbook(owner.id, { isPublic: false });
-        return cb.id;
-      },
-    },
-  ])("returns null for $label", async ({ setup }) => {
-    await withCleanDb(async () => {
-      const id = await setup();
-      const caller = await makeAnonCaller();
-      expect(await caller.cookbooks.byId({ id })).toBeNull();
-    });
-  });
+  itNullCases((caller, id) => caller.cookbooks.byId({ id }));
 
   it("returns cookbook with recipes ordered by orderIndex", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const r1 = await seedRecipe(owner.id);
-      const r2 = await seedRecipe(owner.id);
-
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 1 },
-          { recipeId: r2.id, orderIndex: 0 },
-        ],
-      });
-
+      const { cb, r1, r2 } = await seedCookbookWithOrderedPair(owner.id);
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
@@ -161,12 +173,7 @@ describe("cookbooks.byId", () => {
         isPublic: false,
       }).save();
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: publicRecipe.id, orderIndex: 0 },
-          { recipeId: privateRecipe.id, orderIndex: 1 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, publicRecipe.id, privateRecipe.id);
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
@@ -192,9 +199,7 @@ describe("cookbooks.byId", () => {
         classificationId: cls.id,
       }).save();
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
-      });
+      await seedCookbookWithRecipes(cb.id, recipe.id);
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
@@ -352,9 +357,7 @@ describe("cookbooks.removeRecipe", () => {
       const owner = await seedUser();
       const cb = await seedCookbook(owner.id);
       const r = await seedRecipe(owner.id);
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [{ recipeId: r.id, orderIndex: 0 }],
-      });
+      await seedCookbookWithRecipes(cb.id, r.id);
 
       const caller = await makeAuthCaller(owner.id);
       await caller.cookbooks.removeRecipe({
@@ -367,6 +370,77 @@ describe("cookbooks.removeRecipe", () => {
       ).toHaveLength(0);
     });
   });
+});
+
+// ─── cookbooks.printById ──────────────────────────────────────────────────────
+
+describe("cookbooks.printById", () => {
+  it("returns full recipe fields: ingredients, instructions, notes, prepTime, cookTime, servings, difficulty, calories, classificationName, sourceName, meals, courses, preparations", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+
+      const cls = await new Classification({ name: "Italian", slug: `italian-${uid()}` }).save();
+      const src = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com" }).save();
+      const meal = await new Meal({ name: "Dinner", slug: `dinner-${uid()}` }).save();
+      const course = await new Course({ name: "Entree", slug: `entree-${uid()}` }).save();
+      const prep = await new Preparation({ name: "Bake", slug: `bake-${uid()}` }).save();
+
+      const recipe = await new Recipe({
+        name: `FullRecipe-${uid()}`,
+        userId: owner.id,
+        isPublic: true,
+        ingredients: "Flour\nSugar",
+        instructions: "Mix\nBake",
+        notes: "Great recipe",
+        prepTime: 10,
+        cookTime: 20,
+        servings: 4,
+        difficulty: "easy",
+        calories: 300,
+        classificationId: cls.id,
+        sourceId: src.id,
+        mealIds: [meal.id],
+        courseIds: [course.id],
+        preparationIds: [prep.id],
+      }).save();
+
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.printById({ id: cb.id });
+
+      expect(result).not.toBeNull();
+      const r = result!.recipes[0];
+      expect(r).toMatchObject({
+        ingredients: "Flour\nSugar",
+        instructions: "Mix\nBake",
+        notes: "Great recipe",
+        prepTime: 10,
+        cookTime: 20,
+        servings: 4,
+        difficulty: "easy",
+        calories: 300,
+        classificationName: "Italian",
+        sourceName: "Bon Appétit",
+      });
+      expect(r.meals).toEqual([{ id: meal.id, name: "Dinner" }]);
+      expect(r.courses).toEqual([{ id: course.id, name: "Entree" }]);
+      expect(r.preparations).toEqual([{ id: prep.id, name: "Bake" }]);
+    });
+  });
+
+  it("returns recipes in orderIndex order", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const { cb, r1, r2 } = await seedCookbookWithOrderedPair(owner.id);
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.printById({ id: cb.id });
+      expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
+    });
+  });
+
+  itNullCases((caller, id) => caller.cookbooks.printById({ id }));
 });
 
 // ─── cookbooks.reorderRecipes ────────────────────────────────────────────────
@@ -382,13 +456,7 @@ describe("cookbooks.reorderRecipes", () => {
         seedRecipe(owner.id),
       ]);
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 0 },
-          { recipeId: r2.id, orderIndex: 1 },
-          { recipeId: r3.id, orderIndex: 2 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id, r3.id);
 
       const caller = await makeAuthCaller(owner.id);
       await caller.cookbooks.reorderRecipes({
@@ -410,12 +478,7 @@ describe("cookbooks.reorderRecipes", () => {
         seedRecipe(owner.id),
       ]);
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 0 },
-          { recipeId: r2.id, orderIndex: 1 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id);
 
       const caller = await makeAuthCaller(owner.id);
       // Pass only r2 in the reorder list — r1 keeps its original orderIndex (0)

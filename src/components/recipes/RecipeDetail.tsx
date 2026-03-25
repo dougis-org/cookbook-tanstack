@@ -15,6 +15,43 @@ interface RecipeDetailProps {
     sourceUrl?: string | null
   }
   actions?: ReactNode
+  hideServingAdjuster?: boolean
+}
+
+function RecipeMetaItem({
+  label,
+  value,
+  className = '',
+}: {
+  label: string
+  value: string
+  className?: string
+}) {
+  return (
+    <div>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className={`text-lg font-semibold text-gray-900 dark:text-white ${className}`}>{value}</p>
+    </div>
+  )
+}
+
+function NutritionItem({ value, unit = '', label }: { value: number; unit?: string; label: string }) {
+  return (
+    <div className="text-center">
+      <p className="text-2xl font-bold text-cyan-400">{value}{unit}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+    </div>
+  )
+}
+
+function TaxonomyBadges({
+  items,
+  variant,
+}: {
+  items?: TaxonomyItem[]
+  variant: 'meal' | 'course' | 'preparation'
+}) {
+  return <>{items?.map((item) => <TaxonomyBadge key={item.id} name={item.name} variant={variant} />)}</>
 }
 
 /** Split a text blob into non-empty lines for display. */
@@ -23,7 +60,7 @@ function splitLines(text: string | null): string[] {
   return text.split('\n').filter((line) => line.trim().length > 0)
 }
 
-export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
@@ -63,15 +100,9 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   linkable
                 />
               )}
-              {recipe.meals?.map((m) => (
-                <TaxonomyBadge key={m.id} name={m.name} variant="meal" />
-              ))}
-              {recipe.courses?.map((c) => (
-                <TaxonomyBadge key={c.id} name={c.name} variant="course" />
-              ))}
-              {recipe.preparations?.map((p) => (
-                <TaxonomyBadge key={p.id} name={p.name} variant="preparation" />
-              ))}
+              <TaxonomyBadges items={recipe.meals} variant="meal" />
+              <TaxonomyBadges items={recipe.courses} variant="course" />
+              <TaxonomyBadges items={recipe.preparations} variant="preparation" />
             </div>
           )}
 
@@ -102,30 +133,10 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Recipe Meta */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Prep Time</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Cook Time</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Servings</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {recipe.servings ?? 'N/A'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Difficulty</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                {recipe.difficulty ?? 'N/A'}
-              </p>
-            </div>
+            <RecipeMetaItem label="Prep Time" value={recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'} />
+            <RecipeMetaItem label="Cook Time" value={recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'} />
+            <RecipeMetaItem label="Servings" value={recipe.servings?.toString() ?? 'N/A'} />
+            <RecipeMetaItem label="Difficulty" value={recipe.difficulty ?? 'N/A'} className="capitalize" />
           </div>
 
           {/* Ingredients Section */}
@@ -133,7 +144,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Ingredients
             </h2>
-            {recipe.servings && ingredientLines.length > 0 && (
+            {!hideServingAdjuster && recipe.servings && ingredientLines.length > 0 && (
               <ServingSizeAdjuster
                 originalServings={recipe.servings}
                 ingredients={ingredientLines}
@@ -142,7 +153,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             )}
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
-                {(recipe.servings ? scaledIngredientLines : ingredientLines).map((line, i) => (
+                {(recipe.servings && !hideServingAdjuster ? scaledIngredientLines : ingredientLines).map((line, i) => (
                   <li
                     key={i}
                     className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"
@@ -192,36 +203,11 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 Nutrition
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                {recipe.calories != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.calories}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Calories</p>
-                  </div>
-                )}
-                {recipe.fat != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.fat}g</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Fat</p>
-                  </div>
-                )}
-                {recipe.cholesterol != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.cholesterol}mg</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Cholesterol</p>
-                  </div>
-                )}
-                {recipe.sodium != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.sodium}mg</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Sodium</p>
-                  </div>
-                )}
-                {recipe.protein != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.protein}g</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Protein</p>
-                  </div>
-                )}
+                {recipe.calories != null && <NutritionItem value={recipe.calories} label="Calories" />}
+                {recipe.fat != null && <NutritionItem value={recipe.fat} unit="g" label="Fat" />}
+                {recipe.cholesterol != null && <NutritionItem value={recipe.cholesterol} unit="mg" label="Cholesterol" />}
+                {recipe.sodium != null && <NutritionItem value={recipe.sodium} unit="mg" label="Sodium" />}
+                {recipe.protein != null && <NutritionItem value={recipe.protein} unit="g" label="Protein" />}
               </div>
             </section>
           )}
