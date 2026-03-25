@@ -1,9 +1,7 @@
 /**
  * Unit tests for cookbook detail page chapter UI:
- * - ChapterHeader (owner vs non-owner icon visibility)
- * - RenameChapterModal
- * - ConfirmDeleteChapter modal
- * - AddRecipeModal chapter picker
+ * - ChapterHeader (owner vs non-owner icon visibility, rename/delete callbacks)
+ * - AddRecipeModal chapter picker (shown/hidden, default selection)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
@@ -64,9 +62,11 @@ vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 
 vi.mock('@/lib/auth-client', () => ({ useSession: () => ({ data: null }) }))
 
+const mockAddMutate = vi.fn()
+
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: null, isLoading: false }),
-  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useQuery: () => ({ data: { items: [] }, isLoading: false }),
+  useMutation: () => ({ mutate: mockAddMutate, isPending: false }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }))
 
@@ -171,18 +171,6 @@ describe('ChapterHeader', () => {
 })
 
 // ─── AddRecipeModal chapter picker tests ─────────────────────────────────────
-
-const mockAddMutate = vi.fn()
-
-vi.mock('@tanstack/react-query', async (importOriginal) => {
-  const orig = await importOriginal() as Record<string, unknown>
-  return {
-    ...orig,
-    useQuery: () => ({ data: { items: [] }, isLoading: false }),
-    useMutation: () => ({ mutate: mockAddMutate, isPending: false }),
-    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
-  }
-})
 
 describe('AddRecipeModal — chapter picker', () => {
   beforeEach(() => {

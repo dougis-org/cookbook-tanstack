@@ -407,26 +407,30 @@ export const cookbooksRouter = router({
 
   reorderRecipes: protectedProcedure
     .input(
-      z.object({
-        cookbookId: objectId,
-        // New chapter-aware format: full state replacement per chapter
-        chapters: z
-          .array(
-            z.object({
-              chapterId: objectId,
-              recipeIds: z.array(objectId),
-            }),
-          )
-          .optional(),
-        // Legacy flat format: kept for chapter-free cookbooks
-        recipeIds: z
-          .array(objectId)
-          .min(1)
-          .refine((ids) => new Set(ids).size === ids.length, {
-            message: "Duplicate recipe IDs in reorder list",
-          })
-          .optional(),
-      }),
+      z
+        .object({
+          cookbookId: objectId,
+          // New chapter-aware format: full state replacement per chapter
+          chapters: z
+            .array(
+              z.object({
+                chapterId: objectId,
+                recipeIds: z.array(objectId),
+              }),
+            )
+            .optional(),
+          // Legacy flat format: kept for chapter-free cookbooks
+          recipeIds: z
+            .array(objectId)
+            .min(1)
+            .refine((ids) => new Set(ids).size === ids.length, {
+              message: "Duplicate recipe IDs in reorder list",
+            })
+            .optional(),
+        })
+        .refine((data) => (data.chapters !== undefined) !== (data.recipeIds !== undefined), {
+          message: "Provide exactly one of 'chapters' or 'recipeIds'",
+        }),
     )
     .mutation(async ({ ctx, input }) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -534,10 +538,14 @@ export const cookbooksRouter = router({
         "Cookbook",
       );
 
-      await Cookbook.findOneAndUpdate(
+      const updated = await Cookbook.findOneAndUpdate(
         { _id: input.cookbookId, "chapters._id": input.chapterId },
         { $set: { "chapters.$.name": input.name } },
       );
+
+      if (!updated) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Chapter not found" });
+      }
 
       return { success: true };
     }),
@@ -553,6 +561,11 @@ export const cookbooksRouter = router({
       );
 
       const chapters = getChapters(cookbook);
+      const chapterExists = chapters.some((ch) => String(ch._id) === input.chapterId);
+      if (!chapterExists) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Chapter not found" });
+      }
+
       const remainingChapters = chapters
         .filter((ch) => String(ch._id) !== input.chapterId)
         .sort((a, b) => a.orderIndex - b.orderIndex);
@@ -602,14 +615,24 @@ export const cookbooksRouter = router({
       );
 
       const chapters = getChapters(cookbook);
-      const updatedChapters = chapters.map((ch) => {
-        const newIndex = input.chapterIds.indexOf(String(ch._id));
-        return {
-          _id: ch._id,
-          name: ch.name,
-          orderIndex: newIndex >= 0 ? newIndex : ch.orderIndex,
-        };
-      });
+      const existingIds = new Set(chapters.map((ch) => String(ch._id)));
+      const inputIds = new Set(input.chapterIds);
+      const isValidPermutation =
+        input.chapterIds.length === chapters.length &&
+        input.chapterIds.length === inputIds.size &&
+        input.chapterIds.every((id) => existingIds.has(id));
+      if (!isValidPermutation) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "chapterIds must be a permutation of the cookbook's chapter IDs",
+        });
+      }
+
+      const updatedChapters = chapters.map((ch) => ({
+        _id: ch._id,
+        name: ch.name,
+        orderIndex: input.chapterIds.indexOf(String(ch._id)),
+      }));
 
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $set: { chapters: updatedChapters },

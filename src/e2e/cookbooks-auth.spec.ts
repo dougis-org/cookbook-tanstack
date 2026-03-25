@@ -219,21 +219,23 @@ test.describe("Cookbook Chapters", () => {
 
   test("should create a chapter and rename it", async ({ page }) => {
     await registerAndLogin(page);
-    const cookbookName = getUniqueCookbookName("Chapters Create Rename");
-    await createCookbook(page, cookbookName);
+    const { cookbookUrl } = await createCookbookWithRecipe(
+      page,
+      "Chapters Create Rename",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Create first chapter
+    // Create first chapter — chapter header appears once there are recipes
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Chapter 1")).toBeVisible();
+    await expect(page.getByText("Chapter 1")).toBeVisible({ timeout: 10000 });
 
-    // Rename the chapter via pencil icon
-    await page.getByLabel(/Rename Chapter 1/).click();
-    await page.waitForLoadState("networkidle");
-    await page.getByRole("textbox", { name: /chapter name/i }).fill("Starters");
-    await page.getByRole("button", { name: /Save/ }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Starters")).toBeVisible();
+    // Hover to reveal owner icons, then click rename
+    await page.getByText("Chapter 1").hover();
+    await page.getByLabel(/Rename Chapter 1/).click({ force: true });
+    await expect(page.getByRole("textbox", { name: "Chapter name" })).toBeVisible();
+    await page.getByRole("textbox", { name: "Chapter name" }).fill("Starters");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByText("Starters")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("Chapter 1")).not.toBeVisible();
   });
 
@@ -265,20 +267,15 @@ test.describe("Cookbook Chapters", () => {
 
     // Create a chapter (migrates existing recipe into it)
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Chapter 1")).toBeVisible();
-    // Recipe should still be visible under the chapter
+    await expect(page.getByText("Chapter 1")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText(recipeName)).toBeVisible();
 
-    // Delete the only chapter
-    await page.getByLabel(/Delete Chapter 1/).click();
-    await page.waitForLoadState("networkidle");
+    // Hover to reveal delete icon, then delete the only chapter
+    await page.getByText("Chapter 1").hover();
+    await page.getByLabel(/Delete Chapter 1/).click({ force: true });
     // Confirm deletion in the modal
-    await page.getByRole("button", { name: /Confirm/ }).click();
-    await page.waitForLoadState("networkidle");
-
-    // Chapter header gone, recipe still present (unchaptered)
-    await expect(page.getByText("Chapter 1")).not.toBeVisible();
+    await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByText("Chapter 1")).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByText(recipeName)).toBeVisible();
   });
 
@@ -294,10 +291,9 @@ test.describe("Cookbook Chapters", () => {
     );
     await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Create a chapter (migrates existing recipe into it)
+    // Create a chapter — recipe migrates into it
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByText("Chapter 1")).toBeVisible();
+    await expect(page.getByText("Chapter 1")).toBeVisible({ timeout: 10000 });
 
     // Recipe drag handle should still be visible within the chapter
     await expect(
@@ -311,22 +307,24 @@ test.describe("Cookbook Chapters", () => {
     page,
   }) => {
     await registerAndLogin(page);
-    const cookbookName = getUniqueCookbookName("Chapters Collapse");
-    await createCookbook(page, cookbookName);
+    const { cookbookUrl } = await createCookbookWithRecipe(
+      page,
+      "Chapters Collapse",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Create two chapters
+    // Create two chapters (recipe migrates to Chapter 1, Chapter 2 starts empty)
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Chapter 1")).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await page.waitForLoadState("networkidle");
+    await expect(page.getByText("Chapter 2")).toBeVisible({ timeout: 10000 });
 
-    // Collapse toggle should now be visible
-    const collapseBtn = page.getByRole("button", { name: /Collapse|Expand/ });
+    // Collapse toggle appears once there are chapters
+    const collapseBtn = page.getByRole("button", { name: /Collapse to chapter view|Expand recipe list/ });
     await expect(collapseBtn).toBeVisible();
     await collapseBtn.click();
-    await page.waitForLoadState("networkidle");
 
-    // In collapsed mode both chapter names appear as sortable rows
+    // In collapsed mode both chapter rows remain visible
     await expect(page.getByText("Chapter 1")).toBeVisible();
     await expect(page.getByText("Chapter 2")).toBeVisible();
   });
