@@ -125,13 +125,31 @@ jobs:
           curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
           chmod +x codacy-coverage-reporter.sh
 
-          # Upload coverage report if it exists
+          partials_uploaded=0
+
+          # Upload Vitest coverage report if it exists
           if [ -f coverage/lcov.info ]; then
             ./codacy-coverage-reporter.sh report --partial -l Javascript -r coverage/lcov.info
             ./codacy-coverage-reporter.sh report --partial -l TypeScript -r coverage/lcov.info
+            partials_uploaded=1
+          else
+            echo "No Vitest coverage report found at coverage/lcov.info"
+          fi
+
+          # Upload E2E coverage report if it exists and is non-empty
+          # (may be empty when production build lacks source maps for V8 coverage)
+          if [ -f e2e-coverage/lcov.info ] && [ -s e2e-coverage/lcov.info ]; then
+            ./codacy-coverage-reporter.sh report --partial -l Javascript -r e2e-coverage/lcov.info
+            ./codacy-coverage-reporter.sh report --partial -l TypeScript -r e2e-coverage/lcov.info
+            partials_uploaded=1
+          else
+            echo "No E2E coverage report found or file is empty at e2e-coverage/lcov.info"
+          fi
+
+          if [ "$partials_uploaded" -eq 1 ]; then
             ./codacy-coverage-reporter.sh final
           else
-            echo "No coverage report found at coverage/lcov.info"
+            echo "No coverage reports were uploaded; skipping final"
           fi
 
       - name: Comment PR on failure

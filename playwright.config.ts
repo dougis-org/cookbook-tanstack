@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
+import { defineCoverageReporterConfig } from "@bgotink/playwright-coverage";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   testDir: "./src/e2e",
@@ -6,7 +11,17 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: [
+    ["html"],
+    [
+      "@bgotink/playwright-coverage",
+      defineCoverageReporterConfig({
+        sourceRoot: __dirname,
+        resultDir: join(__dirname, "e2e-coverage"),
+        reports: [["lcovonly", { file: "lcov.info" }]],
+      }),
+    ],
+  ],
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",
