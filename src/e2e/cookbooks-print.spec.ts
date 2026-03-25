@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
