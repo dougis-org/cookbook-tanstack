@@ -37,3 +37,5 @@ data/legacy-migration/reports/*
 !data/legacy-migration/reports/.gitkeep
 
 .vscode/
+
+src/e2e/e2e-coverage/lcov.info
