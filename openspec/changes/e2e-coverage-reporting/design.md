@@ -29,7 +29,7 @@ The Codacy upload step already uses the `--partial` + `--final` pattern, making 
 
 ### D2: Spec file import replacement
 
-**Decision:** Replace `import { test, expect } from "@playwright/test"` with `import { test, expect } from "@bgotink/playwright-coverage"` in all 11 spec files. Leave helper files (`src/e2e/helpers/`) unchanged since they only use `import type` from `@playwright/test`.
+**Decision:** Replace `import { test, expect } from "@playwright/test"` with `import { test, expect } from "@bgotink/playwright-coverage"` in all 12 spec files. Leave helper files (`src/e2e/helpers/`) unchanged since they only use `import type` from `@playwright/test`.
 
 **Rationale:** `@bgotink/playwright-coverage` wraps and re-exports the full Playwright API, so the replacement is a drop-in swap. Type-only imports are not affected by coverage instrumentation.
 
@@ -49,7 +49,7 @@ The Codacy upload step already uses the `--partial` + `--final` pattern, making 
 | Proposal element | Design decision |
 |---|---|
 | Add `@bgotink/playwright-coverage` | D1 — V8 mode, no build changes |
-| Update 11 spec file imports | D2 — drop-in import replacement |
+| Update 12 spec file imports | D2 — drop-in import replacement |
 | LCOV output location | D3 — `e2e-coverage/lcov.info` |
 | Extend Codacy CI step | D4 — additional partials before `--final` |
 
@@ -64,7 +64,7 @@ The Codacy upload step already uses the `--partial` + `--final` pattern, making 
 All changes are additive and isolated:
 - Reverting the import change in spec files restores normal Playwright behaviour
 - Removing the reporter from `playwright.config.ts` disables E2E coverage without affecting the Vitest upload
-- The Codacy upload step is guarded by `if [ -f e2e-coverage/lcov.info ]` so it is a no-op if coverage generation is disabled or fails
+- The Codacy upload step is guarded by `if [ -f e2e-coverage/lcov.info ] && [ -s e2e-coverage/lcov.info ]` so it is a no-op if coverage generation is disabled, fails, or produces an empty file (e.g. production build without source maps)
 
 ## Open Questions
 

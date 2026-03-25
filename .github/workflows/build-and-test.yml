@@ -133,12 +133,13 @@ jobs:
             echo "No Vitest coverage report found at coverage/lcov.info"
           fi
 
-          # Upload E2E coverage report if it exists
-          if [ -f e2e-coverage/lcov.info ]; then
+          # Upload E2E coverage report if it exists and is non-empty
+          # (may be empty when production build lacks source maps for V8 coverage)
+          if [ -f e2e-coverage/lcov.info ] && [ -s e2e-coverage/lcov.info ]; then
             ./codacy-coverage-reporter.sh report --partial -l Javascript -r e2e-coverage/lcov.info
             ./codacy-coverage-reporter.sh report --partial -l TypeScript -r e2e-coverage/lcov.info
           else
-            echo "No E2E coverage report found at e2e-coverage/lcov.info"
+            echo "No E2E coverage report found or file is empty at e2e-coverage/lcov.info"
           fi
 
           ./codacy-coverage-reporter.sh final

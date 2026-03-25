@@ -6,7 +6,7 @@ E2E tests cover significant user-facing behaviour that unit tests cannot reach, 
 
 - Add `@bgotink/playwright-coverage` as a dev dependency
 - Update `playwright.config.ts` to add the coverage reporter (LCOV output to `e2e-coverage/`)
-- Replace `@playwright/test` imports in all 11 spec files with `@bgotink/playwright-coverage` (type-only helper imports are unchanged)
+- Replace `@playwright/test` imports in all 12 spec files with `@bgotink/playwright-coverage` (type-only helper imports are unchanged)
 - Extend the Codacy upload step in `.github/workflows/build-and-test.yml` to upload `e2e-coverage/lcov.info` as additional `--partial` reports (JS + TypeScript) before the existing `--final` call
 
 ## Capabilities
@@ -23,7 +23,7 @@ E2E tests cover significant user-facing behaviour that unit tests cannot reach, 
 
 - **Dependencies:** `@bgotink/playwright-coverage` added to `devDependencies`
 - **Config:** `playwright.config.ts` — adds `defineCoverageReporterConfig` reporter block
-- **Test files:** `src/e2e/*.spec.ts` (×11) — single import line change per file
+- **Test files:** `src/e2e/*.spec.ts` (×12) — single import line change per file
 - **CI:** `.github/workflows/build-and-test.yml` — Codacy upload step extended
 - **Coverage output:** new `e2e-coverage/` directory produced during E2E runs (gitignored)
 - **No build changes:** V8 mode collects coverage directly from Chromium; the existing production Nitro build used in CI is unchanged
