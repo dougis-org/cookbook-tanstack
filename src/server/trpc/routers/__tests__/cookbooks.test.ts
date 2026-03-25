@@ -34,17 +34,19 @@ type CookbookDoc = Awaited<ReturnType<typeof seedCookbook>>;
 type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
 type AnonCaller = Awaited<ReturnType<typeof makeAnonCaller>>;
 
+/** Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). */
+async function seedCookbookWithRecipes(cookbookId: string, ...recipeIds: string[]) {
+  await Cookbook.findByIdAndUpdate(cookbookId, {
+    recipes: recipeIds.map((id, i) => ({ recipeId: id, orderIndex: i })),
+  });
+}
+
 /** Seed a cookbook with two recipes inserted in reverse orderIndex (r1→1, r2→0). */
 async function seedCookbookWithOrderedPair(ownerId: string) {
   const cb = await seedCookbook(ownerId);
   const r1 = await seedRecipe(ownerId);
   const r2 = await seedRecipe(ownerId);
-  await Cookbook.findByIdAndUpdate(cb.id, {
-    recipes: [
-      { recipeId: r1.id, orderIndex: 1 },
-      { recipeId: r2.id, orderIndex: 0 },
-    ],
-  });
+  await seedCookbookWithRecipes(cb.id, r2.id, r1.id); // r2→0, r1→1
   return { cb, r1, r2 };
 }
 
@@ -171,12 +173,7 @@ describe("cookbooks.byId", () => {
         isPublic: false,
       }).save();
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: publicRecipe.id, orderIndex: 0 },
-          { recipeId: privateRecipe.id, orderIndex: 1 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, publicRecipe.id, privateRecipe.id);
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
@@ -202,9 +199,7 @@ describe("cookbooks.byId", () => {
         classificationId: cls.id,
       }).save();
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
-      });
+      await seedCookbookWithRecipes(cb.id, recipe.id);
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
@@ -362,9 +357,7 @@ describe("cookbooks.removeRecipe", () => {
       const owner = await seedUser();
       const cb = await seedCookbook(owner.id);
       const r = await seedRecipe(owner.id);
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [{ recipeId: r.id, orderIndex: 0 }],
-      });
+      await seedCookbookWithRecipes(cb.id, r.id);
 
       const caller = await makeAuthCaller(owner.id);
       await caller.cookbooks.removeRecipe({
@@ -412,9 +405,7 @@ describe("cookbooks.printById", () => {
         preparationIds: [prep.id],
       }).save();
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
-      });
+      await seedCookbookWithRecipes(cb.id, recipe.id);
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.printById({ id: cb.id });
@@ -465,13 +456,7 @@ describe("cookbooks.reorderRecipes", () => {
         seedRecipe(owner.id),
       ]);
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 0 },
-          { recipeId: r2.id, orderIndex: 1 },
-          { recipeId: r3.id, orderIndex: 2 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id, r3.id);
 
       const caller = await makeAuthCaller(owner.id);
       await caller.cookbooks.reorderRecipes({
@@ -493,12 +478,7 @@ describe("cookbooks.reorderRecipes", () => {
         seedRecipe(owner.id),
       ]);
 
-      await Cookbook.findByIdAndUpdate(cb.id, {
-        recipes: [
-          { recipeId: r1.id, orderIndex: 0 },
-          { recipeId: r2.id, orderIndex: 1 },
-        ],
-      });
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id);
 
       const caller = await makeAuthCaller(owner.id);
       // Pass only r2 in the reorder list — r1 keeps its original orderIndex (0)

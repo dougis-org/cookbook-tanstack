@@ -13,9 +13,10 @@ export function CookbookStandalonePage({
   children: ReactNode
   maxWidth?: '2xl' | '4xl'
 }) {
+  const widthClass = maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-2xl'
   return (
     <div className={`${pageBaseClass} print:bg-white print:text-black`}>
-      <div className={`max-w-${maxWidth} mx-auto px-6 py-10`}>{children}</div>
+      <div className={`${widthClass} mx-auto px-6 py-10`}>{children}</div>
     </div>
   )
 }
@@ -34,6 +35,20 @@ export function RecipeTimeSpan({
     .filter(Boolean)
     .join(', ')
   return <span className="text-gray-500 print:text-gray-400 text-xs">{label}</span>
+}
+
+export function CookbookEmptyState() {
+  return (
+    <p className="text-gray-400 text-center py-12 print:hidden">No recipes in this cookbook.</p>
+  )
+}
+
+export function RecipeIndexNumber({ index }: { index: number }) {
+  return (
+    <span className="text-gray-500 print:text-gray-500 w-6 text-right flex-shrink-0 text-sm">
+      {index + 1}.
+    </span>
+  )
 }
 
 export function CookbookPageLoading() {

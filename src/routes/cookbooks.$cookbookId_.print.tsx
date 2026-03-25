@@ -8,6 +8,8 @@ import {
   CookbookPageHeader,
   CookbookStandalonePage,
   RecipeTimeSpan,
+  CookbookEmptyState,
+  RecipeIndexNumber,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
@@ -38,17 +40,13 @@ function CookbookPrintPage() {
         <CookbookPageHeader name={name} description={description} />
 
         {recipes.length === 0 ? (
-          <p className="text-gray-400 text-center py-12 print:hidden">
-            No recipes in this cookbook.
-          </p>
+          <CookbookEmptyState />
         ) : (
           <ol className="space-y-2 mb-8">
             {recipes.map((recipe, index) => (
               <li key={recipe.id}>
                 <div className="flex items-baseline gap-3 py-2 border-b border-slate-700/50 print:border-gray-200 print:text-black">
-                  <span className="text-gray-500 print:text-gray-500 w-6 text-right flex-shrink-0 text-sm">
-                    {index + 1}.
-                  </span>
+                  <RecipeIndexNumber index={index} />
                   <span className="flex-1 text-white print:text-black">
                     {recipe.name}
                   </span>

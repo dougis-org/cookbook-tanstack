@@ -35,6 +35,15 @@ function RecipeMetaItem({
   )
 }
 
+function NutritionItem({ value, unit = '', label }: { value: number; unit?: string; label: string }) {
+  return (
+    <div className="text-center">
+      <p className="text-2xl font-bold text-cyan-400">{value}{unit}</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+    </div>
+  )
+}
+
 function TaxonomyBadges({
   items,
   variant,
@@ -194,36 +203,11 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
                 Nutrition
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                {recipe.calories != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.calories}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Calories</p>
-                  </div>
-                )}
-                {recipe.fat != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.fat}g</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Fat</p>
-                  </div>
-                )}
-                {recipe.cholesterol != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.cholesterol}mg</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Cholesterol</p>
-                  </div>
-                )}
-                {recipe.sodium != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.sodium}mg</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Sodium</p>
-                  </div>
-                )}
-                {recipe.protein != null && (
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-cyan-400">{recipe.protein}g</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Protein</p>
-                  </div>
-                )}
+                {recipe.calories != null && <NutritionItem value={recipe.calories} label="Calories" />}
+                {recipe.fat != null && <NutritionItem value={recipe.fat} unit="g" label="Fat" />}
+                {recipe.cholesterol != null && <NutritionItem value={recipe.cholesterol} unit="mg" label="Cholesterol" />}
+                {recipe.sodium != null && <NutritionItem value={recipe.sodium} unit="mg" label="Sodium" />}
+                {recipe.protein != null && <NutritionItem value={recipe.protein} unit="g" label="Protein" />}
               </div>
             </section>
           )}

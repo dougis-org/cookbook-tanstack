@@ -23,6 +23,35 @@ function pluckItems(arr: unknown): { id: string; name: string }[] {
     : [];
 }
 
+/** Build a lookup map from recipe docs keyed by stringified _id. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function indexByStringId(docs: any[]): Map<string, any> {
+  return new Map(docs.map((r) => [r._id.toString(), r]));
+}
+
+/** Resolve the recipe doc for a stub, or null if not found. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function docFromStub(stub: { recipeId: unknown }, map: Map<string, any>): any | null {
+  return map.get(stub.recipeId != null ? String(stub.recipeId) : "") ?? null;
+}
+
+/** Shared cookbook shape fields returned by both byId and printById. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function cookbookCoreFields(cb: any) {
+  return {
+    id: cb._id.toString() as string,
+    name: cb.name as string,
+    description: (cb.description ?? null) as string | null,
+    isPublic: cb.isPublic as boolean,
+  };
+}
+
+/** Safe accessor for the embedded recipes array on a lean cookbook doc. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getRecipeStubs(cookbook: any): Array<{ recipeId: unknown; orderIndex: number }> {
+  return Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+}
+
 async function fetchCookbookWithOrderedStubs(
   id: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,18 +108,11 @@ export const cookbooksRouter = router({
         .lean();
 
       // Re-map to preserve orderIndex from the stub
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const recipeById = new Map(
-        recipeDocs.map((r: any) => [r._id.toString(), r]),
-      );
+      const recipeById = indexByStringId(recipeDocs);
       const recipes = stubs
         .map((stub) => {
-          const doc = recipeById.get(
-            stub.recipeId != null ? String(stub.recipeId) : "",
-          );
-          if (!doc) return null;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const d = doc as any;
+          const d = docFromStub(stub, recipeById);
+          if (!d) return null;
           return {
             id: d._id.toString() as string,
             name: d.name as string,
@@ -109,10 +131,7 @@ export const cookbooksRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
       return {
-        id: cb._id.toString() as string,
-        name: cb.name as string,
-        description: (cb.description ?? null) as string | null,
-        isPublic: cb.isPublic as boolean,
+        ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
         userId: cb.userId?.toString() as string,
         createdAt: cb.createdAt as Date,
@@ -142,19 +161,12 @@ export const cookbooksRouter = router({
         .populate("preparationIds", "name")
         .lean();
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const recipeById = new Map(
-        recipeDocs.map((r: any) => [r._id.toString(), r]),
-      );
+      const recipeById = indexByStringId(recipeDocs);
 
       const recipes = stubs
         .map((stub) => {
-          const doc = recipeById.get(
-            stub.recipeId != null ? String(stub.recipeId) : "",
-          );
-          if (!doc) return null;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const d = doc as any;
+          const d = docFromStub(stub, recipeById);
+          if (!d) return null;
           const cls = d.classificationId as { _id?: unknown; name?: string } | null;
           const src = d.sourceId as { _id?: unknown; name?: string; url?: string } | null;
           return {
@@ -197,13 +209,7 @@ export const cookbooksRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
-      return {
-        id: cb._id.toString() as string,
-        name: cb.name as string,
-        description: (cb.description ?? null) as string | null,
-        isPublic: cb.isPublic as boolean,
-        recipes,
-      };
+      return { ...cookbookCoreFields(cb), recipes };
     }),
 
   create: protectedProcedure
@@ -304,7 +310,7 @@ export const cookbooksRouter = router({
       }
 
       // Check for duplicate, then push with next orderIndex
-      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+      const recipes = getRecipeStubs(cookbook);
       const alreadyIn = recipes.some(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (r: any) => r.recipeId?.toString() === input.recipeId,
@@ -357,7 +363,7 @@ export const cookbooksRouter = router({
         "Cookbook",
       );
 
-      const recipes = Array.isArray(cookbook.recipes) ? cookbook.recipes : [];
+      const recipes = getRecipeStubs(cookbook);
 
       // Rebuild the recipes array with updated orderIndex values
       const updatedRecipes = recipes.map(

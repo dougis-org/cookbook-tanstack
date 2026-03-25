@@ -8,6 +8,8 @@ import {
   CookbookPageHeader,
   CookbookStandalonePage,
   RecipeTimeSpan,
+  CookbookEmptyState,
+  RecipeIndexNumber,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/toc')({
@@ -36,7 +38,7 @@ function CookbookTocPage() {
         <CookbookPageHeader name={cookbook.name} description={cookbook.description} />
 
         {recipes.length === 0 ? (
-          <p className="text-gray-400 text-center py-12 print:hidden">No recipes in this cookbook.</p>
+          <CookbookEmptyState />
         ) : (
           <ol className="space-y-2">
             {recipes.map((recipe, index) => (
@@ -46,9 +48,7 @@ function CookbookTocPage() {
                   params={{ recipeId: recipe.id }}
                   className="flex items-baseline gap-3 group py-2 border-b border-slate-700/50 print:border-gray-200 print:text-black"
                 >
-                  <span className="text-gray-500 print:text-gray-500 w-6 text-right flex-shrink-0 text-sm">
-                    {index + 1}.
-                  </span>
+                  <RecipeIndexNumber index={index} />
                   <span className="flex-1 text-white print:text-black group-hover:text-cyan-400 transition-colors print:group-hover:text-black">
                     {recipe.name}
                   </span>
