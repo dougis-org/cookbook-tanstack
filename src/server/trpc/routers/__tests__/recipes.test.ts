@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import {
   Recipe,
@@ -704,6 +705,131 @@ describe("recipes.delete", () => {
       const result = await caller.recipes.delete({ id: recipe.id });
 
       expect(result).toEqual({ success: true });
+    });
+  });
+});
+
+// ─── recipes.delete — soft delete ────────────────────────────────────────────
+
+describe("delete — soft delete", () => {
+  it("recipe document remains in the collection with deleted: true after delete", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Soft Delete Me",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      // Bypass pre-find middleware by querying directly via the native driver
+      const raw = await Recipe.collection.findOne({ _id: recipe._id });
+      expect(raw).not.toBeNull();
+      expect(raw?.deleted).toBe(true);
+    });
+  });
+
+  it("deleted recipe is NOT returned by recipes.list", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Hidden Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const result = await caller.recipes.list({ userId: user.id });
+      expect(result.items.map((r) => r.id)).not.toContain(recipe.id);
+    });
+  });
+
+  it("deleted recipe is NOT returned by recipes.byId", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Gone Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const result = await caller.recipes.byId({ id: recipe.id });
+      expect(result).toBeNull();
+    });
+  });
+
+  it("cookbook entries for the deleted recipe are still removed", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Cookbook Recipe",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+      const cookbook = await new Cookbook({
+        name: "Test Cookbook",
+        userId: user.id,
+        recipes: [{ recipeId: recipe.id, orderIndex: 0 }],
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const updated = await Cookbook.findById(cookbook.id).lean();
+      expect(updated?.recipes).toHaveLength(0);
+    });
+  });
+
+  it("RecipeLike documents for the deleted recipe are still removed", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Liked Recipe SD",
+        userId: user.id,
+        isPublic: true,
+      }).save();
+      await new RecipeLike({ userId: user.id, recipeId: recipe.id }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.delete({ id: recipe.id });
+
+      const remaining = await RecipeLike.countDocuments({ recipeId: recipe.id });
+      expect(remaining).toBe(0);
+    });
+  });
+
+  it("recipe without the deleted field is still returned by list and byId (backward compat)", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      // Insert directly via native driver to simulate a pre-migration document
+      const result = await Recipe.collection.insertOne({
+        name: "Legacy Recipe",
+        userId: new Types.ObjectId(user.id),
+        isPublic: true,
+        marked: false,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const legacyId = result.insertedId.toString();
+
+      const caller = await makeAnonCaller();
+
+      const listResult = await caller.recipes.list({ userId: user.id });
+      expect(listResult.items.map((r) => r.id)).toContain(legacyId);
+
+      const byIdResult = await caller.recipes.byId({ id: legacyId });
+      expect(byIdResult).not.toBeNull();
+      expect(byIdResult?.name).toBe("Legacy Recipe");
     });
   });
 });
