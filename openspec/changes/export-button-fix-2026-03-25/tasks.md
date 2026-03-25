@@ -42,12 +42,12 @@ Verification requirements (all must pass before PR):
 
 ## PR and Merge
 
-- [ ] Open PR from `fix/export-button-cache-miss` → `main`
-- [ ] Reference issue #180 in PR description
+- [x] Open PR from `fix/export-button-cache-miss` → `main`
+- [x] Reference issue #180 in PR description
 - [ ] Wait for agent reviews and CI checks
 - [ ] Resolve all review comments
 - [ ] Resolve all blocking checks (tests, duplication, quality, security)
-- [ ] Enable auto-merge when all required checks are green
+- [x] Enable auto-merge when all required checks are green
 
 Ownership metadata:
 
