@@ -69,7 +69,6 @@ function CookbookPrintPage() {
           } = {
             ...recipe,
             imageUrl: null,
-            difficulty: recipe.difficulty as Recipe['difficulty'],
           }
 
           return (

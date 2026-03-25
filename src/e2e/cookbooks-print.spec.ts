@@ -115,33 +115,10 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     page,
   }) => {
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
-    const hasPageBreak = await page.evaluate(() => {
-      for (const sheet of Array.from(document.styleSheets)) {
-        try {
-          for (const rule of Array.from(sheet.cssRules)) {
-            if (
-              rule instanceof CSSMediaRule &&
-              rule.conditionText.includes("print")
-            ) {
-              for (const innerRule of Array.from(rule.cssRules)) {
-                if (
-                  innerRule instanceof CSSStyleRule &&
-                  innerRule.selectorText === ".cookbook-recipe-section" &&
-                  (innerRule.style.breakBefore === "page" ||
-                    innerRule.style.pageBreakBefore === "always")
-                ) {
-                  return true;
-                }
-              }
-            }
-          }
-        } catch {
-          // cross-origin stylesheet — skip
-        }
-      }
-      return false;
-    });
-    expect(hasPageBreak).toBe(true);
+    await page.emulateMedia({ media: 'print' });
+    const section = page.locator('.cookbook-recipe-section').first();
+    await expect(section).toHaveCSS('break-before', 'page');
+    await page.emulateMedia({ media: 'screen' });
   });
 
   // 4.6
