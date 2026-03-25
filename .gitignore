@@ -20,7 +20,7 @@ playwright-report/
 
 # Test coverage
 coverage/
-e2e-coverage/
+/e2e-coverage/
 *.lcov
 .env.prod
 .env.test
