@@ -192,7 +192,7 @@ function CookbookDetailPage() {
               Table of Contents
             </Link>
             <Link
-              to="/cookbooks/$cookbookId_/print"
+              to="/cookbooks/$cookbookId/print"
               params={{ cookbookId }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
             >
