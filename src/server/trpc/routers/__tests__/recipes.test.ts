@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import {
   Recipe,
@@ -810,7 +811,7 @@ describe("delete — soft delete", () => {
       // Insert directly via native driver to simulate a pre-migration document
       const result = await Recipe.collection.insertOne({
         name: "Legacy Recipe",
-        userId: new (await import("mongoose")).default.Types.ObjectId(user.id),
+        userId: new Types.ObjectId(user.id),
         isPublic: true,
         marked: false,
         mealIds: [],

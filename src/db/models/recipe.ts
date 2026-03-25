@@ -61,15 +61,17 @@ const recipeSchema = new Schema<IRecipe>(
 
 recipeSchema.index({ userId: 1 });
 recipeSchema.index({ name: 1 });
-recipeSchema.index({ deleted: 1 }, { sparse: true });
+recipeSchema.index({ deleted: 1 });
 
 // Soft-delete middleware — automatically excludes soft-deleted recipes from all reads.
 //
-// (a) What it does: injects `{ deleted: { $ne: true } }` into the query filter before
-//     every find, findOne, findOneAndUpdate, and countDocuments call.
+// (a) What it does: injects `{ deleted: { $ne: true } }` into every query filter and
+//     prepends a `$match` stage to every aggregation pipeline.
 // (b) Why `$ne: true` (not `{ deleted: false }`): existing documents that predate the
 //     `deleted` field have no value for it. `$ne: true` matches absent, null, and false,
-//     so no migration / backfill is needed.
+//     so no migration / backfill is needed. A non-sparse index on `deleted` is used so
+//     that legacy documents (missing field) are included in the index and can be matched
+//     efficiently by this filter.
 // (c) Write path: the `delete` mutation uses `Recipe.updateOne()` to soft-delete.
 //     `updateOne` does NOT trigger `pre('findOneAndUpdate')`, so it bypasses this
 //     middleware cleanly. Never use `findByIdAndUpdate` for the soft-delete write.
@@ -86,6 +88,10 @@ for (const hook of [
     this.where(softDeleteFilter);
   });
 }
+
+recipeSchema.pre("aggregate", function () {
+  this.pipeline().unshift({ $match: softDeleteFilter });
+});
 
 export const Recipe: Model<IRecipe> =
   (mongoose.models.Recipe as Model<IRecipe>) ||
