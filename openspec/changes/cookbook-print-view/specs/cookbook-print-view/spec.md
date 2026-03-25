@@ -112,7 +112,7 @@ The system SHALL replace the existing `window.print()` Print button on the cookb
 
 ---
 
-### Requirement: Data is fetched in a single query
+### Requirement: Data is fetched via a single tRPC call
 
 The system SHALL fetch cookbook metadata and all full recipe documents (including ingredients, instructions, nutrition, taxonomy, source) in a single tRPC call (`cookbooks.printById`).
 
