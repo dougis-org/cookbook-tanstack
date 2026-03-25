@@ -58,7 +58,9 @@ function computeChapterReorder(
   // Cross-chapter move
   const newActiveIds = currentActive.filter((id) => id !== activeId)
   const overIndex = currentOver.indexOf(overId)
-  const newOverIds = [...currentOver.slice(0, overIndex + 1), activeId, ...currentOver.slice(overIndex + 1)]
+  // overIndex === -1 means the chapter is empty; insert at end. Otherwise insert at overIndex.
+  const insertAt = overIndex === -1 ? currentOver.length : overIndex
+  const newOverIds = [...currentOver.slice(0, insertAt), activeId, ...currentOver.slice(insertAt)]
   return new Map(
     sortedChapters.map((ch) => {
       if (ch.id === activeChapterId) return [ch.id, newActiveIds]
@@ -630,7 +632,7 @@ function ChapterHeader({
     <div className="flex items-center gap-2 mt-4 mb-1 group">
       <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">{chapter.name}</h3>
       {isOwner && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <button
             onClick={onRename}
             className="text-gray-500 hover:text-cyan-400 transition-colors"

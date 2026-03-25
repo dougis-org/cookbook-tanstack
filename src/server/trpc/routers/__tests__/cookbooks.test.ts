@@ -90,28 +90,28 @@ async function assertOwnershipGuard(
   });
 }
 
-type SetupCtx = { owner: UserDoc; cb: CookbookDoc; caller: Caller }
-type SetupCtxWithRecipe = SetupCtx & { r: RecipeDoc }
+type SetupCtx = { owner: UserDoc; cb: CookbookDoc; caller: Caller };
+type SetupCtxWithRecipe = SetupCtx & { r: RecipeDoc };
 
 // Convenience wrapper: seeds owner + cookbook + caller inside a clean DB.
 async function withCookbookTest(fn: (ctx: SetupCtx) => Promise<void>): Promise<void> {
   await withCleanDb(async () => {
-    const owner = await seedUser()
-    const cb = await seedCookbook(owner.id)
-    const caller = await makeAuthCaller(owner.id)
-    await fn({ owner, cb, caller })
-  })
+    const owner = await seedUser();
+    const cb = await seedCookbook(owner.id);
+    const caller = await makeAuthCaller(owner.id);
+    await fn({ owner, cb, caller });
+  });
 }
 
 // Same as above but also seeds a recipe.
 async function withCookbookAndRecipeTest(fn: (ctx: SetupCtxWithRecipe) => Promise<void>): Promise<void> {
   await withCleanDb(async () => {
-    const owner = await seedUser()
-    const cb = await seedCookbook(owner.id)
-    const r = await seedRecipe(owner.id)
-    const caller = await makeAuthCaller(owner.id)
-    await fn({ owner, cb, r, caller })
-  })
+    const owner = await seedUser();
+    const cb = await seedCookbook(owner.id);
+    const r = await seedRecipe(owner.id);
+    const caller = await makeAuthCaller(owner.id);
+    await fn({ owner, cb, r, caller });
+  });
 }
 
 describe("ownership guard — non-owner is rejected", () => {

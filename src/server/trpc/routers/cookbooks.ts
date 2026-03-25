@@ -73,6 +73,7 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformChapters(cookbook: any): { id: string; name: string; orderIndex: number }[] {
   return getChapters(cookbook)
+    .slice()
     .sort((a, b) => a.orderIndex - b.orderIndex)
     .map((ch) => ({ id: String(ch._id), name: ch.name, orderIndex: ch.orderIndex }));
 }
@@ -428,6 +429,16 @@ export const cookbooksRouter = router({
 
       if (input.chapters !== undefined) {
         // Chapter-aware reorder: rebuild from chapter groups
+        const chapters = getChapters(cookbook);
+        if (chapters.length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot use chapters format on a cookbook with no chapters" });
+        }
+        const validChapterIds = new Set(chapters.map((ch) => String(ch._id)));
+        const invalidChapter = input.chapters.find((ch) => !validChapterIds.has(ch.chapterId));
+        if (invalidChapter) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: `Chapter ${invalidChapter.chapterId} does not belong to this cookbook` });
+        }
+
         const stubByRecipeId = new Map(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           existingStubs.map((s: any) => [String(s.recipeId), s]),
@@ -484,10 +495,11 @@ export const cookbooksRouter = router({
       const chapters = getChapters(cookbook);
       const isFirstChapter = chapters.length === 0;
       const newChapterId = new Types.ObjectId();
+      const maxOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
       const newChapter = {
         _id: newChapterId,
         name: `Chapter ${chapters.length + 1}`,
-        orderIndex: chapters.length,
+        orderIndex: maxOrderIndex + 1,
       };
 
       if (isFirstChapter) {
@@ -536,7 +548,8 @@ export const cookbooksRouter = router({
 
       const remainingChapters = chapters
         .filter((ch) => String(ch._id) !== input.chapterId)
-        .sort((a, b) => a.orderIndex - b.orderIndex);
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((ch, i) => ({ ...ch, orderIndex: i }));
 
       const existingStubs = getRecipeStubs(cookbook);
 
@@ -555,8 +568,7 @@ export const cookbooksRouter = router({
             : recipeStub(s, s.chapterId),
         );
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
-          $pull: { chapters: { _id: input.chapterId } },
-          $set: { recipes: updatedRecipes },
+          $set: { chapters: remainingChapters, recipes: updatedRecipes },
         });
       }
 
