@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
-import RecipeDetail from "@/components/recipes/RecipeDetail"
+import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
@@ -251,5 +251,131 @@ describe("RecipeDetail", () => {
   ])("renders source $label", ({ props, assert }) => {
     render(<RecipeDetail recipe={{ ...makeRecipe(), ...props }} />)
     assert()
+  })
+})
+
+describe("splitLines", () => {
+  it("returns [] for null input", () => {
+    expect(splitLines(null)).toEqual([])
+  })
+
+  it("returns [] for empty string", () => {
+    expect(splitLines("")).toEqual([])
+  })
+
+  it("returns [] for whitespace-only string", () => {
+    expect(splitLines("   \n  \n  ")).toEqual([])
+  })
+
+  it("returns non-empty lines unchanged when no blank lines present", () => {
+    expect(splitLines("apple\nbanana\ncherry")).toEqual(["apple", "banana", "cherry"])
+  })
+
+  it("preserves a single internal blank line as ''", () => {
+    expect(splitLines("apple\n\nbanana")).toEqual(["apple", "", "banana"])
+  })
+
+  it("collapses consecutive internal blank lines to a single ''", () => {
+    expect(splitLines("apple\n\n\n\nbanana")).toEqual(["apple", "", "banana"])
+  })
+
+  it("trims leading blank lines", () => {
+    expect(splitLines("\n\napple\nbanana")).toEqual(["apple", "banana"])
+  })
+
+  it("trims trailing blank lines", () => {
+    expect(splitLines("apple\nbanana\n\n")).toEqual(["apple", "banana"])
+  })
+
+  it("trims both leading and trailing blank lines, preserves internal", () => {
+    expect(splitLines("\napple\n\nbanana\n")).toEqual(["apple", "", "banana"])
+  })
+})
+
+describe("RecipeDetail — blank line rendering", () => {
+  describe("ingredients with blank lines", () => {
+    it("renders a spacer li for a blank-line entry", () => {
+      const { container } = render(
+        <RecipeDetail
+          recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
+          hideServingAdjuster
+        />,
+      )
+      const spacers = container.querySelectorAll("li.recipe-ingredient-spacer")
+      expect(spacers).toHaveLength(1)
+    })
+
+    it("spacer li has no bullet marker or text content", () => {
+      const { container } = render(
+        <RecipeDetail
+          recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
+          hideServingAdjuster
+        />,
+      )
+      const spacer = container.querySelector("li.recipe-ingredient-spacer")!
+      expect(spacer.querySelector("span")).toBeNull()
+      expect(spacer.textContent).toBe("")
+    })
+
+    it("content items still render normally alongside spacers", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
+          hideServingAdjuster
+        />,
+      )
+      expect(screen.getByText("Flour")).toBeInTheDocument()
+      expect(screen.getByText("Sugar")).toBeInTheDocument()
+    })
+  })
+
+  describe("instructions with blank lines", () => {
+    it("renders a spacer li for a blank-line entry", () => {
+      const { container } = render(
+        <RecipeDetail
+          recipe={makeRecipe({ instructions: "Boil water\n\nAdd pasta" })}
+        />,
+      )
+      const spacers = container.querySelectorAll("li.recipe-instruction-spacer")
+      expect(spacers).toHaveLength(1)
+    })
+
+    it("step numbers are contiguous across spacers (1, 2, not 1, 3)", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ instructions: "Boil water\n\nAdd pasta\nDrain" })}
+        />,
+      )
+      expect(screen.getByText("1")).toBeInTheDocument()
+      expect(screen.getByText("2")).toBeInTheDocument()
+      expect(screen.getByText("3")).toBeInTheDocument()
+      expect(screen.queryByText("4")).not.toBeInTheDocument()
+    })
+
+    it("spacer li has no step number circle", () => {
+      const { container } = render(
+        <RecipeDetail
+          recipe={makeRecipe({ instructions: "Step one\n\nStep two" })}
+        />,
+      )
+      const spacer = container.querySelector("li.recipe-instruction-spacer")!
+      expect(spacer.querySelector("span")).toBeNull()
+      expect(spacer.textContent).toBe("")
+    })
+  })
+
+  describe("ServingSizeAdjuster with blank-line entries", () => {
+    it("scales correctly when ingredient array contains '' entries", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 2, ingredients: "2 cups flour\n\n1 cup sugar" })}
+        />,
+      )
+      // ServingSizeAdjuster is present (not hidden)
+      expect(screen.getByRole("button", { name: /increase servings/i })).toBeInTheDocument()
+      // Content lines are rendered (blank line is a spacer, not breaking the list)
+      expect(screen.getByText("2 cups flour")).toBeInTheDocument()
+      expect(screen.getByText("1 cup sugar")).toBeInTheDocument()
+    })
   })
 })
