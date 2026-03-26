@@ -54,16 +54,52 @@ function TaxonomyBadges({
   return <>{items?.map((item) => <TaxonomyBadge key={item.id} name={item.name} variant={variant} />)}</>
 }
 
-/** Split a text blob into non-empty lines for display. */
-function splitLines(text: string | null): string[] {
+/**
+ * Split a text blob into lines for display.
+ * - Leading and trailing blank lines are removed.
+ * - Consecutive internal blank lines are collapsed to a single `''`.
+ * - `''` entries in the returned array are blank-line sentinels; callers
+ *   render them as visual spacers rather than content items.
+ *
+ * @internal exported for testing only
+ */
+export function splitLines(text: string | null): string[] {
   if (!text) return []
-  return text.split('\n').filter((line) => line.trim().length > 0)
+  const lines = text.split('\n')
+  // Trim leading blank lines
+  let start = 0
+  while (start < lines.length && lines[start].trim().length === 0) start++
+  // Trim trailing blank lines
+  let end = lines.length - 1
+  while (end >= start && lines[end].trim().length === 0) end--
+  if (start > end) return []
+  // Collapse consecutive internal blank lines
+  const result: string[] = []
+  let prevBlank = false
+  for (let i = start; i <= end; i++) {
+    const isBlank = lines[i].trim().length === 0
+    if (isBlank) {
+      if (!prevBlank) result.push('')
+    } else {
+      result.push(lines[i])
+    }
+    prevBlank = isBlank
+  }
+  return result
 }
 
 export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
+  const instructionSteps = useMemo(() => {
+    let stepNumber = 0
+    return instructionLines.map((line) => {
+      if (line === '') return { isSpacer: true as const }
+      stepNumber++
+      return { isSpacer: false as const, content: line, number: stepNumber }
+    })
+  }, [instructionLines])
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
@@ -154,13 +190,17 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
                 {(recipe.servings && !hideServingAdjuster ? scaledIngredientLines : ingredientLines).map((line, i) => (
-                  <li
-                    key={i}
-                    className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"
-                  >
-                    <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
-                    {line}
-                  </li>
+                  line === '' ? (
+                    <li key={i} className="recipe-ingredient-spacer h-2" aria-hidden="true" role="presentation" />
+                  ) : (
+                    <li
+                      key={i}
+                      className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"
+                    >
+                      <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
+                      {line}
+                    </li>
+                  )
                 ))}
               </ul>
             ) : (
@@ -177,17 +217,21 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             </h2>
             {instructionLines.length > 0 ? (
               <ol className="space-y-4">
-                {instructionLines.map((step, index) => (
-                  <li
-                    key={index}
-                    className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
-                  >
-                    <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
-                      {index + 1}
-                    </span>
-                    <p className="flex-1 pt-1">{step}</p>
-                  </li>
-                ))}
+                {instructionSteps.map((step, index) =>
+                  step.isSpacer ? (
+                    <li key={index} className="recipe-instruction-spacer h-2" aria-hidden="true" role="presentation" />
+                  ) : (
+                    <li
+                      key={index}
+                      className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
+                    >
+                      <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
+                        {step.number}
+                      </span>
+                      <p className="flex-1 pt-1">{step.content}</p>
+                    </li>
+                  )
+                )}
               </ol>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">
