@@ -19,9 +19,9 @@
 
 ## 4. PR and Merge
 
-- [ ] 4.1 Commit changes with a message referencing issue #208
-- [ ] 4.2 Push branch and open PR against `main` referencing issue #208
-- [ ] 4.3 Enable auto-merge on the PR
+- [x] 4.1 Commit changes with a message referencing issue #208
+- [x] 4.2 Push branch and open PR against `main` referencing issue #208
+- [x] 4.3 Enable auto-merge on the PR
 - [ ] 4.4 Resolve any CI failures or review comments before merge
 
 ## 5. Post-Merge
