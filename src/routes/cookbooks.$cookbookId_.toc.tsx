@@ -56,7 +56,7 @@ function CookbookTocPage() {
                       <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
                         {chapter.name}
                       </h2>
-                      <ol className="space-y-2 print:columns-2 print:gap-8">
+                      <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
                         {chapterRecipes.map((recipe) => {
                           const index = globalIndex++
                           return (
@@ -84,7 +84,7 @@ function CookbookTocPage() {
           })()
         ) : (
           // Flat TOC (no chapters)
-          <ol className="space-y-2 print:columns-2 print:gap-8">
+          <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
             {recipes.map((recipe, index) => (
               <li key={recipe.id} className="print:break-inside-avoid">
                 <Link
