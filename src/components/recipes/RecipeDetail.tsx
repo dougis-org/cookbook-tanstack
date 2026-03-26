@@ -92,6 +92,14 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
+  const instructionSteps = useMemo(() => {
+    let stepNumber = 0
+    return instructionLines.map((line) => {
+      if (line === '') return { isSpacer: true as const }
+      stepNumber++
+      return { isSpacer: false as const, content: line, number: stepNumber }
+    })
+  }, [instructionLines])
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
@@ -183,7 +191,7 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
               <ul className="space-y-2">
                 {(recipe.servings && !hideServingAdjuster ? scaledIngredientLines : ingredientLines).map((line, i) => (
                   line === '' ? (
-                    <li key={i} className="recipe-ingredient-spacer h-2" />
+                    <li key={i} className="recipe-ingredient-spacer h-2" aria-hidden="true" role="presentation" />
                   ) : (
                     <li
                       key={i}
@@ -209,26 +217,21 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             </h2>
             {instructionLines.length > 0 ? (
               <ol className="space-y-4">
-                {(() => {
-                  let stepNumber = 0
-                  return instructionLines.map((step, index) => {
-                    if (step === '') {
-                      return <li key={index} className="recipe-instruction-spacer h-2" />
-                    }
-                    stepNumber++
-                    return (
-                      <li
-                        key={index}
-                        className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
-                      >
-                        <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
-                          {stepNumber}
-                        </span>
-                        <p className="flex-1 pt-1">{step}</p>
-                      </li>
-                    )
-                  })
-                })()}
+                {instructionSteps.map((step, index) =>
+                  step.isSpacer ? (
+                    <li key={index} className="recipe-instruction-spacer h-2" aria-hidden="true" role="presentation" />
+                  ) : (
+                    <li
+                      key={index}
+                      className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
+                    >
+                      <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
+                        {step.number}
+                      </span>
+                      <p className="flex-1 pt-1">{step.content}</p>
+                    </li>
+                  )
+                )}
               </ol>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">
