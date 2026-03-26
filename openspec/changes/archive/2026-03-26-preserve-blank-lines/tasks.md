@@ -49,20 +49,20 @@
 
 ## 7. Pull Request
 
-- [ ] 7.1 Commit all changes on `feat/preserve-blank-lines`
-- [ ] 7.2 Push branch to remote
-- [ ] 7.3 Open PR targeting `main`, referencing issue #188 in the description
-- [ ] 7.4 Enable auto-merge on the PR
-- [ ] 7.5 Run `/code-review:code-review` to review the PR and address all findings
-- [ ] 7.6 Confirm all CI quality gates pass (tests, build, type-check, Codacy/Snyk scans)
-- [ ] 7.7 Address all PR comments — whether from human reviewers or automated agents — before proceeding; for each round of changes: commit, push, re-run `/code-review:code-review`, and repeat until no unresolved comments remain
-- [ ] 7.8 Confirm PR is merged to `main`
+- [x] 7.1 Commit all changes on `feat/preserve-blank-lines`
+- [x] 7.2 Push branch to remote
+- [x] 7.3 Open PR targeting `main`, referencing issue #188 in the description
+- [x] 7.4 Enable auto-merge on the PR
+- [x] 7.5 Run `/code-review:code-review` to review the PR and address all findings
+- [x] 7.6 Confirm all CI quality gates pass (tests, build, type-check, Codacy/Snyk scans)
+- [x] 7.7 Address all PR comments — whether from human reviewers or automated agents — before proceeding; for each round of changes: commit, push, re-run `/code-review:code-review`, and repeat until no unresolved comments remain
+- [x] 7.8 Confirm PR is merged to `main`
 
 ## 8. Post-Merge Cleanup
 
-- [ ] 8.1 Delete remote feature branch `feat/preserve-blank-lines`
-- [ ] 8.2 Delete local feature branch `feat/preserve-blank-lines`
-- [ ] 8.3 Pull latest `main` locally to confirm merge is present
+- [x] 8.1 Delete remote feature branch `feat/preserve-blank-lines`
+- [x] 8.2 Delete local feature branch `feat/preserve-blank-lines`
+- [x] 8.3 Pull latest `main` locally to confirm merge is present
 
 ## 9. Archive Change
 
