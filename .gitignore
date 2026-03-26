@@ -39,3 +39,5 @@ data/legacy-migration/reports/*
 .vscode/
 
 src/e2e/e2e-coverage/lcov.info
+
+.serena/
