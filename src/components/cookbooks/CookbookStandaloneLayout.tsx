@@ -16,7 +16,7 @@ export function CookbookStandalonePage({
   const widthClass = maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-2xl'
   return (
     <div className={`${pageBaseClass} print:bg-white print:text-black`}>
-      <div className={`${widthClass} mx-auto px-6 py-10`}>{children}</div>
+      <div className={`${widthClass} print:max-w-4xl mx-auto px-6 py-10`}>{children}</div>
     </div>
   )
 }
