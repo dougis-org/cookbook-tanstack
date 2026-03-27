@@ -55,16 +55,16 @@
 - [x] 8.2 Push branch to remote
 - [x] 8.3 Open PR targeting `main`, referencing issue #183 in the description
 - [x] 8.4 Enable auto-merge on the PR
-- [ ] 8.5 Run `/code-review:code-review` to review the PR and address all findings
-- [ ] 8.6 Confirm all CI quality gates pass (tests, build, type-check, Codacy/Snyk scans)
-- [ ] 8.7 Address all PR comments — whether from human reviewers or automated agents — before proceeding; for each round of changes: commit, push, re-run `/code-review:code-review`, and repeat until no unresolved comments remain
-- [ ] 8.8 Confirm PR is merged to `main`
+- [x] 8.5 Run `/code-review:code-review` to review the PR and address all findings
+- [x] 8.6 Confirm all CI quality gates pass (tests, build, type-check, Codacy/Snyk scans)
+- [x] 8.7 Address all PR comments — whether from human reviewers or automated agents — before proceeding; for each round of changes: commit, push, re-run `/code-review:code-review`, and repeat until no unresolved comments remain
+- [x] 8.8 Confirm PR is merged to `main`
 
 ## 9. Post-Merge Cleanup
 
-- [ ] 9.1 Delete remote feature branch `feat/unsaved-changes-guard`
-- [ ] 9.2 Delete local feature branch `feat/unsaved-changes-guard`
-- [ ] 9.3 Pull latest `main` locally to confirm merge is present
+- [x] 9.1 Delete remote feature branch `feat/unsaved-changes-guard`
+- [x] 9.2 Delete local feature branch `feat/unsaved-changes-guard`
+- [x] 9.3 Pull latest `main` locally to confirm merge is present
 
 ## 10. Archive Change
 
