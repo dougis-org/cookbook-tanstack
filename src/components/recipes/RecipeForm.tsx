@@ -78,10 +78,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     initialData?.sourceName ?? "",
   )
 
-  const initialMealIds = useMemo(() => initialData?.meals?.map((m) => m.id) ?? [], [])
-  const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [])
-  const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [])
-  const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [])
+  const initialMealIds = useMemo(() => initialData?.meals?.map((m) => m.id) ?? [], [initialData?.meals])
+  const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
+  const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
+  const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())

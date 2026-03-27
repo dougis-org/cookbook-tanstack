@@ -52,4 +52,17 @@ describe("ConfirmDialog", () => {
     const overlay = container.firstElementChild
     expect(overlay).toHaveClass("fixed", "inset-0")
   })
+
+  it("has role=dialog and aria-modal on the overlay", () => {
+    render(<ConfirmDialog message="Are you sure?" onConfirm={vi.fn()} onCancel={vi.fn()} />)
+    expect(screen.getByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true")
+  })
+
+  it("calls onCancel when Escape is pressed", async () => {
+    const onCancel = vi.fn()
+    render(<ConfirmDialog message="Are you sure?" onConfirm={vi.fn()} onCancel={onCancel} />)
+    await userEvent.keyboard("{Escape}")
+    expect(onCancel).toHaveBeenCalledOnce()
+  })
 })
