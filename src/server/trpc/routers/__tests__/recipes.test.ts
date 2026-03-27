@@ -813,7 +813,6 @@ describe("delete — soft delete", () => {
         name: "Legacy Recipe",
         userId: new Types.ObjectId(user.id),
         isPublic: true,
-        marked: false,
         mealIds: [],
         courseIds: [],
         preparationIds: [],

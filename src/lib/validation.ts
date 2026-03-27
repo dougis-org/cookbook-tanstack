@@ -42,7 +42,6 @@ export const importedRecipeSchema = z.object({
   cholesterol: z.number().nonnegative().nullable().optional(),
   sodium: z.number().nonnegative().nullable().optional(),
   protein: z.number().nonnegative().nullable().optional(),
-  marked: z.boolean().optional(),
   imageUrl: z.string().url().nullable().optional(),
   isPublic: z.boolean().optional(),
   mealIds: z.array(objectIdSchema).optional(),

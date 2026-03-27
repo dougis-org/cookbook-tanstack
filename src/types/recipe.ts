@@ -24,7 +24,6 @@ export interface Recipe {
   protein: number | null;
   imageUrl: string | null;
   isPublic: boolean;
-  marked: boolean;
   mealIds?: string[];
   courseIds?: string[];
   preparationIds?: string[];

@@ -147,7 +147,7 @@ export const recipesRouter = router({
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = (rawItems as any[]).map((r) => ({
+      const items = (rawItems as any[]).map(({ marked: _marked, ...r }) => ({
         ...r,
         id: r._id.toString() as string,
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
@@ -200,7 +200,6 @@ export const recipesRouter = router({
         protein: (r.protein ?? null) as number | null,
         imageUrl: (r.imageUrl ?? null) as string | null,
         isPublic: r.isPublic as boolean,
-        marked: (r.marked ?? false) as boolean,
         createdAt: r.createdAt as Date,
         updatedAt: r.updatedAt as Date,
         classificationName: (r.classificationId?.name ?? null) as string | null,
@@ -274,7 +273,7 @@ export const recipesRouter = router({
       ).lean();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const d = doc as any;
+      const { marked: _marked, ...d } = doc as any;
       return d ? { ...d, id: d._id.toString() as string } : null;
     }),
 
