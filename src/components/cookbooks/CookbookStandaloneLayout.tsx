@@ -20,7 +20,7 @@ interface TocChapter {
 
 function TocRecipeItem({ recipe, index }: { recipe: TocRecipe; index: number }) {
   return (
-    <li key={recipe.id} className="print:break-inside-avoid">
+    <li className="print:break-inside-avoid">
       <Link
         to="/recipes/$recipeId"
         params={{ recipeId: recipe.id }}
@@ -46,13 +46,24 @@ export function CookbookTocList({
   const sortedChapters = chapters.slice().sort((a, b) => a.orderIndex - b.orderIndex)
 
   if (sortedChapters.length > 0) {
+    const recipesByChapter = new Map<string, TocRecipe[]>()
+    for (const recipe of recipes) {
+      if (recipe.chapterId) {
+        if (!recipesByChapter.has(recipe.chapterId)) {
+          recipesByChapter.set(recipe.chapterId, [])
+        }
+        recipesByChapter.get(recipe.chapterId)!.push(recipe)
+      }
+    }
+    recipesByChapter.forEach((chapterRecipes) => {
+      chapterRecipes.sort((a, b) => a.orderIndex - b.orderIndex)
+    })
+
     let globalIndex = 0
     return (
       <div className="space-y-6">
         {sortedChapters.map((chapter) => {
-          const chapterRecipes = recipes
-            .filter((r) => r.chapterId === chapter.id)
-            .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+          const chapterRecipes = recipesByChapter.get(chapter.id) ?? []
           return (
             <div key={chapter.id}>
               <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">

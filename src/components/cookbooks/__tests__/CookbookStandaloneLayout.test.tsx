@@ -103,13 +103,15 @@ describe('CookbookTocList', () => {
   it('chapter-grouped TOC uses a single global counter (recipe 3 in chapter 2 is "3.")', () => {
     render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
     const mainHeading = screen.getByText('Mains')
-    const mainsSection = mainHeading.closest('div')!
+    const mainsSection = mainHeading.closest('div')
+    expect(mainsSection).not.toBeNull()
     // Pasta is the 3rd recipe globally, so it must show "3." not "1."
-    expect(mainsSection).toContainElement(screen.getByText('3.'))
+    expect(mainsSection!).toContainElement(screen.getByText('3.'))
     // "1." and "2." belong to Starters
-    const startersSection = screen.getByText('Starters').closest('div')!
-    expect(startersSection).toContainElement(screen.getByText('1.'))
-    expect(startersSection).toContainElement(screen.getByText('2.'))
+    const startersSection = screen.getByText('Starters').closest('div')
+    expect(startersSection).not.toBeNull()
+    expect(startersSection!).toContainElement(screen.getByText('1.'))
+    expect(startersSection!).toContainElement(screen.getByText('2.'))
   })
 
   // 2.7
