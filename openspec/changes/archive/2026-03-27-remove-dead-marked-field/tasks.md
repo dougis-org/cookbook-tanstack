@@ -34,10 +34,10 @@
 
 ## 8. PR and Merge
 
-- [ ] 8.1 Commit all changes with message: `chore(recipe): remove dead marked field from schema and response types`
-- [ ] 8.2 Push branch and open PR against `main`, referencing `Closes #219` and `Part of #181`
-- [ ] 8.3 Enable auto-merge on the PR
-- [ ] 8.4 Resolve any CI failures or review comments before merge
+- [x] 8.1 Commit all changes with message: `chore(recipe): remove dead marked field from schema and response types`
+- [x] 8.2 Push branch and open PR against `main`, referencing `Closes #219` and `Part of #181`
+- [x] 8.3 Enable auto-merge on the PR
+- [x] 8.4 Resolve any CI failures or review comments before merge
 
 ## 9. Post-Merge
 
