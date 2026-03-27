@@ -24,6 +24,7 @@ function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
     protein: 5,
     imageUrl: "https://example.com/recipe.jpg",
     isPublic: true,
+    marked: false,
     createdAt: new Date("2025-01-01T00:00:00.000Z"),
     updatedAt: new Date("2025-01-02T00:00:00.000Z"),
     ...overrides,

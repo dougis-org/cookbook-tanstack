@@ -1253,6 +1253,8 @@ describe("recipes.list — marked field", () => {
       expect(result.items).toHaveLength(2);
       const itemA = result.items.find((i) => i.name === "Recipe A");
       const itemB = result.items.find((i) => i.name === "Recipe B");
+      expect(itemA).toBeDefined();
+      expect(itemB).toBeDefined();
       expect(itemA?.marked).toBe(true);
       expect(itemB?.marked).toBe(false);
     });
