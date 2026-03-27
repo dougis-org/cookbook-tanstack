@@ -113,12 +113,15 @@ export const recipesRouter = router({
       if (input?.preparationIds?.length)
         filter.preparationIds = { $in: input.preparationIds };
 
-      if (input?.markedByMe && ctx.user) {
+      let likedIds: Set<string> | null = null;
+      if (ctx.user) {
         const likedDocs = await RecipeLike.find({ userId: ctx.user.id })
           .select("recipeId")
           .lean();
-        const likedIds = likedDocs.map((l) => l.recipeId);
-        filter._id = { $in: likedIds };
+        likedIds = new Set(likedDocs.map((l) => l.recipeId.toString()));
+        if (input?.markedByMe) {
+          filter._id = { $in: [...likedIds] };
+        }
       }
 
       const sortMap = {
@@ -147,12 +150,13 @@ export const recipesRouter = router({
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = (rawItems as any[]).map(({ marked: _marked, ...r }) => ({
+      const items = (rawItems as any[]).map((r) => ({
         ...r,
         id: r._id.toString() as string,
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
+        marked: likedIds ? likedIds.has(r._id.toString()) : false,
       }));
 
       return { items, total, page, pageSize };
@@ -172,6 +176,11 @@ export const recipesRouter = router({
         .lean()) as any;
 
       if (!r) return null;
+
+      // Same point-lookup as isMarked; kept separate — no abstraction needed yet.
+      const marked = ctx.user
+        ? !!(await RecipeLike.exists({ userId: ctx.user.id, recipeId: input.id }))
+        : false;
 
       type PopItem = { _id: unknown; name: string };
 
@@ -200,6 +209,7 @@ export const recipesRouter = router({
         protein: (r.protein ?? null) as number | null,
         imageUrl: (r.imageUrl ?? null) as string | null,
         isPublic: r.isPublic as boolean,
+        marked,
         createdAt: r.createdAt as Date,
         updatedAt: r.updatedAt as Date,
         classificationName: (r.classificationId?.name ?? null) as string | null,
@@ -273,7 +283,7 @@ export const recipesRouter = router({
       ).lean();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { marked: _marked, ...d } = doc as any;
+      const d = doc as any;
       return d ? { ...d, id: d._id.toString() as string } : null;
     }),
 
