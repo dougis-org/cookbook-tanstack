@@ -1,13 +1,21 @@
-import { useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useRouter, useBlocker } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
+import ConfirmDialog from "@/components/ui/ConfirmDialog"
+
+function sortedEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  const as = [...a].sort()
+  const bs = [...b].sort()
+  return as.every((v, i) => v === bs[i])
+}
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
@@ -50,6 +58,7 @@ interface RecipeFormProps {
 
 export default function RecipeForm({ initialData }: RecipeFormProps) {
   const navigate = useNavigate()
+  const router = useRouter()
   const queryClient = useQueryClient()
   const isEdit = !!initialData
 
@@ -69,6 +78,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     initialData?.sourceName ?? "",
   )
 
+  const initialMealIds = useMemo(() => initialData?.meals?.map((m) => m.id) ?? [], [initialData?.meals])
+  const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
+  const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
+  const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
+
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
@@ -77,7 +91,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
     defaultValues: {
@@ -103,6 +117,30 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const updateMutation = useMutation(trpc.recipes.update.mutationOptions())
   const isPending = createMutation.isPending || updateMutation.isPending
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const hasExternalChanges =
+    !sortedEqual(selectedMealIds, initialMealIds) ||
+    !sortedEqual(selectedCourseIds, initialCourseIds) ||
+    !sortedEqual(selectedPrepIds, initialPrepIds) ||
+    selectedSourceId !== initialSourceId
+
+  const isFormDirty = isDirty || hasExternalChanges
+  const isFormDirtyRef = useRef(false)
+  isFormDirtyRef.current = isFormDirty
+
+  const blocker = useBlocker({
+    shouldBlockFn: useCallback(() => isFormDirtyRef.current, []),
+    enableBeforeUnload: true,
+    withResolver: true,
+  })
+
+  function handleCancel() {
+    if (window.history.length > 1) {
+      router.history.back()
+    } else {
+      navigate({ to: "/recipes" })
+    }
+  }
 
   function toNum(v: string | undefined): number | undefined {
     if (v == null) return undefined
@@ -145,10 +183,12 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       if (isEdit) {
         await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
         const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
     } catch (error) {
@@ -438,7 +478,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             </button>
             <button
               type="button"
-              onClick={() => navigate({ to: "/recipes" })}
+              onClick={handleCancel}
               className="px-6 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
             >
               Cancel
@@ -446,6 +486,14 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
         </form>
       </div>
+
+      {blocker.status === "blocked" && (
+        <ConfirmDialog
+          message="You have unsaved changes. Are you sure you want to leave?"
+          onConfirm={blocker.proceed}
+          onCancel={blocker.reset}
+        />
+      )}
     </div>
   )
 }
