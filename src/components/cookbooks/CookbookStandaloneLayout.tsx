@@ -3,6 +3,82 @@ import { Link } from '@tanstack/react-router'
 import { Printer, ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 
+interface TocRecipe {
+  id: string
+  name: string
+  prepTime?: number | null
+  cookTime?: number | null
+  chapterId?: string | null
+  orderIndex: number
+}
+
+interface TocChapter {
+  id: string
+  name: string
+  orderIndex: number
+}
+
+function TocRecipeItem({ recipe, index }: { recipe: TocRecipe; index: number }) {
+  return (
+    <li key={recipe.id} className="print:break-inside-avoid">
+      <Link
+        to="/recipes/$recipeId"
+        params={{ recipeId: recipe.id }}
+        className="flex items-baseline gap-3 group py-2 border-b border-slate-700/50 print:border-gray-200 print:text-black"
+      >
+        <RecipeIndexNumber index={index} />
+        <span className="flex-1 text-white print:text-black group-hover:text-cyan-400 transition-colors print:group-hover:text-black">
+          {recipe.name}
+        </span>
+        <RecipeTimeSpan prepTime={recipe.prepTime} cookTime={recipe.cookTime} />
+      </Link>
+    </li>
+  )
+}
+
+export function CookbookTocList({
+  recipes,
+  chapters,
+}: {
+  recipes: TocRecipe[]
+  chapters: TocChapter[]
+}) {
+  const sortedChapters = chapters.slice().sort((a, b) => a.orderIndex - b.orderIndex)
+
+  if (sortedChapters.length > 0) {
+    let globalIndex = 0
+    return (
+      <div className="space-y-6">
+        {sortedChapters.map((chapter) => {
+          const chapterRecipes = recipes
+            .filter((r) => r.chapterId === chapter.id)
+            .sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+          return (
+            <div key={chapter.id}>
+              <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
+                {chapter.name}
+              </h2>
+              <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+                {chapterRecipes.map((recipe) => (
+                  <TocRecipeItem key={recipe.id} recipe={recipe} index={globalIndex++} />
+                ))}
+              </ol>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  return (
+    <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+      {recipes.map((recipe, index) => (
+        <TocRecipeItem key={recipe.id} recipe={recipe} index={index} />
+      ))}
+    </ol>
+  )
+}
+
 const pageBaseClass =
   'min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900'
 
@@ -45,7 +121,7 @@ export function CookbookEmptyState() {
 
 export function RecipeIndexNumber({ index }: { index: number }) {
   return (
-    <span className="text-gray-500 print:text-gray-500 w-6 text-right flex-shrink-0 text-sm">
+    <span className="text-gray-500 w-6 text-right shrink-0 text-sm">
       {index + 1}.
     </span>
   )

@@ -157,6 +157,29 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     const printBtn = page.getByRole("button", { name: /print/i });
     await expect(printBtn).toHaveClass(/print:hidden/);
   });
+
+  // 4.1 — TOC <ol> carries print:columns-2 class
+  test("TOC <ol> in the print route carries the print:columns-2 class", async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
+    const tocList = page.locator("ol").first();
+    await expect(tocList).toHaveClass(/print:columns-2/);
+  });
+
+  // 4.3 — TOC recipe entries are <a> links to /recipes/$recipeId
+  test("TOC recipe entries in the print route are links to /recipes/$recipeId", async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
+    // All recipe entries in the TOC <ol> should be <a> links to recipe pages
+    const tocLinks = page.locator("ol").first().locator("a");
+    const count = await tocLinks.count();
+    expect(count).toBeGreaterThan(0);
+    for (let i = 0; i < count; i++) {
+      await expect(tocLinks.nth(i)).toHaveAttribute("href", /\/recipes\/[a-f0-9-]+/);
+    }
+  });
 });
 
 // ─── Private cookbook ─────────────────────────────────────────────────────────
@@ -172,6 +195,65 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
   await page.context().clearCookies();
   await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
   await expect(page.getByText("Cookbook not found")).toBeVisible();
+});
+
+// ─── Cookbook with chapters ────────────────────────────────────────────────────
+
+// 4.2 — chapter-grouped TOC in the print route
+test.describe("Cookbook Print Route — with chapters", () => {
+  let cookbookId: string;
+  let recipe1Name: string;
+  let recipe2Name: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await registerAndLogin(page);
+
+    recipe1Name = getUniqueRecipeName("ChapterPrint1");
+    recipe2Name = getUniqueRecipeName("ChapterPrint2");
+    const cookbookName = `ChapterPrintCookbook-${Date.now()}`;
+
+    // Create two recipes
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipe1Name,
+      ingredients: "Flour",
+      instructions: "Mix",
+      servings: "2",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipe2Name,
+      ingredients: "Butter",
+      instructions: "Melt",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Create cookbook and get its ID
+    cookbookId = await createCookbookAndGetId(page, cookbookName);
+
+    // Add both recipes
+    await addRecipeToCookbook(page, recipe1Name);
+    await addRecipeToCookbook(page, recipe2Name);
+
+    // Create a chapter (migrates existing recipes into it)
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+
+    await page.close();
+  });
+
+  test("print route TOC renders chapter headings above their grouped recipes", async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
+    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible();
+    // Recipes should appear under the chapter heading
+    await expect(page.getByText(recipe1Name).first()).toBeVisible();
+    await expect(page.getByText(recipe2Name).first()).toBeVisible();
+  });
 });
 
 // ─── Cookbook detail navigation ───────────────────────────────────────────────
