@@ -1,15 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { Recipe } from "@/types/recipe"
 
 const mockNavigate = vi.fn()
+const mockRouterBack = vi.fn()
+const mockBlockerProceed = vi.fn()
+const mockBlockerReset = vi.fn()
+const mockBlocker = {
+  status: "idle" as string,
+  proceed: mockBlockerProceed,
+  reset: mockBlockerReset,
+}
+let capturedShouldBlockFn: (() => boolean) | undefined
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
   ),
   useNavigate: () => mockNavigate,
+  useRouter: () => ({ history: { back: mockRouterBack } }),
+  useBlocker: (options: { shouldBlockFn: () => boolean }) => {
+    capturedShouldBlockFn = options.shouldBlockFn
+    return mockBlocker
+  },
 }))
 
 vi.mock("@/lib/trpc", () => ({
@@ -51,6 +66,8 @@ function renderWithProviders(ui: React.ReactElement) {
 describe("RecipeForm", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockBlocker.status = "idle"
+    capturedShouldBlockFn = undefined
   })
 
   describe("rendering", () => {
@@ -195,7 +212,7 @@ describe("RecipeForm", () => {
   })
 
   describe("cancel", () => {
-    it("renders a cancel button that navigates back", () => {
+    it("renders a cancel button that falls back to /recipes when no prior history", () => {
       renderWithProviders(<RecipeForm />)
 
       const cancelBtn = screen.getByRole("button", { name: /cancel/i })
@@ -203,6 +220,102 @@ describe("RecipeForm", () => {
 
       fireEvent.click(cancelBtn)
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/recipes" })
+    })
+
+    it("calls router.history.back() when prior history exists", () => {
+      Object.defineProperty(window, "history", {
+        value: { ...window.history, length: 3 },
+        writable: true,
+        configurable: true,
+      })
+      renderWithProviders(<RecipeForm />)
+      fireEvent.click(screen.getByRole("button", { name: /cancel/i }))
+      expect(mockRouterBack).toHaveBeenCalled()
+      Object.defineProperty(window, "history", {
+        value: { ...window.history, length: 1 },
+        writable: true,
+        configurable: true,
+      })
+    })
+  })
+
+  describe("unsaved-changes guard", () => {
+    it("shouldBlockFn returns false on clean new form (no false positive)", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(capturedShouldBlockFn?.()).toBe(false)
+    })
+
+    it("shouldBlockFn returns false on clean edit form with existing data (no false positive)", () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe(),
+            meals: [{ id: "m1", name: "Breakfast" }],
+            courses: [],
+            preparations: [],
+          }}
+        />,
+      )
+      expect(capturedShouldBlockFn?.()).toBe(false)
+    })
+
+    it("shouldBlockFn returns true after typing in a field (dirty via RHF)", async () => {
+      renderWithProviders(<RecipeForm />)
+      await userEvent.type(screen.getByLabelText(/recipe name/i), "New Recipe")
+      expect(capturedShouldBlockFn?.()).toBe(true)
+    })
+
+    it("shouldBlockFn returns true after selecting a taxonomy item (dirty via taxonomy)", async () => {
+      renderWithProviders(<RecipeForm />)
+      await waitFor(() => expect(screen.getByRole("button", { name: /all meals/i })).toBeInTheDocument())
+      await userEvent.click(screen.getByRole("button", { name: /all meals/i }))
+      await userEvent.click(screen.getByRole("checkbox", { name: /breakfast/i }))
+      expect(capturedShouldBlockFn?.()).toBe(true)
+    })
+
+    it("shouldBlockFn returns false after deselecting and reselecting the same taxonomy item", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe(),
+            meals: [{ id: "m1", name: "Breakfast" }],
+            courses: [],
+            preparations: [],
+          }}
+        />,
+      )
+      await waitFor(() => expect(screen.getByRole("button", { name: /breakfast/i })).toBeInTheDocument())
+      // Open dropdown and deselect Breakfast
+      await userEvent.click(screen.getByRole("button", { name: /breakfast/i }))
+      await userEvent.click(screen.getByRole("checkbox", { name: /breakfast/i }))
+      // Re-select Breakfast (dropdown stays open)
+      await userEvent.click(screen.getByRole("checkbox", { name: /breakfast/i }))
+      expect(capturedShouldBlockFn?.()).toBe(false)
+    })
+
+    it("does not show ConfirmDialog when blocker is idle (clean form)", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(screen.queryByText(/you have unsaved changes/i)).not.toBeInTheDocument()
+    })
+
+    it("shows ConfirmDialog when blocker is blocked (dirty form navigation)", () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+      expect(screen.getByText(/you have unsaved changes/i)).toBeInTheDocument()
+    })
+
+    it("calls blocker.proceed when Discard Changes is clicked", () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+      fireEvent.click(screen.getByRole("button", { name: /discard changes/i }))
+      expect(mockBlockerProceed).toHaveBeenCalled()
+    })
+
+    it("calls blocker.reset when Keep Editing is clicked", () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+      fireEvent.click(screen.getByRole("button", { name: /keep editing/i }))
+      expect(mockBlockerReset).toHaveBeenCalled()
     })
   })
 })
