@@ -255,7 +255,6 @@ export const cookbooksRouter = router({
             protein: (d.protein ?? null) as number | null,
             imageUrl: null as null,
             isPublic: d.isPublic as boolean,
-            marked: (d.marked ?? false) as boolean,
             mealIds: pluckIds(d.mealIds),
             courseIds: pluckIds(d.courseIds),
             preparationIds: pluckIds(d.preparationIds),

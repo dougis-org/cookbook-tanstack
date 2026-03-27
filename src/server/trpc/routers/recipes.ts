@@ -200,7 +200,6 @@ export const recipesRouter = router({
         protein: (r.protein ?? null) as number | null,
         imageUrl: (r.imageUrl ?? null) as string | null,
         isPublic: r.isPublic as boolean,
-        marked: (r.marked ?? false) as boolean,
         createdAt: r.createdAt as Date,
         updatedAt: r.updatedAt as Date,
         classificationName: (r.classificationId?.name ?? null) as string | null,

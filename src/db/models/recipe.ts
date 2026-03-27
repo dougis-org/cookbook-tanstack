@@ -20,7 +20,6 @@ export interface IRecipe extends Document {
   protein?: number;
   imageUrl?: string;
   isPublic: boolean;
-  marked: boolean;
   deleted?: boolean;
   mealIds: Types.ObjectId[];
   courseIds: Types.ObjectId[];
@@ -50,7 +49,6 @@ const recipeSchema = new Schema<IRecipe>(
     protein: { type: Number },
     imageUrl: { type: String },
     isPublic: { type: Boolean, default: true },
-    marked: { type: Boolean, default: false },
     deleted: { type: Boolean, default: false },
     mealIds: [{ type: Schema.Types.ObjectId, ref: "Meal" }],
     courseIds: [{ type: Schema.Types.ObjectId, ref: "Course" }],
