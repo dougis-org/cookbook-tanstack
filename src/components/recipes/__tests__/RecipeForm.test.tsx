@@ -223,19 +223,25 @@ describe("RecipeForm", () => {
     })
 
     it("calls router.history.back() when prior history exists", () => {
-      Object.defineProperty(window, "history", {
-        value: { ...window.history, length: 3 },
-        writable: true,
-        configurable: true,
-      })
-      renderWithProviders(<RecipeForm />)
-      fireEvent.click(screen.getByRole("button", { name: /cancel/i }))
-      expect(mockRouterBack).toHaveBeenCalled()
-      Object.defineProperty(window, "history", {
-        value: { ...window.history, length: 1 },
-        writable: true,
-        configurable: true,
-      })
+      const originalHistoryDescriptor = Object.getOwnPropertyDescriptor(window, "history")
+      const originalHistory = window.history
+      try {
+        Object.defineProperty(window, "history", {
+          value: { ...originalHistory, length: 3 },
+          writable: true,
+          configurable: true,
+        })
+        renderWithProviders(<RecipeForm />)
+        fireEvent.click(screen.getByRole("button", { name: /cancel/i }))
+        expect(mockRouterBack).toHaveBeenCalled()
+      } finally {
+        if (originalHistoryDescriptor) {
+          Object.defineProperty(window, "history", originalHistoryDescriptor)
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(window as any).history = originalHistory
+        }
+      }
     })
   })
 

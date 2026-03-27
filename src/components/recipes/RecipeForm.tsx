@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -129,7 +129,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   isFormDirtyRef.current = isFormDirty
 
   const blocker = useBlocker({
-    shouldBlockFn: () => isFormDirtyRef.current,
+    shouldBlockFn: useCallback(() => isFormDirtyRef.current, []),
     enableBeforeUnload: true,
     withResolver: true,
   })
