@@ -1199,6 +1199,181 @@ describe("recipes.list — markedByMe filter", () => {
   });
 });
 
+// ─── recipes.list — marked field ─────────────────────────────────────────────
+
+describe("recipes.list — marked field", () => {
+  it("anonymous caller — all items have marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "Recipe A", userId: owner.id, isPublic: true }).save();
+      await new Recipe({ name: "Recipe B", userId: owner.id, isPublic: true }).save();
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id });
+
+      expect(result.items.length).toBeGreaterThan(0);
+      for (const item of result.items) {
+        expect(item.marked).toBe(false);
+      }
+    });
+  });
+
+  it("authenticated caller with no likes — all items have marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      await new Recipe({ name: "Recipe A", userId: owner.id, isPublic: true }).save();
+      await new Recipe({ name: "Recipe B", userId: owner.id, isPublic: true }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.list({ userId: owner.id });
+
+      expect(result.items.length).toBeGreaterThan(0);
+      for (const item of result.items) {
+        expect(item.marked).toBe(false);
+      }
+    });
+  });
+
+  it("authenticated caller liked recipe A not B — A has marked: true, B has marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const recipeA = await new Recipe({
+        name: "Recipe A",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+      await new Recipe({ name: "Recipe B", userId: owner.id, isPublic: true }).save();
+      await new RecipeLike({ userId: viewer.id, recipeId: recipeA.id }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.list({ userId: owner.id });
+
+      expect(result.items).toHaveLength(2);
+      const itemA = result.items.find((i) => i.name === "Recipe A");
+      const itemB = result.items.find((i) => i.name === "Recipe B");
+      expect(itemA).toBeDefined();
+      expect(itemB).toBeDefined();
+      expect(itemA?.marked).toBe(true);
+      expect(itemB?.marked).toBe(false);
+    });
+  });
+
+  it("markedByMe: true — liked recipe has marked: true", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const liked = await new Recipe({
+        name: "Liked Recipe",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+      await new Recipe({ name: "Ignored Recipe", userId: owner.id, isPublic: true }).save();
+      await new RecipeLike({ userId: viewer.id, recipeId: liked.id }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.list({ markedByMe: true });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toMatchObject({ name: "Liked Recipe", marked: true });
+    });
+  });
+
+  it("markedByMe: true with no likes — result is empty", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      await new Recipe({ name: "Public Recipe", userId: owner.id, isPublic: true }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.list({ markedByMe: true });
+
+      expect(result.items).toEqual([]);
+    });
+  });
+});
+
+// ─── recipes.byId — marked field ─────────────────────────────────────────────
+
+describe("recipes.byId — marked field", () => {
+  it("anonymous caller — response has marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const recipe = await new Recipe({
+        name: "Public Recipe",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.byId({ id: recipe.id });
+
+      expect(result?.marked).toBe(false);
+    });
+  });
+
+  it("authenticated caller, not liked — marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const recipe = await new Recipe({
+        name: "Public Recipe",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.byId({ id: recipe.id });
+
+      expect(result?.marked).toBe(false);
+    });
+  });
+
+  it("authenticated caller, liked — marked: true", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const recipe = await new Recipe({
+        name: "Public Recipe",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+      await new RecipeLike({ userId: viewer.id, recipeId: recipe.id }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+      const result = await caller.recipes.byId({ id: recipe.id });
+
+      expect(result?.marked).toBe(true);
+    });
+  });
+
+  it("authenticated caller, liked then toggled off — byId response has marked: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const recipe = await new Recipe({
+        name: "Public Recipe",
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+      await new RecipeLike({ userId: viewer.id, recipeId: recipe.id }).save();
+
+      const caller = await makeAuthCaller(viewer.id);
+
+      // Confirm liked state
+      expect((await caller.recipes.byId({ id: recipe.id }))?.marked).toBe(true);
+
+      // Toggle off
+      await caller.recipes.toggleMarked({ id: recipe.id });
+
+      // Now should be false
+      const result = await caller.recipes.byId({ id: recipe.id });
+      expect(result?.marked).toBe(false);
+    });
+  });
+});
+
 // ─── recipes.isMarked / toggleMarked ──────────────────────────────────────────
 
 describe("recipes.isMarked", () => {

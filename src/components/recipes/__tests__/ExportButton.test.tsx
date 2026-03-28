@@ -32,6 +32,7 @@ const mockRecipe: Recipe = {
   protein: null,
   imageUrl: null,
   isPublic: true,
+  marked: false,
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
 };
