@@ -116,10 +116,15 @@ export const recipesRouter = router({
       let likedIds: Set<string> | null = null;
       if (ctx.user) {
         const likedDocs = await RecipeLike.find({ userId: ctx.user.id })
-          .select("recipeId")
+          .select("recipeId -_id")
           .lean();
         likedIds = new Set(likedDocs.map((l) => l.recipeId.toString()));
         if (input?.markedByMe) {
+          if (likedIds.size === 0) {
+            const page = input?.page ?? 1;
+            const pageSize = input?.pageSize ?? 20;
+            return { items: [], total: 0, page, pageSize };
+          }
           filter._id = { $in: [...likedIds] };
         }
       }
