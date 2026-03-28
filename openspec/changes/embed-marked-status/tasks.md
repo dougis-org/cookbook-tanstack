@@ -56,9 +56,9 @@
 
 ## 10. PR and Merge
 
-- [ ] 10.1 Commit and push the feature branch
-- [ ] 10.2 Open PR targeting `main` with title: `feat(recipes): embed per-user marked status in list and byId responses (#220)`
-- [ ] 10.3 Enable auto-merge on the PR
+- [x] 10.1 Commit and push the feature branch
+- [x] 10.2 Open PR targeting `main` with title: `feat(recipes): embed per-user marked status in list and byId responses (#220)`
+- [x] 10.3 Enable auto-merge on the PR
 - [ ] 10.4 Resolve any CI failures or review comments before merge
 
 ## 11. Post-Merge
