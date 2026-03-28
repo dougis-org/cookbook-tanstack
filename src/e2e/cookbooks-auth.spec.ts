@@ -37,12 +37,11 @@ async function createCookbookWithRecipe(
   const cookbookUrl = await createCookbook(page, cookbookName);
 
   await page.getByRole("button", { name: "Add Recipe" }).click();
-  await page
-    .getByRole("dialog")
-    .getByPlaceholder("Search recipes…")
-    .fill(recipeName);
-  await page.waitForLoadState("networkidle");
-  await page.getByRole("button", { name: recipeName }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByPlaceholder("Search recipes…").fill(recipeName);
+  const recipeButton = dialog.getByRole("button", { name: recipeName });
+  await expect(recipeButton).toBeVisible({ timeout: 15000 });
+  await recipeButton.click();
   await page.waitForLoadState("networkidle");
 
   return { cookbookUrl, cookbookName, recipeName };
