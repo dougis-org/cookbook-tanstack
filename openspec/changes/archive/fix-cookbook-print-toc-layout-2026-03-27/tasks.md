@@ -55,11 +55,11 @@ Add tests to `src/e2e/cookbooks-print.spec.ts` before touching the route. Tests 
 
 ## 8. PR and Merge
 
-- [ ] 8.1 Commit all changes to `fix/cookbook-print-toc-layout` and push to remote
-- [ ] 8.2 Open PR to `main` referencing GitHub issue #218 in the PR description
-- [ ] 8.3 Enable auto-merge on the PR
-- [ ] 8.4 Monitor CI checks — diagnose and fix any failures, commit and push fixes until all checks are green
-- [ ] 8.5 Address any review comments — commit and push fixes until no unresolved comments remain
+- [x] 8.1 Commit all changes to `fix/cookbook-print-toc-layout` and push to remote
+- [x] 8.2 Open PR to `main` referencing GitHub issue #218 in the PR description
+- [x] 8.3 Enable auto-merge on the PR
+- [x] 8.4 Monitor CI checks — diagnose and fix any failures, commit and push fixes until all checks are green
+- [x] 8.5 Address any review comments — commit and push fixes until no unresolved comments remain
 
 ## 9. Post-Merge
 
