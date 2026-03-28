@@ -285,7 +285,7 @@ export const recipesRouter = router({
         id,
         { $set: updateData },
         { new: true },
-      ).lean();
+      ).select('-marked').lean();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
