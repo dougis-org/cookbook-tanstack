@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Printer, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
+import PrintButton from '@/components/ui/PrintButton'
 
 interface TocRecipe {
   id: string
@@ -186,13 +187,7 @@ export function CookbookPageChrome({
           <ArrowLeft className="w-4 h-4" />
           Back to Cookbook
         </Link>
-        <button
-          onClick={() => window.print()}
-          className="print:hidden flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-        >
-          <Printer className="w-4 h-4" />
-          Print
-        </button>
+        <PrintButton />
       </div>
     </>
   )

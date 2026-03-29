@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
+import PrintButton from "@/components/ui/PrintButton"
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
@@ -289,6 +290,58 @@ describe("splitLines", () => {
 
   it("trims both leading and trailing blank lines, preserves internal", () => {
     expect(splitLines("\napple\n\nbanana\n")).toEqual(["apple", "", "banana"])
+  })
+})
+
+describe("RecipeDetail — print button in actions slot", () => {
+  beforeEach(() => {
+    vi.spyOn(window, "print").mockImplementation(() => {})
+  })
+
+  it("renders PrintButton for owner (Print present alongside Edit)", () => {
+    render(
+      <RecipeDetail
+        recipe={makeRecipe()}
+        actions={
+          <div className="flex items-center gap-2 print:hidden">
+            <PrintButton />
+            <a href="/edit">Edit Recipe</a>
+          </div>
+        }
+      />,
+    )
+    expect(screen.getByRole("button", { name: /print/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "Edit Recipe" })).toBeInTheDocument()
+  })
+
+  it("renders PrintButton for non-owner (Print present, no Edit)", () => {
+    render(
+      <RecipeDetail
+        recipe={makeRecipe()}
+        actions={
+          <div className="flex items-center gap-2 print:hidden">
+            <PrintButton />
+          </div>
+        }
+      />,
+    )
+    expect(screen.getByRole("button", { name: /print/i })).toBeInTheDocument()
+    expect(screen.queryByRole("link", { name: "Edit Recipe" })).not.toBeInTheDocument()
+  })
+
+  it("actions wrapper carries print:hidden so the group is absent during printing", () => {
+    const { container } = render(
+      <RecipeDetail
+        recipe={makeRecipe()}
+        actions={
+          <div className="flex items-center gap-2 print:hidden" data-testid="actions-group">
+            <PrintButton />
+          </div>
+        }
+      />,
+    )
+    const wrapper = container.querySelector('[data-testid="actions-group"]')
+    expect(wrapper).toHaveClass("print:hidden")
   })
 })
 
