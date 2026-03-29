@@ -35,8 +35,8 @@
 
 ## 6. PR and Merge
 
-- [ ] 6.1 Commit all changes and push to `add-recipe-print-button` branch
-- [ ] 6.2 Open PR from `add-recipe-print-button` → `main` referencing issue #221; enable auto-merge immediately
+- [x] 6.1 Commit all changes and push to `add-recipe-print-button` branch
+- [x] 6.2 Open PR from `add-recipe-print-button` → `main` referencing issue #221; enable auto-merge immediately
 - [ ] 6.3 Monitor CI — on failure: diagnose, fix, run `npm run test && npm run test:e2e` locally, commit, push; repeat until all checks green
 - [ ] 6.4 Monitor review comments — for each comment: address, run affected tests locally, commit fix, push; repeat until no blocking comments remain
 - [ ] 6.5 Confirm PR merges (auto-merge or human merge)
