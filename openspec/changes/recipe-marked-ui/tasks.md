@@ -47,9 +47,9 @@
 
 ## 9. PR and Merge
 
-- [ ] 9.1 Commit and push the feature branch
-- [ ] 9.2 Open PR targeting `main` referencing issue #222
-- [ ] 9.3 Enable auto-merge on the PR
+- [x] 9.1 Commit and push the feature branch
+- [x] 9.2 Open PR targeting `main` referencing issue #222
+- [x] 9.3 Enable auto-merge on the PR
 - [ ] 9.4 Resolve any CI failures or review comments before merge
 
 ## 10. Post-Merge
