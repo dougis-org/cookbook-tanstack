@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
@@ -296,6 +296,10 @@ describe("splitLines", () => {
 describe("RecipeDetail — print button in actions slot", () => {
   beforeEach(() => {
     vi.spyOn(window, "print").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it("renders PrintButton for owner (Print present alongside Edit)", () => {

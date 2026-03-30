@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome } from "@/components/cookbooks/CookbookStandaloneLayout"
@@ -139,6 +139,10 @@ describe('CookbookTocList', () => {
 describe('CookbookPageChrome', () => {
   beforeEach(() => {
     vi.spyOn(window, 'print').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders a print button that calls window.print() on click', async () => {

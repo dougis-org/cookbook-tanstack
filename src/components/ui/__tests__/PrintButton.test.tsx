@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import PrintButton from "../PrintButton"
@@ -6,6 +6,10 @@ import PrintButton from "../PrintButton"
 describe("PrintButton", () => {
   beforeEach(() => {
     vi.spyOn(window, "print").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it("renders a button with 'Print' label", () => {
