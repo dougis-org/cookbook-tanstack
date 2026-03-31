@@ -33,6 +33,8 @@ export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
             <Heart
               data-testid="heart-icon"
               className={`w-5 h-5 shrink-0 ml-2 mt-1 ${marked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+              role="img"
+              aria-label={marked ? 'Recipe saved' : 'Recipe not saved'}
             />
           )}
         </div>

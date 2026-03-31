@@ -151,9 +151,8 @@ function CookbookDetailPage() {
   const [activeDragId, setActiveDragId] = useState<string | null>(null)
 
   const closeModal = () => setModal({ kind: 'none' })
-  const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
-    await queryClient.refetchQueries({ queryKey: [['cookbooks']] })
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
   }
 
   const { data: session } = useSession()
@@ -180,19 +179,19 @@ function CookbookDetailPage() {
 
   const createChapterMutation = useMutation(
     trpc.cookbooks.createChapter.mutationOptions({
-      onSuccess: async () => { await invalidate(); closeModal() },
+      onSuccess: () => { invalidate(); closeModal() },
     }),
   )
 
   const renameChapterMutation = useMutation(
     trpc.cookbooks.renameChapter.mutationOptions({
-      onSuccess: async () => { await invalidate(); closeModal() },
+      onSuccess: () => { invalidate(); closeModal() },
     }),
   )
 
   const deleteChapterMutation = useMutation(
     trpc.cookbooks.deleteChapter.mutationOptions({
-      onSuccess: async () => { await invalidate(); closeModal(); setLocalOrder(null); setLocalChapterOrder(null) },
+      onSuccess: () => { invalidate(); closeModal(); setLocalOrder(null); setLocalChapterOrder(null) },
     }),
   )
 
