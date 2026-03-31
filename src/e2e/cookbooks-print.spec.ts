@@ -240,7 +240,7 @@ test.describe("Cookbook Print Route — with chapters", () => {
 
     // Create a chapter (migrates existing recipes into it)
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible({ timeout: 20000 });
 
     await page.close();
   });
@@ -249,7 +249,7 @@ test.describe("Cookbook Print Route — with chapters", () => {
     page,
   }) => {
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible();
     // Recipes should appear under the chapter heading
     await expect(page.getByText(recipe1Name).first()).toBeVisible();
     await expect(page.getByText(recipe2Name).first()).toBeVisible();

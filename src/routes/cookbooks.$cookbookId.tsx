@@ -151,7 +151,9 @@ function CookbookDetailPage() {
   const [activeDragId, setActiveDragId] = useState<string | null>(null)
 
   const closeModal = () => setModal({ kind: 'none' })
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
+  }
 
   const { data: session } = useSession()
 

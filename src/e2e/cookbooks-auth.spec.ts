@@ -42,7 +42,8 @@ async function createCookbookWithRecipe(
   const recipeButton = dialog.getByRole("button", { name: recipeName });
   await expect(recipeButton).toBeVisible({ timeout: 15000 });
   await recipeButton.click();
-  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await expect(page.getByText(recipeName)).toBeVisible();
 
   return { cookbookUrl, cookbookName, recipeName };
 }
@@ -218,7 +219,7 @@ test.describe("Cookbook Chapters", () => {
 
   test("should create a chapter and rename it", async ({ page }) => {
     await registerAndLogin(page);
-    const { cookbookUrl } = await createCookbookWithRecipe(
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
       page,
       "Chapters Create Rename",
     );
@@ -226,16 +227,17 @@ test.describe("Cookbook Chapters", () => {
 
     // Create first chapter — chapter header appears once there are recipes
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible({ timeout: 20000 });
 
     // Hover to reveal owner icons, then click rename
-    await page.getByRole("heading", { name: "Chapter 1" }).hover();
+    await page.getByRole("heading", { name: /Chapter 1/i }).hover();
     await page.getByLabel(/Rename Chapter 1/).click({ force: true });
     await expect(page.getByRole("textbox", { name: "Chapter name" })).toBeVisible();
     await page.getByRole("textbox", { name: "Chapter name" }).fill("Starters");
     await page.getByRole("button", { name: "Save" }).click();
     await expect(page.getByRole("heading", { name: "Starters" })).toBeVisible({ timeout: 20000 });
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).not.toBeVisible();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).not.toBeVisible();
   });
 
   test("should show New Chapter button only for owner", async ({ page }) => {
@@ -266,16 +268,17 @@ test.describe("Cookbook Chapters", () => {
 
     // Create a chapter (migrates existing recipe into it)
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible({ timeout: 20000 });
     await expect(page.getByText(recipeName)).toBeVisible();
 
     // Hover to reveal delete icon, then delete the only chapter
-    await page.getByRole("heading", { name: "Chapter 1" }).hover();
+    await page.getByRole("heading", { name: /Chapter 1/i }).hover();
     await page.getByLabel(/Delete Chapter 1/).click({ force: true });
     // Confirm deletion in the modal
     await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
     // Use heading role to avoid strict-mode violation with modal body text during mutation
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).not.toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).not.toBeVisible({ timeout: 20000 });
     await expect(page.getByText(recipeName)).toBeVisible();
   });
 
@@ -285,7 +288,7 @@ test.describe("Cookbook Chapters", () => {
     page,
   }) => {
     await registerAndLogin(page);
-    const { cookbookUrl } = await createCookbookWithRecipe(
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
       page,
       "Cross Chapter Drag",
     );
@@ -293,7 +296,8 @@ test.describe("Cookbook Chapters", () => {
 
     // Create a chapter — recipe migrates into it
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible({ timeout: 20000 });
 
     // Recipe drag handle should still be visible within the chapter
     await expect(
@@ -307,7 +311,7 @@ test.describe("Cookbook Chapters", () => {
     page,
   }) => {
     await registerAndLogin(page);
-    const { cookbookUrl } = await createCookbookWithRecipe(
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
       page,
       "Chapters Collapse",
     );
@@ -315,9 +319,11 @@ test.describe("Cookbook Chapters", () => {
 
     // Create two chapters (recipe migrates to Chapter 1, Chapter 2 starts empty)
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 1" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible({ timeout: 20000 });
     await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: "Chapter 2" })).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("button", { name: "New Chapter" })).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 2/i })).toBeVisible({ timeout: 20000 });
 
     // Collapse toggle appears once there are chapters
     const collapseBtn = page.getByRole("button", { name: /Collapse to chapter view|Expand recipe list/ });
@@ -325,7 +331,7 @@ test.describe("Cookbook Chapters", () => {
     await collapseBtn.click();
 
     // In collapsed mode both chapter rows remain visible
-    await expect(page.getByText("Chapter 1")).toBeVisible();
-    await expect(page.getByText("Chapter 2")).toBeVisible();
+    await expect(page.getByText(/Chapter 1/i)).toBeVisible();
+    await expect(page.getByText(/Chapter 2/i)).toBeVisible();
   });
 });
