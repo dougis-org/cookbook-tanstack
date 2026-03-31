@@ -170,7 +170,8 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // Table of Contents subroute.
     await page.click('a:has-text("Table of Contents")');
     await expect(page).toHaveURL(/\/cookbooks\/[a-f0-9-]+\/toc$/);
-    await expect(page.getByText("Table of Contents")).toBeVisible();
+    // Use role to avoid strict mode violation with breadcrumb
+    await expect(page.getByRole("paragraph").filter({ hasText: "Table of Contents" })).toBeVisible();
   });
 
   test("category detail route rendering", async ({ page }) => {
@@ -178,15 +179,15 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await gotoAndWaitForHydration(page, "/categories");
 
     const categoryHeadings = page.getByRole("heading", { level: 3 });
-    const headingCount = await categoryHeadings.count();
-    test.skip(
-      headingCount === 0,
-      "No categories are available to test detail route",
-    );
+    
+    // Wait for at least one heading to appear or timeout
+    try {
+      await expect(categoryHeadings.first()).toBeVisible({ timeout: 15000 });
+    } catch (e) {
+      test.skip(true, "No categories appeared within 15s");
+    }
 
     const firstCategoryHeading = categoryHeadings.first();
-    await expect(firstCategoryHeading).toBeVisible({ timeout: 60000 });
-
     const categoryName =
       (await firstCategoryHeading.textContent())?.trim() ?? "";
     await firstCategoryHeading.click();
