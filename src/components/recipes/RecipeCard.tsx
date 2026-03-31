@@ -1,3 +1,4 @@
+import { Heart } from 'lucide-react'
 import type { Recipe } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
@@ -6,24 +7,37 @@ interface RecipeCardProps {
   recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
     classificationName?: string | null
   }
+  marked?: boolean
 }
 
-export default function RecipeCard({ recipe }: RecipeCardProps) {
+export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
   return (
     <div data-testid="recipe-card" className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
       <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-gray-200 dark:bg-gray-700" data-testid="recipe-card-image" />
       <div className="p-4">
-        {recipe.classificationId && recipe.classificationName && (
-          <div className="mb-2">
-            <ClassificationBadge
-              classificationId={recipe.classificationId}
-              classificationName={recipe.classificationName}
-            />
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            {recipe.classificationId && recipe.classificationName && (
+              <div className="mb-2">
+                <ClassificationBadge
+                  classificationId={recipe.classificationId}
+                  classificationName={recipe.classificationName}
+                />
+              </div>
+            )}
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+              {recipe.name}
+            </h3>
           </div>
-        )}
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          {recipe.name}
-        </h3>
+          {marked !== undefined && (
+            <Heart
+              data-testid="heart-icon"
+              className={`w-5 h-5 shrink-0 ml-2 mt-1 ${marked ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
+              role="img"
+              aria-label={marked ? 'Recipe saved' : 'Recipe not saved'}
+            />
+          )}
+        </div>
         {recipe.notes && (
           <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
             {recipe.notes}

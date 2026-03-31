@@ -14,7 +14,7 @@ export const Route = createFileRoute('/recipes/$recipeId')({
   component: RecipeDetailPage,
 })
 
-function RecipeDetailPage() {
+export function RecipeDetailPage() {
   const { recipeId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -26,14 +26,10 @@ function RecipeDetailPage() {
     trpc.recipes.byId.queryOptions({ id: recipeId }),
   )
 
-  const { data: markedData } = useQuery(
-    trpc.recipes.isMarked.queryOptions({ id: recipeId }),
-  )
-
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [['recipes', 'isMarked']] })
+        queryClient.invalidateQueries({ queryKey: [['recipes', 'byId']] })
       },
     }),
   )
@@ -93,9 +89,9 @@ function RecipeDetailPage() {
             className="print:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-gray-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
             <Heart
-              className={`w-5 h-5 ${markedData?.marked ? 'fill-red-500 text-red-500' : ''}`}
+              className={`w-5 h-5 ${recipe?.marked ? 'fill-red-500 text-red-500' : ''}`}
             />
-            {markedData?.marked ? 'Saved' : 'Save'}
+            {recipe?.marked ? 'Saved' : 'Save'}
           </button>
         )}
       </div>

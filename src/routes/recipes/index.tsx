@@ -333,7 +333,7 @@ function RecipesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recipes.map((recipe) => (
               <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>
-                <RecipeCard recipe={recipe} />
+                <RecipeCard recipe={recipe} marked={isLoggedIn ? recipe.marked : undefined} />
               </Link>
             ))}
           </div>

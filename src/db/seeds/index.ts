@@ -19,10 +19,12 @@ async function main() {
     const { seedMeals } = await import("./meals")
     const { seedCourses } = await import("./courses")
     const { seedPreparations } = await import("./preparations")
+    const { seedClassifications } = await import("./classifications")
 
     await seedMeals()
     await seedCourses()
     await seedPreparations()
+    await seedClassifications()
 
     console.log("\nSeed complete!")
   } finally {

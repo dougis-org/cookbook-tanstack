@@ -5,6 +5,7 @@ import RecipeCard from "@/components/recipes/RecipeCard"
 
 type RecipeCardRecipe = Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
   classificationName?: string | null
+  marked?: boolean
 }
 
 function makeRecipe(overrides: Partial<RecipeCardRecipe> = {}): RecipeCardRecipe {
@@ -64,5 +65,27 @@ describe("RecipeCard", () => {
     render(<RecipeCard recipe={makeRecipe({ difficulty: "easy" })} />)
 
     expect(screen.getByText("easy")).toBeInTheDocument()
+  })
+
+  it("renders a filled heart icon when marked={true}", () => {
+    render(<RecipeCard recipe={makeRecipe()} marked={true} />)
+
+    const heart = screen.getByTestId("heart-icon")
+    expect(heart).toBeInTheDocument()
+    expect(heart).toHaveClass("fill-red-500")
+  })
+
+  it("renders an outline heart icon when marked={false}", () => {
+    render(<RecipeCard recipe={makeRecipe()} marked={false} />)
+
+    const heart = screen.getByTestId("heart-icon")
+    expect(heart).toBeInTheDocument()
+    expect(heart).not.toHaveClass("fill-red-500")
+  })
+
+  it("renders no heart icon when marked is omitted", () => {
+    render(<RecipeCard recipe={makeRecipe()} />)
+
+    expect(screen.queryByTestId("heart-icon")).not.toBeInTheDocument()
   })
 })

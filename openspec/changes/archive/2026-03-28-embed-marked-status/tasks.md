@@ -1,7 +1,7 @@
 ## 1. Execution
 
-- [ ] 1.1 Check out `main` branch and pull latest remote changes
-- [ ] 1.2 Create feature branch: `git checkout -b feat/embed-marked-status`
+- [x] 1.1 Check out `main` branch and pull latest remote changes
+- [x] 1.2 Create feature branch: `git checkout -b feat/embed-marked-status`
 
 ## 2. Types
 
@@ -52,14 +52,14 @@
 
 - [x] 9.1 Run full test suite: `npm run test`
 - [x] 9.2 Run `npm run build` — no TypeScript errors
-- [ ] 9.3 Smoke-test locally: start dev server, verify list and detail pages show correct heart state for a logged-in user
+- [x] 9.3 Smoke-test locally: start dev server, verify list and detail pages show correct heart state for a logged-in user
 
 ## 10. PR and Merge
 
 - [x] 10.1 Commit and push the feature branch
 - [x] 10.2 Open PR targeting `main` with title: `feat(recipes): embed per-user marked status in list and byId responses (#220)`
 - [x] 10.3 Enable auto-merge on the PR
-- [ ] 10.4 Resolve any CI failures or review comments before merge
+- [x] 10.4 Resolve any CI failures or review comments before merge
 
 ## 11. Post-Merge
 
