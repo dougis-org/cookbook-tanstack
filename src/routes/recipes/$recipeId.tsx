@@ -30,7 +30,10 @@ export function RecipeDetailPage() {
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [trpc.recipes.byId.getLookupKey({ id: recipeId })] })
+        queryClient.invalidateQueries({
+          queryKey: trpc.recipes.byId.queryOptions({ id: recipeId }).queryKey,
+        })
+        queryClient.invalidateQueries({ queryKey: [['recipes']] })
       },
     }),
   )
