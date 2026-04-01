@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
+      issues: write
     env:
       MONGODB_URI: mongodb://localhost:27017/cookbook
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
@@ -171,4 +173,5 @@ jobs:
         run: |
           gh pr comment "$PR" \
             --repo "$REPO" \
-            --body "❌ Build and test workflow failed. Check the [test report](https://github.com/$REPO/actions/runs/$RUN_ID) for details."
+            --body "❌ Build and test workflow failed. Check the [test report](https://github.com/$REPO/actions/runs/$RUN_ID) for details." \
+          || true
