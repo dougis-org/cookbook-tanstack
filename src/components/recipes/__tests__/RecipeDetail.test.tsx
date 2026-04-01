@@ -302,7 +302,7 @@ describe("RecipeDetail — print button in actions slot", () => {
     vi.restoreAllMocks()
   })
 
-  it("renders PrintButton for owner (Print present alongside Edit)", () => {
+  it("actions slot renders Print+Edit", () => {
     render(
       <RecipeDetail
         recipe={makeRecipe()}
@@ -318,7 +318,7 @@ describe("RecipeDetail — print button in actions slot", () => {
     expect(screen.getByRole("link", { name: "Edit Recipe" })).toBeInTheDocument()
   })
 
-  it("renders PrintButton for non-owner (Print present, no Edit)", () => {
+  it("actions slot renders Print only", () => {
     render(
       <RecipeDetail
         recipe={makeRecipe()}
