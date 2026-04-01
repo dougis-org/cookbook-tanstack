@@ -133,4 +133,28 @@ test.describe("Recipe Auth-Gated Actions", () => {
       page.getByRole("button", { name: "Delete Recipe" }),
     ).toBeVisible();
   });
+
+  test("should show Print button for unauthenticated user", async ({ page }) => {
+    await registerAndLogin(page);
+    const recipeName = getUniqueRecipeName("Unauth Print Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipeName });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    const recipeUrl = page.url();
+
+    await page.context().clearCookies();
+    await gotoAndWaitForHydration(page, recipeUrl);
+
+    await expect(page.getByRole("button", { name: "Print" })).toBeVisible();
+  });
+
+  test("should show Print button for authenticated user", async ({ page }) => {
+    await registerAndLogin(page);
+    const recipeName = getUniqueRecipeName("Auth Print Test");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipeName });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    await expect(page.getByRole("button", { name: "Print" })).toBeVisible();
+  });
 });
