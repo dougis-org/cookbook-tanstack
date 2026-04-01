@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { CookbookStandalonePage, CookbookTocList } from "@/components/cookbooks/CookbookStandaloneLayout"
+import userEvent from "@testing-library/user-event"
+import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome } from "@/components/cookbooks/CookbookStandaloneLayout"
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
@@ -130,5 +131,31 @@ describe('CookbookTocList', () => {
     render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
     const startersHeading = screen.getByText('Starters')
     expect(startersHeading).toHaveClass('print:break-after-avoid')
+  })
+})
+
+// ─── CookbookPageChrome ───────────────────────────────────────────────────────
+
+describe('CookbookPageChrome', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'print').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('renders a print button that calls window.print() on click', async () => {
+    render(
+      <CookbookPageChrome
+        cookbookId="cb1"
+        cookbookName="My Cookbook"
+        breadcrumbLabel="Table of Contents"
+      />,
+    )
+    const printButton = screen.getByRole('button', { name: /print/i })
+    expect(printButton).toBeInTheDocument()
+    await userEvent.click(printButton)
+    expect(window.print).toHaveBeenCalledOnce()
   })
 })

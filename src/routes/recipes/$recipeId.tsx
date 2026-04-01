@@ -9,6 +9,7 @@ import RecipeDetail from '@/components/recipes/RecipeDetail'
 import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
 import ExportButton from '@/components/recipes/ExportButton'
 import Breadcrumb from '@/components/ui/Breadcrumb'
+import PrintButton from '@/components/ui/PrintButton'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
   component: RecipeDetailPage,
@@ -29,7 +30,10 @@ export function RecipeDetailPage() {
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [['recipes', 'byId']] })
+        queryClient.invalidateQueries({
+          queryKey: trpc.recipes.byId.queryOptions({ id: recipeId }).queryKey,
+        })
+        queryClient.invalidateQueries({ queryKey: [['recipes']] })
       },
     }),
   )
@@ -99,15 +103,18 @@ export function RecipeDetailPage() {
       <RecipeDetail
         recipe={recipe}
         actions={
-          isOwner ? (
-            <Link
-              to="/recipes/$recipeId/edit"
-              params={{ recipeId }}
-              className="print:hidden px-4 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-lg transition-colors"
-            >
-              Edit Recipe
-            </Link>
-          ) : undefined
+          <div className="flex items-center gap-2 print:hidden">
+            <PrintButton />
+            {isOwner && (
+              <Link
+                to="/recipes/$recipeId/edit"
+                params={{ recipeId }}
+                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                Edit Recipe
+              </Link>
+            )}
+          </div>
         }
       />
 
