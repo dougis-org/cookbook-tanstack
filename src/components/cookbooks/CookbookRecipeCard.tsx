@@ -90,7 +90,7 @@ export function SortableRecipeCard({
     >
       <button
         onClick={onRemove}
-        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity"
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-500 hover:text-red-400 transition-opacity"
         aria-label={`Remove ${recipe.name}`}
       >
         <X className="w-4 h-4" />
