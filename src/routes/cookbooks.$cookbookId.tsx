@@ -16,6 +16,7 @@ import {
 import {
   SortableContext,
   sortableKeyboardCoordinates,
+  rectSortingStrategy,
   verticalListSortingStrategy,
   useSortable,
   arrayMove,
@@ -26,6 +27,7 @@ import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
+import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight } from 'lucide-react'
 
@@ -537,23 +539,26 @@ function CookbookDetailPage() {
                     onDelete={() => setModal({ kind: 'deleteChapter', chapter })}
                   />
                   {isOwner ? (
-                    <SortableContext items={chapterRecipeIds} strategy={verticalListSortingStrategy} id={chapter.id}>
-                      {chapterRecipes.map((recipe, index) => (
-                        <SortableRecipeRow
-                          key={recipe.id}
-                          recipe={recipe}
-                          index={index}
-                          onRemove={() => setModal({ kind: 'removeRecipe', recipe })}
-                        />
-                      ))}
-                      {chapterRecipes.length === 0 && (
-                        <EmptyChapterDropZone chapterId={chapter.id} />
-                      )}
-                    </SortableContext>
+                    chapterRecipes.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <SortableContext items={chapterRecipeIds} strategy={rectSortingStrategy} id={chapter.id}>
+                          {chapterRecipes.map((recipe, index) => (
+                            <SortableRecipeCard
+                              key={recipe.id}
+                              recipe={recipe}
+                              index={index}
+                              onRemove={() => setModal({ kind: 'removeRecipe', recipe })}
+                            />
+                          ))}
+                        </SortableContext>
+                      </div>
+                    ) : (
+                      <EmptyChapterDropZone chapterId={chapter.id} />
+                    )
                   ) : (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {chapterRecipes.map((recipe, index) => (
-                        <StaticRecipeRow key={recipe.id} recipe={recipe} index={index} />
+                        <StaticRecipeCard key={recipe.id} recipe={recipe} index={index} />
                       ))}
                     </div>
                   )}
@@ -562,9 +567,8 @@ function CookbookDetailPage() {
             })}
             {isOwner && activeDragRecipe && (
               <DragOverlay>
-                <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-lg p-3 opacity-90 z-50">
-                  <GripVertical className="w-5 h-5 text-gray-500" />
-                  <RecipeRowContent recipe={activeDragRecipe} index={0} />
+                <div className="opacity-90 shadow-xl">
+                  <StaticRecipeCard recipe={activeDragRecipe} index={0} />
                 </div>
               </DragOverlay>
             )}
@@ -577,22 +581,24 @@ function CookbookDetailPage() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext items={flatOrderedIds} strategy={verticalListSortingStrategy}>
-              {flatOrderedRecipes.map((recipe, index) => (
-                <SortableRecipeRow
-                  key={recipe.id}
-                  recipe={recipe}
-                  index={index}
-                  onRemove={() => setModal({ kind: 'removeRecipe', recipe })}
-                />
-              ))}
-            </SortableContext>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <SortableContext items={flatOrderedIds} strategy={rectSortingStrategy}>
+                {flatOrderedRecipes.map((recipe, index) => (
+                  <SortableRecipeCard
+                    key={recipe.id}
+                    recipe={recipe}
+                    index={index}
+                    onRemove={() => setModal({ kind: 'removeRecipe', recipe })}
+                  />
+                ))}
+              </SortableContext>
+            </div>
           </DndContext>
         ) : (
           /* Flat static list (non-owner, no chapters) */
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {flatOrderedRecipes.map((recipe, index) => (
-              <StaticRecipeRow key={recipe.id} recipe={recipe} index={index} />
+              <StaticRecipeCard key={recipe.id} recipe={recipe} index={index} />
             ))}
           </div>
         )}
@@ -679,81 +685,6 @@ function SortableChapterRow({ chapter, recipeCount }: { chapter: Chapter; recipe
         <p className="font-medium text-white">{chapter.name}</p>
         <p className="text-xs text-gray-400">{recipeCount} {recipeCount === 1 ? 'recipe' : 'recipes'}</p>
       </div>
-    </div>
-  )
-}
-
-// ─── Shared recipe row content (image, link, metadata) ───────────────────────
-
-function RecipeRowContent({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
-  return (
-    <>
-      <span className="text-gray-500 text-sm w-6 text-right flex-shrink-0">{index + 1}</span>
-
-      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0" />
-
-      <Link to="/recipes/$recipeId" params={{ recipeId: recipe.id }} className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-white truncate hover:text-cyan-400 transition-colors">{recipe.name}</p>
-        <p className="text-xs text-gray-400">
-          {[
-            recipe.prepTime && `Prep ${recipe.prepTime}m`,
-            recipe.cookTime && `Cook ${recipe.cookTime}m`,
-            recipe.servings && `${recipe.servings} servings`,
-          ].filter(Boolean).join(' · ')}
-        </p>
-      </Link>
-    </>
-  )
-}
-
-// ─── Sortable Recipe Row (owners) ─────────────────────────────────────────────
-
-function SortableRecipeRow({
-  recipe,
-  index,
-  onRemove,
-}: {
-  recipe: CookbookRecipe
-  index: number
-  onRemove: () => void
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: recipe.id })
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
-      className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3 group"
-    >
-      <button
-        {...attributes}
-        {...listeners}
-        className="text-gray-500 hover:text-gray-300 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
-        aria-label="Drag to reorder"
-      >
-        <GripVertical className="w-5 h-5" />
-      </button>
-
-      <RecipeRowContent recipe={recipe} index={index} />
-
-      <button
-        onClick={onRemove}
-        className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0 opacity-0 group-hover:opacity-100"
-        aria-label={`Remove ${recipe.name}`}
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
-  )
-}
-
-// ─── Static Recipe Row (non-owners: no drag handle, no Remove) ───────────────
-
-function StaticRecipeRow({ recipe, index }: { recipe: CookbookRecipe; index: number }) {
-  return (
-    <div className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3">
-      <RecipeRowContent recipe={recipe} index={index} />
     </div>
   )
 }
