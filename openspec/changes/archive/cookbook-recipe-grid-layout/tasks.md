@@ -37,15 +37,15 @@
 
 - [x] 4.1 Commit all changes with a descriptive message and push to `feature/cookbook-recipe-grid-layout`.
 - [x] 4.2 Open a PR from `feature/cookbook-recipe-grid-layout` → `main`. Reference issue #230 in the PR description. Enable auto-merge.
-- [ ] 4.3 Monitor CI checks. If any check fails: diagnose, fix, commit, push, repeat until all checks are green.
-- [ ] 4.4 Address any review comments: for each comment, make the fix, commit, push. Repeat until no unresolved comments remain.
-- [ ] 4.5 Enable auto-merge once all CI checks are green and no blocking review comments remain. Do not force-merge.
+- [x] 4.3 Monitor CI checks. If any check fails: diagnose, fix, commit, push, repeat until all checks are green.
+- [x] 4.4 Address any review comments: for each comment, make the fix, commit, push. Repeat until no unresolved comments remain.
+- [x] 4.5 Enable auto-merge once all CI checks are green and no blocking review comments remain. Do not force-merge.
 
 ## 5. Post-Merge
 
-- [ ] 5.1 Checkout main and pull: `git checkout main && git pull --ff-only`.
-- [ ] 5.2 Verify the merged changes appear on `main` (`git log --oneline -5`).
-- [ ] 5.3 Sync the approved spec delta to the canonical specs location: copy `openspec/changes/cookbook-recipe-grid-layout/specs/cookbook-recipe-grid/spec.md` → `openspec/specs/cookbook-recipe-grid/spec.md`.
-- [ ] 5.4 Archive the change directory in a **single atomic commit**: copy `openspec/changes/cookbook-recipe-grid-layout/` to `openspec/changes/archive/cookbook-recipe-grid-layout/`, delete `openspec/changes/cookbook-recipe-grid-layout/`, and include the new `openspec/specs/cookbook-recipe-grid/` in the same commit. Do not split into two commits.
-- [ ] 5.5 Push the archive commit to `main`.
-- [ ] 5.6 Prune the merged local branch: `git branch -d feature/cookbook-recipe-grid-layout`.
+- [x] 5.1 Checkout main and pull: `git checkout main && git pull --ff-only`.
+- [x] 5.2 Verify the merged changes appear on `main` (`git log --oneline -5`).
+- [x] 5.3 Sync the approved spec delta to the canonical specs location: copy `openspec/changes/cookbook-recipe-grid-layout/specs/cookbook-recipe-grid/spec.md` → `openspec/specs/cookbook-recipe-grid/spec.md`.
+- [x] 5.4 Archive the change directory in a **single atomic commit**: copy `openspec/changes/cookbook-recipe-grid-layout/` to `openspec/changes/archive/cookbook-recipe-grid-layout/`, delete `openspec/changes/cookbook-recipe-grid-layout/`, and include the new `openspec/specs/cookbook-recipe-grid/` in the same commit. Do not split into two commits.
+- [x] 5.5 Push the archive commit to `main`.
+- [x] 5.6 Prune the merged local branch: `git branch -d feature/cookbook-recipe-grid-layout`.
