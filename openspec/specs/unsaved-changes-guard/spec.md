@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Block in-app navigation when form is dirty
-The system SHALL prevent in-app navigation away from the recipe form and show a confirmation modal when the form has unsaved changes.
+The system SHALL prevent in-app navigation away from the recipe form and show a confirmation modal when the form has unsaved changes. In Edit mode, this SHALL only apply if changes have not yet been successfully persisted to the server.
 
 #### Scenario: Clean form — no block on navigation
 - **GIVEN** the recipe form has not been modified
@@ -28,8 +28,13 @@ The system SHALL prevent in-app navigation away from the recipe form and show a 
 - **WHEN** a TanStack Router navigation event fires (e.g. clicking a nav link)
 - **THEN** the navigation is blocked and the confirmation modal is shown
 
+#### Scenario: Edit mode — autosaved changes do not block navigation
+- **GIVEN** the form is in Edit mode and changes have been made
+- **WHEN** the autosave status is "Saved" (to server) and the user navigates away
+- **THEN** navigation proceeds immediately without showing the confirmation modal
+
 ### Requirement: Block tab close / refresh when form is dirty
-The system SHALL trigger the browser's native `beforeunload` dialog when the form is dirty and the user attempts to close or refresh the tab.
+The system SHALL trigger the browser's native `beforeunload` dialog when the form is dirty and the user attempts to close or refresh the tab. In Edit mode, this SHALL only apply if changes have not yet been successfully persisted to the server.
 
 #### Scenario: Dirty form — tab close triggers native dialog
 - **GIVEN** the user has modified at least one form field
@@ -40,6 +45,11 @@ The system SHALL trigger the browser's native `beforeunload` dialog when the for
 - **GIVEN** the form has not been modified
 - **WHEN** the user closes the tab or refreshes the page
 - **THEN** no native dialog fires
+
+#### Scenario: Edit mode — autosaved changes do not trigger native dialog
+- **GIVEN** the form is in Edit mode and changes have been made
+- **WHEN** the autosave status is "Saved" (to server) and the user closes the tab
+- **THEN** no native unsaved-changes dialog fires
 
 ### Requirement: Dirty state correctly detects RHF field changes
 The system SHALL consider the form dirty when any react-hook-form registered field has a value different from its default.
