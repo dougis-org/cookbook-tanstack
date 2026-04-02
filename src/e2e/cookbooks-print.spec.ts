@@ -2,12 +2,8 @@ import { test, expect } from "@bgotink/playwright-coverage";
 import type { Page } from "@playwright/test";
 import { registerAndLogin, login } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
+import { getUniqueCookbookName } from "./helpers/cookbooks";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
-
-function getUniqueCookbookName(prefix = "Test Cookbook") {
-  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-  return `${prefix}-${suffix}`;
-}
 
 async function createCookbookAndGetId(
   page: Page,

@@ -2,11 +2,8 @@ import { test, expect } from "@bgotink/playwright-coverage";
 import type { Page } from "@playwright/test";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
+import { getUniqueCookbookName } from "./helpers/cookbooks";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
-
-function getUniqueCookbookName(prefix = "Test Cookbook") {
-  return `${prefix} ${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-}
 
 /** Create a cookbook via the UI and return the detail page URL. */
 async function createCookbook(
