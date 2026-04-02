@@ -4,6 +4,11 @@ import { registerAndLogin, login } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
+function getUniqueCookbookName(prefix = "Test Cookbook") {
+  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}-${suffix}`;
+}
+
 async function createCookbookAndGetId(
   page: Page,
   name: string,
@@ -57,7 +62,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
 
     recipe1Name = getUniqueRecipeName("PrintRecipe1");
     recipe2Name = getUniqueRecipeName("PrintRecipe2");
-    const cookbookName = `PrintCookbook-${Date.now()}`;
+    const cookbookName = getUniqueCookbookName("PrintCookbook");
 
     // Create two recipes
     await gotoAndWaitForHydration(page, "/recipes/new");
@@ -230,7 +235,7 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
   page,
 }) => {
   await registerAndLogin(page);
-  const cookbookName = `PrivatePrint-${Date.now()}`;
+  const cookbookName = getUniqueCookbookName("PrivatePrint");
   const cookbookId = await createCookbookAndGetId(page, cookbookName, false);
 
   await page.context().clearCookies();
@@ -255,7 +260,7 @@ test.describe("Cookbook Print Route — with chapters", () => {
 
     recipe1Name = getUniqueRecipeName("ChapterPrint1");
     recipe2Name = getUniqueRecipeName("ChapterPrint2");
-    const cookbookName = `ChapterPrintCookbook-${Date.now()}`;
+    const cookbookName = getUniqueCookbookName("ChapterPrintCookbook");
 
     // Create two recipes
     await gotoAndWaitForHydration(page, "/recipes/new");
@@ -320,7 +325,7 @@ test.describe("Cookbook Print Route — auto-trigger", () => {
     ownerEmail = creds.email;
     ownerPassword = creds.password;
 
-    const cookbookName = `AutoTriggerPrint-${Date.now()}`;
+    const cookbookName = getUniqueCookbookName("AutoTriggerPrint");
     cookbookId = await createCookbookAndGetId(page, cookbookName);
 
     const recipeName = getUniqueRecipeName("AutoTriggerRecipe");
@@ -375,6 +380,7 @@ test.describe("Cookbook Print Route — auto-trigger", () => {
       page,
       `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
+    await expect(page.getByText("Loading…")).not.toBeVisible();
     const printCalled = await page.evaluate(
       () => (window as unknown as Record<string, unknown>).__printCalled,
     );
@@ -389,7 +395,7 @@ test("Print button on cookbook detail page is an <a> Link pointing to the print 
   page,
 }) => {
   await registerAndLogin(page);
-  const cookbookName = `NavPrint-${Date.now()}`;
+  const cookbookName = getUniqueCookbookName("NavPrint");
   const cookbookId = await createCookbookAndGetId(page, cookbookName);
 
   const printLink = page.getByRole("link", { name: "Print", exact: true });
