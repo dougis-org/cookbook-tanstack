@@ -29,9 +29,9 @@
 
 ## 6. PR and Merge
 
-- [ ] 6.1 Commit all changes with a clear message referencing issue #231
-- [ ] 6.2 Push to remote: `git push`
-- [ ] 6.3 Open PR to `main`; reference issue #231 in the description; enable auto-merge
+- [x] 6.1 Commit all changes with a clear message referencing issue #231
+- [x] 6.2 Push to remote: `git push`
+- [x] 6.3 Open PR to `main`; reference issue #231 in the description; enable auto-merge
 - [ ] 6.4 Monitor CI — if checks fail: diagnose, fix, commit, push, repeat until all green
 - [ ] 6.5 Address any review comments: commit fixes, push, repeat until no blocking comments remain
 

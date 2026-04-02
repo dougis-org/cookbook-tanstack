@@ -16,9 +16,16 @@ import type { Recipe, TaxonomyItem } from '@/types/recipe'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    displayonly: search.displayonly as string | number | undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const displayonly = search.displayonly
+
+    return {
+      displayonly:
+        typeof displayonly === 'string' || typeof displayonly === 'number'
+          ? displayonly
+          : undefined,
+    }
+  },
 })
 
 function CookbookPrintPage() {
