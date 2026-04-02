@@ -58,7 +58,7 @@ describe("CookbookCard", () => {
   })
 
   it("renders BookOpen icon in title area when imageUrl is null", () => {
-    const { container } = render(<CookbookCard cookbook={makeCookbook({ imageUrl: null, name: "No Photo" })} />)
+    render(<CookbookCard cookbook={makeCookbook({ imageUrl: null, name: "No Photo" })} />)
     const heading = screen.getByText("No Photo").closest("h3")
     expect(heading?.querySelector("svg")).toBeInTheDocument()
   })

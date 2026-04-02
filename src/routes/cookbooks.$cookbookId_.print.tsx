@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
 import {
   CookbookPageLoading,
@@ -15,13 +16,33 @@ import type { Recipe, TaxonomyItem } from '@/types/recipe'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
+  validateSearch: (search: Record<string, unknown>) => {
+    const displayonly = search.displayonly
+
+    return {
+      displayonly:
+        typeof displayonly === 'string' || typeof displayonly === 'number'
+          ? displayonly
+          : undefined,
+    }
+  },
 })
 
 function CookbookPrintPage() {
   const { cookbookId } = Route.useParams()
+  const { displayonly } = Route.useSearch()
+  const displayOnly = String(displayonly) === '1'
+  const hasPrinted = useRef(false)
   const { data: printData, isLoading } = useQuery(
     trpc.cookbooks.printById.queryOptions({ id: cookbookId }),
   )
+
+  useEffect(() => {
+    if (!isLoading && printData && !displayOnly && !hasPrinted.current) {
+      hasPrinted.current = true
+      window.print()
+    }
+  }, [isLoading, printData, displayOnly])
 
   if (isLoading) return <CookbookPageLoading />
   if (!printData) return <CookbookPageNotFound />
