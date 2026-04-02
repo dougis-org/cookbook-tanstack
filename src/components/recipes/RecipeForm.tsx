@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -9,6 +9,8 @@ import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
+import { useAutoSave } from "@/hooks/useAutoSave"
+import StatusIndicator from "./StatusIndicator"
 
 function sortedEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false
@@ -82,65 +84,52 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
   const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
+  const initialSourceName = useMemo(() => initialData?.sourceName ?? "", [initialData?.sourceName])
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
 
+  const originalDataRef = useRef(initialData)
+  const formDefaults = useMemo(() => ({
+    name: originalDataRef.current?.name ?? "",
+    classificationId: originalDataRef.current?.classificationId ?? "",
+    ingredients: originalDataRef.current?.ingredients ?? "",
+    instructions: originalDataRef.current?.instructions ?? "",
+    notes: originalDataRef.current?.notes ?? "",
+    prepTime: originalDataRef.current?.prepTime?.toString() ?? "",
+    cookTime: originalDataRef.current?.cookTime?.toString() ?? "",
+    servings: originalDataRef.current?.servings?.toString() ?? "",
+    difficulty: originalDataRef.current?.difficulty ?? "",
+    isPublic: originalDataRef.current?.isPublic ?? true,
+    calories: originalDataRef.current?.calories?.toString() ?? "",
+    fat: originalDataRef.current?.fat?.toString() ?? "",
+    cholesterol: originalDataRef.current?.cholesterol?.toString() ?? "",
+    sodium: originalDataRef.current?.sodium?.toString() ?? "",
+    protein: originalDataRef.current?.protein?.toString() ?? "",
+  }), [])
+
+  const form = useForm<RecipeFormValues>({
+    resolver: zodResolver(recipeFormSchema),
+    defaultValues: formDefaults,
+    mode: "onChange",
+  })
+
   const {
     register,
     handleSubmit,
     formState: { errors, isDirty },
-  } = useForm<RecipeFormValues>({
-    resolver: zodResolver(recipeFormSchema),
-    defaultValues: {
-      name: initialData?.name ?? "",
-      classificationId: initialData?.classificationId ?? "",
-      ingredients: initialData?.ingredients ?? "",
-      instructions: initialData?.instructions ?? "",
-      notes: initialData?.notes ?? "",
-      prepTime: initialData?.prepTime?.toString() ?? "",
-      cookTime: initialData?.cookTime?.toString() ?? "",
-      servings: initialData?.servings?.toString() ?? "",
-      difficulty: initialData?.difficulty ?? "",
-      isPublic: initialData?.isPublic ?? true,
-      calories: initialData?.calories?.toString() ?? "",
-      fat: initialData?.fat?.toString() ?? "",
-      cholesterol: initialData?.cholesterol?.toString() ?? "",
-      sodium: initialData?.sodium?.toString() ?? "",
-      protein: initialData?.protein?.toString() ?? "",
-    },
-  })
+    reset,
+  } = form
 
   const createMutation = useMutation(trpc.recipes.create.mutationOptions())
   const updateMutation = useMutation(trpc.recipes.update.mutationOptions())
+  // Autosave uses networkMode:'always' so an offline request fails immediately
+  // instead of TanStack Query pausing it indefinitely (default 'online' mode).
+  const autoSaveMutation = useMutation({ ...trpc.recipes.update.mutationOptions(), networkMode: 'always' })
   const isPending = createMutation.isPending || updateMutation.isPending
   const [submitError, setSubmitError] = useState<string | null>(null)
-
-  const hasExternalChanges =
-    !sortedEqual(selectedMealIds, initialMealIds) ||
-    !sortedEqual(selectedCourseIds, initialCourseIds) ||
-    !sortedEqual(selectedPrepIds, initialPrepIds) ||
-    selectedSourceId !== initialSourceId
-
-  const isFormDirty = isDirty || hasExternalChanges
-  const isFormDirtyRef = useRef(false)
-  isFormDirtyRef.current = isFormDirty
-
-  const blocker = useBlocker({
-    shouldBlockFn: useCallback(() => isFormDirtyRef.current, []),
-    enableBeforeUnload: true,
-    withResolver: true,
-  })
-
-  function handleCancel() {
-    if (window.history.length > 1) {
-      router.history.back()
-    } else {
-      navigate({ to: "/recipes" })
-    }
-  }
 
   function toNum(v: string | undefined): number | undefined {
     if (v == null) return undefined
@@ -149,7 +138,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     return Number.isFinite(n) ? n : undefined
   }
 
-  function toPayload(values: RecipeFormValues) {
+  const toPayload = useCallback((values: RecipeFormValues) => {
     return {
       name: values.name,
       classificationId: values.classificationId || undefined,
@@ -168,6 +157,82 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       sodium: toNum(values.sodium),
       protein: toNum(values.protein),
     }
+  }, [selectedSourceId])
+
+  const autoSaveOnSave = useCallback(async (values: RecipeFormValues) => {
+    if (isEdit && initialData?.id) {
+      const payload = toPayload(values)
+      const taxonomyIds = {
+        mealIds: selectedMealIds.length ? selectedMealIds : undefined,
+        courseIds: selectedCourseIds.length ? selectedCourseIds : undefined,
+        preparationIds: selectedPrepIds.length ? selectedPrepIds : undefined,
+      }
+      await autoSaveMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
+    }
+  }, [isEdit, initialData?.id, toPayload, selectedMealIds, selectedCourseIds, selectedPrepIds, autoSaveMutation])
+
+  const localStorageKey = useMemo(() => isEdit ? `recipe-draft-${initialData?.id}` : "recipe-draft-new", [isEdit, initialData?.id])
+  const { status: autoSaveStatus, savedToServer, draft, purgeDraft, resetStatus, retry: retryAutoSave } = useAutoSave({
+    form,
+    onSave: isEdit ? autoSaveOnSave : undefined,
+    localStorageKey,
+    debounceMs: 1000,
+  })
+
+  const [showDraftPrompt, setShowDraftPrompt] = useState(false)
+  useEffect(() => {
+    if (!draft || Object.keys(draft).length === 0) {
+      setShowDraftPrompt(false)
+      return
+    }
+    // Only prompt if the draft differs from the current (initial) form values
+    const currentValues = form.getValues()
+    const hasDifferences = Object.keys(draft).some((key) => {
+      const draftVal = (draft as Record<string, unknown>)[key]
+      const formVal = (currentValues as Record<string, unknown>)[key]
+      return JSON.stringify(draftVal) !== JSON.stringify(formVal)
+    })
+    setShowDraftPrompt(hasDifferences)
+  }, [draft, form])
+
+  const handleRestoreDraft = () => {
+    if (draft) {
+      reset(draft)
+      setShowDraftPrompt(false)
+    }
+  }
+
+  const hasExternalChanges =
+    !sortedEqual(selectedMealIds, initialMealIds) ||
+    !sortedEqual(selectedCourseIds, initialCourseIds) ||
+    !sortedEqual(selectedPrepIds, initialPrepIds) ||
+    selectedSourceId !== initialSourceId
+
+  const isFormDirty = isDirty || hasExternalChanges
+  const isFormDirtyRef = useRef(false)
+  isFormDirtyRef.current = isFormDirty
+
+  const savedToServerRef = useRef(savedToServer)
+  savedToServerRef.current = savedToServer
+
+  const blocker = useBlocker({
+    shouldBlockFn: useCallback(() => {
+      if (isEdit) {
+        // In Edit mode, suppress guard if latest changes were successfully autosaved
+        return isFormDirtyRef.current && !savedToServerRef.current
+      }
+      return isFormDirtyRef.current
+    }, [isEdit]),
+    enableBeforeUnload: true,
+    withResolver: true,
+  })
+
+  function handleCancel() {
+    if (window.history.length > 1) {
+      router.history.back()
+    } else {
+      navigate({ to: "/recipes" })
+    }
   }
 
   async function onSubmit(values: RecipeFormValues) {
@@ -180,14 +245,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     }
 
     try {
-      if (isEdit) {
+      if (isEdit && initialData?.id) {
         await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        purgeDraft()
         isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
         const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+        purgeDraft()
         isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
@@ -196,12 +263,51 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     }
   }
 
+  function handleRevert() {
+    reset(formDefaults, { keepDirty: false })
+    setSelectedMealIds(initialMealIds)
+    setSelectedCourseIds(initialCourseIds)
+    setSelectedPrepIds(initialPrepIds)
+    setSelectedSourceId(initialSourceId)
+    setSelectedSourceName(initialSourceName)
+    purgeDraft()
+    resetStatus()
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
+      {showDraftPrompt && (
+        <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg flex items-center justify-between">
+          <div className="text-cyan-700 dark:text-cyan-300">
+            <span className="font-semibold">You have an unsaved draft.</span> Would you like to restore it?
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleRestoreDraft}
+              className="px-4 py-1 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded transition-colors"
+            >
+              Restore
+            </button>
+            <button
+              onClick={() => {
+                purgeDraft()
+                setShowDraftPrompt(false)
+              }}
+              className="px-4 py-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-sm font-semibold rounded transition-colors"
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-          {isEdit ? "Edit Recipe" : "Create New Recipe"}
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {isEdit ? "Edit Recipe" : "Create New Recipe"}
+          </h2>
+          <StatusIndicator status={autoSaveStatus} onRetry={isEdit ? retryAutoSave : undefined} />
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Recipe Name */}
@@ -478,10 +584,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             </button>
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={isEdit ? handleRevert : handleCancel}
               className="px-6 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
             >
-              Cancel
+              {isEdit ? "Revert" : "Cancel"}
             </button>
           </div>
         </form>
