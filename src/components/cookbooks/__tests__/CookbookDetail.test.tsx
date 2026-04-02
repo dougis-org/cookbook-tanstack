@@ -35,6 +35,7 @@ vi.mock('@dnd-kit/sortable', () => ({
   SortableContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   sortableKeyboardCoordinates: vi.fn(),
   verticalListSortingStrategy: vi.fn(),
+  rectSortingStrategy: vi.fn(),
   useSortable: () => ({
     attributes: {},
     listeners: {},
@@ -56,6 +57,10 @@ vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 vi.mock('@/components/cookbooks/CookbookFields', () => ({ default: () => null }))
+vi.mock('@/components/cookbooks/CookbookRecipeCard', () => ({
+  SortableRecipeCard: () => null,
+  StaticRecipeCard: () => null,
+}))
 vi.mock('@/components/ui/CardImage', () => ({
   default: ({ alt }: { alt: string }) => <img alt={alt} />,
 }))
