@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import StatusIndicator from "../StatusIndicator"
 
 describe("StatusIndicator", () => {
@@ -21,5 +21,14 @@ describe("StatusIndicator", () => {
   it("should render error state", () => {
     render(<StatusIndicator status="error" />)
     expect(screen.getByText("Failed to save")).toBeDefined()
+  })
+
+  it("should render retry button in error state when onRetry is provided", () => {
+    const onRetry = vi.fn()
+    render(<StatusIndicator status="error" onRetry={onRetry} />)
+    const retryBtn = screen.getByRole("button", { name: /retry/i })
+    expect(retryBtn).toBeDefined()
+    retryBtn.click()
+    expect(onRetry).toHaveBeenCalledOnce()
   })
 })

@@ -84,6 +84,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
   const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
+  const initialSourceName = useMemo(() => initialData?.sourceName ?? "", [initialData?.sourceName])
 
   const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
@@ -167,12 +168,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         preparationIds: selectedPrepIds.length ? selectedPrepIds : undefined,
       }
       await autoSaveMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
-      await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
     }
-  }, [isEdit, initialData?.id, toPayload, selectedMealIds, selectedCourseIds, selectedPrepIds, autoSaveMutation, queryClient])
+  }, [isEdit, initialData?.id, toPayload, selectedMealIds, selectedCourseIds, selectedPrepIds, autoSaveMutation])
 
   const localStorageKey = useMemo(() => isEdit ? `recipe-draft-${initialData?.id}` : "recipe-draft-new", [isEdit, initialData?.id])
-  const { status: autoSaveStatus, draft, purgeDraft, resetStatus } = useAutoSave({
+  const { status: autoSaveStatus, savedToServer, draft, purgeDraft, resetStatus, retry: retryAutoSave } = useAutoSave({
     form,
     onSave: isEdit ? autoSaveOnSave : undefined,
     localStorageKey,
@@ -181,11 +181,19 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   const [showDraftPrompt, setShowDraftPrompt] = useState(false)
   useEffect(() => {
-    // Only show prompt if draft actually has content different from default
-    if (draft && Object.keys(draft).length > 0) {
-      setShowDraftPrompt(true)
+    if (!draft || Object.keys(draft).length === 0) {
+      setShowDraftPrompt(false)
+      return
     }
-  }, [draft])
+    // Only prompt if the draft differs from the current (initial) form values
+    const currentValues = form.getValues()
+    const hasDifferences = Object.keys(draft).some((key) => {
+      const draftVal = (draft as Record<string, unknown>)[key]
+      const formVal = (currentValues as Record<string, unknown>)[key]
+      return JSON.stringify(draftVal) !== JSON.stringify(formVal)
+    })
+    setShowDraftPrompt(hasDifferences)
+  }, [draft, form])
 
   const handleRestoreDraft = () => {
     if (draft) {
@@ -204,14 +212,14 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const isFormDirtyRef = useRef(false)
   isFormDirtyRef.current = isFormDirty
 
-  const autoSaveStatusRef = useRef(autoSaveStatus)
-  autoSaveStatusRef.current = autoSaveStatus
+  const savedToServerRef = useRef(savedToServer)
+  savedToServerRef.current = savedToServer
 
   const blocker = useBlocker({
     shouldBlockFn: useCallback(() => {
       if (isEdit) {
-        // In Edit mode, suppress guard if autosaved to server
-        return isFormDirtyRef.current && autoSaveStatusRef.current !== "saved"
+        // In Edit mode, suppress guard if latest changes were successfully autosaved
+        return isFormDirtyRef.current && !savedToServerRef.current
       }
       return isFormDirtyRef.current
     }, [isEdit]),
@@ -261,6 +269,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setSelectedCourseIds(initialCourseIds)
     setSelectedPrepIds(initialPrepIds)
     setSelectedSourceId(initialSourceId)
+    setSelectedSourceName(initialSourceName)
     purgeDraft()
     resetStatus()
   }
@@ -297,7 +306,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             {isEdit ? "Edit Recipe" : "Create New Recipe"}
           </h2>
-          <StatusIndicator status={autoSaveStatus} />
+          <StatusIndicator status={autoSaveStatus} onRetry={isEdit ? retryAutoSave : undefined} />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

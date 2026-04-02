@@ -3,9 +3,10 @@ import { AutoSaveStatus } from "@/hooks/useAutoSave"
 
 interface StatusIndicatorProps {
   status: AutoSaveStatus
+  onRetry?: () => void
 }
 
-export default function StatusIndicator({ status }: StatusIndicatorProps) {
+export default function StatusIndicator({ status, onRetry }: StatusIndicatorProps) {
   if (status === "idle") return null
 
   return (
@@ -26,6 +27,15 @@ export default function StatusIndicator({ status }: StatusIndicatorProps) {
         <>
           <AlertCircle className="h-4 w-4 text-red-500" />
           <span className="text-red-600 dark:text-red-400 font-medium">Failed to save</span>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="text-cyan-500 hover:text-cyan-400 underline"
+            >
+              Retry
+            </button>
+          )}
         </>
       )}
     </div>

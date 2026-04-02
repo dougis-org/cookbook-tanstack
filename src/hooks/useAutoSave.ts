@@ -17,8 +17,9 @@ export function useAutoSave<T extends FieldValues>({
   debounceMs = 2000,
 }: UseAutoSaveProps<T>) {
   const [status, setStatus] = useState<AutoSaveStatus>("idle")
+  const [savedToServer, setSavedToServer] = useState(false)
   const [draft, setDraft] = useState<T | null>(null)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load draft on mount
   useEffect(() => {
@@ -46,15 +47,10 @@ export function useAutoSave<T extends FieldValues>({
 
   const { watch, getValues, formState } = form
   const isValidRef = useRef(formState.isValid)
-  const isDirtyRef = useRef(formState.isDirty)
-  
+
   useEffect(() => {
     isValidRef.current = formState.isValid
   }, [formState.isValid])
-
-  useEffect(() => {
-    isDirtyRef.current = formState.isDirty
-  }, [formState.isDirty])
 
   const onSaveRef = useRef(onSave)
   useEffect(() => {
@@ -63,35 +59,55 @@ export function useAutoSave<T extends FieldValues>({
 
   const watchRef = useRef(watch)
   const getValuesRef = useRef(getValues)
-  
+
   useEffect(() => {
     watchRef.current = watch
     getValuesRef.current = getValues
   }, [watch, getValues])
 
+  const triggerSave = useCallback(async () => {
+    const currentValues = getValuesRef.current()
+    if (onSaveRef.current && isValidRef.current) {
+      setStatus("saving")
+      setSavedToServer(false)
+      try {
+        await onSaveRef.current(currentValues)
+        setStatus("saved")
+        setSavedToServer(true)
+        timerRef.current = setTimeout(() => setStatus("idle"), 3000)
+      } catch (e) {
+        console.error("Autosave mutation failed", e)
+        setStatus("error")
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const subscription = watchRef.current(() => {
-      // Clear existing timer
       if (timerRef.current) {
         clearTimeout(timerRef.current)
       }
 
+      setSavedToServer(false)
       setStatus("idle")
 
       timerRef.current = setTimeout(async () => {
         const currentValues = getValuesRef.current()
-        const currentIsValid = isValidRef.current
-        
-        // Always save to localStorage
-        localStorage.setItem(localStorageKey, JSON.stringify(currentValues))
-        
-        // If onSave is provided and form is valid, trigger it
-        if (onSaveRef.current && currentIsValid) {
+
+        try {
+          localStorage.setItem(localStorageKey, JSON.stringify(currentValues))
+        } catch (e) {
+          console.error("Failed to save draft to localStorage", e)
+          setStatus("error")
+          return
+        }
+
+        if (onSaveRef.current && isValidRef.current) {
           setStatus("saving")
           try {
             await onSaveRef.current(currentValues)
             setStatus("saved")
-            // Keep "Saved" status for a moment
+            setSavedToServer(true)
             timerRef.current = setTimeout(() => {
               setStatus("idle")
             }, 3000)
@@ -100,7 +116,6 @@ export function useAutoSave<T extends FieldValues>({
             setStatus("error")
           }
         } else {
-          // If no mutation, just mark as saved (to localStorage)
           setStatus("saved")
           timerRef.current = setTimeout(() => {
             setStatus("idle")
@@ -117,5 +132,5 @@ export function useAutoSave<T extends FieldValues>({
     }
   }, [localStorageKey, debounceMs])
 
-  return { status, draft, purgeDraft, resetStatus }
+  return { status, savedToServer, draft, purgeDraft, resetStatus, retry: triggerSave }
 }
