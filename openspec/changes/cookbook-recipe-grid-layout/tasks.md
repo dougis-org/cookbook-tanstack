@@ -6,7 +6,7 @@
 ## 2. Execution
 
 - [x] 2.1 Create `src/components/cookbooks/CookbookRecipeCard.tsx` — exports `SortableRecipeCard` (owner: drag handle + remove button) and `StaticRecipeCard` (non-owner: read-only). Card anatomy: `CardImage` at `h-32`, index number (small muted, left of name), recipe name as `<Link>` to `/recipes/:recipeId`, metadata line (prepTime / cookTime / servings), `GripVertical` grip handle with `aria-label="Drag to reorder"` and `useSortable` wiring, and remove button (absolute top-right, `opacity-0 group-hover:opacity-100`, `aria-label="Remove <name>"`).
-- [x] 2.2 In `src/routes/cookbooks.$cookbookId.tsx`, replace `verticalListSortingStrategy` import with `rectSortingStrategy` from `@dnd-kit/sortable`. Update all three recipe-list `SortableContext` instances (with-chapters/owner, with-chapters/non-owner, flat/owner) to use `rectSortingStrategy`.
+- [x] 2.2 In `src/routes/cookbooks.$cookbookId.tsx`, add `rectSortingStrategy` to the `@dnd-kit/sortable` import while keeping `verticalListSortingStrategy` for chapter sorting. Update all three recipe-grid `SortableContext` instances (with-chapters/owner, with-chapters/non-owner, flat/owner) to use `rectSortingStrategy`, and keep the chapter list `SortableContext` using `verticalListSortingStrategy`.
 - [x] 2.3 Replace `SortableRecipeRow` usages with `SortableRecipeCard` and `StaticRecipeRow` usages with `StaticRecipeCard` throughout `cookbooks.$cookbookId.tsx`.
 - [x] 2.4 Wrap each recipe list (per-chapter and flat) in a `<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">` container. Place the `SortableContext` inside the grid `div` so card items are direct grid children.
 - [x] 2.5 Update the `DragOverlay` in `cookbooks.$cookbookId.tsx` to render a `StaticRecipeCard` (index 0 placeholder) with `opacity-90 shadow-xl` styling for the active drag item.
@@ -35,8 +35,8 @@
 
 ## 4. PR and Merge
 
-- [ ] 4.1 Commit all changes with a descriptive message and push to `feature/cookbook-recipe-grid-layout`.
-- [ ] 4.2 Open a PR from `feature/cookbook-recipe-grid-layout` → `main`. Reference issue #230 in the PR description. Enable auto-merge.
+- [x] 4.1 Commit all changes with a descriptive message and push to `feature/cookbook-recipe-grid-layout`.
+- [x] 4.2 Open a PR from `feature/cookbook-recipe-grid-layout` → `main`. Reference issue #230 in the PR description. Enable auto-merge.
 - [ ] 4.3 Monitor CI checks. If any check fails: diagnose, fix, commit, push, repeat until all checks are green.
 - [ ] 4.4 Address any review comments: for each comment, make the fix, commit, push. Repeat until no unresolved comments remain.
 - [ ] 4.5 Enable auto-merge once all CI checks are green and no blocking review comments remain. Do not force-merge.
