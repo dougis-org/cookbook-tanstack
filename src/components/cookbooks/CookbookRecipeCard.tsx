@@ -47,7 +47,7 @@ function CardBody({
           <Link
             to="/recipes/$recipeId"
             params={{ recipeId: recipe.id }}
-            className="font-medium text-white hover:text-cyan-400 transition-colors truncate block"
+            className="font-medium text-gray-900 dark:text-white hover:text-cyan-400 transition-colors truncate block"
           >
             {recipe.name}
           </Link>
