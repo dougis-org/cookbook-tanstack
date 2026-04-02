@@ -324,6 +324,67 @@ describe("RecipeForm", () => {
       expect(mockBlockerReset).toHaveBeenCalled()
     })
   })
+
+  describe("autosave and draft persistence", () => {
+    it("shows draft restoration prompt when a draft exists", async () => {
+      localStorage.setItem("recipe-draft-new", JSON.stringify({ name: "Draft Name" }))
+      
+      renderWithProviders(<RecipeForm />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/you have an unsaved draft/i)).toBeInTheDocument()
+      })
+    })
+
+    it("restores draft when Restore is clicked", async () => {
+      localStorage.setItem("recipe-draft-new", JSON.stringify({ name: "Draft Name" }))
+      
+      renderWithProviders(<RecipeForm />)
+
+      const restoreBtn = await screen.findByRole("button", { name: /restore/i })
+      fireEvent.click(restoreBtn)
+
+      expect(screen.getByLabelText(/recipe name/i)).toHaveValue("Draft Name")
+      expect(screen.queryByText(/you have an unsaved draft/i)).not.toBeInTheDocument()
+    })
+
+    it("purges draft when Discard is clicked", async () => {
+      localStorage.setItem("recipe-draft-new", JSON.stringify({ name: "Draft Name" }))
+      
+      renderWithProviders(<RecipeForm />)
+
+      const discardBtn = await screen.findByRole("button", { name: /discard/i })
+      fireEvent.click(discardBtn)
+
+      expect(localStorage.getItem("recipe-draft-new")).toBeNull()
+      expect(screen.queryByText(/you have an unsaved draft/i)).not.toBeInTheDocument()
+    })
+
+    it("renders Revert button instead of Cancel in edit mode", () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ name: "Pasta" })} />)
+
+      expect(screen.getByRole("button", { name: /revert/i })).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /cancel/i })).not.toBeInTheDocument()
+    })
+
+    it("reverts changes and purges draft when Revert is clicked", async () => {
+      const initialData = makeRecipe({ name: "Original" })
+      localStorage.setItem(`recipe-draft-${initialData.id}`, JSON.stringify({ name: "Dirty" }))
+      
+      renderWithProviders(<RecipeForm initialData={initialData} />)
+
+      // First restore dirty draft to make it dirty
+      const restoreBtn = await screen.findByRole("button", { name: /restore/i })
+      fireEvent.click(restoreBtn)
+      expect(screen.getByLabelText(/recipe name/i)).toHaveValue("Dirty")
+
+      const revertBtn = screen.getByRole("button", { name: /revert/i })
+      fireEvent.click(revertBtn)
+
+      expect(screen.getByLabelText(/recipe name/i)).toHaveValue("Original")
+      expect(localStorage.getItem(`recipe-draft-${initialData.id}`)).toBeNull()
+    })
+  })
 })
 
 /** Factory to build a full Recipe object for testing. */
