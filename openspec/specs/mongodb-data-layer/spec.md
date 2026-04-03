@@ -89,6 +89,33 @@ The environment configuration SHALL replace `DATABASE_URL` (PostgreSQL connectio
 - **WHEN** `MONGODB_URI` is set to a valid MongoDB Atlas SRV connection string
 - **THEN** the application connects to Atlas without code changes
 
+### Requirement: Recipe schema indexes foreign key filter fields
+The Recipe Mongoose schema SHALL define compound ascending indexes on all fields used in `$in` filter predicates by the recipe list query, paired with `createdAt: -1` to support sort-by-date queries: `classificationId`, `sourceId`, `mealIds`, `courseIds`, `preparationIds`, and `isPublic`.
+
+#### Scenario: classificationId compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ classificationId: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema`
+
+#### Scenario: sourceId compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ sourceId: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema`
+
+#### Scenario: mealIds multikey compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ mealIds: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema` (MongoDB creates a multikey index automatically for array fields)
+
+#### Scenario: courseIds compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ courseIds: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema`
+
+#### Scenario: preparationIds compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ preparationIds: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema`
+
+#### Scenario: isPublic compound index exists
+- **WHEN** the Recipe Mongoose schema is inspected
+- **THEN** a `{ isPublic: 1, createdAt: -1 }` index SHALL be declared on `recipeSchema`
+
 ### Requirement: Code audit confirms legacy collections not referenced
 The system SHALL pass a code audit verifying that the legacy plurally-named auth collections (`users`, `sessions`, `accounts`) are not referenced in any production code, server logic, tRPC procedures, middleware, routes, tests, or documentation.
 
