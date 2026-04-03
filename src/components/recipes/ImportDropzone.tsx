@@ -34,13 +34,15 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
   }
 
   function handleDragEnter() {
+    if (dragCounterRef.current === 0) {
+      setIsDragging(true)
+    }
     dragCounterRef.current++
-    setIsDragging(true)
   }
 
   function handleDragLeave() {
-    dragCounterRef.current--
-    if (dragCounterRef.current === 0) {
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1)
+    if (dragCounterRef.current <= 0) {
       setIsDragging(false)
     }
   }

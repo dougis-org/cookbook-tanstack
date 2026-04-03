@@ -51,11 +51,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## 7. PR and Merge
 
-- [ ] 7.1 Commit all changes to `fix/importdropzone-drag-semantics` and push to remote
-- [ ] 7.2 Open PR from `fix/importdropzone-drag-semantics` to `main` — include `Closes #195` in PR body
-- [ ] 7.3 Wait **3 minutes** for CI to start and reviewers to post early comments
-- [ ] 7.4 **Unified CI + comment loop** — gather all CI failures and unresolved review threads in one pass; fix everything, batch into a single commit+push; wait 1 minute after each push for CI to re-trigger and threads to auto-resolve; resolve any addressed threads still open via GitHub GraphQL `resolveReviewThread`; repeat until all CI checks are green AND zero open review threads remain
-- [ ] 7.5 Enable auto-merge only when **both** conditions are true: all CI checks green **and** zero open review threads — `gh pr merge <PR-URL> --auto --merge`
+- [x] 7.1 Commit all changes to `fix/importdropzone-drag-semantics` and push to remote
+- [x] 7.2 Open PR from `fix/importdropzone-drag-semantics` to `main` — include `Closes #195` in PR body
+- [x] 7.3 Wait **3 minutes** for CI to start and reviewers to post early comments
+- [x] 7.4 **Unified CI + comment loop** — gather all CI failures and unresolved review threads in one pass; fix everything, batch into a single commit+push; wait 1 minute after each push for CI to re-trigger and threads to auto-resolve; resolve any addressed threads still open via GitHub GraphQL `resolveReviewThread`; repeat until all CI checks are green AND zero open review threads remain
+- [x] 7.5 Enable auto-merge only when **both** conditions are true: all CI checks green **and** zero open review threads — `gh pr merge <PR-URL> --auto --merge`
 - [ ] 7.6 Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 1 minute → re-check → repeat until the PR is fully clean.
