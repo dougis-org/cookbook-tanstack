@@ -24,7 +24,7 @@ export default function RelatedRecipesSection({ classificationId, currentRecipeI
 
   return (
     <section data-testid="related-recipes-section" className="mt-10 print:hidden">
-      <h2 className="text-2xl font-bold text-white mb-6">Related Recipes</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Related Recipes</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {related.map(recipe => (
           <Link
@@ -32,7 +32,7 @@ export default function RelatedRecipesSection({ classificationId, currentRecipeI
             to="/recipes/$recipeId"
             params={{ recipeId: recipe.id }}
           >
-            <RecipeCard recipe={recipe} />
+            <RecipeCard recipe={recipe} marked={recipe.marked} />
           </Link>
         ))}
       </div>

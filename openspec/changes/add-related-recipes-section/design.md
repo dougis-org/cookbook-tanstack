@@ -7,7 +7,7 @@ The recipe detail page (`src/routes/recipes/$recipeId.tsx`) loads a single recip
 ## Goals / Non-Goals
 
 **Goals:**
-- Render 3–6 related recipes at the bottom of the recipe detail page
+- Render up to 6 related recipes at the bottom of the recipe detail page
 - Keep `RecipeDetail` a pure display component (no data fetching)
 - Use the existing `trpc.recipes.list` API without backend changes
 - Hide the section when classification is absent or yields no results

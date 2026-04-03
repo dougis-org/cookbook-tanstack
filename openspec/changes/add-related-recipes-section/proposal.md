@@ -4,7 +4,7 @@ The recipe detail page shows full recipe content but offers no path to discover 
 
 ## What Changes
 
-- New `RelatedRecipesSection` component renders 3–6 recipe cards filtered by the current recipe's `classificationId`
+- New `RelatedRecipesSection` component renders up to 6 recipe cards filtered by the current recipe's `classificationId`
 - `$recipeId.tsx` renders `RelatedRecipesSection` below `<RecipeDetail>` (sibling, not inside it)
 - Section is hidden when no related recipes exist or when `classificationId` is not set on the current recipe
 - Section is excluded from print output (`print:hidden`)

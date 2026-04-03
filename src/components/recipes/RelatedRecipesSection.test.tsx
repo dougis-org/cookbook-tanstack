@@ -79,25 +79,23 @@ describe("RelatedRecipesSection", () => {
     expect(screen.getAllByTestId("recipe-card")).toHaveLength(2)
   })
 
-  it("does not render when classificationId is undefined", async () => {
+  it("does not render when classificationId is undefined", () => {
     mockQueryFn = async () => ({ items: [], total: 0, page: 1, pageSize: 7 })
 
     const { container } = renderWithProviders(
       <RelatedRecipesSection classificationId={undefined} currentRecipeId="r1" />
     )
 
-    await new Promise(r => setTimeout(r, 50))
     expect(container).toBeEmptyDOMElement()
   })
 
-  it("does not render when classificationId is null", async () => {
+  it("does not render when classificationId is null", () => {
     mockQueryFn = async () => ({ items: [], total: 0, page: 1, pageSize: 7 })
 
     const { container } = renderWithProviders(
       <RelatedRecipesSection classificationId={null} currentRecipeId="r1" />
     )
 
-    await new Promise(r => setTimeout(r, 50))
     expect(container).toBeEmptyDOMElement()
   })
 
@@ -131,6 +129,21 @@ describe("RelatedRecipesSection", () => {
       expect(screen.getAllByTestId("recipe-card")).toHaveLength(2)
     })
     expect(screen.queryByText("Recipe r1")).not.toBeInTheDocument()
+  })
+
+  it("caps displayed cards at 6 when more than 6 related recipes exist", async () => {
+    mockQueryFn = async () => ({
+      items: ["r2","r3","r4","r5","r6","r7","r8"].map(id => makeRelatedRecipe(id, "cls1")),
+      total: 7, page: 1, pageSize: 7,
+    })
+
+    renderWithProviders(
+      <RelatedRecipesSection classificationId="cls1" currentRecipeId="r1" />
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId("recipe-card")).toHaveLength(6)
+    })
   })
 
   it("each card links to /recipes/$recipeId", async () => {
