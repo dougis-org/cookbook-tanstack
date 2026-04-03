@@ -1485,3 +1485,104 @@ describe("recipes.import", () => {
     });
   });
 });
+
+// ─── recipes.list — cursor-based infinite pagination ─────────────────────────
+
+describe("recipes.list cursor / nextCursor", () => {
+  it("first page with no cursor or page returns nextCursor=2 when more results exist", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 22; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id, pageSize: 20 });
+
+      expect(result.total).toBe(22);
+      expect(result.items).toHaveLength(20);
+      expect(result.nextCursor).toBe(2);
+    });
+  });
+
+  it("first page returns nextCursor=undefined when all results fit on one page", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 5; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id, pageSize: 20 });
+
+      expect(result.total).toBe(5);
+      expect(result.items).toHaveLength(5);
+      expect(result.nextCursor).toBeUndefined();
+    });
+  });
+
+  it("cursor:2 returns second page items and nextCursor=3 when more exist", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 45; i++) {
+        await new Recipe({ name: `Recipe ${String(i).padStart(3, "0")}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id, pageSize: 20, cursor: 2 });
+
+      expect(result.total).toBe(45);
+      expect(result.items).toHaveLength(20);
+      expect(result.nextCursor).toBe(3);
+    });
+  });
+
+  it("cursor on last page returns nextCursor=undefined", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 25; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id, pageSize: 20, cursor: 2 });
+
+      expect(result.total).toBe(25);
+      expect(result.items).toHaveLength(5);
+      expect(result.nextCursor).toBeUndefined();
+    });
+  });
+
+  it("cursor takes precedence over page when both provided", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 25; i++) {
+        await new Recipe({ name: `Recipe ${String(i).padStart(3, "0")}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const resultByCursor = await caller.recipes.list({ userId: owner.id, pageSize: 20, cursor: 2 });
+      const resultByPage = await caller.recipes.list({ userId: owner.id, pageSize: 20, page: 2 });
+
+      // Both should return the same items (same second page)
+      const cursorIds = resultByCursor.items.map((r) => r.id);
+      const pageIds = resultByPage.items.map((r) => r.id);
+      expect(cursorIds).toEqual(pageIds);
+    });
+  });
+
+  it("backward compat — page param still works without cursor", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      for (let i = 1; i <= 25; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: owner.id, isPublic: true }).save();
+      }
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id, pageSize: 20, page: 2 });
+
+      expect(result.page).toBe(2);
+      expect(result.items).toHaveLength(5);
+    });
+  });
+});
