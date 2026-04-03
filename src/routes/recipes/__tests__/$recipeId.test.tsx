@@ -15,6 +15,7 @@ vi.mock('@/components/layout/PageLayout', () => ({
 }))
 
 vi.mock('@/components/recipes/RecipeDetail', () => ({ default: () => null }))
+vi.mock('@/components/recipes/RelatedRecipesSection', () => ({ default: () => null }))
 vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null }))
 vi.mock('@/components/recipes/ExportButton', () => ({ default: () => null }))
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
