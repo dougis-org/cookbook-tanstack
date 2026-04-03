@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { useScrollSentinel } from "@/hooks/useScrollSentinel";
 
 // Build a minimal IntersectionObserver mock
@@ -39,55 +39,73 @@ function fireIntersect(isIntersecting: boolean) {
   observerCallback?.([{ isIntersecting } as IntersectionObserverEntry]);
 }
 
+function Sentinel({
+  onIntersect,
+  enabled,
+}: {
+  onIntersect: () => void;
+  enabled: boolean;
+}) {
+  const ref = useScrollSentinel(onIntersect, enabled);
+  return <div ref={ref} data-testid="sentinel" />;
+}
+
 describe("useScrollSentinel", () => {
-  it("returns a ref object", () => {
-    const onIntersect = vi.fn();
-    const { result } = renderHook(() => useScrollSentinel(onIntersect, false));
-    expect(result.current).toHaveProperty("current");
+  it("observes the sentinel DOM element when enabled", () => {
+    render(<Sentinel onIntersect={vi.fn()} enabled={true} />);
+    const el = screen.getByTestId("sentinel");
+    expect(mockObserve).toHaveBeenCalledWith(el);
   });
 
   it("does NOT call onIntersect when enabled=false, even if element intersects", () => {
     const onIntersect = vi.fn();
-    renderHook(() => useScrollSentinel(onIntersect, false));
+    render(<Sentinel onIntersect={onIntersect} enabled={false} />);
+    expect(mockObserve).not.toHaveBeenCalled();
     fireIntersect(true);
     expect(onIntersect).not.toHaveBeenCalled();
   });
 
   it("calls onIntersect when enabled=true and element enters viewport", () => {
     const onIntersect = vi.fn();
-    renderHook(() => useScrollSentinel(onIntersect, true));
+    render(<Sentinel onIntersect={onIntersect} enabled={true} />);
+    expect(mockObserve).toHaveBeenCalledOnce();
     fireIntersect(true);
     expect(onIntersect).toHaveBeenCalledOnce();
   });
 
   it("does NOT call onIntersect when element leaves viewport (isIntersecting=false)", () => {
     const onIntersect = vi.fn();
-    renderHook(() => useScrollSentinel(onIntersect, true));
+    render(<Sentinel onIntersect={onIntersect} enabled={true} />);
     fireIntersect(false);
     expect(onIntersect).not.toHaveBeenCalled();
   });
 
+  it("does NOT call onIntersect multiple times for repeated intersection events", () => {
+    const onIntersect = vi.fn();
+    render(<Sentinel onIntersect={onIntersect} enabled={true} />);
+    fireIntersect(true);
+    fireIntersect(true);
+    expect(onIntersect).toHaveBeenCalledOnce();
+  });
+
   it("disconnects observer on unmount", () => {
     const onIntersect = vi.fn();
-    const { unmount } = renderHook(() => useScrollSentinel(onIntersect, true));
+    const { unmount } = render(<Sentinel onIntersect={onIntersect} enabled={true} />);
     unmount();
     expect(mockDisconnect).toHaveBeenCalledOnce();
   });
 
   it("re-connects observer when enabled toggles true→false→true", () => {
     const onIntersect = vi.fn();
-    const { rerender } = renderHook(
-      ({ enabled }: { enabled: boolean }) => useScrollSentinel(onIntersect, enabled),
-      { initialProps: { enabled: true } },
-    );
+    const { rerender } = render(<Sentinel onIntersect={onIntersect} enabled={true} />);
 
     // Disable: sentinel should not fire
-    rerender({ enabled: false });
+    rerender(<Sentinel onIntersect={onIntersect} enabled={false} />);
     fireIntersect(true);
     expect(onIntersect).not.toHaveBeenCalled();
 
     // Re-enable and fire
-    rerender({ enabled: true });
+    rerender(<Sentinel onIntersect={onIntersect} enabled={true} />);
     fireIntersect(true);
     expect(onIntersect).toHaveBeenCalledOnce();
   });

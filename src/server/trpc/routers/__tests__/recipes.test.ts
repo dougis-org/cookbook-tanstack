@@ -1562,12 +1562,21 @@ describe("recipes.list cursor / nextCursor", () => {
 
       const caller = await makeAnonCaller();
       const resultByCursor = await caller.recipes.list({ userId: owner.id, pageSize: 20, cursor: 2 });
-      const resultByPage = await caller.recipes.list({ userId: owner.id, pageSize: 20, page: 2 });
+      const resultByPage = await caller.recipes.list({ userId: owner.id, pageSize: 20, page: 1 });
+      const resultByCursorAndPage = await caller.recipes.list({
+        userId: owner.id,
+        pageSize: 20,
+        cursor: 2,
+        page: 1,
+      });
 
-      // Both should return the same items (same second page)
       const cursorIds = resultByCursor.items.map((r) => r.id);
       const pageIds = resultByPage.items.map((r) => r.id);
-      expect(cursorIds).toEqual(pageIds);
+      const cursorAndPageIds = resultByCursorAndPage.items.map((r) => r.id);
+
+      // cursor:2 wins over page:1 — should match page-2 results, not page-1 results
+      expect(cursorAndPageIds).toEqual(cursorIds);
+      expect(cursorAndPageIds).not.toEqual(pageIds);
     });
   });
 
