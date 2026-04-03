@@ -33,9 +33,8 @@ The `useRecipeSearch` hook SHALL encapsulate debounced search input state and `u
 #### Scenario: Initial load with no search term
 
 - **WHEN** the hook mounts with no search term
-- **THEN** `isLoading` is `true` until the first page resolves
+- **THEN** it requests the first page of results
 - **AND** `recipes` contains the items from page 1 once loaded
-- **AND** `total` reflects the server-reported total count
 
 #### Scenario: Search term debounce
 

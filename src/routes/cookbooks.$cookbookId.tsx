@@ -834,7 +834,7 @@ function AddRecipeModal({
           {isFetchingNextPage && (
             <li className="text-center py-2 text-gray-400">Loading…</li>
           )}
-          <li aria-hidden="true"><div ref={sentinelRef} /></li>
+          <li aria-hidden="true"><div ref={sentinelRef} className="h-px w-full" /></li>
         </ul>
       </div>
     </DialogOverlay>

@@ -9,8 +9,10 @@ type IntersectCallback = (entries: IntersectionObserverEntry[]) => void;
 let observerCallback: IntersectCallback | null = null;
 let mockObserve: ReturnType<typeof vi.fn>;
 let mockDisconnect: ReturnType<typeof vi.fn>;
+let originalIntersectionObserver: typeof IntersectionObserver;
 
 beforeEach(() => {
+  originalIntersectionObserver = globalThis.IntersectionObserver;
   mockObserve = vi.fn();
   mockDisconnect = vi.fn(() => {
     observerCallback = null;
@@ -30,6 +32,7 @@ beforeEach(() => {
 
 afterEach(() => {
   observerCallback = null;
+  globalThis.IntersectionObserver = originalIntersectionObserver;
 });
 
 function fireIntersect(isIntersecting: boolean) {

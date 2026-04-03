@@ -17,9 +17,11 @@ export function useRecipeSearch() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
   }, [])
 
+  const normalizedSearchTerm = searchTerm.trim() || undefined
+
   const query = useInfiniteQuery(
     trpc.recipes.list.infiniteQueryOptions(
-      { pageSize: 20, search: searchTerm || undefined },
+      { pageSize: 20, search: normalizedSearchTerm },
       {
         initialCursor: 1,
         getNextPageParam: (lastPage) => lastPage.nextCursor,

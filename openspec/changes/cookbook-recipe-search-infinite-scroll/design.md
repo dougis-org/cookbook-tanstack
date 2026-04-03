@@ -44,14 +44,10 @@ Current state:
 
 **API:**
 ```ts
-function useRecipeSearch(params?: {
-  pageSize?: number
-  sort?: RecipeSort
-}): {
+function useRecipeSearch(): {
   inputValue: string
   onSearchChange: (value: string) => void
   recipes: RecipeListItem[]
-  total: number
   hasNextPage: boolean
   fetchNextPage: () => void
   isFetchingNextPage: boolean
@@ -64,9 +60,9 @@ function useRecipeSearch(params?: {
 **Infinite query config:**
 ```ts
 trpc.recipes.list.infiniteQueryOptions(
-  { pageSize, sort, search: searchTerm || undefined },
+  { pageSize: 20, search: normalizedSearchTerm },
   {
-    initialPageParam: 1,
+    initialCursor: 1, // tRPC v11 uses initialCursor, not initialPageParam
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   }
 )
