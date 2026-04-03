@@ -32,6 +32,8 @@ import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight } from 'lucide-react'
+import { useRecipeSearch } from '@/hooks/useRecipeSearch'
+import { useScrollSentinel } from '@/hooks/useScrollSentinel'
 
 const multiContainerCollision: CollisionDetection = (args) => {
   const pointerHits = pointerWithin(args)
@@ -763,11 +765,10 @@ function AddRecipeModal({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
-  const [search, setSearch] = useState('')
   const [selectedChapterId, setSelectedChapterId] = useState(chapters[0]?.id ?? '')
 
-  const { data: recipesResult } = useQuery(trpc.recipes.list.queryOptions({}))
-  const allRecipes = recipesResult?.items ?? []
+  const { inputValue, onSearchChange, recipes, hasNextPage, fetchNextPage, isFetchingNextPage } = useRecipeSearch()
+  const sentinelRef = useScrollSentinel(fetchNextPage, hasNextPage && !isFetchingNextPage)
 
   const addMutation = useMutation(
     trpc.cookbooks.addRecipe.mutationOptions({
@@ -778,11 +779,8 @@ function AddRecipeModal({
     }),
   )
 
-  const available = allRecipes.filter(
-    (r) =>
-      !existingRecipeIds.includes(r.id) &&
-      (!search || r.name.toLowerCase().includes(search.toLowerCase())),
-  )
+  const existingSet = new Set(existingRecipeIds)
+  const available = recipes.filter((r) => !existingSet.has(r.id))
 
   function handleAdd(recipeId: string) {
     const payload: { cookbookId: string; recipeId: string; chapterId?: string } = { cookbookId, recipeId }
@@ -814,8 +812,8 @@ function AddRecipeModal({
             type="text"
             placeholder="Search recipes…"
             aria-label="Search recipes"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={inputValue}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             autoFocus={chapters.length === 0}
           />
@@ -823,7 +821,7 @@ function AddRecipeModal({
         <ul className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
           {available.length === 0 ? (
             <li className="text-center py-8 text-gray-400">
-              {search ? 'No matching recipes.' : 'All your recipes are already in this cookbook.'}
+              {inputValue.trim() ? 'No matching recipes found.' : 'All your recipes are already in this cookbook.'}
             </li>
           ) : (
             available.map((r) => (
@@ -840,6 +838,10 @@ function AddRecipeModal({
               </li>
             ))
           )}
+          {isFetchingNextPage && (
+            <li className="text-center py-2 text-gray-400">Loading…</li>
+          )}
+          <li aria-hidden="true"><div ref={sentinelRef} className="h-px w-full" /></li>
         </ul>
       </div>
     </DialogOverlay>

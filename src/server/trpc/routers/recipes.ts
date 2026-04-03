@@ -67,6 +67,7 @@ export const recipesRouter = router({
               "updated_desc",
             ])
             .optional(),
+          cursor: z.number().int().positive().optional(),
           page: z.number().int().positive().optional(),
           pageSize: z.number().int().positive().max(100).optional(),
           markedByMe: z.boolean().optional(),
@@ -121,9 +122,9 @@ export const recipesRouter = router({
         likedIds = new Set(likedDocs.map((l) => l.recipeId.toString()));
         if (input?.markedByMe) {
           if (likedIds.size === 0) {
-            const page = input?.page ?? 1;
+            const page = input?.cursor ?? input?.page ?? 1;
             const pageSize = input?.pageSize ?? 20;
-            return { items: [], total: 0, page, pageSize };
+            return { items: [], total: 0, page, pageSize, nextCursor: undefined };
           }
           filter._id = { $in: [...likedIds] };
         }
@@ -140,7 +141,7 @@ export const recipesRouter = router({
       } as const;
       const sort = sortMap[input?.sort ?? "newest"];
 
-      const page = input?.page ?? 1;
+      const page = input?.cursor ?? input?.page ?? 1;
       const pageSize = input?.pageSize ?? 20;
       const offset = (page - 1) * pageSize;
 
@@ -164,7 +165,8 @@ export const recipesRouter = router({
         marked: likedIds ? likedIds.has(r._id.toString()) : false,
       }));
 
-      return { items, total, page, pageSize };
+      const nextCursor = page * pageSize < total ? page + 1 : undefined;
+      return { items, total, page, pageSize, nextCursor };
     }),
 
   byId: publicProcedure

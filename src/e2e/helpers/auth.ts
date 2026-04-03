@@ -8,12 +8,6 @@ interface RegisterOptions {
   password?: string;
 }
 
-function getAuthOrigin(page: Page) {
-  return process.env.BETTER_AUTH_URL
-    ? new URL(process.env.BETTER_AUTH_URL).origin
-    : new URL(page.url()).origin;
-}
-
 /**
  * Register a new unique test user via the auth API and set the session cookie.
  * Uses page.request (which shares the browser cookie jar) to avoid React
@@ -32,7 +26,9 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
 
   // Better Auth validates Origin against the configured BETTER_AUTH_URL.
   // Prefer that value when available (e.g., in test environments).
-  const origin = getAuthOrigin(page);
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : new URL(page.url()).origin;
 
   const response = await page.request.post("/api/auth/sign-up/email", {
     data: { email, password, name, username, displayUsername: username },
@@ -65,11 +61,14 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
  * Log in an existing user via the auth API and set the session cookie.
  */
 export async function login(page: Page, email: string, password: string) {
+  // Ensure the app is running and we have a page origin.
   await gotoAndWaitForHydration(page, "/");
-
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : new URL(page.url()).origin;
   const response = await page.request.post("/api/auth/sign-in/email", {
     data: { email, password },
-    headers: { Origin: getAuthOrigin(page) },
+    headers: { Origin: origin },
   });
 
   if (!response.ok()) {
