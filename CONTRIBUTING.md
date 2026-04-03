@@ -58,6 +58,7 @@ npx tsc --noEmit          # TypeScript type check
 - [ ] **No unused variables/imports:** Check with TypeScript strict mode
 - [ ] **Code follows patterns:** See [AGENTS.md](./AGENTS.md#architecture-guidelines)
 - [ ] **TDD workflow followed:** Start with tests, implement, refactor
+- [ ] **Code Self-Reviewed** All code should be reviewed by a sub-agent for Quality, Complexity, and duplication
 - [ ] **Auto-merge enabled:** Enable auto-merge on PR for automatic merging when ready
 
 ## Workflow Overview
@@ -82,7 +83,13 @@ Review the relevant standards in `docs/standards/` for your task type.
 - **TypeScript:** `npx tsc --noEmit`
 - **Analysis:** Run Codacy/Snyk if available (see [Analysis Standards](./docs/standards/analysis-and-security.md))
 
-### 6. Create Pull Request
+### 6. Review the changes
+- Use a sub-agent acting as a senior code reviewer to review all changes for
+- Excess duplication
+- Excess complexity
+- Quality of solution
+
+### 7. Create Pull Request
 - Leave a clear description of what changed and why
 - Reference related issues if applicable
 - Ensure all CI/CD checks can pass
