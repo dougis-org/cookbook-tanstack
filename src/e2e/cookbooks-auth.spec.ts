@@ -335,6 +335,76 @@ test.describe("Cookbook Chapters", () => {
     ).toBeVisible();
   });
 
+  // ─── Drag to empty chapter ────────────────────────────────────────────────
+
+  test("should drag a recipe from a populated chapter into an empty chapter", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
+      page,
+      "Drag To Empty Chapter",
+    );
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Create Chapter 1 — existing recipe migrates into it
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(
+      page.getByRole("button", { name: "New Chapter" }),
+    ).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible(
+      { timeout: 20000 },
+    );
+    await expect(page.getByText(recipeName)).toBeVisible();
+
+    // Create Chapter 2 — starts empty, shows drop zone
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(
+      page.getByRole("button", { name: "New Chapter" }),
+    ).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 2/i })).toBeVisible(
+      { timeout: 20000 },
+    );
+    await expect(page.getByText("Drop a recipe here")).toBeVisible();
+
+    // Drag the recipe from Chapter 1 into the Chapter 2 empty drop zone
+    const dragHandle = page.getByRole("button", { name: "Drag to reorder" });
+    const dropZone = page.getByText("Drop a recipe here");
+
+    const handleBox = await dragHandle.boundingBox();
+    const dropBox = await dropZone.boundingBox();
+
+    expect(handleBox).not.toBeNull();
+    expect(dropBox).not.toBeNull();
+
+    await page.mouse.move(
+      handleBox!.x + handleBox!.width / 2,
+      handleBox!.y + handleBox!.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      dropBox!.x + dropBox!.width / 2,
+      dropBox!.y + dropBox!.height / 2,
+      { steps: 30 },
+    );
+    await page.mouse.up();
+
+    // Recipe should now appear under Chapter 2
+    const chapter2Section = page
+      .locator(".space-y-2")
+      .filter({ has: page.getByRole("heading", { name: /Chapter 2/i }) });
+    await expect(chapter2Section.getByText(recipeName)).toBeVisible({
+      timeout: 20000,
+    });
+    // Chapter 1 should now be empty
+    const chapter1Section = page
+      .locator(".space-y-2")
+      .filter({ has: page.getByRole("heading", { name: /Chapter 1/i }) });
+    await expect(
+      chapter1Section.getByText("Drop a recipe here"),
+    ).toBeVisible();
+  });
+
   // ─── Chapter-sort (collapsed mode) ───────────────────────────────────────
 
   test("should toggle collapsed mode and show chapter rows", async ({

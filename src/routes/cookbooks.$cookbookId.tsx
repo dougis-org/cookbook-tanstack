@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   DndContext,
   closestCenter,
+  pointerWithin,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -12,6 +13,7 @@ import {
   useDroppable,
   type DragEndEvent,
   type DragStartEvent,
+  type CollisionDetection,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -30,6 +32,11 @@ import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight } from 'lucide-react'
+
+const multiContainerCollision: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args)
+  return pointerHits.length > 0 ? pointerHits : closestCenter(args)
+}
 
 export const Route = createFileRoute('/cookbooks/$cookbookId')({
   component: CookbookDetailPage,
@@ -524,7 +531,7 @@ function CookbookDetailPage() {
           /* Expanded mode with chapters */
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={multiContainerCollision}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
