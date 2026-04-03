@@ -32,15 +32,15 @@
 - [x] 6.1 Commit all changes with a clear message referencing issue #231
 - [x] 6.2 Push to remote: `git push`
 - [x] 6.3 Open PR to `main`; reference issue #231 in the description; enable auto-merge
-- [ ] 6.4 Monitor CI — if checks fail: diagnose, fix, commit, push, repeat until all green
-- [ ] 6.5 Address any review comments: commit fixes, push, repeat until no blocking comments remain
+- [x] 6.4 Monitor CI — if checks fail: diagnose, fix, commit, push, repeat until all green
+- [x] 6.5 Address any review comments: commit fixes, push, repeat until no blocking comments remain
 
 ## 7. Post-Merge
 
-- [ ] 7.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
-- [ ] 7.2 Verify merged changes appear on `main`
-- [ ] 7.3 Sync approved spec deltas to `openspec/specs/`:
+- [x] 7.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
+- [x] 7.2 Verify merged changes appear on `main`
+- [x] 7.3 Sync approved spec deltas to `openspec/specs/`:
   - Copy `openspec/changes/auto-trigger-cookbook-print/specs/cookbook-print-auto-trigger/spec.md` → `openspec/specs/cookbook-print-auto-trigger/spec.md`
   - Merge ADDED requirements from `openspec/changes/auto-trigger-cookbook-print/specs/cookbook-print-view/spec.md` into `openspec/specs/cookbook-print-view/spec.md`
-- [ ] 7.4 Archive the change as a single atomic commit: copy `openspec/changes/auto-trigger-cookbook-print/` → `openspec/archive/auto-trigger-cookbook-print/`, delete `openspec/changes/auto-trigger-cookbook-print/`, commit and push to `main`
+- [x] 7.4 Archive the change as a single atomic commit: copy `openspec/changes/auto-trigger-cookbook-print/` → `openspec/archive/auto-trigger-cookbook-print/`, delete `openspec/changes/auto-trigger-cookbook-print/`, commit and push to `main`
 - [ ] 7.5 Delete local feature branch: `git branch -d feat/auto-trigger-cookbook-print`
