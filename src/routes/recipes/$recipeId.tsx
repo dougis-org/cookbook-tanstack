@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc'
 import { useSession } from '@/lib/auth-client'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
+import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
 import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
 import ExportButton from '@/components/recipes/ExportButton'
 import Breadcrumb from '@/components/ui/Breadcrumb'
@@ -129,6 +130,8 @@ export function RecipeDetailPage() {
           </button>
         )}
       </div>
+
+      <RelatedRecipesSection classificationId={recipe.classificationId} currentRecipeId={recipeId} />
 
       <DeleteConfirmModal
         open={showDelete}
