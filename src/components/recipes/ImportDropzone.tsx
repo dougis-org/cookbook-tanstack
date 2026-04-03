@@ -7,6 +7,8 @@ interface ImportDropzoneProps {
 export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounterRef = useRef(0)
 
   function isJsonFile(file: File): boolean {
     return file.name.toLowerCase().endsWith('.json')
@@ -24,6 +26,32 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
     onFileSelected(file)
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      inputRef.current?.click()
+    }
+  }
+
+  function handleDragEnter() {
+    dragCounterRef.current++
+    setIsDragging(true)
+  }
+
+  function handleDragLeave() {
+    dragCounterRef.current--
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    dragCounterRef.current = 0
+    setIsDragging(false)
+    handleFile(e.dataTransfer.files?.[0])
+  }
+
   return (
     <div>
       <input
@@ -39,19 +67,20 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
         data-testid="import-file-input"
       />
 
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={handleKeyDown}
         onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault()
-          handleFile(e.dataTransfer.files?.[0])
-        }}
-        className="w-full border-2 border-dashed border-slate-600 rounded-xl p-10 text-left hover:border-cyan-500 transition-colors"
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`w-full border-2 border-dashed rounded-xl p-10 text-left transition-colors ${isDragging ? 'border-cyan-500' : 'border-slate-600 hover:border-cyan-500'}`}
       >
         <p className="text-white text-lg font-semibold mb-1">Import recipe JSON</p>
         <p className="text-gray-400 text-sm">Drag and drop a .json file here, or click to browse.</p>
-      </button>
+      </div>
 
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
     </div>
