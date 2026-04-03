@@ -60,12 +60,12 @@ const recipeSchema = new Schema<IRecipe>(
 recipeSchema.index({ userId: 1 });
 recipeSchema.index({ name: 1 });
 recipeSchema.index({ deleted: 1 });
-recipeSchema.index({ classificationId: 1 });
-recipeSchema.index({ sourceId: 1 });
-recipeSchema.index({ mealIds: 1 });
-recipeSchema.index({ courseIds: 1 });
-recipeSchema.index({ preparationIds: 1 });
-recipeSchema.index({ isPublic: 1 });
+recipeSchema.index({ classificationId: 1, createdAt: -1 });
+recipeSchema.index({ sourceId: 1, createdAt: -1 });
+recipeSchema.index({ mealIds: 1, createdAt: -1 });
+recipeSchema.index({ courseIds: 1, createdAt: -1 });
+recipeSchema.index({ preparationIds: 1, createdAt: -1 });
+recipeSchema.index({ isPublic: 1, createdAt: -1 });
 
 // Soft-delete middleware — automatically excludes soft-deleted recipes from all reads.
 //
