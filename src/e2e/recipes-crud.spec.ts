@@ -60,7 +60,7 @@ test.describe("Recipe CRUD Operations", () => {
     // Verify nutrition values within the Nutrition section
     const nutritionHeading = page.getByRole("heading", { name: "Nutrition" });
     await expect(nutritionHeading).toBeVisible();
-    await expect(page.getByText("250")).toBeVisible();
+    await expect(page.getByText("250", { exact: true })).toBeVisible();
     await expect(page.getByText("10g")).toBeVisible();
     await expect(page.getByText("50mg")).toBeVisible();
     await expect(page.getByText("200mg")).toBeVisible();
