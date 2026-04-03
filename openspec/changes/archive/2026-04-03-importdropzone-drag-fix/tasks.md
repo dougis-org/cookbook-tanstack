@@ -56,7 +56,7 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] 7.3 Wait **3 minutes** for CI to start and reviewers to post early comments
 - [x] 7.4 **Unified CI + comment loop** — gather all CI failures and unresolved review threads in one pass; fix everything, batch into a single commit+push; wait 1 minute after each push for CI to re-trigger and threads to auto-resolve; resolve any addressed threads still open via GitHub GraphQL `resolveReviewThread`; repeat until all CI checks are green AND zero open review threads remain
 - [x] 7.5 Enable auto-merge only when **both** conditions are true: all CI checks green **and** zero open review threads — `gh pr merge <PR-URL> --auto --merge`
-- [ ] 7.6 Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
+- [x] 7.6 Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 1 minute → re-check → repeat until the PR is fully clean.
 
@@ -74,12 +74,12 @@ Blocking resolution flow:
 
 ## 8. Post-Merge
 
-- [ ] 8.1 `git checkout main` and `git pull --ff-only`
-- [ ] 8.2 Verify the merged changes appear on `main`
-- [ ] 8.3 Mark all remaining tasks as complete (`- [x]`)
-- [ ] 8.4 Update repository documentation impacted by the change (if any)
-- [ ] 8.5 Sync approved spec delta into `openspec/specs/importdropzone-drag-feedback/spec.md`
-- [ ] 8.6 Archive the change: move `openspec/changes/importdropzone-drag-fix/` to `openspec/changes/archive/YYYY-MM-DD-importdropzone-drag-fix/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] 8.7 Confirm `openspec/changes/archive/YYYY-MM-DD-importdropzone-drag-fix/` exists and `openspec/changes/importdropzone-drag-fix/` is gone
-- [ ] 8.8 Commit and push the archive to `main` in one commit
-- [ ] 8.9 Prune merged local feature branches: `git fetch --prune` and `git branch -d fix/importdropzone-drag-semantics`
+- [x] 8.1 `git checkout main` and `git pull --ff-only`
+- [x] 8.2 Verify the merged changes appear on `main`
+- [x] 8.3 Mark all remaining tasks as complete (`- [x]`)
+- [x] 8.4 Update repository documentation impacted by the change (if any)
+- [x] 8.5 Sync approved spec delta into `openspec/specs/importdropzone-drag-feedback/spec.md`
+- [x] 8.6 Archive the change: move `openspec/changes/importdropzone-drag-fix/` to `openspec/changes/archive/YYYY-MM-DD-importdropzone-drag-fix/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] 8.7 Confirm `openspec/changes/archive/YYYY-MM-DD-importdropzone-drag-fix/` exists and `openspec/changes/importdropzone-drag-fix/` is gone
+- [x] 8.8 Commit and push the archive to `main` in one commit
+- [x] 8.9 Prune merged local feature branches: `git fetch --prune` and `git branch -d fix/importdropzone-drag-semantics`
