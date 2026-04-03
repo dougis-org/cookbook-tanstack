@@ -69,6 +69,17 @@ vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/lib/auth-client', () => ({ useSession: () => ({ data: null }) }))
 
 const mockAddMutate = vi.fn()
+const mockOnSearchChange = vi.fn()
+const mockFetchNextPage = vi.fn()
+let mockRecipeSearchResult = {
+  inputValue: '',
+  onSearchChange: mockOnSearchChange,
+  recipes: [] as { id: string; name: string; imageUrl: string | null }[],
+  hasNextPage: false,
+  fetchNextPage: mockFetchNextPage,
+  isFetchingNextPage: false,
+  isLoading: false,
+}
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: { items: [] }, isLoading: false }),
@@ -92,6 +103,14 @@ vi.mock('@/lib/trpc', () => ({
     },
     recipes: { list: { queryOptions: () => ({}) } },
   },
+}))
+
+vi.mock('@/hooks/useRecipeSearch', () => ({
+  useRecipeSearch: () => mockRecipeSearchResult,
+}))
+
+vi.mock('@/hooks/useScrollSentinel', () => ({
+  useScrollSentinel: () => ({ current: null }),
 }))
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -181,6 +200,17 @@ describe('ChapterHeader', () => {
 describe('AddRecipeModal — chapter picker', () => {
   beforeEach(() => {
     mockAddMutate.mockClear()
+    mockOnSearchChange.mockClear()
+    mockFetchNextPage.mockClear()
+    mockRecipeSearchResult = {
+      inputValue: '',
+      onSearchChange: mockOnSearchChange,
+      recipes: [],
+      hasNextPage: false,
+      fetchNextPage: mockFetchNextPage,
+      isFetchingNextPage: false,
+      isLoading: false,
+    }
   })
 
   it('shows chapter picker dropdown when chapters exist', () => {
@@ -224,5 +254,65 @@ describe('AddRecipeModal — chapter picker', () => {
     )
     const select = screen.getByRole('combobox') as HTMLSelectElement
     expect(select.value).toBe('ch-1')
+  })
+})
+
+// ─── AddRecipeModal — infinite scroll tests ───────────────────────────────────
+
+describe('AddRecipeModal — infinite scroll', () => {
+  it('renders recipes returned by useRecipeSearch', () => {
+    mockRecipeSearchResult = {
+      ...mockRecipeSearchResult,
+      recipes: [
+        { id: 'r-1', name: 'Pasta', imageUrl: null },
+        { id: 'r-2', name: 'Pizza', imageUrl: null },
+      ],
+    }
+    render(
+      <AddRecipeModal cookbookId="cb-1" existingRecipeIds={[]} chapters={[]} onClose={vi.fn()} />
+    )
+    expect(screen.getByText('Pasta')).toBeInTheDocument()
+    expect(screen.getByText('Pizza')).toBeInTheDocument()
+  })
+
+  it('filters out existingRecipeIds client-side', () => {
+    mockRecipeSearchResult = {
+      ...mockRecipeSearchResult,
+      recipes: [
+        { id: 'r-1', name: 'Pasta', imageUrl: null },
+        { id: 'r-2', name: 'Pizza', imageUrl: null },
+      ],
+    }
+    render(
+      <AddRecipeModal cookbookId="cb-1" existingRecipeIds={['r-1']} chapters={[]} onClose={vi.fn()} />
+    )
+    expect(screen.queryByText('Pasta')).not.toBeInTheDocument()
+    expect(screen.getByText('Pizza')).toBeInTheDocument()
+  })
+
+  it('calls onSearchChange when search input changes', () => {
+    render(
+      <AddRecipeModal cookbookId="cb-1" existingRecipeIds={[]} chapters={[]} onClose={vi.fn()} />
+    )
+    fireEvent.change(screen.getByRole('textbox', { name: /Search recipes/i }), {
+      target: { value: 'pasta' },
+    })
+    expect(mockOnSearchChange).toHaveBeenCalledWith('pasta')
+  })
+
+  it('shows loading indicator when isFetchingNextPage is true', () => {
+    mockRecipeSearchResult = { ...mockRecipeSearchResult, isFetchingNextPage: true }
+    render(
+      <AddRecipeModal cookbookId="cb-1" existingRecipeIds={[]} chapters={[]} onClose={vi.fn()} />
+    )
+    expect(screen.getByText('Loading…')).toBeInTheDocument()
+  })
+
+  it('does not show loading indicator when isFetchingNextPage is false', () => {
+    mockRecipeSearchResult = { ...mockRecipeSearchResult, isFetchingNextPage: false }
+    render(
+      <AddRecipeModal cookbookId="cb-1" existingRecipeIds={[]} chapters={[]} onClose={vi.fn()} />
+    )
+    expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
   })
 })
