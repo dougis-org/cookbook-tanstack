@@ -772,7 +772,8 @@ function AddRecipeModal({
     }),
   )
 
-  const available = recipes.filter((r) => !existingRecipeIds.includes(r.id))
+  const existingSet = new Set(existingRecipeIds)
+  const available = recipes.filter((r) => !existingSet.has(r.id))
 
   function handleAdd(recipeId: string) {
     const payload: { cookbookId: string; recipeId: string; chapterId?: string } = { cookbookId, recipeId }
@@ -813,7 +814,7 @@ function AddRecipeModal({
         <ul className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
           {available.length === 0 ? (
             <li className="text-center py-8 text-gray-400">
-              All your recipes are already in this cookbook.
+              {inputValue.trim() ? 'No matching recipes found.' : 'All your recipes are already in this cookbook.'}
             </li>
           ) : (
             available.map((r) => (

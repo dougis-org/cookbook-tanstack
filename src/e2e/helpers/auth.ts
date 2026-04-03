@@ -61,9 +61,12 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
  * Log in an existing user via the auth API and set the session cookie.
  */
 export async function login(page: Page, email: string, password: string) {
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : "http://localhost:3000";
   const response = await page.request.post("/api/auth/sign-in/email", {
     data: { email, password },
-    headers: { Origin: "http://localhost:3000" },
+    headers: { Origin: origin },
   });
 
   if (!response.ok()) {
