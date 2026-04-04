@@ -87,6 +87,7 @@ export function SortableRecipeCard({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
       className="relative group bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden"
+      data-testid="recipe-card"
     >
       <button
         onClick={onRemove}

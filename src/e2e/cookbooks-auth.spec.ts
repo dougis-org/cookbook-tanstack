@@ -335,6 +335,98 @@ test.describe("Cookbook Chapters", () => {
     ).toBeVisible();
   });
 
+  // ─── Drag to empty chapter ────────────────────────────────────────────────
+
+  test("should drag a recipe from a populated chapter into an empty chapter", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const { cookbookUrl, recipeName } = await createCookbookWithRecipe(
+      page,
+      "Drag To Empty Chapter",
+    );
+
+    // Add a second recipe so Chapter 1 has 2+ recipes — this is the scenario
+    // where closestCenter fails: sibling cards outcompete the empty drop zone
+    const recipe2Name = getUniqueRecipeName("Drag To Empty Chapter B");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipe2Name });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await page.getByRole("button", { name: "Add Recipe" }).click();
+    const addDialog = page.getByRole("dialog");
+    await addDialog.getByPlaceholder("Search recipes…").fill(recipe2Name);
+    const recipe2Btn = addDialog.getByRole("button", { name: recipe2Name });
+    await expect(recipe2Btn).toBeVisible({ timeout: 15000 });
+    await recipe2Btn.click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(page.getByText(recipe2Name)).toBeVisible();
+
+    // Create Chapter 1 — both recipes migrate into it
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(
+      page.getByRole("button", { name: "New Chapter" }),
+    ).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible(
+      { timeout: 20000 },
+    );
+    await expect(page.getByText(recipeName)).toBeVisible();
+    await expect(page.getByText(recipe2Name)).toBeVisible();
+
+    // Create Chapter 2 — starts empty, shows drop zone
+    await page.getByRole("button", { name: "New Chapter" }).click();
+    await expect(
+      page.getByRole("button", { name: "New Chapter" }),
+    ).toBeEnabled();
+    await expect(page.getByRole("heading", { name: /Chapter 2/i })).toBeVisible(
+      { timeout: 20000 },
+    );
+    await expect(page.getByText("Drop a recipe here")).toBeVisible();
+
+    // Drag recipeName from Chapter 1 into the Chapter 2 empty drop zone.
+    // Use data-testid selectors to avoid coupling to Tailwind class names.
+    const recipe1Card = page
+      .locator('[data-testid="recipe-card"]')
+      .filter({ hasText: recipeName });
+    const dragHandle = recipe1Card.getByRole("button", {
+      name: "Drag to reorder",
+    });
+    const dropZone = page.getByText("Drop a recipe here");
+
+    const handleBox = await dragHandle.boundingBox();
+    const dropBox = await dropZone.boundingBox();
+
+    expect(handleBox).not.toBeNull();
+    expect(dropBox).not.toBeNull();
+
+    await page.mouse.move(
+      handleBox!.x + handleBox!.width / 2,
+      handleBox!.y + handleBox!.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(
+      dropBox!.x + dropBox!.width / 2,
+      dropBox!.y + dropBox!.height / 2,
+      { steps: 30 },
+    );
+    await page.mouse.up();
+
+    // recipeName should now appear under Chapter 2
+    const chapter2Section = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: /Chapter 2/i }) });
+    await expect(chapter2Section.getByText(recipeName)).toBeVisible({
+      timeout: 20000,
+    });
+    // Chapter 1 still has recipe2 and no longer has recipe1
+    const chapter1Section = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: /Chapter 1/i }) });
+    await expect(chapter1Section.getByText(recipe2Name)).toBeVisible();
+    await expect(chapter1Section.getByText(recipeName)).not.toBeVisible();
+  });
+
   // ─── Chapter-sort (collapsed mode) ───────────────────────────────────────
 
   test("should toggle collapsed mode and show chapter rows", async ({

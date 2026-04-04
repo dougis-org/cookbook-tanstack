@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   DndContext,
   closestCenter,
+  pointerWithin,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -12,6 +13,7 @@ import {
   useDroppable,
   type DragEndEvent,
   type DragStartEvent,
+  type CollisionDetection,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -32,6 +34,16 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
 import { useScrollSentinel } from '@/hooks/useScrollSentinel'
+
+const EMPTY_CHAPTER_PREFIX = 'empty:'
+
+const multiContainerCollision: CollisionDetection = (args) => {
+  const pointerHits = pointerWithin(args)
+  const emptyChapterHits = pointerHits.filter(
+    (hit) => typeof hit.id === 'string' && hit.id.startsWith(EMPTY_CHAPTER_PREFIX),
+  )
+  return emptyChapterHits.length > 0 ? emptyChapterHits : closestCenter(args)
+}
 
 export const Route = createFileRoute('/cookbooks/$cookbookId')({
   component: CookbookDetailPage,
@@ -267,9 +279,10 @@ function CookbookDetailPage() {
       // Chapter-aware reorder
       // Detect which chapter each item belongs to; also handle drops onto empty chapter containers
       const activeChapterId = (active.data.current as { sortable?: { containerId?: string } })?.sortable?.containerId
+      const overIdStr = String(over.id)
       const overChapterId =
         (over.data.current as { sortable?: { containerId?: string } })?.sortable?.containerId ??
-        (sortedChapters.some((ch) => ch.id === String(over.id)) ? String(over.id) : undefined)
+        (overIdStr.startsWith(EMPTY_CHAPTER_PREFIX) ? overIdStr.slice(EMPTY_CHAPTER_PREFIX.length) : undefined)
 
       if (!activeChapterId || !overChapterId) return
 
@@ -526,7 +539,7 @@ function CookbookDetailPage() {
           /* Expanded mode with chapters */
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={multiContainerCollision}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
@@ -534,7 +547,7 @@ function CookbookDetailPage() {
               const chapterRecipes = getRecipesForChapter(chapter.id)
               const chapterRecipeIds = getRecipeIdsForChapter(chapter.id)
               return (
-                <div key={chapter.id} className="space-y-2">
+                <div key={chapter.id} className="space-y-2" data-testid={`chapter-section-${chapter.id}`}>
                   <ChapterHeader
                     chapter={chapter}
                     isOwner={isOwner}
@@ -613,7 +626,7 @@ function CookbookDetailPage() {
 // ─── Empty Chapter Drop Zone ──────────────────────────────────────────────────
 
 function EmptyChapterDropZone({ chapterId }: { chapterId: string }) {
-  const { setNodeRef, isOver } = useDroppable({ id: chapterId })
+  const { setNodeRef, isOver } = useDroppable({ id: `${EMPTY_CHAPTER_PREFIX}${chapterId}` })
   return (
     <div
       ref={setNodeRef}
