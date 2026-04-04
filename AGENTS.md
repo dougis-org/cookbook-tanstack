@@ -17,11 +17,20 @@ Use [CONTRIBUTING.md](./CONTRIBUTING.md) as a quick reference for getting starte
 ## Tooling
 
 - Use MCP servers first for any task they cover; never request a raw shell session.
-- If no MCP tool exists for the task, run the command via `start_process` (serena)
-  only.
-- Examples: use MCP `read_file`/`write_file` for files; GitHub MCP for git; Jira/Confluence
-  MCP for tickets; `start_process` for commands like `gradlew clean test` or `python -m pytest` when no
-  MCP wrapper exists.
+- If no MCP tool exists for the task, run the command via `run_in_terminal` only.
+- Examples: use MCP `read_file`/`write_file` for files; GitHub MCP for git; Jira/Confluence MCP for tickets; `run_in_terminal` for commands like `npm run test` or `npm run build` when no MCP wrapper exists.
+
+### CodeGraph Tools (Available)
+
+This codebase has CodeGraph initialized (`.codegraph/` exists). Use these tools for instant code lookups:
+- **`codegraph_search`** — Find symbols by name (functions, classes, types)
+- **`codegraph_context`** — Get relevant code context for a task
+- **`codegraph_callers`** — Find what calls a function
+- **`codegraph_callees`** — Find what a function calls
+- **`codegraph_impact`** — See what's affected by changing a symbol
+- **`codegraph_node`** — Get details + source code for a symbol
+
+Use CodeGraph instead of grep for faster exploration.
 
 ## Architecture Guidelines
 
@@ -60,6 +69,33 @@ src/components/
 
 Components use default exports and explicit props interfaces.
 
+### Database & API Patterns
+
+**MongoDB/Mongoose:**
+- Models live in `src/db/models/` and are barrel-exported from `index.ts`
+- All models use Mongoose `timestamps: true` option (auto-managed `createdAt`/`updatedAt`)
+- Mongoose strict mode is globally enabled in `src/db/index.ts`
+- Taxonomy (meals, courses, preparations) are embedded as ObjectId arrays in recipes
+- Seeds are idempotent (upsert by slug) and live in `src/db/seeds/`
+- Database connection reads `MONGODB_URI` from `.env.local`; throws if missing
+
+**tRPC & Type-Safe API:**
+- Server procedures live in `src/server/trpc/routers/` (one file per domain, e.g., `recipes.ts`)
+- Import procedures into `src/server/trpc/router.ts` and merge into root router
+- Client queries via tRPC context initialized in `src/server/trpc/context.ts`
+- Leverage automatic type inference from server to client (no manual typing needed)
+
+**Authentication (Better-Auth):**
+- Sessions stored in MongoDB (collections: `user`, `session`, `account`, `verification`)
+- Retrieved via `getMongoClient()` and `getBetterAuthCollection()` from `src/db/index.ts`
+- Use Better-Auth client in route components to check auth status and retrieve user info
+
+**Database Commands:**
+```bash
+npm run db:connect   # Verify MongoDB connection is reachable
+npm run db:seed      # Seed taxonomy data (idempotent, safe to run multiple times)
+```
+
 ### Conventions
 
 **Routing & Navigation:**
@@ -70,6 +106,7 @@ Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. For typ
 - Dark backgrounds use `slate-800`/`slate-900` gradients
 - Always include `dark:` variants on color properties
 - Mobile-first responsive using `sm:`, `md:`, `lg:` breakpoints
+- Dark mode is class-based (`@custom-variant dark` in `src/styles.css`); the `.dark` class is applied to `<html>` in `src/routes/__root.tsx`
 
 **Path Aliases:**
 `@/*` maps to `./src/*` (configured in tsconfig.json). Always use `@/` imports instead of relative paths.
@@ -145,7 +182,9 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
 
 - **Framework:** TanStack Start with React 19, deployed via Nitro
 - **Routing:** TanStack Router — file-based routing in `src/routes/`
-- **Database:** PostgreSQL 16 (Docker) with Drizzle ORM
+- **Database:** MongoDB 7 (Docker or Atlas) with Mongoose ODM
+- **API Layer:** tRPC (type-safe RPC) with `@trpc/server` and `@trpc/tanstack-react-query`
+- **Authentication:** Better-Auth (Nitro-based sessions, stored in MongoDB)
 - **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 - **Icons:** Lucide React
 - **Build:** Vite 7
