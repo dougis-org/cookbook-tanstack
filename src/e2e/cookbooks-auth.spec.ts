@@ -385,9 +385,9 @@ test.describe("Cookbook Chapters", () => {
     await expect(page.getByText("Drop a recipe here")).toBeVisible();
 
     // Drag recipeName from Chapter 1 into the Chapter 2 empty drop zone.
-    // Scope the drag handle to the specific card to avoid ambiguity with 2 handles.
+    // Use data-testid selectors to avoid coupling to Tailwind class names.
     const recipe1Card = page
-      .locator("div.relative.group")
+      .locator('[data-testid="recipe-card"]')
       .filter({ hasText: recipeName });
     const dragHandle = recipe1Card.getByRole("button", {
       name: "Drag to reorder",
@@ -414,16 +414,17 @@ test.describe("Cookbook Chapters", () => {
 
     // recipeName should now appear under Chapter 2
     const chapter2Section = page
-      .locator(".space-y-2")
+      .locator('[data-testid^="chapter-section-"]')
       .filter({ has: page.getByRole("heading", { name: /Chapter 2/i }) });
     await expect(chapter2Section.getByText(recipeName)).toBeVisible({
       timeout: 20000,
     });
-    // Chapter 1 still has recipe2 — it is not empty
+    // Chapter 1 still has recipe2 and no longer has recipe1
     const chapter1Section = page
-      .locator(".space-y-2")
+      .locator('[data-testid^="chapter-section-"]')
       .filter({ has: page.getByRole("heading", { name: /Chapter 1/i }) });
     await expect(chapter1Section.getByText(recipe2Name)).toBeVisible();
+    await expect(chapter1Section.getByText(recipeName)).not.toBeVisible();
   });
 
   // ─── Chapter-sort (collapsed mode) ───────────────────────────────────────
