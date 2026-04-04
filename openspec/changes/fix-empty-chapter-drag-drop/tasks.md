@@ -18,8 +18,8 @@
 
 ## 4. PR and Merge
 
-- [ ] 4.1 Commit all changes to `fix/empty-chapter-drag-drop` and push
-- [ ] 4.2 Open PR from `fix/empty-chapter-drag-drop` → `main`; reference GH issue #239 in the PR body; enable auto-merge
+- [x] 4.1 Commit all changes to `fix/empty-chapter-drag-drop` and push
+- [x] 4.2 Open PR from `fix/empty-chapter-drag-drop` → `main`; reference GH issue #239 in the PR body; enable auto-merge
 - [ ] 4.3 Monitor CI checks; if any fail, diagnose, fix, commit, push, and repeat until all checks are green
 - [ ] 4.4 Address any review comments; commit fixes to the working branch and push; repeat until no unresolved comments remain
 - [ ] 4.5 Confirm auto-merge completes (or merge manually once all checks pass and comments are resolved)

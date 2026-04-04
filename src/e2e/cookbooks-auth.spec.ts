@@ -345,9 +345,25 @@ test.describe("Cookbook Chapters", () => {
       page,
       "Drag To Empty Chapter",
     );
-    await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Create Chapter 1 — existing recipe migrates into it
+    // Add a second recipe so Chapter 1 has 2+ recipes — this is the scenario
+    // where closestCenter fails: sibling cards outcompete the empty drop zone
+    const recipe2Name = getUniqueRecipeName("Drag To Empty Chapter B");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: recipe2Name });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await page.getByRole("button", { name: "Add Recipe" }).click();
+    const addDialog = page.getByRole("dialog");
+    await addDialog.getByPlaceholder("Search recipes…").fill(recipe2Name);
+    const recipe2Btn = addDialog.getByRole("button", { name: recipe2Name });
+    await expect(recipe2Btn).toBeVisible({ timeout: 15000 });
+    await recipe2Btn.click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+    await expect(page.getByText(recipe2Name)).toBeVisible();
+
+    // Create Chapter 1 — both recipes migrate into it
     await page.getByRole("button", { name: "New Chapter" }).click();
     await expect(
       page.getByRole("button", { name: "New Chapter" }),
@@ -356,6 +372,7 @@ test.describe("Cookbook Chapters", () => {
       { timeout: 20000 },
     );
     await expect(page.getByText(recipeName)).toBeVisible();
+    await expect(page.getByText(recipe2Name)).toBeVisible();
 
     // Create Chapter 2 — starts empty, shows drop zone
     await page.getByRole("button", { name: "New Chapter" }).click();
@@ -367,8 +384,14 @@ test.describe("Cookbook Chapters", () => {
     );
     await expect(page.getByText("Drop a recipe here")).toBeVisible();
 
-    // Drag the recipe from Chapter 1 into the Chapter 2 empty drop zone
-    const dragHandle = page.getByRole("button", { name: "Drag to reorder" });
+    // Drag recipeName from Chapter 1 into the Chapter 2 empty drop zone.
+    // Scope the drag handle to the specific card to avoid ambiguity with 2 handles.
+    const recipe1Card = page
+      .locator("div.relative.group")
+      .filter({ hasText: recipeName });
+    const dragHandle = recipe1Card.getByRole("button", {
+      name: "Drag to reorder",
+    });
     const dropZone = page.getByText("Drop a recipe here");
 
     const handleBox = await dragHandle.boundingBox();
@@ -389,20 +412,18 @@ test.describe("Cookbook Chapters", () => {
     );
     await page.mouse.up();
 
-    // Recipe should now appear under Chapter 2
+    // recipeName should now appear under Chapter 2
     const chapter2Section = page
       .locator(".space-y-2")
       .filter({ has: page.getByRole("heading", { name: /Chapter 2/i }) });
     await expect(chapter2Section.getByText(recipeName)).toBeVisible({
       timeout: 20000,
     });
-    // Chapter 1 should now be empty
+    // Chapter 1 still has recipe2 — it is not empty
     const chapter1Section = page
       .locator(".space-y-2")
       .filter({ has: page.getByRole("heading", { name: /Chapter 1/i }) });
-    await expect(
-      chapter1Section.getByText("Drop a recipe here"),
-    ).toBeVisible();
+    await expect(chapter1Section.getByText(recipe2Name)).toBeVisible();
   });
 
   // ─── Chapter-sort (collapsed mode) ───────────────────────────────────────
