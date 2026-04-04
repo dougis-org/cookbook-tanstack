@@ -20,13 +20,13 @@
 
 - [x] 4.1 Commit all changes to `fix/empty-chapter-drag-drop` and push
 - [x] 4.2 Open PR from `fix/empty-chapter-drag-drop` → `main`; reference GH issue #239 in the PR body; enable auto-merge
-- [ ] 4.3 Monitor CI checks; if any fail, diagnose, fix, commit, push, and repeat until all checks are green
-- [ ] 4.4 Address any review comments; commit fixes to the working branch and push; repeat until no unresolved comments remain
-- [ ] 4.5 Confirm auto-merge completes (or merge manually once all checks pass and comments are resolved)
+- [x] 4.3 Monitor CI checks; if any fail, diagnose, fix, commit, push, and repeat until all checks are green
+- [x] 4.4 Address any review comments; commit fixes to the working branch and push; repeat until no unresolved comments remain
+- [x] 4.5 Confirm auto-merge completes (or merge manually once all checks pass and comments are resolved)
 
 ## 5. Post-Merge
 
-- [ ] 5.1 Checkout `main` and pull (`git checkout main && git pull --ff-only`); verify merged changes appear
-- [ ] 5.2 Sync approved spec delta: copy `openspec/changes/fix-empty-chapter-drag-drop/specs/cookbook-chapters/spec.md` changes into `openspec/specs/cookbook-chapters/spec.md`
+- [x] 5.1 Checkout `main` and pull (`git checkout main && git pull --ff-only`); verify merged changes appear
+- [x] 5.2 Sync approved spec delta: copy `openspec/changes/fix-empty-chapter-drag-drop/specs/cookbook-chapters/spec.md` changes into `openspec/specs/cookbook-chapters/spec.md`
 - [ ] 5.3 Archive the change directory: copy to `openspec/archive/` and delete from `openspec/changes/` in a single commit, then push to `main`
 - [ ] 5.4 Delete local and remote feature branch (`git branch -d fix/empty-chapter-drag-drop && git push origin --delete fix/empty-chapter-drag-drop`)
