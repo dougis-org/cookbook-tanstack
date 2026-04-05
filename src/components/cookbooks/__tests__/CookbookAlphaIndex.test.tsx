@@ -4,11 +4,11 @@ import { CookbookAlphaIndex } from '@/components/cookbooks/CookbookStandaloneLay
 
 // Display-ordered recipes (as returned by printById)
 const recipes = [
-  { id: 'r1', name: 'Zucchini Bread' },
-  { id: 'r2', name: 'Apple Pie' },
-  { id: 'r3', name: 'Banana Foster' },
-  { id: 'r4', name: 'Apple Crisp' },
-  { id: 'r5', name: '42 Spice Rub' },
+  { id: 'r1', name: 'Zucchini Bread', prepTime: null, cookTime: null, orderIndex: 0 },
+  { id: 'r2', name: 'Apple Pie', prepTime: null, cookTime: null, orderIndex: 1 },
+  { id: 'r3', name: 'Banana Foster', prepTime: null, cookTime: null, orderIndex: 2 },
+  { id: 'r4', name: 'Apple Crisp', prepTime: null, cookTime: null, orderIndex: 3 },
+  { id: 'r5', name: '42 Spice Rub', prepTime: null, cookTime: null, orderIndex: 4 },
 ]
 
 describe('CookbookAlphaIndex', () => {

@@ -315,17 +315,17 @@ export function CookbookPageHeader({
 export function CookbookAlphaIndex({
   recipes,
 }: {
-  recipes: { id: string; name: string }[]
+  recipes: TocRecipe[]
 }) {
   if (recipes.length === 0) return null
 
   const pageMap = buildPageMap(recipes)
 
-  const groups = new Map<string, { id: string; name: string }[]>()
+  const groups = new Map<string, TocRecipe[]>()
   const sorted = recipes.slice().sort((a, b) => a.name.localeCompare(b.name))
   for (const recipe of sorted) {
     const firstChar = recipe.name[0]
-    const letter = /[a-zA-Z]/.test(firstChar) ? firstChar.toUpperCase() : '#'
+    const letter = firstChar && /[a-zA-Z]/.test(firstChar) ? firstChar.toUpperCase() : '#'
     if (!groups.has(letter)) groups.set(letter, [])
     groups.get(letter)!.push(recipe)
   }
@@ -348,7 +348,7 @@ export function CookbookAlphaIndex({
             {groups.get(letter)!.map((recipe) => (
               <RecipePageRow
                 key={recipe.id}
-                recipe={{ ...recipe, prepTime: null, cookTime: null, orderIndex: 0 }}
+                recipe={recipe}
                 pageNumber={pageMap.get(recipe.id) ?? 1}
               />
             ))}
