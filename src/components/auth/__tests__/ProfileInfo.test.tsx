@@ -1,17 +1,17 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 
-const mockUseSession = vi.fn()
+const mockUseAuth = vi.fn()
 
-vi.mock("@/lib/auth-client", () => ({
-  useSession: () => mockUseSession(),
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => mockUseAuth(),
 }))
 
 import ProfileInfo from "@/components/auth/ProfileInfo"
 
 describe("ProfileInfo", () => {
   it("shows loading skeleton when session is pending", () => {
-    mockUseSession.mockReturnValue({ data: null, isPending: true })
+    mockUseAuth.mockReturnValue({ session: null, isPending: true, isLoggedIn: false, userId: null })
 
     const { container } = render(<ProfileInfo />)
 
@@ -19,7 +19,7 @@ describe("ProfileInfo", () => {
   })
 
   it("renders nothing when no session", () => {
-    mockUseSession.mockReturnValue({ data: null, isPending: false })
+    mockUseAuth.mockReturnValue({ session: null, isPending: false, isLoggedIn: false, userId: null })
 
     const { container } = render(<ProfileInfo />)
 
@@ -27,8 +27,8 @@ describe("ProfileInfo", () => {
   })
 
   it("displays user information", () => {
-    mockUseSession.mockReturnValue({
-      data: {
+    mockUseAuth.mockReturnValue({
+      session: {
         user: {
           name: "Test User",
           email: "test@example.com",
@@ -36,9 +36,10 @@ describe("ProfileInfo", () => {
           image: null,
           createdAt: "2026-01-01T00:00:00Z",
         },
-        session: { id: "123" },
       },
       isPending: false,
+      isLoggedIn: true,
+      userId: "123",
     })
 
     render(<ProfileInfo />)
@@ -50,17 +51,18 @@ describe("ProfileInfo", () => {
   })
 
   it("displays avatar when image is available", () => {
-    mockUseSession.mockReturnValue({
-      data: {
+    mockUseAuth.mockReturnValue({
+      session: {
         user: {
           name: "Test User",
           email: "test@example.com",
           image: "https://example.com/avatar.jpg",
           createdAt: "2026-01-01T00:00:00Z",
         },
-        session: { id: "123" },
       },
       isPending: false,
+      isLoggedIn: true,
+      userId: "123",
     })
 
     render(<ProfileInfo />)

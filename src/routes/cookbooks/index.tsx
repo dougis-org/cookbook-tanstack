@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useSession } from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
@@ -14,8 +14,7 @@ export const Route = createFileRoute('/cookbooks/')({
 
 export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
-  const { data: session } = useSession()
-  const isLoggedIn = !!session?.user
+  const { isLoggedIn } = useAuth()
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
 
   return (

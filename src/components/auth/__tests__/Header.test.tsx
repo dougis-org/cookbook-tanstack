@@ -8,11 +8,14 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => vi.fn(),
 }))
 
-const mockUseSession = vi.fn()
+const mockUseAuth = vi.fn()
 const mockSignOut = vi.fn()
 
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => mockUseAuth(),
+}))
+
 vi.mock("@/lib/auth-client", () => ({
-  useSession: () => mockUseSession(),
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }))
 
@@ -20,7 +23,7 @@ import Header from "@/components/Header"
 
 describe("Header", () => {
   it("shows login and register links when not authenticated", () => {
-    mockUseSession.mockReturnValue({ data: null, isPending: false })
+    mockUseAuth.mockReturnValue({ session: null, isPending: false, isLoggedIn: false, userId: null })
 
     render(<Header />)
 
@@ -29,12 +32,11 @@ describe("Header", () => {
   })
 
   it("shows user name and logout when authenticated", () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: { name: "Test User", email: "test@example.com" },
-        session: { id: "123" },
-      },
+    mockUseAuth.mockReturnValue({
+      session: { user: { name: "Test User", email: "test@example.com" } },
       isPending: false,
+      isLoggedIn: true,
+      userId: "123",
     })
 
     render(<Header />)
@@ -46,7 +48,7 @@ describe("Header", () => {
   })
 
   it("shows nothing while session is loading", () => {
-    mockUseSession.mockReturnValue({ data: null, isPending: true })
+    mockUseAuth.mockReturnValue({ session: null, isPending: true, isLoggedIn: false, userId: null })
 
     render(<Header />)
 
@@ -55,12 +57,11 @@ describe("Header", () => {
   })
 
   it("falls back to email when name is not set", () => {
-    mockUseSession.mockReturnValue({
-      data: {
-        user: { name: null, email: "test@example.com" },
-        session: { id: "123" },
-      },
+    mockUseAuth.mockReturnValue({
+      session: { user: { name: null, email: "test@example.com" } },
       isPending: false,
+      isLoggedIn: true,
+      userId: "123",
     })
 
     render(<Header />)

@@ -13,12 +13,13 @@ import {
   LogOut,
   User,
 } from 'lucide-react'
-import { useSession, signOut } from '@/lib/auth-client'
+import { signOut } from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [headerSearch, setHeaderSearch] = useState('')
-  const { data: session, isPending } = useSession()
+  const { session, isPending } = useAuth()
   const navigate = useNavigate()
   const headerSearchRef = useRef<HTMLInputElement>(null)
 

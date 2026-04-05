@@ -21,9 +21,9 @@ vi.mock('@/components/cookbooks/CookbookFields', () => ({
   default: () => null,
 }))
 
-const mockUseSession = vi.fn()
-vi.mock('@/lib/auth-client', () => ({
-  useSession: () => mockUseSession(),
+const mockUseAuth = vi.fn()
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
 }))
 
 const mockUseQuery = vi.fn()
@@ -53,7 +53,7 @@ function renderPage() {
 describe('CookbooksPage', () => {
   describe('when logged out', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({ data: null, isPending: false })
+      mockUseAuth.mockReturnValue({ session: null, isPending: false, isLoggedIn: false, userId: null })
     })
 
     it('hides the New Cookbook button', () => {
@@ -77,9 +77,11 @@ describe('CookbooksPage', () => {
 
   describe('when logged in', () => {
     beforeEach(() => {
-      mockUseSession.mockReturnValue({
-        data: { user: { id: 'user-1', name: 'Test User', email: 'test@example.com' } },
+      mockUseAuth.mockReturnValue({
+        session: { user: { id: 'user-1', name: 'Test User', email: 'test@example.com' } },
         isPending: false,
+        isLoggedIn: true,
+        userId: 'user-1',
       })
     })
 
