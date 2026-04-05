@@ -29,18 +29,18 @@
 ## 5. PR and Merge
 
 - [x] 5.1 Run pre-PR self-check: invoke the `pr-review-toolkit:code-reviewer` sub-agent on all changed files (`src/lib/cookbookPages.ts`, `src/lib/__tests__/cookbookPages.test.ts`, `src/components/cookbooks/CookbookStandaloneLayout.tsx`) — address any high-priority findings before proceeding
-- [ ] 5.2 Commit all changes with a descriptive message referencing issue #191
-- [ ] 5.3 Push to remote: `git push`
-- [ ] 5.4 Open PR targeting `main` with title referencing issue #191; enable auto-merge
-- [ ] 5.5 Monitor CI — diagnose and fix any failures, push fixes, repeat until all checks pass
-- [ ] 5.6 Address any review comments, push fixes, repeat until no unresolved comments remain
-- [ ] 5.7 Confirm auto-merge completes (or merge manually once all gates are green and no blocking comments remain)
+- [x] 5.2 Commit all changes with a descriptive message referencing issue #191
+- [x] 5.3 Push to remote: `git push`
+- [x] 5.4 Open PR targeting `main` with title referencing issue #191; enable auto-merge
+- [x] 5.5 Monitor CI — diagnose and fix any failures, push fixes, repeat until all checks pass
+- [x] 5.6 Address any review comments, push fixes, repeat until no unresolved comments remain
+- [x] 5.7 Confirm auto-merge completes (or merge manually once all gates are green and no blocking comments remain)
 
 ## 6. Post-Merge
 
-- [ ] 6.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
-- [ ] 6.2 Verify the merged changes appear on `main`
-- [ ] 6.3 Sync approved spec deltas to canonical locations:
+- [x] 6.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
+- [x] 6.2 Verify the merged changes appear on `main`
+- [x] 6.3 Sync approved spec deltas to canonical locations:
   - Copy `openspec/changes/cookbook-toc-page-numbers-2026-04-04/specs/cookbook-page-map/spec.md` → `openspec/specs/cookbook-page-map/spec.md`
   - Merge `openspec/changes/cookbook-toc-page-numbers-2026-04-04/specs/cookbook-toc-print-layout/spec.md` MODIFIED/ADDED sections into `openspec/specs/cookbook-toc-print-layout/spec.md`
 - [ ] 6.4 Archive the change as a single atomic commit: copy `openspec/changes/cookbook-toc-page-numbers-2026-04-04/` → `openspec/archive/cookbook-toc-page-numbers-2026-04-04/` and delete the original — commit and push together
