@@ -76,7 +76,7 @@ export function CookbookPrintPage() {
         } = {
           ...recipe,
           imageUrl: null,
-          marked: false,
+          marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
         }
 
         return (
