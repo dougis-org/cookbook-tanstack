@@ -78,13 +78,13 @@ If **ANY** of the above fail, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Commit all changes to `feat/cookbook-alpha-index` and push to remote
-- [ ] Open PR from `feat/cookbook-alpha-index` → `main`; reference GH issue #245 in the PR description
-- [ ] Wait 120 seconds for agentic reviewers to post their comments
-- [ ] **Monitor PR comments** — address each comment, commit fixes, follow all steps in [Remote push validation], push to the same branch; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — if any check fails, diagnose, fix, commit, follow all steps in [Remote push validation], push; repeat until all checks pass
-- [ ] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
+- [x] Commit all changes to `feat/cookbook-alpha-index` and push to remote
+- [x] Open PR from `feat/cookbook-alpha-index` → `main`; reference GH issue #245 in the PR description
+- [x] Wait 120 seconds for agentic reviewers to post their comments
+- [x] **Monitor PR comments** — address each comment, commit fixes, follow all steps in [Remote push validation], push to the same branch; repeat until no unresolved comments remain
+- [x] Enable auto-merge once no blocking review comments remain
+- [x] **Monitor CI checks** — if any check fails, diagnose, fix, commit, follow all steps in [Remote push validation], push; repeat until all checks pass
+- [x] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
 
 Ownership metadata:
 - Implementer:
@@ -98,15 +98,15 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (if any)
-- [ ] Sync approved spec deltas into `openspec/specs/`:
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (if any)
+- [x] Sync approved spec deltas into `openspec/specs/`:
   - Merge `specs/cookbook-toc-print-layout/spec.md` delta into `openspec/specs/cookbook-toc-print-layout/spec.md`
   - Merge `specs/cookbook-print-view/spec.md` delta into `openspec/specs/cookbook-print-view/spec.md`
   - Create `openspec/specs/cookbook-alpha-index/spec.md` from `specs/cookbook-alpha-index/spec.md`
-- [ ] Archive the change: move `openspec/changes/cookbook-alpha-index/` to `openspec/changes/archive/YYYY-MM-DD-cookbook-alpha-index/` — **stage both the new location and the deletion of the original in a single commit**; do not split into two commits
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-cookbook-alpha-index/` exists and `openspec/changes/cookbook-alpha-index/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/cookbook-alpha-index`
+- [x] Archive the change: move `openspec/changes/cookbook-alpha-index/` to `openspec/changes/archive/YYYY-MM-DD-cookbook-alpha-index/` — **stage both the new location and the deletion of the original in a single commit**; do not split into two commits
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-cookbook-alpha-index/` exists and `openspec/changes/cookbook-alpha-index/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/cookbook-alpha-index`
