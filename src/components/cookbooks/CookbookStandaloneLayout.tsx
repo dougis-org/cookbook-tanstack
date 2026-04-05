@@ -330,9 +330,12 @@ export function CookbookAlphaIndex({
     groups.get(letter)!.push(recipe)
   }
 
-  const sortedKeys = Array.from(groups.keys()).sort((a, b) =>
-    a === '#' ? -1 : b === '#' ? 1 : a.localeCompare(b),
-  )
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) => {
+    if (a === b) return 0
+    if (a === '#') return -1
+    if (b === '#') return 1
+    return a.localeCompare(b)
+  })
 
   return (
     <div className="mt-12 space-y-6">
