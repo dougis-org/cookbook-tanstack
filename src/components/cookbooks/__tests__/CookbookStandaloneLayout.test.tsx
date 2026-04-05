@@ -132,6 +132,38 @@ describe('CookbookTocList', () => {
     const startersHeading = screen.getByText('Starters')
     expect(startersHeading).toHaveClass('print:break-after-avoid')
   })
+
+  // 2.9 — page numbers
+  it('flat TOC renders pg 1 on the first recipe', () => {
+    render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
+    expect(screen.getByText('pg 1')).toBeInTheDocument()
+  })
+
+  it('flat TOC renders sequential page numbers for all recipes', () => {
+    render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
+    expect(screen.getByText('pg 1')).toBeInTheDocument()
+    expect(screen.getByText('pg 2')).toBeInTheDocument()
+    expect(screen.getByText('pg 3')).toBeInTheDocument()
+  })
+
+  it('chapter-grouped TOC renders correct page numbers across chapter groups', () => {
+    render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
+    // Starters: r1→pg1, r2→pg2; Mains: r3→pg3
+    const pageNumbers = screen.getAllByText(/^pg \d+$/)
+    expect(pageNumbers).toHaveLength(3)
+    const mainsSection = screen.getByText('Mains').closest('div')!
+    expect(mainsSection).toHaveTextContent('pg 3')
+  })
+
+  it('uncategorized recipes are included in the TOC when chapters exist', () => {
+    const recipesWithUncategorized = [
+      ...chapteredRecipes,
+      { id: 'r4', name: 'Dessert', prepTime: null, cookTime: 15, chapterId: null, orderIndex: 10 },
+    ]
+    render(<CookbookTocList recipes={recipesWithUncategorized} chapters={chaptersData} />)
+    expect(screen.getByText('Dessert')).toBeInTheDocument()
+    expect(screen.getByText('pg 4')).toBeInTheDocument()
+  })
 })
 
 // ─── CookbookPageChrome ───────────────────────────────────────────────────────
