@@ -34,16 +34,16 @@
 
 ## 6. PR and Merge
 
-- [ ] 6.1 Commit all changes to `feat/use-auth-hook` and push
-- [ ] 6.2 Open PR targeting `main` — reference issue #200 in PR description
-- [ ] 6.3 Enable auto-merge on the PR
-- [ ] 6.4 Monitor CI checks — fix any failures, commit, push, repeat until green
-- [ ] 6.5 Address any review comments — commit fixes, push, repeat until no unresolved comments
+- [x] 6.1 Commit all changes to `feat/use-auth-hook` and push
+- [x] 6.2 Open PR targeting `main` — reference issue #200 in PR description
+- [x] 6.3 Enable auto-merge on the PR
+- [x] 6.4 Monitor CI checks — fix any failures, commit, push, repeat until green
+- [x] 6.5 Address any review comments — commit fixes, push, repeat until no unresolved comments
 
 ## 7. Post-Merge
 
-- [ ] 7.1 Checkout `main` and pull — verify merged changes are present
-- [ ] 7.2 Sync spec delta: copy `openspec/changes/use-auth-hook/specs/use-auth-hook/spec.md` → `openspec/specs/use-auth-hook/spec.md`
+- [x] 7.1 Checkout `main` and pull — verify merged changes are present
+- [x] 7.2 Sync spec delta: copy `openspec/changes/use-auth-hook/specs/use-auth-hook/spec.md` → `openspec/specs/use-auth-hook/spec.md`
 - [ ] 7.3 Archive the change (run `/opsx:archive` or `openspec archive use-auth-hook`) in a single atomic commit
 - [ ] 7.4 Push archive commit to `main`
 - [ ] 7.5 Prune local branch `feat/use-auth-hook`
