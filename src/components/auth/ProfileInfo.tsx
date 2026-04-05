@@ -1,8 +1,8 @@
 import { User, Mail, AtSign } from "lucide-react"
-import { useSession } from "@/lib/auth-client"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function ProfileInfo() {
-  const { data: session, isPending } = useSession()
+  const { session, isPending } = useAuth()
 
   if (isPending) {
     return (

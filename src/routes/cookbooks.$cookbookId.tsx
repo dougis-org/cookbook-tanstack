@@ -24,7 +24,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useSession } from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CardImage from '@/components/ui/CardImage'
@@ -171,13 +171,13 @@ function CookbookDetailPage() {
     queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
   }
 
-  const { data: session } = useSession()
+  const { userId } = useAuth()
 
   const { data: cookbook, isLoading } = useQuery(
     trpc.cookbooks.byId.queryOptions({ id: cookbookId }),
   )
 
-  const isOwner = session?.user?.id === cookbook?.userId
+  const isOwner = userId === cookbook?.userId
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({

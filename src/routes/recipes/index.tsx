@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react'
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
-import { useSession } from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
@@ -61,8 +61,7 @@ function RecipesPage() {
     hasImage,
   } = Route.useSearch()
 
-  const { data: session } = useSession()
-  const isLoggedIn = !!session?.user
+  const { isLoggedIn, userId } = useAuth()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const [searchValue, setSearchValue] = useState(search)
   // Keep the controlled input in sync when the URL search param changes externally
@@ -80,7 +79,7 @@ function RecipesPage() {
       mealIds,
       courseIds,
       preparationIds,
-      userId: myRecipes ? session?.user?.id : undefined,
+      userId: myRecipes ? userId || undefined : undefined,
       markedByMe,
       hasImage,
     }),

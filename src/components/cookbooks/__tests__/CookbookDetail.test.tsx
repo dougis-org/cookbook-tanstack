@@ -66,7 +66,7 @@ vi.mock('@/components/ui/CardImage', () => ({
 }))
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 
-vi.mock('@/lib/auth-client', () => ({ useSession: () => ({ data: null }) }))
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ session: null, isPending: false, isLoggedIn: false, userId: null }) }))
 
 const mockAddMutate = vi.fn()
 const mockOnSearchChange = vi.fn()

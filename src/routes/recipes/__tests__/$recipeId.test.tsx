@@ -20,9 +20,9 @@ vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null 
 vi.mock('@/components/recipes/ExportButton', () => ({ default: () => null }))
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 
-const mockUseSession = vi.fn()
-vi.mock('@/lib/auth-client', () => ({
-  useSession: () => mockUseSession(),
+const mockUseAuth = vi.fn()
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
 }))
 
 const mockUseQuery = vi.fn()
@@ -66,7 +66,7 @@ const baseRecipe = {
 
 describe('RecipeDetailPage', () => {
   beforeEach(() => {
-    mockUseSession.mockReturnValue({ data: { user: { id: 'user1' } } })
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
     mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
   })
 

@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Heart } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
-import { useSession } from '@/lib/auth-client'
+import { useAuth } from '@/hooks/useAuth'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
@@ -20,7 +20,7 @@ export function RecipeDetailPage() {
   const { recipeId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: session } = useSession()
+  const { isLoggedIn, userId } = useAuth()
   const [showDelete, setShowDelete] = useState(false)
   const [deleteError, setDeleteError] = useState<string | undefined>()
 
@@ -50,8 +50,7 @@ export function RecipeDetailPage() {
     }),
   )
 
-  const isOwner = session?.user?.id === recipe?.userId
-  const isLoggedIn = !!session?.user
+  const isOwner = userId === recipe?.userId
 
   if (isLoading) {
     return (
