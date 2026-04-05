@@ -34,7 +34,7 @@ function CookbookTocPage() {
         cookbookName={cookbook.name}
         breadcrumbLabel="Table of Contents"
       />
-      <CookbookPageHeader name={cookbook.name} description={cookbook.description} />
+      <CookbookPageHeader name={cookbook.name} description={cookbook.description} subtitle="Table of Contents" />
 
       {recipes.length === 0 ? (
         <CookbookEmptyState />

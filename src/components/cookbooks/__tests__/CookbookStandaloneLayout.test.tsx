@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome } from "@/components/cookbooks/CookbookStandaloneLayout"
+import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome, RecipePageRow, CookbookPageHeader } from "@/components/cookbooks/CookbookStandaloneLayout"
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
@@ -163,6 +163,52 @@ describe('CookbookTocList', () => {
     render(<CookbookTocList recipes={recipesWithUncategorized} chapters={chaptersData} />)
     expect(screen.getByText('Dessert')).toBeInTheDocument()
     expect(screen.getByText('pg 4')).toBeInTheDocument()
+  })
+})
+
+// ─── RecipePageRow ────────────────────────────────────────────────────────────
+
+describe('RecipePageRow', () => {
+  const recipe = { id: 'r1', name: 'Butterscotch Pie', prepTime: null, cookTime: null, orderIndex: 0 }
+
+  it('renders the index number', () => {
+    render(<RecipePageRow recipe={recipe} index={2} pageNumber={3} />)
+    expect(screen.getByText('3.')).toBeInTheDocument()
+  })
+
+  it('renders the recipe name', () => {
+    render(<RecipePageRow recipe={recipe} index={0} pageNumber={1} />)
+    expect(screen.getByText('Butterscotch Pie')).toBeInTheDocument()
+  })
+
+  it('renders the page number', () => {
+    render(<RecipePageRow recipe={recipe} index={0} pageNumber={7} />)
+    expect(screen.getByText('pg 7')).toBeInTheDocument()
+  })
+
+  it('does NOT render a dotted-leader element (no border-dotted class)', () => {
+    const { container } = render(<RecipePageRow recipe={recipe} index={0} pageNumber={1} />)
+    expect(container.querySelector('.border-dotted')).toBeNull()
+  })
+})
+
+// ─── CookbookPageHeader ───────────────────────────────────────────────────────
+
+describe('CookbookPageHeader', () => {
+  it('renders the cookbook name', () => {
+    render(<CookbookPageHeader name="My Cookbook" />)
+    expect(screen.getByText('My Cookbook')).toBeInTheDocument()
+  })
+
+  it('defaults subtitle to "Table of Contents"', () => {
+    render(<CookbookPageHeader name="My Cookbook" />)
+    expect(screen.getByText('Table of Contents')).toBeInTheDocument()
+  })
+
+  it('renders a custom subtitle when provided', () => {
+    render(<CookbookPageHeader name="My Cookbook" subtitle="Alphabetical Index" />)
+    expect(screen.getByText('Alphabetical Index')).toBeInTheDocument()
+    expect(screen.queryByText('Table of Contents')).toBeNull()
   })
 })
 
