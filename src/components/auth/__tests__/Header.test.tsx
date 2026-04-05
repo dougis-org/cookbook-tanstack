@@ -33,7 +33,7 @@ describe("Header", () => {
 
   it("shows user name and logout when authenticated", () => {
     mockUseAuth.mockReturnValue({
-      session: { user: { name: "Test User", email: "test@example.com" } },
+      session: { user: { id: "123", name: "Test User", email: "test@example.com" } },
       isPending: false,
       isLoggedIn: true,
       userId: "123",
@@ -58,7 +58,7 @@ describe("Header", () => {
 
   it("falls back to email when name is not set", () => {
     mockUseAuth.mockReturnValue({
-      session: { user: { name: null, email: "test@example.com" } },
+      session: { user: { id: "123", name: null, email: "test@example.com" } },
       isPending: false,
       isLoggedIn: true,
       userId: "123",

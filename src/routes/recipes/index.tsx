@@ -79,7 +79,7 @@ function RecipesPage() {
       mealIds,
       courseIds,
       preparationIds,
-      userId: myRecipes ? userId ?? undefined : undefined,
+      userId: myRecipes ? userId || undefined : undefined,
       markedByMe,
       hasImage,
     }),

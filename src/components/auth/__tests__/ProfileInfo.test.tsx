@@ -30,6 +30,7 @@ describe("ProfileInfo", () => {
     mockUseAuth.mockReturnValue({
       session: {
         user: {
+          id: "123",
           name: "Test User",
           email: "test@example.com",
           username: "testuser",
@@ -54,6 +55,7 @@ describe("ProfileInfo", () => {
     mockUseAuth.mockReturnValue({
       session: {
         user: {
+          id: "123",
           name: "Test User",
           email: "test@example.com",
           image: "https://example.com/avatar.jpg",
