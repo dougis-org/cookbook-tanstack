@@ -10,6 +10,7 @@ import {
   CookbookStandalonePage,
   CookbookTocList,
   CookbookEmptyState,
+  CookbookAlphaIndex,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
@@ -28,7 +29,7 @@ export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   },
 })
 
-function CookbookPrintPage() {
+export function CookbookPrintPage() {
   const { cookbookId } = Route.useParams()
   const { displayonly } = Route.useSearch()
   const displayOnly = String(displayonly) === '1'
@@ -56,7 +57,7 @@ function CookbookPrintPage() {
         cookbookName={name}
         breadcrumbLabel="Print View"
       />
-      <CookbookPageHeader name={name} description={description} />
+      <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
 
       {recipes.length === 0 ? (
         <CookbookEmptyState />
@@ -75,6 +76,7 @@ function CookbookPrintPage() {
         } = {
           ...recipe,
           imageUrl: null,
+          marked: false,
         }
 
         return (
@@ -83,6 +85,8 @@ function CookbookPrintPage() {
           </div>
         )
       })}
+
+      {recipes.length > 0 && <CookbookAlphaIndex recipes={recipes} />}
     </CookbookStandalonePage>
   )
 }

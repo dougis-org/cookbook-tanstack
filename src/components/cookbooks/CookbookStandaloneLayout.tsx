@@ -20,6 +20,36 @@ interface TocChapter {
   orderIndex: number
 }
 
+export function RecipePageRow({
+  recipe,
+  index,
+  pageNumber,
+}: {
+  recipe: TocRecipe
+  index?: number
+  pageNumber: number
+}) {
+  return (
+    <li className="print:break-inside-avoid">
+      <div className="flex items-baseline gap-3 py-2 border-b border-slate-700/50 print:border-gray-200 print:text-black">
+        {index !== undefined && <RecipeIndexNumber index={index} />}
+        <span className="text-white print:text-black">
+          {recipe.name}
+        </span>
+        <span className="flex-1" />
+        <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
+          pg {pageNumber}
+        </span>
+        <RecipeTimeSpan
+          prepTime={recipe.prepTime}
+          cookTime={recipe.cookTime}
+          className="print:hidden"
+        />
+      </div>
+    </li>
+  )
+}
+
 function TocRecipeItem({
   recipe,
   index,
@@ -40,7 +70,7 @@ function TocRecipeItem({
         <span className="text-white print:text-black group-hover:text-cyan-400 transition-colors print:group-hover:text-black">
           {recipe.name}
         </span>
-        <span aria-hidden="true" className="flex-1 border-b border-dotted border-gray-600 self-end mb-[3px] print:border-gray-400" />
+        <span className="flex-1" />
         <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
           pg {pageNumber}
         </span>
@@ -263,9 +293,11 @@ export function CookbookPageChrome({
 export function CookbookPageHeader({
   name,
   description,
+  subtitle = 'Table of Contents',
 }: {
   name: string
   description?: string | null
+  subtitle?: string
 }) {
   return (
     <header className="mb-8 text-center border-b border-slate-700 print:border-gray-300 pb-6">
@@ -274,8 +306,55 @@ export function CookbookPageHeader({
         <p className="text-gray-300 print:text-gray-700">{description}</p>
       )}
       <p className="text-gray-400 print:text-gray-600 text-sm mt-2">
-        Table of Contents
+        {subtitle}
       </p>
     </header>
+  )
+}
+
+export function CookbookAlphaIndex({
+  recipes,
+}: {
+  recipes: { id: string; name: string }[]
+}) {
+  if (recipes.length === 0) return null
+
+  const pageMap = buildPageMap(recipes)
+
+  const groups = new Map<string, { id: string; name: string }[]>()
+  const sorted = recipes.slice().sort((a, b) => a.name.localeCompare(b.name))
+  for (const recipe of sorted) {
+    const firstChar = recipe.name[0]
+    const letter = /[a-zA-Z]/.test(firstChar) ? firstChar.toUpperCase() : '#'
+    if (!groups.has(letter)) groups.set(letter, [])
+    groups.get(letter)!.push(recipe)
+  }
+
+  const sortedKeys = Array.from(groups.keys()).sort((a, b) =>
+    a === '#' ? -1 : b === '#' ? 1 : a.localeCompare(b),
+  )
+
+  return (
+    <div className="mt-12 space-y-6">
+      <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
+        Alphabetical Index
+      </h2>
+      {sortedKeys.map((letter) => (
+        <div key={letter}>
+          <h3 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
+            {letter}
+          </h3>
+          <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+            {groups.get(letter)!.map((recipe) => (
+              <RecipePageRow
+                key={recipe.id}
+                recipe={{ ...recipe, prepTime: null, cookTime: null, orderIndex: 0 }}
+                pageNumber={pageMap.get(recipe.id) ?? 1}
+              />
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
   )
 }
