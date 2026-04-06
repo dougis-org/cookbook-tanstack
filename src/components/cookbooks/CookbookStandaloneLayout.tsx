@@ -139,7 +139,7 @@ export function CookbookTocList({
             <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
               {chapter.name}
             </h2>
-            <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+            <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
               {rows.map(({ recipe, index }) => (
                 <TocRecipeItem
                   key={recipe.id}
@@ -152,7 +152,7 @@ export function CookbookTocList({
           </div>
         ))}
         {uncategorizedRows.length > 0 && (
-          <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+          <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
             {uncategorizedRows.map(({ recipe, index }) => (
               <TocRecipeItem
                 key={recipe.id}
@@ -169,7 +169,7 @@ export function CookbookTocList({
 
   const pageMap = buildPageMap(recipes)
   return (
-    <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+    <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
       {recipes.map((recipe, index) => (
         <TocRecipeItem
           key={recipe.id}
@@ -354,7 +354,7 @@ export function CookbookAlphaIndex({
       <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
         Alphabetical Index
       </h2>
-      <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+      <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
         {items.map((item) =>
           item.type === 'letter' ? (
             <li
