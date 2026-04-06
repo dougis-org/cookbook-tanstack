@@ -53,6 +53,7 @@ describe('CookbookAlphaIndex', () => {
     const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
     const listItems = Array.from(container.querySelectorAll('ol > li'))
     const aIndex = listItems.findIndex((li) => li.textContent?.trim() === 'A')
+    expect(aIndex).toBeGreaterThanOrEqual(0)
     // Apple Crisp comes before Apple Pie alphabetically
     expect(listItems[aIndex + 1]).toHaveTextContent('Apple Crisp')
     expect(listItems[aIndex + 2]).toHaveTextContent('Apple Pie')

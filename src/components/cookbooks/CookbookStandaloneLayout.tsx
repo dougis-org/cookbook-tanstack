@@ -350,11 +350,11 @@ export function CookbookAlphaIndex({
   }
 
   return (
-    <div className="mt-12 print:break-before-page">
+    <div className="mt-12 print:mt-0 print:break-before-page">
       <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
         Alphabetical Index
       </h2>
-      <ol className="print:columns-2 print:gap-8">
+      <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
         {items.map((item) =>
           item.type === 'letter' ? (
             <li
