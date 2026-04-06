@@ -1,0 +1,1 @@
+../../.github/prompts/sync-agent-templates.prompt.md

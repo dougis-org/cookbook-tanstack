@@ -1,0 +1,1 @@
+../../.github/prompts/cut-pr.prompt.md
