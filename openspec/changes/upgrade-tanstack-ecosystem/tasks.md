@@ -19,8 +19,8 @@
 
 ## 4. PR and Merge
 
-- [ ] 4.1 Commit changes: `package.json` and `package-lock.json` (reference issue #249)
-- [ ] 4.2 Push to remote: `git push`
+- [x] 4.1 Commit changes: `package.json` and `package-lock.json` (reference issue #249)
+- [x] 4.2 Push to remote: `git push`
 - [ ] 4.3 Open PR targeting `main` with auto-merge enabled (all CI checks must be green first)
 - [ ] 4.4 Monitor CI: if any check fails, diagnose, fix, commit, push, and repeat until clean
 - [ ] 4.5 Address any review comments, commit fixes, push — repeat until no blocking comments remain
