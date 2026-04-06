@@ -26,6 +26,7 @@ export default function Header() {
   async function handleSignOut() {
     await signOut()
     setIsOpen(false)
+    navigate({ to: '/auth/login' })
   }
 
   function handleHeaderSearch(e: React.FormEvent) {

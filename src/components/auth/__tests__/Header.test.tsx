@@ -1,11 +1,13 @@
 import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+
+const mockNavigate = vi.fn()
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
     <a href={to}>{children}</a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mockNavigate,
 }))
 
 const mockUseAuth = vi.fn()
@@ -54,6 +56,23 @@ describe("Header", () => {
 
     expect(screen.queryByText("Login")).not.toBeInTheDocument()
     expect(screen.queryByText("Logout")).not.toBeInTheDocument()
+  })
+
+  it("navigates to /auth/login after sign-out", async () => {
+    mockSignOut.mockResolvedValue(undefined)
+    mockUseAuth.mockReturnValue({
+      session: { user: { id: "123", name: "Test User", email: "test@example.com" } },
+      isPending: false,
+      isLoggedIn: true,
+      userId: "123",
+    })
+
+    render(<Header />)
+    fireEvent.click(screen.getByText("Logout"))
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/auth/login" })
+    })
   })
 
   it("falls back to email when name is not set", () => {
