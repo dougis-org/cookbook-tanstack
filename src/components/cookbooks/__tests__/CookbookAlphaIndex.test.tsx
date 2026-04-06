@@ -17,36 +17,55 @@ describe('CookbookAlphaIndex', () => {
     expect(container.firstChild).toBeNull()
   })
 
-  it('groups recipes under correct letter headers', () => {
+  it('index container has print:break-before-page class', () => {
+    const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
+    const root = container.firstChild as HTMLElement
+    expect(root.classList.contains('print:break-before-page')).toBe(true)
+  })
+
+  it('renders all items in a single <ol>', () => {
+    const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
+    const lists = container.querySelectorAll('ol')
+    expect(lists).toHaveLength(1)
+  })
+
+  it('renders letter labels as <li> elements (not <h3>)', () => {
     render(<CookbookAlphaIndex recipes={recipes} />)
-    expect(screen.getByText('A')).toBeInTheDocument()
-    expect(screen.getByText('B')).toBeInTheDocument()
-    expect(screen.getByText('Z')).toBeInTheDocument()
+    const aItem = screen.getByText('A')
+    expect(aItem.tagName).toBe('LI')
+    const bItem = screen.getByText('B')
+    expect(bItem.tagName).toBe('LI')
+    const zItem = screen.getByText('Z')
+    expect(zItem.tagName).toBe('LI')
   })
 
   it('places recipes starting with a digit under # bucket', () => {
-    render(<CookbookAlphaIndex recipes={recipes} />)
+    const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
     expect(screen.getByText('#')).toBeInTheDocument()
-    const hashHeading = screen.getByText('#')
-    expect(hashHeading.closest('div')).toContainElement(screen.getByText('42 Spice Rub'))
+    // '#' label is immediately followed by '42 Spice Rub' in the flat list
+    const listItems = Array.from(container.querySelectorAll('ol > li'))
+    const hashIndex = listItems.findIndex((li) => li.textContent?.trim() === '#')
+    expect(hashIndex).toBeGreaterThanOrEqual(0)
+    expect(listItems[hashIndex + 1]).toHaveTextContent('42 Spice Rub')
   })
 
   it('sorts recipes alphabetically within each group', () => {
-    render(<CookbookAlphaIndex recipes={recipes} />)
-    // Both Apple Crisp and Apple Pie are under A; Crisp < Pie alphabetically
-    const aSection = screen.getByText('A').closest('div')!
-    const items = aSection.querySelectorAll('li')
-    expect(items[0]).toHaveTextContent('Apple Crisp')
-    expect(items[1]).toHaveTextContent('Apple Pie')
+    const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
+    const listItems = Array.from(container.querySelectorAll('ol > li'))
+    const aIndex = listItems.findIndex((li) => li.textContent?.trim() === 'A')
+    // Apple Crisp comes before Apple Pie alphabetically
+    expect(listItems[aIndex + 1]).toHaveTextContent('Apple Crisp')
+    expect(listItems[aIndex + 2]).toHaveTextContent('Apple Pie')
   })
 
   it('renders page numbers matching buildPageMap for display-ordered input', () => {
-    render(<CookbookAlphaIndex recipes={recipes} />)
+    const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
+    const listItems = Array.from(container.querySelectorAll('ol > li'))
     // Display order: r1=pg1, r2=pg2, r3=pg3, r4=pg4, r5=pg5
-    // Apple Crisp is r4 → pg 4, Apple Pie is r2 → pg 2
-    const aSection = screen.getByText('A').closest('div')!
-    expect(aSection).toHaveTextContent('pg 4') // Apple Crisp
-    expect(aSection).toHaveTextContent('pg 2') // Apple Pie
+    const appleCrispItem = listItems.find((li) => li.textContent?.includes('Apple Crisp'))
+    const applePieItem = listItems.find((li) => li.textContent?.includes('Apple Pie'))
+    expect(appleCrispItem).toHaveTextContent('pg 4')
+    expect(applePieItem).toHaveTextContent('pg 2')
   })
 
   it('recipe entries are not anchor/Link elements (plain text rows)', () => {
