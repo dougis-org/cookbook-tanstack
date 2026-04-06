@@ -1,0 +1,1 @@
+../../.github/prompts/review-pr.prompt.md

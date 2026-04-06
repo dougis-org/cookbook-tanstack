@@ -1,0 +1,1 @@
+../../.github/prompts/find-next-ticket.prompt.md

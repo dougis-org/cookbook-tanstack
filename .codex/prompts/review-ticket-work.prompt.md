@@ -1,0 +1,1 @@
+../../.github/prompts/review-ticket-work.prompt.md

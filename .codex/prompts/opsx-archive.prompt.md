@@ -1,0 +1,1 @@
+../../.github/prompts/opsx-archive.prompt.md

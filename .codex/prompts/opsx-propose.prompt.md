@@ -1,0 +1,1 @@
+../../.github/prompts/opsx-propose.prompt.md
