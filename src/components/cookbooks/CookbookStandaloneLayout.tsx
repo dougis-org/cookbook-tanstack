@@ -312,6 +312,10 @@ export function CookbookPageHeader({
   )
 }
 
+type IndexItem =
+  | { type: 'letter'; letter: string }
+  | { type: 'recipe'; recipe: TocRecipe; pageNumber: number }
+
 export function CookbookAlphaIndex({
   recipes,
 }: {
@@ -337,27 +341,37 @@ export function CookbookAlphaIndex({
     return a.localeCompare(b)
   })
 
+  const items: IndexItem[] = []
+  for (const letter of sortedKeys) {
+    items.push({ type: 'letter', letter })
+    for (const recipe of groups.get(letter)!) {
+      items.push({ type: 'recipe', recipe, pageNumber: pageMap.get(recipe.id) ?? 1 })
+    }
+  }
+
   return (
-    <div className="mt-12 space-y-6">
+    <div className="mt-12 print:mt-0 print:break-before-page">
       <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
         Alphabetical Index
       </h2>
-      {sortedKeys.map((letter) => (
-        <div key={letter}>
-          <h3 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
-            {letter}
-          </h3>
-          <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
-            {groups.get(letter)!.map((recipe) => (
-              <RecipePageRow
-                key={recipe.id}
-                recipe={recipe}
-                pageNumber={pageMap.get(recipe.id) ?? 1}
-              />
-            ))}
-          </ol>
-        </div>
-      ))}
+      <ol className="space-y-2 print:space-y-0 print:columns-2 print:gap-8">
+        {items.map((item) =>
+          item.type === 'letter' ? (
+            <li
+              key={item.letter}
+              className="font-bold text-white print:text-black print:break-after-avoid mt-4 first:mt-0"
+            >
+              {item.letter}
+            </li>
+          ) : (
+            <RecipePageRow
+              key={item.recipe.id}
+              recipe={item.recipe}
+              pageNumber={item.pageNumber}
+            />
+          )
+        )}
+      </ol>
     </div>
   )
 }
