@@ -27,8 +27,8 @@
 
 ## 5. PR and Merge
 
-- [ ] 5.1 Commit all changes to `fix/alpha-index-layout` and push to remote
-- [ ] 5.2 Open a PR from `fix/alpha-index-layout` to `main` referencing GitHub issue #261; enable auto-merge
+- [x] 5.1 Commit all changes to `fix/alpha-index-layout` and push to remote
+- [x] 5.2 Open a PR from `fix/alpha-index-layout` to `main` referencing GitHub issue #261; enable auto-merge
 - [ ] 5.3 Monitor CI checks — diagnose and fix any failures, commit and push fixes until all checks are green
 - [ ] 5.4 Address any review comments — commit fixes, push, and repeat until no unresolved comments remain
 
