@@ -7,20 +7,31 @@ description: Tests for upgrade-better-auth-1-5-6
 
 ## Overview
 
-This change is a dependency version bump with no application code changes. TDD here means running the existing test suite against the new versions (red → green without writing new tests), plus manual verification of the BSON UUID migration step.
+This change is primarily a dependency version bump, but it also includes a
+small application behavior change: sign-out now redirects to `/auth/login`,
+plus related route/component test updates. TDD here means validating the
+upgraded packages, covering the sign-out redirect behavior, and manually
+verifying the BSON UUID migration step.
 
 The primary test surface is:
-1. Existing unit/integration tests (`npm run test`) — must pass on upgraded versions
-2. Existing E2E tests (`npm run test:e2e`) — must pass on upgraded versions  
-3. Manual auth flow verification — covers BSON UUID migration and cookie behavior
+
+1. Unit/integration tests (`npm run test`) must pass on upgraded versions,
+   including the Header sign-out redirect coverage
+2. Existing E2E tests (`npm run test:e2e`) — must pass on upgraded versions
+3. Manual auth flow verification — covers BSON UUID migration, sign-out redirect behavior, and cookie behavior
 
 ## Testing Steps
 
 For each task:
 
-1. **Write a failing test** — for this change, "failing" means running the test suite against the upgraded packages before the BSON UUID migration step, then confirming failures are only from stale auth data (not code regressions).
-2. **Write code to pass the test** — perform the BSON UUID migration (clear auth collections) and confirm tests pass.
-3. **Refactor** — N/A (no code changes).
+1. **Write a failing test**: add or update targeted auth tests for the
+   sign-out redirect behavior as needed, and run the upgraded suite to
+   surface any failures tied to the BSON UUID migration step.
+2. **Write code to pass the test**: perform the BSON UUID migration (clear
+   auth collections), implement the scoped sign-out behavior fix, and confirm
+   tests pass.
+3. **Refactor**: keep the behavior change narrow and keep docs/spec artifacts
+   aligned with the implemented scope.
 
 ## Test Cases
 
@@ -52,7 +63,9 @@ For each task:
 
 - [ ] Dev server starts without console errors after upgrade
   - Maps to: `specs/dependency-versions.md` → "Dev server starts with new devtools"
-  - How: Run `npm run dev`, open browser at http://localhost:3000, open DevTools console, confirm no errors from TanStack devtools initialization
+  - How: Run `npm run dev`, open browser at <http://localhost:3000>, open
+    DevTools console, and confirm there are no TanStack devtools
+    initialization errors
 
 ### Task 4 — Manual auth flow
 
@@ -66,6 +79,10 @@ For each task:
   - Maps to: `specs/auth-flows.md` → "Wrong password rejected"
 
 - [ ] Sign-out clears the session cookie and redirects to sign-in
+  - Maps to: `specs/auth-flows.md` → "Successful sign-out"
+
+- [ ] Header unit test covers sign-out failure handling and prevents redirect
+  when the request fails
   - Maps to: `specs/auth-flows.md` → "Successful sign-out"
 
 - [ ] Page reload within 5 minutes keeps the user authenticated (cookieCache)

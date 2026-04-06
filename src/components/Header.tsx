@@ -24,9 +24,14 @@ export default function Header() {
   const headerSearchRef = useRef<HTMLInputElement>(null)
 
   async function handleSignOut() {
-    await signOut()
-    setIsOpen(false)
-    navigate({ to: '/auth/login' })
+    try {
+      await signOut()
+      navigate({ to: '/auth/login' })
+    } catch (error) {
+      console.error('Sign out failed:', error)
+    } finally {
+      setIsOpen(false)
+    }
   }
 
   function handleHeaderSearch(e: React.FormEvent) {

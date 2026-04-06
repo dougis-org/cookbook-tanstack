@@ -4,7 +4,9 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED Auth collections cleared before first start post-upgrade
 
-The system SHALL have all better-auth managed collections (users, sessions, accounts, verifications) dropped from the dev MongoDB instance before the upgraded server first starts, to prevent BSON UUID lookup failures.
+The system SHALL have all better-auth managed collections (users, sessions,
+accounts, verifications) dropped from the dev MongoDB instance before the
+upgraded server first starts, to prevent BSON UUID lookup failures.
 
 #### Scenario: Auth collections cleared successfully
 
@@ -70,7 +72,9 @@ The system SHALL allow authenticated users to sign out after the upgrade.
 
 ### Requirement: MODIFIED cookieCache behavior unchanged after upgrade
 
-The system SHALL maintain the same cookieCache behavior as before the upgrade: session data cached in cookie for up to 5 minutes, refreshed from DB after expiry.
+The system SHALL maintain the same cookieCache behavior as before the
+upgrade: session data cached in cookie for up to 5 minutes, refreshed from
+DB after expiry.
 
 #### Scenario: Session persists across page reload within cache window
 
@@ -91,13 +95,18 @@ No requirements are being removed in this change.
 ## Traceability
 
 - Proposal element "MongoDB BSON UUID storage change risk" -> Requirement: ADDED Auth collections cleared
+- Implemented app change "sign-out redirects to `/auth/login` after session
+  revocation" -> Requirement: MODIFIED Sign-out flow
 - Proposal element "Cookie handling changes (1.5.2)" -> Requirement: MODIFIED Sign-in flow, Sign-out flow
 - Proposal element "cookieCache session behavior (1.5.5)" -> Requirement: MODIFIED cookieCache behavior
 - Design decision 2 (clear dev auth collections) -> Requirement: ADDED Auth collections cleared
-- Design decision 4 (no code changes) -> All MODIFIED requirements (behavior preserved, not altered)
+- Design decision 4 (minimal app change for sign-out redirect) -> All MODIFIED requirements
 - Requirement "Auth collections cleared" -> Task: clear dev auth collections
 - Requirement "Sign-up/Sign-in/Sign-out work" -> Task: manual auth flow verification + E2E tests
-- Requirement "cookieCache behavior unchanged" -> Task: run unit tests for auth
+- Requirement "Sign-out flow redirects to `/auth/login` after successful
+  sign-out" -> Task: validate redirect behavior with added auth flow tests
+- Requirement "cookieCache behavior unchanged" -> Task: run auth unit tests
+  covering session refresh and custom session field preservation
 
 ## Non-Functional Acceptance Criteria
 
@@ -115,7 +124,8 @@ No requirements are being removed in this change.
 
 - **Given** a user is authenticated
 - **When** the client attempts a session refresh and the server returns a network error
-- **Then** the existing session data in the client is preserved (not cleared), keeping the user authenticated (better-auth 1.5.5 fix)
+- **Then** the existing session data in the client is preserved (not
+  cleared), keeping the user authenticated (better-auth 1.5.5 fix)
 
 ### Requirement: Performance
 
