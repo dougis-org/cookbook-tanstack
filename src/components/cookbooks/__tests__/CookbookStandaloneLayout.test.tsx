@@ -134,25 +134,30 @@ describe('CookbookTocList', () => {
   })
 
   // 2.9 — page numbers
-  it('flat TOC renders pg 1 on the first recipe', () => {
+  it('flat TOC renders #1 on the first recipe', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
-    expect(screen.getByText('pg 1')).toBeInTheDocument()
+    expect(screen.getByText('#1')).toBeInTheDocument()
   })
 
-  it('flat TOC renders sequential page numbers for all recipes', () => {
+  it('flat TOC renders sequential #N position numbers for all recipes', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
-    expect(screen.getByText('pg 1')).toBeInTheDocument()
-    expect(screen.getByText('pg 2')).toBeInTheDocument()
-    expect(screen.getByText('pg 3')).toBeInTheDocument()
+    expect(screen.getByText('#1')).toBeInTheDocument()
+    expect(screen.getByText('#2')).toBeInTheDocument()
+    expect(screen.getByText('#3')).toBeInTheDocument()
   })
 
-  it('chapter-grouped TOC renders correct page numbers across chapter groups', () => {
+  it('flat TOC renders no "pg " text', () => {
+    render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
+    expect(screen.queryByText(/^pg \d+$/)).toBeNull()
+  })
+
+  it('chapter-grouped TOC renders correct #N position numbers across chapter groups', () => {
     render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
-    // Starters: r1→pg1, r2→pg2; Mains: r3→pg3
-    const pageNumbers = screen.getAllByText(/^pg \d+$/)
+    // Starters: r1→#1, r2→#2; Mains: r3→#3
+    const pageNumbers = screen.getAllByText(/^#\d+$/)
     expect(pageNumbers).toHaveLength(3)
     const mainsSection = screen.getByText('Mains').closest('div')!
-    expect(mainsSection).toHaveTextContent('pg 3')
+    expect(mainsSection).toHaveTextContent('#3')
   })
 
   it('uncategorized recipes are included in the TOC when chapters exist', () => {
@@ -162,7 +167,7 @@ describe('CookbookTocList', () => {
     ]
     render(<CookbookTocList recipes={recipesWithUncategorized} chapters={chaptersData} />)
     expect(screen.getByText('Dessert')).toBeInTheDocument()
-    expect(screen.getByText('pg 4')).toBeInTheDocument()
+    expect(screen.getByText('#4')).toBeInTheDocument()
   })
 })
 
@@ -181,9 +186,14 @@ describe('RecipePageRow', () => {
     expect(screen.getByText('Butterscotch Pie')).toBeInTheDocument()
   })
 
-  it('renders the page number', () => {
+  it('renders the page number in #N format', () => {
     render(<RecipePageRow recipe={recipe} index={0} pageNumber={7} />)
-    expect(screen.getByText('pg 7')).toBeInTheDocument()
+    expect(screen.getByText('#7')).toBeInTheDocument()
+  })
+
+  it('does not render "pg N" text', () => {
+    render(<RecipePageRow recipe={recipe} index={0} pageNumber={7} />)
+    expect(screen.queryByText('pg 7')).toBeNull()
   })
 
   it('does NOT render a dotted-leader element (no border-dotted class)', () => {

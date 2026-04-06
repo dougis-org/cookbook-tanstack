@@ -59,14 +59,19 @@ describe('CookbookAlphaIndex', () => {
     expect(listItems[aIndex + 2]).toHaveTextContent('Apple Pie')
   })
 
-  it('renders page numbers matching buildPageMap for display-ordered input', () => {
+  it('renders #N position numbers matching buildPageMap for display-ordered input', () => {
     const { container } = render(<CookbookAlphaIndex recipes={recipes} />)
     const listItems = Array.from(container.querySelectorAll('ol > li'))
-    // Display order: r1=pg1, r2=pg2, r3=pg3, r4=pg4, r5=pg5
+    // Display order: r1=#1, r2=#2, r3=#3, r4=#4, r5=#5
     const appleCrispItem = listItems.find((li) => li.textContent?.includes('Apple Crisp'))
     const applePieItem = listItems.find((li) => li.textContent?.includes('Apple Pie'))
-    expect(appleCrispItem).toHaveTextContent('pg 4')
-    expect(applePieItem).toHaveTextContent('pg 2')
+    expect(appleCrispItem).toHaveTextContent('#4')
+    expect(applePieItem).toHaveTextContent('#2')
+  })
+
+  it('does not render "pg N" text in any recipe row', () => {
+    render(<CookbookAlphaIndex recipes={recipes} />)
+    expect(screen.queryByText(/^pg \d+$/)).toBeNull()
   })
 
   it('recipe entries are not anchor/Link elements (plain text rows)', () => {

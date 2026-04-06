@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
+import { buildPageMap } from '@/lib/cookbookPages'
 import {
   CookbookPageLoading,
   CookbookPageNotFound,
@@ -49,6 +50,7 @@ export function CookbookPrintPage() {
   if (!printData) return <CookbookPageNotFound />
 
   const { name, description, recipes, chapters } = printData
+  const pageMap = buildPageMap(recipes)
 
   return (
     <CookbookStandalonePage maxWidth="4xl">
@@ -79,9 +81,16 @@ export function CookbookPrintPage() {
           marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
         }
 
+        const pageNumber = pageMap.get(recipe.id)
+
         return (
           <div key={recipe.id} className="cookbook-recipe-section">
             <RecipeDetail recipe={recipeForDetail} hideServingAdjuster />
+            {pageNumber !== undefined && (
+              <div className="mt-4 pt-2 border-t border-slate-700/30 print:border-gray-200 text-right text-xs text-gray-500 print:text-gray-600 tabular-nums">
+                #{pageNumber}
+              </div>
+            )}
           </div>
         )
       })}

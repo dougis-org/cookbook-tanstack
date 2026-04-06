@@ -126,6 +126,21 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     await expect(page.getByText(recipe2Name).first()).toBeVisible();
   });
 
+  test("displayonly mode shows #N labels for recipe sections and no pg-prefixed labels", async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(
+      page,
+      `/cookbooks/${cookbookId}/print?displayonly=1`,
+    );
+
+    const sections = page.locator(".cookbook-recipe-section");
+    await expect(sections).toHaveCount(2);
+    await expect(sections.nth(0)).toContainText("#1");
+    await expect(sections.nth(1)).toContainText("#2");
+    await expect(page.getByText(/^pg \d+$/)).toHaveCount(0);
+  });
+
   // 4.4
   test("each recipe section has the cookbook-recipe-section CSS class", async ({
     page,

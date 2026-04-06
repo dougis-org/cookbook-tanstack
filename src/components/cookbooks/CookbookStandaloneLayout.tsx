@@ -41,7 +41,7 @@ export function RecipePageRow({
         </span>
         <span className="flex-1" />
         <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
-          pg {pageNumber}
+          #{pageNumber}
         </span>
         <RecipeTimeSpan
           prepTime={recipe.prepTime}
@@ -75,7 +75,7 @@ function TocRecipeItem({
         </span>
         <span className="flex-1" />
         <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
-          pg {pageNumber}
+          #{pageNumber}
         </span>
         <RecipeTimeSpan
           prepTime={recipe.prepTime}
