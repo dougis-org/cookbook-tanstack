@@ -135,9 +135,11 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     );
 
     const sections = page.locator(".cookbook-recipe-section");
+    const labels = page.locator(".cookbook-recipe-position-label");
     await expect(sections).toHaveCount(2);
-    await expect(sections.nth(0)).toContainText("#1");
-    await expect(sections.nth(1)).toContainText("#2");
+    await expect(labels).toHaveCount(2);
+    await expect(labels.nth(0)).toHaveText("#1");
+    await expect(labels.nth(1)).toHaveText("#2");
     await expect(page.getByText(/^pg \d+$/)).toHaveCount(0);
   });
 

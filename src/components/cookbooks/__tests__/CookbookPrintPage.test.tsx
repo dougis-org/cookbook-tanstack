@@ -12,7 +12,9 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
-vi.mock('@/components/recipes/RecipeDetail', () => ({ default: () => null }))
+vi.mock('@/components/recipes/RecipeDetail', () => ({
+  default: ({ recipe }: { recipe: { name: string } }) => <div>{recipe.name}</div>,
+}))
 
 const mockUseQuery = vi.fn()
 vi.mock('@tanstack/react-query', () => ({
@@ -40,6 +42,19 @@ const threeRecipes = [
   { id: 'r2', name: 'Salad', prepTime: null, cookTime: null, orderIndex: 1 },
   { id: 'r3', name: 'Pasta', prepTime: null, cookTime: null, orderIndex: 2 },
 ]
+
+const chapteredData = {
+  ...baseData,
+  chapters: [
+    { id: 'c1', name: 'Breakfast', orderIndex: 0 },
+    { id: 'c2', name: 'Dinner', orderIndex: 1 },
+  ],
+  recipes: [
+    { id: 'r1', name: 'Uncategorized', prepTime: null, cookTime: null, orderIndex: 0, chapterId: null },
+    { id: 'r2', name: 'Dinner Pasta', prepTime: null, cookTime: null, orderIndex: 1, chapterId: 'c2' },
+    { id: 'r3', name: 'Breakfast Toast', prepTime: null, cookTime: null, orderIndex: 2, chapterId: 'c1' },
+  ],
+}
 
 describe('CookbookPrintPage — alphabetical index', () => {
   beforeEach(() => {
@@ -76,16 +91,17 @@ describe('CookbookPrintPage — #N position labels', () => {
     vi.clearAllMocks()
   })
 
-  it('renders #1, #2, #3 labels for 3 recipes', () => {
+  it('renders one position label per recipe section', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: { ...baseData, recipes: threeRecipes },
     })
-    render(<CookbookPrintPage />)
-    // Labels appear in both recipe sections AND alphabetical index — use getAllByText
-    expect(screen.getAllByText('#1').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('#2').length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText('#3').length).toBeGreaterThanOrEqual(1)
+    const { container } = render(<CookbookPrintPage />)
+    const labels = Array.from(
+      container.querySelectorAll<HTMLElement>('.cookbook-recipe-position-label'),
+    )
+
+    expect(labels.map((label) => label.textContent)).toEqual(['#1', '#2', '#3'])
   })
 
   it('renders exactly 3 cookbook-recipe-section divs for 3 recipes', () => {
@@ -110,6 +126,26 @@ describe('CookbookPrintPage — #N position labels', () => {
     expect(sections[2]).toHaveTextContent('#3')
   })
 
+  it('uses chapter display order for recipe sections and labels', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: chapteredData,
+    })
+    const { container } = render(<CookbookPrintPage />)
+    const sections = Array.from(container.querySelectorAll<HTMLElement>('.cookbook-recipe-section'))
+    const labels = Array.from(
+      container.querySelectorAll<HTMLElement>('.cookbook-recipe-position-label'),
+    )
+
+    expect(labels.map((label) => label.textContent)).toEqual(['#1', '#2', '#3'])
+    expect(sections[0]).toHaveTextContent('Breakfast Toast')
+    expect(sections[0]).toHaveTextContent('#1')
+    expect(sections[1]).toHaveTextContent('Dinner Pasta')
+    expect(sections[1]).toHaveTextContent('#2')
+    expect(sections[2]).toHaveTextContent('Uncategorized')
+    expect(sections[2]).toHaveTextContent('#3')
+  })
+
   it('renders no recipe sections and no #N labels for empty recipe list', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
@@ -120,7 +156,7 @@ describe('CookbookPrintPage — #N position labels', () => {
     expect(screen.queryByText(/^#\d+$/)).toBeNull()
   })
 
-  it('#N labels in recipe sections match those in the TOC', () => {
+  it('renders sequential #N labels inside recipe sections', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: { ...baseData, recipes: threeRecipes },

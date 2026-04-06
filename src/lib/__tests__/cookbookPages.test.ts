@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPageMap } from '@/lib/cookbookPages'
+import { buildPageMap, getDisplayOrderedRecipes } from '@/lib/cookbookPages'
 
 describe('buildPageMap', () => {
   it('returns an empty map for an empty input', () => {
@@ -22,5 +22,37 @@ describe('buildPageMap', () => {
     const recipes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }]
     const map = buildPageMap(recipes)
     expect(map.size).toBe(4)
+  })
+})
+
+describe('getDisplayOrderedRecipes', () => {
+  it('sorts by orderIndex when there are no chapters', () => {
+    const recipes = [
+      { id: 'r3', orderIndex: 2 },
+      { id: 'r1', orderIndex: 0 },
+      { id: 'r2', orderIndex: 1 },
+    ]
+
+    expect(getDisplayOrderedRecipes(recipes).map((recipe) => recipe.id)).toEqual([
+      'r1',
+      'r2',
+      'r3',
+    ])
+  })
+
+  it('orders chapter recipes by chapter order, then appends uncategorized recipes', () => {
+    const recipes = [
+      { id: 'uncategorized', orderIndex: 0, chapterId: null },
+      { id: 'chapter-b', orderIndex: 1, chapterId: 'chapter-b' },
+      { id: 'chapter-a', orderIndex: 2, chapterId: 'chapter-a' },
+    ]
+    const chapters = [
+      { id: 'chapter-a', orderIndex: 0 },
+      { id: 'chapter-b', orderIndex: 1 },
+    ]
+
+    expect(
+      getDisplayOrderedRecipes(recipes, chapters).map((recipe) => recipe.id),
+    ).toEqual(['chapter-a', 'chapter-b', 'uncategorized'])
   })
 })
