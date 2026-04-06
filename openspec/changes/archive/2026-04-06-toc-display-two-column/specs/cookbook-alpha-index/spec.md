@@ -1,9 +1,4 @@
-# cookbook-alpha-index Specification
-
-## Purpose
-Provides a `CookbookAlphaIndex` component that renders all recipes from a cookbook in a continuous alphabetical A–Z index, suitable for the back of a printed cookbook. Recipes are sorted alphabetically, grouped under first-letter labels in a single flat list that flows continuously across print columns.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Alphabetical index renders recipes A–Z grouped by first letter
 
@@ -48,21 +43,3 @@ The system SHALL provide a `CookbookAlphaIndex` component that accepts a `recipe
 
 - **WHEN** the print preview route is viewed on a screen narrower than 640px
 - **THEN** the alphabetical index list is rendered in a single column
-
-### Requirement: Alphabetical index begins on a new print page
-
-The system SHALL ensure that the alphabetical index always starts on a new print page, separate from the last recipe content section.
-
-#### Scenario: Index starts on a new page when printed
-
-- **WHEN** the print view is printed for a cookbook with recipes
-- **THEN** the alphabetical index section begins at the top of a new page, never sharing a page with the last recipe content
-
-### Requirement: Alphabetical index is a plain-text print artifact (no navigation links)
-
-Each recipe entry in the index SHALL render as plain text (not a hyperlink), since the index is designed for printed output where links have no utility.
-
-#### Scenario: Index entries are not interactive links
-
-- **WHEN** `CookbookAlphaIndex` is rendered
-- **THEN** recipe name entries are not anchor or Link elements

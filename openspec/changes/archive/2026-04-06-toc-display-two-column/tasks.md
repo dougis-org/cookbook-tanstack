@@ -24,14 +24,14 @@
 - [x] 4.1 Commit all changes with a descriptive message referencing issue #260
 - [x] 4.2 Push branch to remote: `git push`
 - [x] 4.3 Open PR from `feat/toc-display-two-column` → `main` with auto-merge enabled
-- [ ] 4.4 Monitor CI — fix any failures, push fixes, repeat until all checks are green
-- [ ] 4.5 Address any review comments, push fixes, repeat until no blocking comments remain
+- [x] 4.4 Monitor CI — fix any failures, push fixes, repeat until all checks are green
+- [x] 4.5 Address any review comments, push fixes, repeat until no blocking comments remain
 
 ## 5. Post-Merge
 
-- [ ] 5.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
-- [ ] 5.2 Verify merged changes appear on `main`
-- [ ] 5.3 Sync approved spec deltas to `openspec/specs/`: copy `openspec/changes/toc-display-two-column/specs/cookbook-toc-print-layout/spec.md` → `openspec/specs/cookbook-toc-print-layout/spec.md` and `openspec/changes/toc-display-two-column/specs/cookbook-alpha-index/spec.md` → `openspec/specs/cookbook-alpha-index/spec.md`
+- [x] 5.1 Checkout `main` and pull: `git checkout main && git pull --ff-only`
+- [x] 5.2 Verify merged changes appear on `main`
+- [x] 5.3 Sync approved spec deltas to `openspec/specs/`: copy `openspec/changes/toc-display-two-column/specs/cookbook-toc-print-layout/spec.md` → `openspec/specs/cookbook-toc-print-layout/spec.md` and `openspec/changes/toc-display-two-column/specs/cookbook-alpha-index/spec.md` → `openspec/specs/cookbook-alpha-index/spec.md`
 - [ ] 5.4 Archive the change: run `/opsx:archive toc-display-two-column` (single atomic commit: copy to `openspec/archive/` + delete `openspec/changes/toc-display-two-column/`)
 - [ ] 5.5 Push archive commit to `main`
 - [ ] 5.6 Prune merged local branch: `git branch -d feat/toc-display-two-column`
