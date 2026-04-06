@@ -5,6 +5,9 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 import PrintButton from '@/components/ui/PrintButton'
 import { buildPageMap } from '@/lib/cookbookPages'
 
+const TOC_LIST_CLASSES =
+  'space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8 [&>li]:break-inside-avoid'
+
 interface TocRecipe {
   id: string
   name: string
@@ -139,7 +142,7 @@ export function CookbookTocList({
             <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
               {chapter.name}
             </h2>
-            <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
+            <ol className={TOC_LIST_CLASSES}>
               {rows.map(({ recipe, index }) => (
                 <TocRecipeItem
                   key={recipe.id}
@@ -152,7 +155,7 @@ export function CookbookTocList({
           </div>
         ))}
         {uncategorizedRows.length > 0 && (
-          <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
+          <ol className={TOC_LIST_CLASSES}>
             {uncategorizedRows.map(({ recipe, index }) => (
               <TocRecipeItem
                 key={recipe.id}
@@ -169,7 +172,7 @@ export function CookbookTocList({
 
   const pageMap = buildPageMap(recipes)
   return (
-    <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
+    <ol className={TOC_LIST_CLASSES}>
       {recipes.map((recipe, index) => (
         <TocRecipeItem
           key={recipe.id}
@@ -354,12 +357,12 @@ export function CookbookAlphaIndex({
       <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
         Alphabetical Index
       </h2>
-      <ol className="space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8">
+      <ol className={TOC_LIST_CLASSES}>
         {items.map((item) =>
           item.type === 'letter' ? (
             <li
               key={item.letter}
-              className="font-bold text-white print:text-black print:break-after-avoid mt-4 first:mt-0"
+              className="font-bold text-white print:text-black print:break-after-avoid pt-4 first:pt-0"
             >
               {item.letter}
             </li>
