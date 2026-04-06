@@ -1,3 +1,10 @@
+# cookbook-alpha-index Specification
+
+## Purpose
+Provides a `CookbookAlphaIndex` component that renders all recipes from a cookbook in a continuous alphabetical A–Z index, suitable for the back of a printed cookbook. Recipes are sorted alphabetically, grouped under first-letter labels in a single flat list that flows continuously across print columns.
+
+## Requirements
+
 ### Requirement: Alphabetical index renders recipes A–Z grouped by first letter
 
 The system SHALL provide a `CookbookAlphaIndex` component that accepts a `recipes` array (display-ordered), sorts all recipes alphabetically by name, groups them under first-letter section labels (A, B, C…), and renders each entry with a page number sourced from `buildPageMap(recipes)`. Recipes whose names do not begin with an ASCII letter SHALL be grouped under a `#` section. All letter labels and recipe rows SHALL be rendered as items within a single shared two-column list, so that column flow is continuous across letter boundaries. Letter labels SHALL NOT be rendered as `<h3>` heading elements; they SHALL be styled `<li>` elements within the flat list.

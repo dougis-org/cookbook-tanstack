@@ -1,3 +1,10 @@
+# cookbook-print-view Specification
+
+## Purpose
+Provides a combined print view for a cookbook that renders a Table of Contents, all recipe content pages, and an alphabetical index in a single printable document. The layout is optimized for physical printing with appropriate page breaks between sections.
+
+## Requirements
+
 ### Requirement: Print layout begins with a Table of Contents
 
 The system SHALL render a Table of Contents section as the first content block, listing all recipes in their ordered sequence with position numbers, using the same two-column print layout and chapter grouping as the standalone TOC page.
