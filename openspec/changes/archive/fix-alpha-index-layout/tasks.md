@@ -22,19 +22,19 @@
 
 - [x] 4.1 Run `npm run test` — all unit and integration tests must pass
 - [x] 4.2 Run `npm run test:e2e` — E2E print spec must pass
-- [ ] 4.3 Load `http://localhost:3000/cookbooks/<id>/print?displayonly=1` and verify print preview shows index on its own page with a continuous two-column flow across letter groups
-- [ ] 4.4 Verify letter labels do not orphan at column bottoms in a realistic cookbook dataset
+- [x] 4.3 Load `http://localhost:3000/cookbooks/<id>/print?displayonly=1` and verify print preview shows index on its own page with a continuous two-column flow across letter groups
+- [x] 4.4 Verify letter labels do not orphan at column bottoms in a realistic cookbook dataset
 
 ## 5. PR and Merge
 
 - [x] 5.1 Commit all changes to `fix/alpha-index-layout` and push to remote
 - [x] 5.2 Open a PR from `fix/alpha-index-layout` to `main` referencing GitHub issue #261; enable auto-merge
-- [ ] 5.3 Monitor CI checks — diagnose and fix any failures, commit and push fixes until all checks are green
-- [ ] 5.4 Address any review comments — commit fixes, push, and repeat until no unresolved comments remain
+- [x] 5.3 Monitor CI checks — diagnose and fix any failures, commit and push fixes until all checks are green
+- [x] 5.4 Address any review comments — commit fixes, push, and repeat until no unresolved comments remain
 
 ## 6. Post-Merge
 
-- [ ] 6.1 Checkout `main` and pull — verify merged changes appear on the default branch
-- [ ] 6.2 Sync approved spec deltas to `openspec/specs/cookbook-alpha-index/spec.md` and `openspec/specs/cookbook-print-view/spec.md`
-- [ ] 6.3 Archive the change directory (`openspec/changes/fix-alpha-index-layout/` → `openspec/changes/archive/`) in a single atomic commit that includes both the copy to archive and the deletion of the original; push to `main`
-- [ ] 6.4 Prune the merged local branch (`git branch -d fix/alpha-index-layout`)
+- [x] 6.1 Checkout `main` and pull — verify merged changes appear on the default branch
+- [x] 6.2 Sync approved spec deltas to `openspec/specs/cookbook-alpha-index/spec.md` and `openspec/specs/cookbook-print-view/spec.md`
+- [x] 6.3 Archive the change directory (`openspec/changes/fix-alpha-index-layout/` → `openspec/changes/archive/`) in a single atomic commit that includes both the copy to archive and the deletion of the original; push to `main`
+- [x] 6.4 Prune the merged local branch (`git branch -d fix/alpha-index-layout`)
