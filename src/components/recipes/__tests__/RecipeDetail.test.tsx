@@ -148,6 +148,25 @@ describe("RecipeDetail", () => {
     }
   })
 
+  it("chiclet wrapper has print:hidden class", () => {
+    const { container } = render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe({ classificationId: "cat-1" }),
+          classificationName: "Italian",
+          meals: [{ id: "m1", name: "Breakfast" }],
+        }}
+      />,
+    )
+    const wrapper = container.querySelector(".flex.flex-wrap.gap-2.mb-4")
+    expect(wrapper).toHaveClass("print:hidden")
+  })
+
+  it("recipe with no chiclets renders no chiclet wrapper", () => {
+    const { container } = render(<RecipeDetail recipe={makeRecipe()} />)
+    expect(container.querySelector(".flex.flex-wrap.gap-2.mb-4")).not.toBeInTheDocument()
+  })
+
   describe("actions prop", () => {
     it("renders provided actions content in the title row", () => {
       render(
