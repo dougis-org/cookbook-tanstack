@@ -179,19 +179,21 @@ test.describe("Cookbook Print Route — public cookbook", () => {
   });
 
   // 4.7
-  test("ServingSizeAdjuster is not present in the DOM on the print route", async ({
+  test("serving controls are hidden when print media is active on the print route", async ({
     page,
   }) => {
     await gotoAndWaitForHydration(
       page,
       `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
+    await page.emulateMedia({ media: "print" });
     await expect(
       page.getByRole("button", { name: /increase servings/i }),
-    ).toHaveCount(0);
+    ).toBeHidden();
     await expect(
       page.getByRole("button", { name: /decrease servings/i }),
-    ).toHaveCount(0);
+    ).toBeHidden();
+    await page.emulateMedia({ media: "screen" });
   });
 
   // 4.8

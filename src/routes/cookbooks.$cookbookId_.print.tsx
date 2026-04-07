@@ -86,7 +86,7 @@ export function CookbookPrintPage() {
 
         return (
           <div key={recipe.id} className="cookbook-recipe-section">
-            <RecipeDetail recipe={recipeForDetail} hideServingAdjuster />
+            <RecipeDetail recipe={recipeForDetail} />
             {pageNumber !== undefined && (
               <div
                 className="cookbook-recipe-position-label mt-4 pt-2 border-t border-slate-700/30 print:border-gray-200 text-right text-xs text-gray-500 print:text-gray-600 tabular-nums"

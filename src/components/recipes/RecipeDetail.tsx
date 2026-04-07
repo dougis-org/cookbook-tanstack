@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { scaleQuantity } from '@/lib/servings'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
-import ServingSizeAdjuster from '@/components/recipes/ServingSizeAdjuster'
 
 interface RecipeDetailProps {
   recipe: Recipe & {
@@ -15,7 +15,6 @@ interface RecipeDetailProps {
     sourceUrl?: string | null
   }
   actions?: ReactNode
-  hideServingAdjuster?: boolean
 }
 
 function RecipeMetaItem({
@@ -88,9 +87,14 @@ export function splitLines(text: string | null): string[] {
   return result
 }
 
-export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
-  const [scaledIngredientLines, setScaledIngredientLines] = useState(ingredientLines)
+  const [currentServings, setCurrentServings] = useState(recipe.servings ?? 1)
+  const scaledIngredientLines = useMemo(() => {
+    if (!recipe.servings) return ingredientLines
+    const factor = currentServings / recipe.servings
+    return ingredientLines.map((line) => (line === '' ? line : scaleQuantity(line, factor)))
+  }, [currentServings, ingredientLines, recipe.servings])
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
   const instructionSteps = useMemo(() => {
     let stepNumber = 0
@@ -108,8 +112,8 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
     recipe.protein != null
 
   useEffect(() => {
-    setScaledIngredientLines(ingredientLines)
-  }, [recipe.id, recipe.ingredients])
+    setCurrentServings(recipe.servings ?? 1)
+  }, [recipe.id, recipe.servings])
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -171,7 +175,42 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <RecipeMetaItem label="Prep Time" value={recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'} />
             <RecipeMetaItem label="Cook Time" value={recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'} />
-            <RecipeMetaItem label="Servings" value={recipe.servings?.toString() ?? 'N/A'} />
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Servings</p>
+              {recipe.servings == null ? (
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">N/A</p>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentServings((prev) => Math.max(1, prev - 1))}
+                    disabled={currentServings <= 1}
+                    aria-label="Decrease servings"
+                    className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm disabled:opacity-40"
+                  >
+                    -
+                  </button>
+                  <span aria-live="polite" className="min-w-6 text-center">{currentServings}</span>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentServings((prev) => prev + 1)}
+                    aria-label="Increase servings"
+                    className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm"
+                  >
+                    +
+                  </button>
+                  {currentServings !== recipe.servings && (
+                    <button
+                      type="button"
+                      onClick={() => setCurrentServings(recipe.servings)}
+                      className="print:hidden ml-1 rounded border border-slate-600 px-2 py-1 text-xs font-medium"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             <RecipeMetaItem label="Difficulty" value={recipe.difficulty ?? 'N/A'} className="capitalize" />
           </div>
 
@@ -180,16 +219,9 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Ingredients
             </h2>
-            {!hideServingAdjuster && recipe.servings && ingredientLines.length > 0 && (
-              <ServingSizeAdjuster
-                originalServings={recipe.servings}
-                ingredients={ingredientLines}
-                onScaledIngredientsChange={setScaledIngredientLines}
-              />
-            )}
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
-                {(recipe.servings && !hideServingAdjuster ? scaledIngredientLines : ingredientLines).map((line, i) => (
+                {scaledIngredientLines.map((line, i) => (
                   line === '' ? (
                     <li key={i} className="recipe-ingredient-spacer h-2" aria-hidden="true" role="presentation" />
                   ) : (
