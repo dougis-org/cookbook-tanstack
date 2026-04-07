@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import PrintButton from '@/components/ui/PrintButton'
-import { buildPageMap } from '@/lib/cookbookPages'
+import { buildPageMap, getDisplayOrderedRecipes } from '@/lib/cookbookPages'
 
 const TOC_LIST_CLASSES =
   'space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8 [&>li]:break-inside-avoid'
@@ -41,7 +41,7 @@ export function RecipePageRow({
         </span>
         <span className="flex-1" />
         <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
-          pg {pageNumber}
+          #{pageNumber}
         </span>
         <RecipeTimeSpan
           prepTime={recipe.prepTime}
@@ -75,7 +75,7 @@ function TocRecipeItem({
         </span>
         <span className="flex-1" />
         <span className="text-gray-500 text-xs tabular-nums print:text-black print:text-sm shrink-0">
-          pg {pageNumber}
+          #{pageNumber}
         </span>
         <RecipeTimeSpan
           prepTime={recipe.prepTime}
@@ -114,11 +114,7 @@ export function CookbookTocList({
       .filter((r) => !r.chapterId)
       .sort((a, b) => a.orderIndex - b.orderIndex)
 
-    // Build display-order list (chapters first, then uncategorized) for correct page numbers
-    const displayOrder = [
-      ...sortedChapters.flatMap((chapter) => recipesByChapter.get(chapter.id) ?? []),
-      ...uncategorized,
-    ]
+    const displayOrder = getDisplayOrderedRecipes(recipes, sortedChapters)
     const pageMap = buildPageMap(displayOrder)
 
     type ChapterRow = { chapter: TocChapter; rows: { recipe: TocRecipe; index: number }[] }
@@ -321,12 +317,14 @@ type IndexItem =
 
 export function CookbookAlphaIndex({
   recipes,
+  chapters = [],
 }: {
   recipes: TocRecipe[]
+  chapters?: TocChapter[]
 }) {
   if (recipes.length === 0) return null
 
-  const pageMap = buildPageMap(recipes)
+  const pageMap = buildPageMap(getDisplayOrderedRecipes(recipes, chapters))
 
   const groups = new Map<string, TocRecipe[]>()
   const sorted = recipes.slice().sort((a, b) => a.name.localeCompare(b.name))

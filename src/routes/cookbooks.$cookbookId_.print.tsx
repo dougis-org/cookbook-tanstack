@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { trpc } from '@/lib/trpc'
+import { buildPageMap, getDisplayOrderedRecipes } from '@/lib/cookbookPages'
 import {
   CookbookPageLoading,
   CookbookPageNotFound,
@@ -49,6 +50,8 @@ export function CookbookPrintPage() {
   if (!printData) return <CookbookPageNotFound />
 
   const { name, description, recipes, chapters } = printData
+  const orderedRecipes = getDisplayOrderedRecipes(recipes, chapters ?? [])
+  const pageMap = buildPageMap(orderedRecipes)
 
   return (
     <CookbookStandalonePage maxWidth="4xl">
@@ -65,7 +68,7 @@ export function CookbookPrintPage() {
         <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
       )}
 
-      {recipes.map((recipe) => {
+      {orderedRecipes.map((recipe) => {
         const recipeForDetail: Recipe & {
           meals?: TaxonomyItem[]
           courses?: TaxonomyItem[]
@@ -79,14 +82,24 @@ export function CookbookPrintPage() {
           marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
         }
 
+        const pageNumber = pageMap.get(recipe.id)
+
         return (
           <div key={recipe.id} className="cookbook-recipe-section">
             <RecipeDetail recipe={recipeForDetail} hideServingAdjuster />
+            {pageNumber !== undefined && (
+              <div
+                className="cookbook-recipe-position-label mt-4 pt-2 border-t border-slate-700/30 print:border-gray-200 text-right text-xs text-gray-500 print:text-gray-600 tabular-nums"
+                data-testid="cookbook-recipe-position-label"
+              >
+                #{pageNumber}
+              </div>
+            )}
           </div>
         )
       })}
 
-      {recipes.length > 0 && <CookbookAlphaIndex recipes={recipes} />}
+      {recipes.length > 0 && <CookbookAlphaIndex recipes={recipes} chapters={chapters ?? []} />}
     </CookbookStandalonePage>
   )
 }
