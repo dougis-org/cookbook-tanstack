@@ -128,7 +128,7 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
 
           {/* Classification + taxonomy tags */}
           {((recipe.classificationId && recipe.classificationName) || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4 print:hidden" data-testid="chiclet-wrapper">
               {recipe.classificationId && recipe.classificationName && (
                 <ClassificationBadge
                   classificationId={recipe.classificationId}

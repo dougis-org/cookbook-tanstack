@@ -148,6 +148,24 @@ describe("RecipeDetail", () => {
     }
   })
 
+  it("chiclet wrapper has print:hidden class", () => {
+    render(
+      <RecipeDetail
+        recipe={{
+          ...makeRecipe({ classificationId: "cat-1" }),
+          classificationName: "Italian",
+          meals: [{ id: "m1", name: "Breakfast" }],
+        }}
+      />,
+    )
+    expect(screen.getByTestId("chiclet-wrapper")).toHaveClass("print:hidden")
+  })
+
+  it("recipe with no chiclets renders no chiclet wrapper", () => {
+    render(<RecipeDetail recipe={makeRecipe()} />)
+    expect(screen.queryByTestId("chiclet-wrapper")).not.toBeInTheDocument()
+  })
+
   describe("actions prop", () => {
     it("renders provided actions content in the title row", () => {
       render(
