@@ -149,7 +149,7 @@ describe("RecipeDetail", () => {
   })
 
   it("chiclet wrapper has print:hidden class", () => {
-    const { container } = render(
+    render(
       <RecipeDetail
         recipe={{
           ...makeRecipe({ classificationId: "cat-1" }),
@@ -158,13 +158,12 @@ describe("RecipeDetail", () => {
         }}
       />,
     )
-    const wrapper = container.querySelector(".flex.flex-wrap.gap-2.mb-4")
-    expect(wrapper).toHaveClass("print:hidden")
+    expect(screen.getByTestId("chiclet-wrapper")).toHaveClass("print:hidden")
   })
 
   it("recipe with no chiclets renders no chiclet wrapper", () => {
-    const { container } = render(<RecipeDetail recipe={makeRecipe()} />)
-    expect(container.querySelector(".flex.flex-wrap.gap-2.mb-4")).not.toBeInTheDocument()
+    render(<RecipeDetail recipe={makeRecipe()} />)
+    expect(screen.queryByTestId("chiclet-wrapper")).not.toBeInTheDocument()
   })
 
   describe("actions prop", () => {
