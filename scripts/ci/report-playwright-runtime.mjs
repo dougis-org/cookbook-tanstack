@@ -57,15 +57,15 @@ export function summarizePlaywrightReport(report) {
     .sort(
       (left, right) =>
         right.retries - left.retries || right.durationMs - left.durationMs,
-    )
-    .slice(0, 5);
+    );
 
   return {
     specs,
     totalDurationMs,
     totalRetries,
     slowestSpecs,
-    retryingSpecs,
+    retryingSpecCount: retryingSpecs.length,
+    retryingSpecs: retryingSpecs.slice(0, 5),
   };
 }
 
@@ -75,7 +75,7 @@ export function renderPlaywrightRuntimeSummary(summary, workers) {
     `Workers: ${workers ?? "unknown"}`,
     `Specs: ${summary.specs.length}`,
     `Total measured spec time: ${(summary.totalDurationMs / 1000).toFixed(1)}s`,
-    `Specs with retries: ${summary.retryingSpecs.length}`,
+    `Specs with retries: ${summary.retryingSpecCount}`,
     `Total retry attempts: ${summary.totalRetries}`,
     "Slowest specs:",
     ...summary.slowestSpecs.map(

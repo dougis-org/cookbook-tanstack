@@ -2,6 +2,8 @@ import type { Page } from "@playwright/test";
 import { gotoAndWaitForHydration } from "./app";
 import { getUniqueRecipeName, submitRecipeForm } from "./recipes";
 
+const COOKBOOK_ID_PATTERN = "[a-f0-9]{24}";
+
 export function getUniqueCookbookName(prefix = "Test Cookbook") {
   const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
   return `${prefix}-${suffix}`;
@@ -34,7 +36,7 @@ export async function createCookbook(
     );
   }
 
-  const idMatch = href.match(/\/cookbooks\/([a-f0-9]{24}|[a-f0-9-]+)\b/);
+  const idMatch = href.match(new RegExp(`/cookbooks/(${COOKBOOK_ID_PATTERN})\\b`, "i"));
   if (!idMatch || !idMatch[1]) {
     throw new Error(
       `Failed to parse cookbook id from href "${href}" for cookbook "${cookbookName}".`,
@@ -42,7 +44,7 @@ export async function createCookbook(
   }
 
   await cookbookLink.click();
-  await page.waitForURL(/\/cookbooks\/[a-f0-9-]+$/);
+  await page.waitForURL(new RegExp(`/cookbooks/${COOKBOOK_ID_PATTERN}$`, "i"));
 
   return {
     cookbookId: idMatch[1],
@@ -71,7 +73,7 @@ export async function createCookbookWithRecipe(page: Page, label: string) {
   const recipeName = getUniqueRecipeName(label);
   await gotoAndWaitForHydration(page, "/recipes/new");
   await submitRecipeForm(page, { name: recipeName });
-  await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+  await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
 
   const cookbookName = getUniqueCookbookName(label);
   const { cookbookId, cookbookUrl } = await createCookbook(page, cookbookName);

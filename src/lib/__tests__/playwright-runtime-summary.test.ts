@@ -46,6 +46,7 @@ async function loadRuntimeSummaryModule() {
         retries: number;
         status: string;
       }>;
+      retryingSpecCount: number;
     } | null;
   }>;
 }
@@ -110,5 +111,36 @@ describe("playwright runtime summary", () => {
   it("skips unexpected report shapes", async () => {
     const { summarizePlaywrightReport } = await loadRuntimeSummaryModule();
     expect(summarizePlaywrightReport({ suites: [] })).toBeNull();
+  });
+
+  it("reports the full retrying spec count while limiting detailed output", async () => {
+    const { renderPlaywrightRuntimeSummary, summarizePlaywrightReport } =
+      await loadRuntimeSummaryModule();
+    const summary = summarizePlaywrightReport({
+      suites: [
+        {
+          title: "chromium",
+          specs: Array.from({ length: 6 }, (_, index) => ({
+            title: `retrying spec ${index + 1}`,
+            tests: [
+              {
+                results: [{ status: "passed", duration: 1000 + index, retry: 1 }],
+              },
+            ],
+          })),
+        },
+      ],
+    });
+
+    expect(summary).not.toBeNull();
+    expect(summary?.retryingSpecCount).toBe(6);
+    expect(summary?.retryingSpecs).toHaveLength(5);
+
+    if (!summary) {
+      throw new Error("Expected a valid runtime summary");
+    }
+
+    const lines = renderPlaywrightRuntimeSummary(summary, "2");
+    expect(lines).toContain("Specs with retries: 6");
   });
 });
