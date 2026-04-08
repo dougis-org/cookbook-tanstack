@@ -2,6 +2,7 @@ import { type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import Breadcrumb from '@/components/ui/Breadcrumb'
+import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
 import PrintButton from '@/components/ui/PrintButton'
 import { buildPageMap, getDisplayOrderedRecipes } from '@/lib/cookbookPages'
 
@@ -135,7 +136,7 @@ export function CookbookTocList({
       <div className="space-y-6">
         {chapterRows.map(({ chapter, rows }) => (
           <div key={chapter.id}>
-            <h2 className="text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid">
+            <h2 className={`text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
               {chapter.name}
             </h2>
             <ol className={TOC_LIST_CLASSES}>
@@ -300,7 +301,7 @@ export function CookbookPageHeader({
 }) {
   return (
     <header className="mb-8 text-center border-b border-slate-700 print:border-gray-300 pb-6">
-      <h1 className="text-4xl font-bold text-white print:text-black mb-2">{name}</h1>
+      <h1 className={`text-4xl font-bold text-white print:text-black mb-2 ${PRINT_HEADING_DENSITY_PAGE}`}>{name}</h1>
       {description && (
         <p className="text-gray-300 print:text-gray-700">{description}</p>
       )}
@@ -352,7 +353,7 @@ export function CookbookAlphaIndex({
 
   return (
     <div className="mt-12 print:mt-0 print:break-before-page">
-      <h2 className="text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4">
+      <h2 className={`text-2xl font-bold text-white print:text-black border-b border-slate-700 print:border-gray-300 pb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
         Alphabetical Index
       </h2>
       <ol className={TOC_LIST_CLASSES}>

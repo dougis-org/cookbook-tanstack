@@ -4,6 +4,7 @@ import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
+import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
 
 interface RecipeDetailProps {
   recipe: Recipe & {
@@ -105,6 +106,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
       return { isSpacer: false as const, content: line, number: stepNumber }
     })
   }, [instructionLines])
+  const trimmedNotes = recipe.notes?.trim() || null
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
@@ -125,7 +127,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
         {/* Recipe Content */}
         <div className="p-8">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            <h1 className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}>
               {recipe.name}
             </h1>
             {actions && <div className="shrink-0">{actions}</div>}
@@ -163,12 +165,6 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               ) : (
                 <span className="text-gray-300">{recipe.sourceName}</span>
               )}
-            </p>
-          )}
-
-          {recipe.notes && (
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              {recipe.notes}
             </p>
           )}
 
@@ -219,7 +215,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Ingredients Section */}
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
               Ingredients
             </h2>
             {ingredientLines.length > 0 ? (
@@ -247,7 +243,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Instructions Section */}
           <section className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
               Instructions
             </h2>
             {instructionLines.length > 0 ? (
@@ -275,10 +271,20 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             )}
           </section>
 
+          {/* Notes Section */}
+          {trimmedNotes && (
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Notes
+              </h2>
+              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">{trimmedNotes}</p>
+            </section>
+          )}
+
           {/* Nutrition Panel */}
           {hasNutrition && (
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
                 Nutrition
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
