@@ -46,6 +46,15 @@ describe("RecipeDetail", () => {
     expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument()
   })
 
+  it("applies the shared print page-heading density tier to the recipe title", () => {
+    render(<RecipeDetail recipe={makeRecipe({ name: "Pasta Carbonara" })} />)
+
+    expect(screen.getByRole("heading", { name: "Pasta Carbonara" })).toHaveClass(
+      "print-heading-density",
+      "print-heading-density-page",
+    )
+  })
+
   it("renders notes when provided", () => {
     render(<RecipeDetail recipe={makeRecipe({ notes: "A classic Roman dish" })} />)
 

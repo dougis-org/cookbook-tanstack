@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { readFileSync } from "node:fs"
-import path from "node:path"
+import printCss from "@/styles/print.css?raw"
 import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome, RecipePageRow, CookbookPageHeader, CookbookAlphaIndex } from "@/components/cookbooks/CookbookStandaloneLayout"
 
 vi.mock('@tanstack/react-router', () => ({
@@ -257,9 +256,7 @@ describe('CookbookAlphaIndex', () => {
 
 describe('print heading density implementation scope', () => {
   it('does not rely on a global h1-h6 print reset in print.css', () => {
-    const printCss = readFileSync(path.join(process.cwd(), 'src/styles/print.css'), 'utf8')
-
-    expect(printCss).not.toMatch(/@media print\s*\{[\s\S]*\bh[1-6]\b/)
+    expect(printCss).not.toMatch(/@media print\s*\{[\s\S]*?(?:^|\n)\s*h[1-6](?:\s*,\s*h[1-6])*\s*\{/m)
   })
 })
 

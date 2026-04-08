@@ -4,7 +4,7 @@ import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
-import { PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
+import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
 
 interface RecipeDetailProps {
   recipe: Recipe & {
@@ -125,7 +125,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
         {/* Recipe Content */}
         <div className="p-8">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            <h1 className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}>
               {recipe.name}
             </h1>
             {actions && <div className="shrink-0">{actions}</div>}

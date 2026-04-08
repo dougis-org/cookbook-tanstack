@@ -136,7 +136,7 @@ export function CookbookTocList({
       <div className="space-y-6">
         {chapterRows.map(({ chapter, rows }) => (
           <div key={chapter.id}>
-            <h2 className={`text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid ${PRINT_HEADING_DENSITY_SECTION}`}>
+            <h2 className={`text-lg font-semibold text-white print:text-black mb-2 border-b border-slate-600 print:border-gray-300 pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
               {chapter.name}
             </h2>
             <ol className={TOC_LIST_CLASSES}>
