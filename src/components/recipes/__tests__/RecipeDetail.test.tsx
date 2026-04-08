@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
 import PrintButton from "@/components/ui/PrintButton"
@@ -254,34 +254,132 @@ describe("RecipeDetail", () => {
     })
   })
 
-  describe("hideServingAdjuster prop", () => {
-    it("does not render ServingSizeAdjuster when hideServingAdjuster is true", () => {
+  describe("serving controls", () => {
+    it("renders controls adjacent to the Servings label in the meta grid, not in Ingredients", () => {
       render(
         <RecipeDetail
-          recipe={makeRecipe({ servings: 4, ingredients: "Flour\nSugar" })}
-          hideServingAdjuster
+          recipe={makeRecipe({ servings: 4, ingredients: "2 cups flour\n1 egg" })}
         />,
       )
-      expect(
-        screen.queryByRole("button", { name: /increase servings/i }),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByRole("button", { name: /decrease servings/i }),
-      ).not.toBeInTheDocument()
+
+      const servingsLabel = screen.getByText("Servings")
+      const servingsCell = servingsLabel.parentElement
+      expect(servingsCell).not.toBeNull()
+      expect(within(servingsCell!).getByRole("button", { name: /increase servings/i })).toBeInTheDocument()
+      expect(within(servingsCell!).getByRole("button", { name: /decrease servings/i })).toBeInTheDocument()
+
+      const ingredientsHeading = screen.getByRole("heading", { name: "Ingredients" })
+      const ingredientsSection = ingredientsHeading.closest("section")
+      expect(ingredientsSection).not.toBeNull()
+      expect(within(ingredientsSection!).queryByRole("button", { name: /increase servings/i })).not.toBeInTheDocument()
+      expect(within(ingredientsSection!).queryByRole("button", { name: /decrease servings/i })).not.toBeInTheDocument()
     })
 
-    it("still renders ServingSizeAdjuster when hideServingAdjuster is not set (regression guard)", () => {
+    it("does not render reset at the default serving count", () => {
       render(
         <RecipeDetail
-          recipe={makeRecipe({ servings: 4, ingredients: "Flour\nSugar" })}
+          recipe={makeRecipe({ servings: 4, ingredients: "2 cups flour\n1 egg" })}
         />,
       )
-      expect(
-        screen.getByRole("button", { name: /increase servings/i }),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByRole("button", { name: /decrease servings/i }),
-      ).toBeInTheDocument()
+
+      expect(screen.queryByRole("button", { name: /reset/i })).not.toBeInTheDocument()
+    })
+
+    it("shows reset after increasing servings", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+
+      expect(screen.getByRole("button", { name: /reset/i })).toBeInTheDocument()
+    })
+
+    it("resets the serving count and hides reset after clicking Reset", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+      fireEvent.click(screen.getByRole("button", { name: /reset/i }))
+
+      const servingsLabel = screen.getByText("Servings")
+      const servingsCell = servingsLabel.parentElement
+      expect(servingsCell).not.toBeNull()
+      expect(within(servingsCell!).getByText("4")).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /reset/i })).not.toBeInTheDocument()
+    })
+
+    it("scales ingredient quantities after increasing servings", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 2, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+
+      expect(screen.getByText("3 cups flour")).toBeInTheDocument()
+    })
+
+    it("applies print:hidden to decrease, increase, and reset buttons", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 2, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      const decreaseButton = screen.getByRole("button", { name: /decrease servings/i })
+      const increaseButton = screen.getByRole("button", { name: /increase servings/i })
+      expect(decreaseButton).toHaveClass("print:hidden")
+      expect(increaseButton).toHaveClass("print:hidden")
+
+      fireEvent.click(increaseButton)
+      expect(screen.getByRole("button", { name: /reset/i })).toHaveClass("print:hidden")
+    })
+
+    it("renders N/A and no controls when servings is undefined", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: undefined, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      const servingsLabel = screen.getByText("Servings")
+      const servingsCell = servingsLabel.parentElement
+      expect(servingsCell).not.toBeNull()
+      expect(within(servingsCell!).getByText("N/A")).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /increase servings/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /decrease servings/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /reset/i })).not.toBeInTheDocument()
+    })
+
+    it("resets currentServings when the recipe id changes", () => {
+      const { rerender } = render(
+        <RecipeDetail
+          recipe={makeRecipe({ id: "recipe-a", servings: 2, ingredients: "2 cups flour\n1 egg" })}
+        />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+      expect(screen.getByText("3 cups flour")).toBeInTheDocument()
+
+      rerender(
+        <RecipeDetail
+          recipe={makeRecipe({ id: "recipe-b", servings: 4, ingredients: "4 cups flour\n2 eggs" })}
+        />,
+      )
+
+      const servingsLabel = screen.getByText("Servings")
+      const servingsCell = servingsLabel.parentElement
+      expect(servingsCell).not.toBeNull()
+      expect(within(servingsCell!).getByText("4")).toBeInTheDocument()
+      expect(screen.getByText("4 cups flour")).toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /reset/i })).not.toBeInTheDocument()
     })
   })
 
@@ -433,7 +531,6 @@ describe("RecipeDetail — blank line rendering", () => {
       const { container } = render(
         <RecipeDetail
           recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
-          hideServingAdjuster
         />,
       )
       const spacers = container.querySelectorAll("li.recipe-ingredient-spacer")
@@ -444,7 +541,6 @@ describe("RecipeDetail — blank line rendering", () => {
       const { container } = render(
         <RecipeDetail
           recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
-          hideServingAdjuster
         />,
       )
       const spacer = container.querySelector("li.recipe-ingredient-spacer")!
@@ -456,7 +552,6 @@ describe("RecipeDetail — blank line rendering", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })}
-          hideServingAdjuster
         />,
       )
       expect(screen.getByText("Flour")).toBeInTheDocument()
@@ -499,16 +594,14 @@ describe("RecipeDetail — blank line rendering", () => {
     })
   })
 
-  describe("ServingSizeAdjuster with blank-line entries", () => {
+  describe("servings with blank-line entries", () => {
     it("scales correctly when ingredient array contains '' entries", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ servings: 2, ingredients: "2 cups flour\n\n1 cup sugar" })}
         />,
       )
-      // ServingSizeAdjuster is present (not hidden)
       expect(screen.getByRole("button", { name: /increase servings/i })).toBeInTheDocument()
-      // Content lines are rendered (blank line is a spacer, not breaking the list)
       expect(screen.getByText("2 cups flour")).toBeInTheDocument()
       expect(screen.getByText("1 cup sugar")).toBeInTheDocument()
     })

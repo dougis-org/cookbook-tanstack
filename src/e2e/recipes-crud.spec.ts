@@ -45,7 +45,7 @@ test.describe("Recipe CRUD Operations", () => {
 
     // Verify servings — locate the value adjacent to its label
     const servingsContainer = page.getByText("Servings").locator("..");
-    await expect(servingsContainer.locator("p").last()).toHaveText("4");
+    await expect(servingsContainer.getByText("4", { exact: true })).toBeVisible();
 
     // Verify ingredients
     await expect(page.getByText("2 cups flour")).toBeVisible();
@@ -108,9 +108,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("Updated notes")).toBeVisible();
     await expect(page.getByText("25 min")).toBeVisible();
 
-    // Verify servings — locate the value adjacent to its label
+    // Verify servings in the meta cell
     const servingsContainer = page.getByText("Servings").locator("..");
-    await expect(servingsContainer.locator("p").last()).toHaveText("6");
+    await expect(servingsContainer.getByText("6", { exact: true })).toBeVisible();
   });
 
   test("should delete a recipe via confirmation modal", async ({ page }) => {
