@@ -235,12 +235,12 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
           </section>
 
           {/* Notes Section */}
-          {recipe.notes && (
+          {recipe.notes?.trim() && (
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Notes
               </h2>
-              <p className="text-gray-600 dark:text-gray-300">{recipe.notes}</p>
+              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">{recipe.notes}</p>
             </section>
           )}
 

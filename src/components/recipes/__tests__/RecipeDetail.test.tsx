@@ -73,6 +73,11 @@ describe("RecipeDetail", () => {
       expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
     })
 
+    it("does not render a Notes section when notes is whitespace-only", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "   " })} />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+    })
+
     it("Notes section appears after Instructions in DOM order", () => {
       render(
         <RecipeDetail
