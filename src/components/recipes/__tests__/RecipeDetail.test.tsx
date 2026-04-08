@@ -52,6 +52,66 @@ describe("RecipeDetail", () => {
     expect(screen.getByText("A classic Roman dish")).toBeInTheDocument()
   })
 
+  describe("notes section placement", () => {
+    it("renders a Notes heading when notes are present", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "Use fresh pasta" })} />)
+      expect(screen.getByRole("heading", { name: "Notes" })).toBeInTheDocument()
+    })
+
+    it("renders note content alongside the Notes heading", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "Use fresh pasta" })} />)
+      expect(screen.getByText("Use fresh pasta")).toBeInTheDocument()
+    })
+
+    it("does not render a Notes heading when notes are absent", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: null })} />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+    })
+
+    it("does not render an empty Notes section when notes is an empty string", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "" })} />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+    })
+
+    it("does not render a Notes section when notes is whitespace-only", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "   " })} />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+    })
+
+    it("Notes section appears after Instructions in DOM order", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ instructions: "Boil water", notes: "Season well" })}
+        />,
+      )
+      const headings = screen.getAllByRole("heading", { level: 2 })
+      const instructionsIdx = headings.findIndex((h) => h.textContent?.trim() === "Instructions")
+      const notesIdx = headings.findIndex((h) => h.textContent?.trim() === "Notes")
+      expect(instructionsIdx).toBeGreaterThanOrEqual(0)
+      expect(notesIdx).toBeGreaterThan(instructionsIdx)
+    })
+
+    it("Notes section appears before Nutrition when both are present", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ instructions: "Boil water", notes: "Season well", calories: 400 })}
+        />,
+      )
+      const headings = screen.getAllByRole("heading", { level: 2 })
+      const notesIdx = headings.findIndex((h) => h.textContent?.trim() === "Notes")
+      const nutritionIdx = headings.findIndex((h) => h.textContent?.trim() === "Nutrition")
+      expect(notesIdx).toBeGreaterThanOrEqual(0)
+      expect(nutritionIdx).toBeGreaterThan(notesIdx)
+    })
+
+    it("notes are not rendered as unlabeled introductory text above recipe metadata", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "Legacy top note" })} />)
+      const noteText = screen.getByText("Legacy top note")
+      // Note content must live inside a labeled <section>, not as a bare <p> before the meta grid
+      expect(noteText.closest("section")).not.toBeNull()
+    })
+  })
+
   it("renders ingredients from text lines", () => {
     render(
       <RecipeDetail
