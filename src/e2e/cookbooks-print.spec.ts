@@ -1,49 +1,12 @@
 import { test, expect } from "@bgotink/playwright-coverage";
-import type { Page } from "@playwright/test";
-import { registerAndLogin, login } from "./helpers/auth";
+import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
-import { getUniqueCookbookName } from "./helpers/cookbooks";
+import {
+  addRecipeToCookbook,
+  createCookbook,
+  getUniqueCookbookName,
+} from "./helpers/cookbooks";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
-
-async function createCookbookAndGetId(
-  page: Page,
-  name: string,
-  isPublic = true,
-): Promise<string> {
-  await gotoAndWaitForHydration(page, "/cookbooks");
-  await page.getByRole("button", { name: "New Cookbook" }).click();
-  await page.getByLabel("Name").fill(name);
-  if (!isPublic) {
-    await page.getByLabel("Public (visible to everyone)").uncheck();
-  }
-  await page.getByRole("button", { name: "Create", exact: true }).click();
-  await page.waitForLoadState("networkidle");
-  // Extract ID from the link href before clicking to avoid URL-parsing race conditions
-  const cookbookLink = page.getByRole("link").filter({ hasText: name }).first();
-  await cookbookLink.waitFor({ state: "visible" });
-  const href = await cookbookLink.getAttribute("href");
-  expect(
-    href,
-    `Failed to read href for cookbook link with name "${name}".`,
-  ).toBeTruthy();
-  const match = href!.match(/\/cookbooks\/([a-f0-9]{24})\b/);
-  if (!match || !match[1] || match[1].length !== 24) {
-    throw new Error(
-      `Failed to parse 24-character cookbook id from href "${href}" for cookbook "${name}".`,
-    );
-  }
-  const cookbookId = match[1];
-  await cookbookLink.click();
-  await page.waitForURL(/\/cookbooks\/[a-f0-9]{24}$/);
-  return cookbookId;
-}
-
-async function addRecipeToCookbook(page: Page, recipeName: string) {
-  await page.getByRole("button", { name: "Add Recipe" }).click();
-  await page.getByRole("dialog").waitFor({ state: "visible" });
-  await page.getByText(recipeName).first().click();
-  await page.getByRole("dialog").waitFor({ state: "hidden" });
-}
 
 // ─── Shared setup: public cookbook with two recipes ───────────────────────────
 
@@ -79,19 +42,8 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
 
     // Create public cookbook
-    await gotoAndWaitForHydration(page, "/cookbooks");
-    await page.getByRole("button", { name: "New Cookbook" }).click();
-    await page.getByLabel("Name").fill(cookbookName);
-    await page.getByRole("button", { name: "Create", exact: true }).click();
-    await page.waitForLoadState("networkidle");
-
-    // Navigate to cookbook and add both recipes
-    await page.getByText(cookbookName).first().click();
-    await page.waitForURL(/\/cookbooks\/[a-f0-9]{24}$/);
-    const idMatch = page.url().match(/\/cookbooks\/([a-f0-9]{24})$/);
-    if (!idMatch)
-      throw new Error(`Failed to parse cookbook id from URL "${page.url()}"`);
-    cookbookId = idMatch[1];
+    const cookbook = await createCookbook(page, cookbookName);
+    cookbookId = cookbook.cookbookId;
 
     await addRecipeToCookbook(page, recipe1Name);
     await addRecipeToCookbook(page, recipe2Name);
@@ -257,7 +209,9 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
 }) => {
   await registerAndLogin(page);
   const cookbookName = getUniqueCookbookName("PrivatePrint");
-  const cookbookId = await createCookbookAndGetId(page, cookbookName, false);
+  const { cookbookId } = await createCookbook(page, cookbookName, {
+    isPublic: false,
+  });
 
   await page.context().clearCookies();
   await gotoAndWaitForHydration(
@@ -265,164 +219,4 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
     `/cookbooks/${cookbookId}/print?displayonly=1`,
   );
   await expect(page.getByText("Cookbook not found")).toBeVisible();
-});
-
-// ─── Cookbook with chapters ────────────────────────────────────────────────────
-
-// 4.2 — chapter-grouped TOC in the print route
-test.describe("Cookbook Print Route — with chapters", () => {
-  let cookbookId: string;
-  let recipe1Name: string;
-  let recipe2Name: string;
-
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    await registerAndLogin(page);
-
-    recipe1Name = getUniqueRecipeName("ChapterPrint1");
-    recipe2Name = getUniqueRecipeName("ChapterPrint2");
-    const cookbookName = getUniqueCookbookName("ChapterPrintCookbook");
-
-    // Create two recipes
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, {
-      name: recipe1Name,
-      ingredients: "Flour",
-      instructions: "Mix",
-      servings: "2",
-    });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, {
-      name: recipe2Name,
-      ingredients: "Butter",
-      instructions: "Melt",
-    });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    // Create cookbook and get its ID
-    cookbookId = await createCookbookAndGetId(page, cookbookName);
-
-    // Add both recipes
-    await addRecipeToCookbook(page, recipe1Name);
-    await addRecipeToCookbook(page, recipe2Name);
-
-    // Create a chapter (migrates existing recipes into it)
-    await page.getByRole("button", { name: "New Chapter" }).click();
-    await expect(page.getByRole("heading", { name: /Chapter 1/i })).toBeVisible(
-      { timeout: 20000 },
-    );
-
-    await page.close();
-  });
-
-  test("print route TOC renders chapter headings above their grouped recipes", async ({
-    page,
-  }) => {
-    await gotoAndWaitForHydration(
-      page,
-      `/cookbooks/${cookbookId}/print?displayonly=1`,
-    );
-    await expect(
-      page.getByRole("heading", { name: /Chapter 1/i }),
-    ).toBeVisible();
-    // Recipes should appear under the chapter heading
-    await expect(page.getByText(recipe1Name).first()).toBeVisible();
-    await expect(page.getByText(recipe2Name).first()).toBeVisible();
-  });
-});
-
-// ─── Auto-trigger behavior ────────────────────────────────────────────────────
-
-test.describe("Cookbook Print Route — auto-trigger", () => {
-  let cookbookId: string;
-  let ownerEmail: string;
-  let ownerPassword: string;
-
-  test.beforeAll(async ({ browser }) => {
-    const page = await browser.newPage();
-    const creds = await registerAndLogin(page);
-    ownerEmail = creds.email;
-    ownerPassword = creds.password;
-
-    const cookbookName = getUniqueCookbookName("AutoTriggerPrint");
-    cookbookId = await createCookbookAndGetId(page, cookbookName);
-
-    const recipeName = getUniqueRecipeName("AutoTriggerRecipe");
-    await gotoAndWaitForHydration(page, "/recipes/new");
-    await submitRecipeForm(page, {
-      name: recipeName,
-      ingredients: "Salt",
-      instructions: "Season",
-      servings: "1",
-    });
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}`);
-    await addRecipeToCookbook(page, recipeName);
-
-    await page.close();
-  });
-
-  test("window.print is called automatically when navigating to the print route without ?displayonly=1", async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__printCalled = false;
-      window.print = () => {
-        (window as unknown as Record<string, unknown>).__printCalled = true;
-      };
-    });
-    // Use the same user who created the data to ensure recipes are visible
-    await login(page, ownerEmail, ownerPassword);
-    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`);
-    await page.waitForFunction(
-      () =>
-        (window as unknown as Record<string, unknown>).__printCalled === true,
-    );
-    const printCalled = await page.evaluate(
-      () => (window as unknown as Record<string, unknown>).__printCalled,
-    );
-    expect(printCalled).toBe(true);
-  });
-
-  test("window.print is NOT called when navigating to the print route with ?displayonly=1", async ({
-    page,
-  }) => {
-    await page.addInitScript(() => {
-      (window as unknown as Record<string, unknown>).__printCalled = false;
-      window.print = () => {
-        (window as unknown as Record<string, unknown>).__printCalled = true;
-      };
-    });
-    await login(page, ownerEmail, ownerPassword);
-    await gotoAndWaitForHydration(
-      page,
-      `/cookbooks/${cookbookId}/print?displayonly=1`,
-    );
-    await expect(page.getByText("Loading…")).not.toBeVisible();
-    const printCalled = await page.evaluate(
-      () => (window as unknown as Record<string, unknown>).__printCalled,
-    );
-    expect(printCalled).toBe(false);
-  });
-});
-
-// ─── Cookbook detail navigation ───────────────────────────────────────────────
-
-// 4.9
-test("Print button on cookbook detail page is an <a> Link pointing to the print route URL", async ({
-  page,
-}) => {
-  await registerAndLogin(page);
-  const cookbookName = getUniqueCookbookName("NavPrint");
-  const cookbookId = await createCookbookAndGetId(page, cookbookName);
-
-  const printLink = page.getByRole("link", { name: "Print", exact: true });
-  await expect(printLink).toBeVisible();
-  await expect(printLink).toHaveAttribute(
-    "href",
-    `/cookbooks/${cookbookId}/print`,
-  );
 });

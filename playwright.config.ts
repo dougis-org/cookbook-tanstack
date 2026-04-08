@@ -1,27 +1,45 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 import { defineCoverageReporterConfig } from "@bgotink/playwright-coverage";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const defaultCiWorkerCount = 2;
+const configuredCiWorkers = Number.parseInt(
+  process.env.PLAYWRIGHT_CI_WORKERS ?? `${defaultCiWorkerCount}`,
+  10,
+);
+const ciWorkers =
+  Number.isFinite(configuredCiWorkers) && configuredCiWorkers > 0
+    ? configuredCiWorkers
+    : defaultCiWorkerCount;
+const runtimeReportOutput = join(
+  __dirname,
+  process.env.PLAYWRIGHT_RUNTIME_REPORT ?? "playwright-report/results.json",
+);
+const reporter: ReporterDescription[] = [
+  ["html"],
+  [
+    "@bgotink/playwright-coverage",
+    defineCoverageReporterConfig({
+      sourceRoot: __dirname,
+      resultDir: join(__dirname, "e2e-coverage"),
+      reports: [["lcovonly", { file: "lcov.info" }]],
+      }),
+    ],
+];
+
+if (process.env.CI) {
+  reporter.push(["json", { outputFile: runtimeReportOutput }]);
+}
 
 export default defineConfig({
   testDir: "./src/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ["html"],
-    [
-      "@bgotink/playwright-coverage",
-      defineCoverageReporterConfig({
-        sourceRoot: __dirname,
-        resultDir: join(__dirname, "e2e-coverage"),
-        reports: [["lcovonly", { file: "lcov.info" }]],
-      }),
-    ],
-  ],
+  workers: process.env.CI ? ciWorkers : undefined,
+  reporter,
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

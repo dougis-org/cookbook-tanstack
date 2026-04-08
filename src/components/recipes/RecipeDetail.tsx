@@ -204,7 +204,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   {currentServings !== recipe.servings && (
                     <button
                       type="button"
-                      onClick={() => setCurrentServings(recipe.servings)}
+                      onClick={() => setCurrentServings(recipe.servings ?? 1)}
                       className="print:hidden rounded border border-slate-600 px-2 py-1 text-xs font-medium"
                     >
                       Reset
