@@ -104,6 +104,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
       return { isSpacer: false as const, content: line, number: stepNumber }
     })
   }, [instructionLines])
+  const trimmedNotes = recipe.notes?.trim() || null
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
@@ -269,12 +270,12 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           </section>
 
           {/* Notes Section */}
-          {recipe.notes?.trim() && (
+          {trimmedNotes && (
             <section className="mb-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 Notes
               </h2>
-              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">{recipe.notes}</p>
+              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">{trimmedNotes}</p>
             </section>
           )}
 

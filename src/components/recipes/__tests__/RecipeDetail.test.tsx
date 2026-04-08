@@ -85,8 +85,8 @@ describe("RecipeDetail", () => {
         />,
       )
       const headings = screen.getAllByRole("heading", { level: 2 })
-      const instructionsIdx = headings.findIndex((h) => h.textContent === "Instructions")
-      const notesIdx = headings.findIndex((h) => h.textContent === "Notes")
+      const instructionsIdx = headings.findIndex((h) => h.textContent?.trim() === "Instructions")
+      const notesIdx = headings.findIndex((h) => h.textContent?.trim() === "Notes")
       expect(instructionsIdx).toBeGreaterThanOrEqual(0)
       expect(notesIdx).toBeGreaterThan(instructionsIdx)
     })
@@ -98,8 +98,8 @@ describe("RecipeDetail", () => {
         />,
       )
       const headings = screen.getAllByRole("heading", { level: 2 })
-      const notesIdx = headings.findIndex((h) => h.textContent === "Notes")
-      const nutritionIdx = headings.findIndex((h) => h.textContent === "Nutrition")
+      const notesIdx = headings.findIndex((h) => h.textContent?.trim() === "Notes")
+      const nutritionIdx = headings.findIndex((h) => h.textContent?.trim() === "Nutrition")
       expect(notesIdx).toBeGreaterThanOrEqual(0)
       expect(nutritionIdx).toBeGreaterThan(notesIdx)
     })
