@@ -82,11 +82,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to `feat/serving-adjuster-to-meta` and push to remote
 - [x] Open PR from `feat/serving-adjuster-to-meta` to `main` — reference issue #272 in the PR body
-- [ ] Enable auto-merge on the PR
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address each comment, commit fixes, follow all remote push validation steps, push; repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — if any check fails, diagnose, fix, commit, validate locally, push; repeat until all checks pass
-- [ ] Wait for the PR to merge — never force-merge; if a human force-merges, proceed to Post-Merge
+- [x] Enable auto-merge on the PR
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address each comment, commit fixes, follow all remote push validation steps, push; repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — if any check fails, diagnose, fix, commit, validate locally, push; repeat until all checks pass
+- [x] Wait for the PR to merge — never force-merge; if a human force-merges, proceed to Post-Merge
 
 Ownership metadata:
 
@@ -102,12 +102,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete
-- [ ] No documentation changes required for this change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
-- [ ] Archive the change: move `openspec/changes/move-serving-adjuster-to-meta/` to `openspec/changes/archive/YYYY-MM-DD-move-serving-adjuster-to-meta/` — stage both the new location and deletion of the old location in a single atomic commit
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-move-serving-adjuster-to-meta/` exists and `openspec/changes/move-serving-adjuster-to-meta/` is gone
-- [ ] Commit and push the archive commit to `main`
-- [ ] `git fetch --prune` and `git branch -d feat/serving-adjuster-to-meta`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks as complete
+- [x] No documentation changes required for this change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
+- [x] Archive the change: move `openspec/changes/move-serving-adjuster-to-meta/` to `openspec/changes/archive/YYYY-MM-DD-move-serving-adjuster-to-meta/` — stage both the new location and deletion of the old location in a single atomic commit
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-move-serving-adjuster-to-meta/` exists and `openspec/changes/move-serving-adjuster-to-meta/` is gone
+- [x] Commit and push the archive commit to `main`
+- [x] `git fetch --prune` and `git branch -d feat/serving-adjuster-to-meta`
