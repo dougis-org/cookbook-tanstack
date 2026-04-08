@@ -122,20 +122,33 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
         {/* Header Image */}
-        <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-96 bg-gray-200 dark:bg-gray-700" data-testid="recipe-detail-image" />
+        <CardImage
+          src={recipe.imageUrl}
+          alt={recipe.name}
+          className="h-96 bg-gray-200 dark:bg-gray-700"
+          data-testid="recipe-detail-image"
+        />
 
         {/* Recipe Content */}
         <div className="p-8">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}>
+            <h1
+              className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}
+            >
               {recipe.name}
             </h1>
             {actions && <div className="shrink-0">{actions}</div>}
           </div>
 
           {/* Classification + taxonomy tags */}
-          {((recipe.classificationId && recipe.classificationName) || recipe.meals?.length || recipe.courses?.length || recipe.preparations?.length) && (
-            <div className="flex flex-wrap gap-2 mb-4 print:hidden" data-testid="chiclet-wrapper">
+          {((recipe.classificationId && recipe.classificationName) ||
+            recipe.meals?.length ||
+            recipe.courses?.length ||
+            recipe.preparations?.length) && (
+            <div
+              className="flex flex-wrap gap-2 mb-4 print:hidden"
+              data-testid="chiclet-wrapper"
+            >
               {recipe.classificationId && recipe.classificationName && (
                 <ClassificationBadge
                   classificationId={recipe.classificationId}
@@ -145,14 +158,17 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               )}
               <TaxonomyBadges items={recipe.meals} variant="meal" />
               <TaxonomyBadges items={recipe.courses} variant="course" />
-              <TaxonomyBadges items={recipe.preparations} variant="preparation" />
+              <TaxonomyBadges
+                items={recipe.preparations}
+                variant="preparation"
+              />
             </div>
           )}
 
           {/* Source */}
           {recipe.sourceName && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Source:{' '}
+              Source:{" "}
               {recipe.sourceUrl ? (
                 <a
                   href={recipe.sourceUrl}
@@ -170,25 +186,39 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Recipe Meta */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <RecipeMetaItem label="Prep Time" value={recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'} />
-            <RecipeMetaItem label="Cook Time" value={recipe.cookTime ? `${recipe.cookTime} min` : 'N/A'} />
+            <RecipeMetaItem
+              label="Prep Time"
+              value={recipe.prepTime ? `${recipe.prepTime} min` : "N/A"}
+            />
+            <RecipeMetaItem
+              label="Cook Time"
+              value={recipe.cookTime ? `${recipe.cookTime} min` : "N/A"}
+            />
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Servings</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Servings
+              </p>
               {recipe.servings == null ? (
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">N/A</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  N/A
+                </p>
               ) : (
                 <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <button
                       type="button"
-                      onClick={() => setCurrentServings((prev) => Math.max(1, prev - 1))}
+                      onClick={() =>
+                        setCurrentServings((prev) => Math.max(1, prev - 1))
+                      }
                       disabled={currentServings <= 1}
                       aria-label="Decrease servings"
                       className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm disabled:opacity-40"
                     >
                       -
                     </button>
-                    <span aria-live="polite" className="min-w-6 text-center">{currentServings}</span>
+                    <span aria-live="polite" className="min-w-6 text-center">
+                      {currentServings}
+                    </span>
                     <button
                       type="button"
                       onClick={() => setCurrentServings((prev) => prev + 1)}
@@ -210,19 +240,30 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 </div>
               )}
             </div>
-            <RecipeMetaItem label="Difficulty" value={recipe.difficulty ?? 'N/A'} className="capitalize" />
+            <RecipeMetaItem
+              label="Difficulty"
+              value={recipe.difficulty ?? "N/A"}
+              className="capitalize"
+            />
           </div>
 
           {/* Ingredients Section */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
+            <h2
+              className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+            >
               Ingredients
             </h2>
             {ingredientLines.length > 0 ? (
               <ul className="space-y-2">
-                {scaledIngredientLines.map((line, i) => (
-                  line === '' ? (
-                    <li key={i} className="recipe-ingredient-spacer h-2" aria-hidden="true" role="presentation" />
+                {scaledIngredientLines.map((line, i) =>
+                  line === "" ? (
+                    <li
+                      key={i}
+                      className="recipe-ingredient-spacer h-2"
+                      aria-hidden="true"
+                      role="presentation"
+                    />
                   ) : (
                     <li
                       key={i}
@@ -231,8 +272,8 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
                       {line}
                     </li>
-                  )
-                ))}
+                  ),
+                )}
               </ul>
             ) : (
               <p className="text-gray-500 dark:text-gray-400">
@@ -243,14 +284,21 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Instructions Section */}
           <section className="mb-8">
-            <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
+            <h2
+              className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+            >
               Instructions
             </h2>
             {instructionLines.length > 0 ? (
               <ol className="space-y-4">
                 {instructionSteps.map((step, index) =>
                   step.isSpacer ? (
-                    <li key={index} className="recipe-instruction-spacer h-2" aria-hidden="true" role="presentation" />
+                    <li
+                      key={index}
+                      className="recipe-instruction-spacer h-2"
+                      aria-hidden="true"
+                      role="presentation"
+                    />
                   ) : (
                     <li
                       key={index}
@@ -261,7 +309,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       </span>
                       <p className="flex-1 pt-1">{step.content}</p>
                     </li>
-                  )
+                  ),
                 )}
               </ol>
             ) : (
@@ -274,30 +322,58 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           {/* Notes Section */}
           {trimmedNotes && (
             <section className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2
+                className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+              >
                 Notes
               </h2>
-              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">{trimmedNotes}</p>
+              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">
+                {trimmedNotes}
+              </p>
             </section>
           )}
 
           {/* Nutrition Panel */}
           {hasNutrition && (
             <section className="mb-8">
-              <h2 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
+              <h2
+                className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+              >
                 Nutrition
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                {recipe.calories != null && <NutritionItem value={recipe.calories} label="Calories" />}
-                {recipe.fat != null && <NutritionItem value={recipe.fat} unit="g" label="Fat" />}
-                {recipe.cholesterol != null && <NutritionItem value={recipe.cholesterol} unit="mg" label="Cholesterol" />}
-                {recipe.sodium != null && <NutritionItem value={recipe.sodium} unit="mg" label="Sodium" />}
-                {recipe.protein != null && <NutritionItem value={recipe.protein} unit="g" label="Protein" />}
+                {recipe.calories != null && (
+                  <NutritionItem value={recipe.calories} label="Calories" />
+                )}
+                {recipe.fat != null && (
+                  <NutritionItem value={recipe.fat} unit="g" label="Fat" />
+                )}
+                {recipe.cholesterol != null && (
+                  <NutritionItem
+                    value={recipe.cholesterol}
+                    unit="mg"
+                    label="Cholesterol"
+                  />
+                )}
+                {recipe.sodium != null && (
+                  <NutritionItem
+                    value={recipe.sodium}
+                    unit="mg"
+                    label="Sodium"
+                  />
+                )}
+                {recipe.protein != null && (
+                  <NutritionItem
+                    value={recipe.protein}
+                    unit="g"
+                    label="Protein"
+                  />
+                )}
               </div>
             </section>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
