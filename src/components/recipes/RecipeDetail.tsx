@@ -161,12 +161,6 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
             </p>
           )}
 
-          {recipe.notes && (
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              {recipe.notes}
-            </p>
-          )}
-
           {/* Recipe Meta */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <RecipeMetaItem label="Prep Time" value={recipe.prepTime ? `${recipe.prepTime} min` : 'N/A'} />
@@ -239,6 +233,16 @@ export default function RecipeDetail({ recipe, actions, hideServingAdjuster }: R
               </p>
             )}
           </section>
+
+          {/* Notes Section */}
+          {recipe.notes && (
+            <section className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                Notes
+              </h2>
+              <p className="text-gray-600 dark:text-gray-300">{recipe.notes}</p>
+            </section>
+          )}
 
           {/* Nutrition Panel */}
           {hasNutrition && (
