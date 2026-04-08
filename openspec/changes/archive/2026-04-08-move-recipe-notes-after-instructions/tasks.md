@@ -60,19 +60,19 @@ Use the repository-standard commands documented in `AGENTS.md` and `docs/standar
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `.codex/skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `feat/move-recipe-notes-after-instructions` to `main`
-- [ ] Wait for 120 seconds for the Agentic reviewers to post their comments
-- [ ] **Monitor PR comments** — when comments appear, address them,
+- [x] Run the required pre-PR self-review from `.codex/skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `feat/move-recipe-notes-after-instructions` to `main`
+- [x] Wait for 120 seconds for the Agentic reviewers to post their comments
+- [x] **Monitor PR comments** — when comments appear, address them,
   commit fixes, follow all steps in [Remote push validation], then push
   to the same working branch; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — when any CI check fails, diagnose and fix
+- [x] Enable auto-merge once no blocking review comments remain
+- [x] **Monitor CI checks** — when any CI check fails, diagnose and fix
   the failure, commit fixes, follow all steps in [Remote push
   validation], then push to the same working branch; repeat until all
   checks pass
-- [ ] Wait for the PR to merge — never force-merge; if a human force-merges, continue to Post-Merge
+- [x] Wait for the PR to merge — never force-merge; if a human force-merges, continue to Post-Merge
 
 The comment and CI resolution loops are iterative: address → validate
 locally → push → sleep for 120 seconds → re-check → repeat until the PR
@@ -94,21 +94,21 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change, if any
-- [ ] Sync approved spec deltas into `openspec/specs/`
-- [ ] Archive the change: move
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change, if any
+- [x] Sync approved spec deltas into `openspec/specs/`
+- [x] Archive the change: move
   `openspec/changes/move-recipe-notes-after-instructions/` to
   `openspec/changes/archive/YYYY-MM-DD-move-recipe-notes-after-instructions/`
   and stage both the new location and the deletion of the old location
   in a single commit
-- [ ] Confirm
+- [x] Confirm
   `openspec/changes/archive/YYYY-MM-DD-move-recipe-notes-after-instructions/`
   exists and `openspec/changes/move-recipe-notes-after-instructions/`
   is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/move-recipe-notes-after-instructions`
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/move-recipe-notes-after-instructions`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feat/move-recipe-notes-after-instructions`
