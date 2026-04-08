@@ -46,6 +46,15 @@ describe("RecipeDetail", () => {
     expect(screen.getByText("Pasta Carbonara")).toBeInTheDocument()
   })
 
+  it("applies the shared print page-heading density tier to the recipe title", () => {
+    render(<RecipeDetail recipe={makeRecipe({ name: "Pasta Carbonara" })} />)
+
+    expect(screen.getByRole("heading", { name: "Pasta Carbonara" })).toHaveClass(
+      "print-heading-density",
+      "print-heading-density-page",
+    )
+  })
+
   it("renders notes when provided", () => {
     render(<RecipeDetail recipe={makeRecipe({ notes: "A classic Roman dish" })} />)
 
@@ -170,6 +179,53 @@ describe("RecipeDetail", () => {
     expect(screen.getByText("450")).toBeInTheDocument()
     expect(screen.getByText("25g")).toBeInTheDocument()
     expect(screen.getByText("18g")).toBeInTheDocument()
+  })
+
+  it("applies the shared print section-heading density tier to recipe section headings", () => {
+    render(
+      <RecipeDetail
+        recipe={makeRecipe({
+          ingredients: "Spaghetti\nEggs\nPancetta",
+          instructions: "Boil water\nCook pasta\nMix sauce",
+          calories: 450,
+        })}
+      />,
+    )
+
+    for (const headingName of ["Ingredients", "Instructions", "Nutrition"]) {
+      expect(screen.getByRole("heading", { name: headingName })).toHaveClass(
+        "print-heading-density",
+        "print-heading-density-section",
+      )
+    }
+  })
+
+  it("keeps notes as unlabeled body copy while heading density remains print-only", () => {
+    render(
+      <RecipeDetail
+        recipe={makeRecipe({
+          notes: "A classic Roman dish",
+          ingredients: "Spaghetti",
+          instructions: "Boil water",
+        })}
+      />,
+    )
+
+    expect(screen.getByText("A classic Roman dish")).not.toHaveClass(
+      "print-heading-density",
+      "print-heading-density-section",
+      "print-heading-density-page",
+    )
+    expect(
+      screen.queryByRole("heading", { name: "Notes" }),
+    ).not.toBeInTheDocument()
+
+    const ingredientsHeading = screen.getByRole("heading", { name: "Ingredients" })
+    expect(ingredientsHeading).toHaveClass("text-2xl", "mb-4")
+    expect(ingredientsHeading).toHaveClass(
+      "print-heading-density",
+      "print-heading-density-section",
+    )
   })
 
   it("hides nutrition panel when no data exists", () => {
