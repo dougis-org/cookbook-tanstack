@@ -19,6 +19,7 @@ exclude_patterns:
   - .github/workflows/**
   - .opencode/**
   - .kiro/**
+  - src/e2e/cookbooks-chapters.spec.ts
 
 # Exclude SQL migration files from SQL Server-specific analysis
 exclude_paths:
