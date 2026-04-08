@@ -72,7 +72,7 @@ Blocking resolution flow:
 - [x] Sync approved spec deltas into `openspec/specs/` (global spec)
 - [x] Archive the change: move `openspec/changes/optimize-print-heading-density/` to `openspec/changes/archive/YYYY-MM-DD-optimize-print-heading-density/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
 - [x] Confirm `openspec/changes/archive/YYYY-MM-DD-optimize-print-heading-density/` exists and `openspec/changes/optimize-print-heading-density/` is gone
-- [ ] Commit and push the archive to the default branch in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/optimize-print-heading-density`
+- [x] Commit and push the archive to the default branch in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/optimize-print-heading-density`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feat/optimize-print-heading-density`
