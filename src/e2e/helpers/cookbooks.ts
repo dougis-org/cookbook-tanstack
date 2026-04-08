@@ -23,10 +23,10 @@ export async function createCookbook(
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.waitForLoadState("networkidle");
 
-  const cookbookLink = page.getByRole("link", {
-    name: cookbookName,
-    exact: true,
-  }).first();
+  const cookbookLink = page
+    .getByRole("link")
+    .filter({ has: page.getByText(cookbookName, { exact: true }) })
+    .first();
   await cookbookLink.waitFor({ state: "visible" });
 
   const href = await cookbookLink.getAttribute("href");
