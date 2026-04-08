@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome, RecipePageRow, CookbookPageHeader } from "@/components/cookbooks/CookbookStandaloneLayout"
+import { readFileSync } from "node:fs"
+import path from "node:path"
+import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome, RecipePageRow, CookbookPageHeader, CookbookAlphaIndex } from "@/components/cookbooks/CookbookStandaloneLayout"
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
@@ -133,6 +135,17 @@ describe('CookbookTocList', () => {
     expect(startersHeading).toHaveClass('print:break-after-avoid')
   })
 
+  it('chapter headings use the shared print section-heading density tier', () => {
+    render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
+
+    for (const headingName of ['Starters', 'Mains']) {
+      expect(screen.getByRole('heading', { name: headingName })).toHaveClass(
+        'print-heading-density',
+        'print-heading-density-section',
+      )
+    }
+  })
+
   // 2.9 — page numbers
   it('flat TOC renders #1 on the first recipe', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
@@ -210,6 +223,15 @@ describe('CookbookPageHeader', () => {
     expect(screen.getByText('My Cookbook')).toBeInTheDocument()
   })
 
+  it('applies the shared print page-heading density tier to the cookbook title', () => {
+    render(<CookbookPageHeader name="My Cookbook" />)
+
+    expect(screen.getByRole('heading', { name: 'My Cookbook' })).toHaveClass(
+      'print-heading-density',
+      'print-heading-density-page',
+    )
+  })
+
   it('defaults subtitle to "Table of Contents"', () => {
     render(<CookbookPageHeader name="My Cookbook" />)
     expect(screen.getByText('Table of Contents')).toBeInTheDocument()
@@ -219,6 +241,25 @@ describe('CookbookPageHeader', () => {
     render(<CookbookPageHeader name="My Cookbook" subtitle="Alphabetical Index" />)
     expect(screen.getByText('Alphabetical Index')).toBeInTheDocument()
     expect(screen.queryByText('Table of Contents')).toBeNull()
+  })
+})
+
+describe('CookbookAlphaIndex', () => {
+  it('uses the shared print section-heading density tier for the alphabetical index heading', () => {
+    render(<CookbookAlphaIndex recipes={flatRecipes} chapters={[]} />)
+
+    expect(screen.getByRole('heading', { name: 'Alphabetical Index' })).toHaveClass(
+      'print-heading-density',
+      'print-heading-density-section',
+    )
+  })
+})
+
+describe('print heading density implementation scope', () => {
+  it('does not rely on a global h1-h6 print reset in print.css', () => {
+    const printCss = readFileSync(path.join(process.cwd(), 'src/styles/print.css'), 'utf8')
+
+    expect(printCss).not.toMatch(/@media print\s*\{[\s\S]*\bh[1-6]\b/)
   })
 })
 
