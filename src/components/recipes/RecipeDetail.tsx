@@ -88,8 +88,9 @@ export function splitLines(text: string | null): string[] {
 }
 
 export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
+  const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
-  const [currentServings, setCurrentServings] = useState(recipe.servings ?? 1)
+  const [currentServings, setCurrentServings] = useState(recipeServings)
   const scaledIngredientLines = useMemo(() => {
     if (recipe.servings == null || currentServings === recipe.servings) return ingredientLines
     const factor = currentServings / recipe.servings
@@ -112,8 +113,8 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
     recipe.protein != null
 
   useEffect(() => {
-    setCurrentServings(recipe.servings ?? 1)
-  }, [recipe.id, recipe.servings])
+    setCurrentServings(recipeServings)
+  }, [recipe.id, recipeServings])
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -201,10 +202,10 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       +
                     </button>
                   </div>
-                  {currentServings !== recipe.servings && (
+                  {currentServings !== recipeServings && (
                     <button
                       type="button"
-                      onClick={() => setCurrentServings(recipe.servings ?? 1)}
+                      onClick={() => setCurrentServings(recipeServings)}
                       className="print:hidden rounded border border-slate-600 px-2 py-1 text-xs font-medium"
                     >
                       Reset

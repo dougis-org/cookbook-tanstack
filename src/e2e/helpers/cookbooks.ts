@@ -21,7 +21,10 @@ export async function createCookbook(
   await page.getByRole("button", { name: "Create", exact: true }).click();
   await page.waitForLoadState("networkidle");
 
-  const cookbookLink = page.getByRole("link").filter({ hasText: cookbookName }).first();
+  const cookbookLink = page.getByRole("link", {
+    name: cookbookName,
+    exact: true,
+  }).first();
   await cookbookLink.waitFor({ state: "visible" });
 
   const href = await cookbookLink.getAttribute("href");
@@ -54,7 +57,7 @@ export async function addRecipeToCookbook(page: Page, recipeName: string) {
   await dialog.waitFor({ state: "visible" });
 
   const searchBox = dialog.getByPlaceholder("Search recipes…");
-  if (await searchBox.isVisible().catch(() => false)) {
+  if ((await searchBox.count()) > 0) {
     await searchBox.fill(recipeName);
   }
 

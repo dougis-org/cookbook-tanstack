@@ -23,7 +23,7 @@ describe("Playwright CI performance safeguards", () => {
     expect(config).toMatch(/\[\s*"json"/);
     expect(workflow).toMatch(/Run Playwright runtime summary/);
     expect(workflow).toMatch(/scripts\/ci\/report-playwright-runtime\.mjs/);
-    expect(workflow.match(/npm run test:e2e/g)).toHaveLength(1);
+    expect(workflow.match(/npm run test:e2e/g) ?? []).toHaveLength(1);
   });
 
   it("uses a CI worker setting above the serialized baseline without narrowing suite coverage", () => {
