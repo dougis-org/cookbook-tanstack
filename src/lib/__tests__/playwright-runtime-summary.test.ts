@@ -1,4 +1,5 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { describe, expect, it, vi } from "vitest";
@@ -111,6 +112,31 @@ describe("playwright runtime summary", () => {
   it("skips unexpected report shapes", async () => {
     const { summarizePlaywrightReport } = await loadRuntimeSummaryModule();
     expect(summarizePlaywrightReport({ suites: [] })).toBeNull();
+  });
+
+  it("skips malformed nested report shapes without throwing", async () => {
+    const { runPlaywrightRuntimeSummary } = await loadRuntimeSummaryModule();
+    const tempDir = mkdtempSync(join(tmpdir(), "playwright-runtime-summary-"));
+    const reportPath = join(tempDir, "malformed.json");
+    writeFileSync(
+      reportPath,
+      JSON.stringify({
+        suites: [
+          {
+            title: "chromium",
+            specs: { not: "an array" },
+          },
+        ],
+      }),
+    );
+
+    const log = vi.fn();
+    const result = runPlaywrightRuntimeSummary({ reportPath, log });
+
+    expect(result.status).toBe("skipped");
+    expect(log).toHaveBeenCalledWith(
+      expect.stringContaining("unexpected report format"),
+    );
   });
 
   it("reports the full retrying spec count while limiting detailed output", async () => {

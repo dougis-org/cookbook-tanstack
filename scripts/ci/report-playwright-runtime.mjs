@@ -3,37 +3,63 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 function flattenSuites(suite, parents = []) {
-  const suiteTitle = suite.title ? [...parents, suite.title] : parents;
-  const specs = (suite.specs ?? []).map((spec) => {
-    const tests = spec.tests ?? [];
-    const results = tests.flatMap((test) => test.results ?? []);
+  if (suite === null || typeof suite !== "object" || Array.isArray(suite)) {
+    return [];
+  }
+
+  const suiteTitle =
+    typeof suite.title === "string" && suite.title.length > 0
+      ? [...parents, suite.title]
+      : parents;
+  const specs = (Array.isArray(suite.specs) ? suite.specs : []).flatMap((spec) => {
+    if (spec === null || typeof spec !== "object" || Array.isArray(spec)) {
+      return [];
+    }
+
+    const tests = Array.isArray(spec.tests) ? spec.tests : [];
+    const results = tests.flatMap((test) =>
+      test !== null && typeof test === "object" && !Array.isArray(test) && Array.isArray(test.results)
+        ? test.results
+        : [],
+    );
     const durationMs = results.reduce(
       (total, result) => total + (result.duration ?? 0),
       0,
     );
     const retries = tests.reduce((total, test) => {
+      if (test === null || typeof test !== "object" || Array.isArray(test)) {
+        return total;
+      }
       const retryCount = Math.max(
         0,
-        ...(test.results ?? []).map((result) => result.retry ?? 0),
+        ...(Array.isArray(test.results) ? test.results : []).map((result) =>
+          result !== null && typeof result === "object" && !Array.isArray(result)
+            ? result.retry ?? 0
+            : 0,
+        ),
       );
       return total + retryCount;
     }, 0);
     const status =
       [...results].reverse().find((result) => result.status)?.status ??
       "unknown";
-    const path = [...suiteTitle, spec.title].filter(Boolean).join(" > ");
+    const path = [...suiteTitle, typeof spec.title === "string" ? spec.title : ""]
+      .filter(Boolean)
+      .join(" > ");
 
-    return {
+    return [{
       path,
       durationMs,
       retries,
       status,
-    };
+    }];
   });
 
   return [
     ...specs,
-    ...(suite.suites ?? []).flatMap((child) => flattenSuites(child, suiteTitle)),
+    ...(Array.isArray(suite.suites) ? suite.suites : []).flatMap((child) =>
+      flattenSuites(child, suiteTitle),
+    ),
   ];
 }
 
@@ -42,7 +68,9 @@ export function summarizePlaywrightReport(report) {
     return null;
   }
 
-  const specs = (report.suites ?? []).flatMap((suite) => flattenSuites(suite));
+  const specs = (Array.isArray(report.suites) ? report.suites : []).flatMap((suite) =>
+    flattenSuites(suite),
+  );
   if (specs.length === 0) {
     return null;
   }
@@ -126,7 +154,18 @@ export function runPlaywrightRuntimeSummary({
     return { status: "skipped", lines };
   }
 
-  const summary = summarizePlaywrightReport(report);
+  let summary;
+  try {
+    summary = summarizePlaywrightReport(report);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const lines = [
+      `Playwright runtime summary skipped: failed to summarize report at ${reportPath}: ${message}`,
+    ];
+    lines.forEach((line) => log(line));
+    return { status: "skipped", lines };
+  }
+
   if (!summary) {
     const lines = [
       `Playwright runtime summary skipped: unexpected report format at ${reportPath}.`,
@@ -135,7 +174,17 @@ export function runPlaywrightRuntimeSummary({
     return { status: "skipped", lines };
   }
 
-  const lines = renderPlaywrightRuntimeSummary(summary, workers);
+  let lines;
+  try {
+    lines = renderPlaywrightRuntimeSummary(summary, workers);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const fallbackLines = [
+      `Playwright runtime summary skipped: failed to render report at ${reportPath}: ${message}`,
+    ];
+    fallbackLines.forEach((line) => log(line));
+    return { status: "skipped", lines: fallbackLines };
+  }
   lines.forEach((line) => log(line));
   return { status: "ok", lines };
 }
