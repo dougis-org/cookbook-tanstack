@@ -186,6 +186,12 @@ test.describe("Cookbook Print Route — public cookbook", () => {
       page,
       `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
+    await expect(
+      page.getByRole("button", { name: /increase servings/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /decrease servings/i }),
+    ).toBeVisible();
     await page.emulateMedia({ media: "print" });
     await expect(
       page.getByRole("button", { name: /increase servings/i }),

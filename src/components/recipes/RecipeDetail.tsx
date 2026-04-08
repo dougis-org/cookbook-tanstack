@@ -91,7 +91,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [currentServings, setCurrentServings] = useState(recipe.servings ?? 1)
   const scaledIngredientLines = useMemo(() => {
-    if (!recipe.servings) return ingredientLines
+    if (recipe.servings == null || currentServings === recipe.servings) return ingredientLines
     const factor = currentServings / recipe.servings
     return ingredientLines.map((line) => (line === '' ? line : scaleQuantity(line, factor)))
   }, [currentServings, ingredientLines, recipe.servings])
@@ -181,29 +181,31 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">N/A</p>
               ) : (
                 <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentServings((prev) => Math.max(1, prev - 1))}
-                    disabled={currentServings <= 1}
-                    aria-label="Decrease servings"
-                    className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm disabled:opacity-40"
-                  >
-                    -
-                  </button>
-                  <span aria-live="polite" className="min-w-6 text-center">{currentServings}</span>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentServings((prev) => prev + 1)}
-                    aria-label="Increase servings"
-                    className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm"
-                  >
-                    +
-                  </button>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentServings((prev) => Math.max(1, prev - 1))}
+                      disabled={currentServings <= 1}
+                      aria-label="Decrease servings"
+                      className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm disabled:opacity-40"
+                    >
+                      -
+                    </button>
+                    <span aria-live="polite" className="min-w-6 text-center">{currentServings}</span>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentServings((prev) => prev + 1)}
+                      aria-label="Increase servings"
+                      className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm"
+                    >
+                      +
+                    </button>
+                  </div>
                   {currentServings !== recipe.servings && (
                     <button
                       type="button"
                       onClick={() => setCurrentServings(recipe.servings)}
-                      className="print:hidden ml-1 rounded border border-slate-600 px-2 py-1 text-xs font-medium"
+                      className="print:hidden rounded border border-slate-600 px-2 py-1 text-xs font-medium"
                     >
                       Reset
                     </button>

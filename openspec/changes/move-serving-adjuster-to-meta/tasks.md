@@ -80,8 +80,8 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/serving-adjuster-to-meta` and push to remote
-- [ ] Open PR from `feat/serving-adjuster-to-meta` to `main` — reference issue #272 in the PR body
+- [x] Commit all changes to `feat/serving-adjuster-to-meta` and push to remote
+- [x] Open PR from `feat/serving-adjuster-to-meta` to `main` — reference issue #272 in the PR body
 - [ ] Enable auto-merge on the PR
 - [ ] Wait 120 seconds for agentic reviewers to post comments
 - [ ] **Monitor PR comments** — address each comment, commit fixes, follow all remote push validation steps, push; repeat until no unresolved comments remain
