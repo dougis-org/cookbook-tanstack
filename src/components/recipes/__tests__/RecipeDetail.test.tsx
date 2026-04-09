@@ -3,6 +3,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
 import PrintButton from "@/components/ui/PrintButton"
+import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from "@/components/printHeadingDensity"
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
@@ -844,6 +845,92 @@ describe("RecipeDetail — blank line rendering", () => {
       expect(screen.getByRole("button", { name: /increase servings/i })).toBeInTheDocument()
       expect(screen.getByText("2 cups flour")).toBeInTheDocument()
       expect(screen.getByText("1 cup sugar")).toBeInTheDocument()
+    })
+  })
+})
+
+describe("RecipeDetail — print density (recipe-print-density-2026-04-09)", () => {
+  describe("printHeadingDensity constants", () => {
+    it("PRINT_HEADING_DENSITY_PAGE includes print:text-xl", () => {
+      expect(PRINT_HEADING_DENSITY_PAGE).toContain("print:text-xl")
+    })
+
+    it("PRINT_HEADING_DENSITY_PAGE does NOT include print:text-2xl", () => {
+      expect(PRINT_HEADING_DENSITY_PAGE).not.toContain("print:text-2xl")
+    })
+
+    it("PRINT_HEADING_DENSITY_SECTION includes print:text-lg", () => {
+      expect(PRINT_HEADING_DENSITY_SECTION).toContain("print:text-lg")
+    })
+
+    it("PRINT_HEADING_DENSITY_SECTION does NOT include print:text-xl", () => {
+      expect(PRINT_HEADING_DENSITY_SECTION).not.toContain("print:text-xl")
+    })
+  })
+
+  describe("ingredient <ul> print classes", () => {
+    it("ingredient <ul> includes print:columns-2", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar\nEggs" })} />,
+      )
+      const ul = container.querySelector("ul.print\\:columns-2")
+      expect(ul).not.toBeNull()
+    })
+
+    it("ingredient <ul> includes print:gap-x-8", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar\nEggs" })} />,
+      )
+      const ul = container.querySelector("ul.print\\:gap-x-8")
+      expect(ul).not.toBeNull()
+    })
+
+    it("ingredient <ul> includes print:space-y-1", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar\nEggs" })} />,
+      )
+      const ul = container.querySelector("ul.print\\:space-y-1")
+      expect(ul).not.toBeNull()
+    })
+
+    it("empty ingredient list renders fallback without error and without print column ul", () => {
+      const { container } = render(<RecipeDetail recipe={makeRecipe({ ingredients: null })} />)
+      expect(screen.getByText("No ingredients listed")).toBeInTheDocument()
+      expect(container.querySelector("ul.print\\:columns-2")).toBeNull()
+    })
+  })
+
+  describe("section print:mb-4 classes", () => {
+    it("Ingredients <section> includes print:mb-4", () => {
+      render(<RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />)
+      const heading = screen.getByRole("heading", { name: "Ingredients" })
+      const section = heading.closest("section")
+      expect(section).not.toBeNull()
+      expect(section).toHaveClass("print:mb-4")
+    })
+
+    it("Instructions <section> includes print:mb-4", () => {
+      render(<RecipeDetail recipe={makeRecipe({ instructions: "Boil water" })} />)
+      const heading = screen.getByRole("heading", { name: "Instructions" })
+      const section = heading.closest("section")
+      expect(section).not.toBeNull()
+      expect(section).toHaveClass("print:mb-4")
+    })
+
+    it("Notes <section> includes print:mb-4 when notes are present", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: "Season well" })} />)
+      const heading = screen.getByRole("heading", { name: "Notes" })
+      const section = heading.closest("section")
+      expect(section).not.toBeNull()
+      expect(section).toHaveClass("print:mb-4")
+    })
+
+    it("Nutrition <section> includes print:mb-4 when nutrition is present", () => {
+      render(<RecipeDetail recipe={makeRecipe({ calories: 400 })} />)
+      const heading = screen.getByRole("heading", { name: "Nutrition" })
+      const section = heading.closest("section")
+      expect(section).not.toBeNull()
+      expect(section).toHaveClass("print:mb-4")
     })
   })
 })
