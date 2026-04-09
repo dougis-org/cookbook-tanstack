@@ -35,7 +35,7 @@ Files to modify:
 - [x] Run build: `npm run build` — must succeed
 - [ ] Visual check: `npm run dev`, open a recipe with a source, confirm source appears directly below title on screen, before any taxonomy badges
 - [ ] Visual print check: open browser print preview on a recipe with source — confirm source appears to the right of title on the same line
-- [x] All tasks marked complete
+- [ ] All tasks marked complete
 
 ## Remote push validation
 
@@ -49,9 +49,9 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `recipe-source-layout` and push to remote
-- [ ] Open PR from `recipe-source-layout` to `main`; reference issue #280 in the PR description
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `recipe-source-layout` and push to remote
+- [x] Open PR from `recipe-source-layout` to `main`; reference issue #280 in the PR description
 - [ ] Wait for 120 seconds for agentic reviewers to post their comments
 - [ ] **Monitor PR comments** — address each comment, commit fixes, follow all steps in Remote push validation, push to `recipe-source-layout`; repeat until no unresolved comments remain
 - [ ] Enable auto-merge once no blocking review comments remain

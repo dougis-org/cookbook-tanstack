@@ -143,7 +143,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               </h1>
               {/* Source — directly below title on screen; inline right of title on print */}
               {recipe.sourceName && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 print:mb-0">
                   Source:{" "}
                   {recipe.sourceUrl ? (
                     <a
