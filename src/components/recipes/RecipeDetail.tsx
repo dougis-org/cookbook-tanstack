@@ -88,6 +88,15 @@ export function splitLines(text: string | null): string[] {
   return result
 }
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
@@ -145,7 +154,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               {recipe.sourceName && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 print:mb-0">
                   Source:{" "}
-                  {recipe.sourceUrl ? (
+                  {recipe.sourceUrl && isSafeUrl(recipe.sourceUrl) ? (
                     <a
                       href={recipe.sourceUrl}
                       target="_blank"
@@ -155,7 +164,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       {recipe.sourceName}
                     </a>
                   ) : (
-                    <span className="text-gray-300">{recipe.sourceName}</span>
+                    <span>{recipe.sourceName}</span>
                   )}
                 </p>
               )}

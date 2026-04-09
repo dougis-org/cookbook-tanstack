@@ -524,7 +524,7 @@ describe("RecipeDetail", () => {
 
   it.each([
     {
-      label: "as a link when sourceUrl is provided",
+      label: "as a link when sourceUrl is provided with https",
       props: { sourceName: "Bon Appétit", sourceUrl: "https://bonappetit.com" },
       assert: () => {
         const link = screen.getByRole("link", { name: "Bon Appétit" })
@@ -533,11 +533,34 @@ describe("RecipeDetail", () => {
       },
     },
     {
+      label: "as a link when sourceUrl is provided with http",
+      props: { sourceName: "Bon Appétit", sourceUrl: "http://bonappetit.com" },
+      assert: () => {
+        expect(screen.getByRole("link", { name: "Bon Appétit" })).toBeInTheDocument()
+      },
+    },
+    {
       label: "as plain text when sourceUrl is absent",
       props: { sourceName: "Grandma's Cookbook", sourceUrl: null },
       assert: () => {
         expect(screen.getByText("Grandma's Cookbook")).toBeInTheDocument()
         expect(screen.queryByRole("link", { name: "Grandma's Cookbook" })).not.toBeInTheDocument()
+      },
+    },
+    {
+      label: "as plain text when sourceUrl uses a javascript: scheme",
+      props: { sourceName: "Evil Source", sourceUrl: "javascript:alert(1)" },
+      assert: () => {
+        expect(screen.getByText("Evil Source")).toBeInTheDocument()
+        expect(screen.queryByRole("link", { name: "Evil Source" })).not.toBeInTheDocument()
+      },
+    },
+    {
+      label: "as plain text when sourceUrl uses a data: scheme",
+      props: { sourceName: "Evil Source", sourceUrl: "data:text/html,<script>alert(1)</script>" },
+      assert: () => {
+        expect(screen.getByText("Evil Source")).toBeInTheDocument()
+        expect(screen.queryByRole("link", { name: "Evil Source" })).not.toBeInTheDocument()
       },
     },
     {
