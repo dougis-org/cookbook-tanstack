@@ -41,7 +41,7 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("A delicious test recipe")).toBeVisible();
     await expect(page.getByText("15 min")).toBeVisible();
     await expect(page.getByText("30 min", { exact: true })).toBeVisible();
-    await expect(page.getByText("medium")).toBeVisible();
+    await expect(page.getByText("medium", { exact: true })).toBeVisible();
 
     // Verify servings — locate the value adjacent to its label
     const servingsContainer = page.getByText("Servings").locator("..");

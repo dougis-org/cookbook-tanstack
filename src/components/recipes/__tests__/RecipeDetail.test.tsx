@@ -668,6 +668,95 @@ describe("RecipeDetail — print button in actions slot", () => {
   })
 })
 
+describe("RecipeDetail — compact print meta line", () => {
+  describe("TC-1: meta grid has print:hidden class (FR1)", () => {
+    it("meta grid container has the print:hidden class", () => {
+      const { container } = render(<RecipeDetail recipe={makeRecipe()} />)
+      const grid = container.querySelector(".grid.grid-cols-2")
+      expect(grid).not.toBeNull()
+      expect(grid).toHaveClass("print:hidden")
+    })
+  })
+
+  describe("TC-2: compact print line has hidden and print:block classes (FR2)", () => {
+    it("print-meta-line element has hidden and print:block classes", () => {
+      render(<RecipeDetail recipe={makeRecipe()} />)
+      const line = screen.getByTestId("print-meta-line")
+      expect(line).toHaveClass("hidden")
+      expect(line).toHaveClass("print:block")
+    })
+  })
+
+  describe("TC-3: compact line content, all fields present (FR3)", () => {
+    it("shows all fields joined by · when all meta fields are set", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ prepTime: 15, cookTime: 30, servings: 4, difficulty: "medium" })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Prep: 15m · Cook: 30m · Serves: 4 · Medium")
+    })
+  })
+
+  describe("TC-4: compact line content, partial fields (FR3 edge)", () => {
+    it("omits null fields and joins only present fields", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ prepTime: 20, cookTime: null, servings: null, difficulty: "easy" })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Prep: 20m · Easy")
+      expect(line.textContent).not.toContain("Cook:")
+      expect(line.textContent).not.toContain("Serves:")
+    })
+  })
+
+  describe("TC-5: all fields null (FR4)", () => {
+    it("renders empty print-meta-line when all meta fields are null", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ prepTime: null, cookTime: null, servings: null, difficulty: null })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent?.trim()).toBe("")
+      expect(line.textContent).not.toContain("N/A")
+      expect(line.textContent).not.toContain("Prep:")
+      expect(line.textContent).not.toContain("Cook:")
+      expect(line.textContent).not.toContain("Serves:")
+    })
+  })
+
+  describe("TC-6: single field present (FR4)", () => {
+    it("shows only the present field with no separator", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ prepTime: null, cookTime: 45, servings: null, difficulty: null })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Cook: 45m")
+      expect(line.textContent).not.toContain(" · ")
+    })
+  })
+
+  describe("TC-7: zero prepTime/cookTime matches grid behavior (guard consistency)", () => {
+    it("omits prepTime and cookTime when they are 0 (truthy guard, consistent with grid)", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ prepTime: 0, cookTime: 0, servings: 4, difficulty: "easy" })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Serves: 4 · Easy")
+      expect(line.textContent).not.toContain("Prep:")
+      expect(line.textContent).not.toContain("Cook:")
+    })
+  })
+})
+
 describe("RecipeDetail — blank line rendering", () => {
   describe("ingredients with blank lines", () => {
     it("renders a spacer li for a blank-line entry", () => {

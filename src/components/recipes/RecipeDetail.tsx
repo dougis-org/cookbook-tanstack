@@ -198,7 +198,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           )}
 
           {/* Recipe Meta */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg print:hidden">
             <RecipeMetaItem
               label="Prep Time"
               value={recipe.prepTime ? `${recipe.prepTime} min` : "N/A"}
@@ -259,6 +259,20 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               className="capitalize"
             />
           </div>
+
+          <p
+            data-testid="print-meta-line"
+            className="hidden print:block text-sm text-gray-700 dark:text-gray-300 mb-8"
+          >
+            {[
+              recipe.prepTime && `Prep: ${recipe.prepTime}m`,
+              recipe.cookTime && `Cook: ${recipe.cookTime}m`,
+              recipe.servings != null && `Serves: ${recipe.servings}`,
+              recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
 
           {/* Ingredients Section */}
           <section className="mb-8">
