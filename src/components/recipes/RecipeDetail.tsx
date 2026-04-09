@@ -260,19 +260,22 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             />
           </div>
 
-          <p
-            data-testid="print-meta-line"
-            className="hidden print:block text-sm text-gray-700 dark:text-gray-300 mb-8"
-          >
-            {[
+          {(() => {
+            const printMetaLine = [
               recipe.prepTime && `Prep: ${recipe.prepTime}m`,
               recipe.cookTime && `Cook: ${recipe.cookTime}m`,
-              recipe.servings != null && `Serves: ${recipe.servings}`,
+              recipe.servings != null && `Serves: ${currentServings}`,
               recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </p>
+            ].filter(Boolean).join(' · ')
+            return printMetaLine ? (
+              <p
+                data-testid="print-meta-line"
+                className="hidden print:block text-sm text-gray-700 dark:text-gray-300 mb-8"
+              >
+                {printMetaLine}
+              </p>
+            ) : null
+          })()}
 
           {/* Ingredients Section */}
           <section className="mb-8">

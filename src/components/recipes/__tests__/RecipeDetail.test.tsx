@@ -680,7 +680,7 @@ describe("RecipeDetail — compact print meta line", () => {
 
   describe("TC-2: compact print line has hidden and print:block classes (FR2)", () => {
     it("print-meta-line element has hidden and print:block classes", () => {
-      render(<RecipeDetail recipe={makeRecipe()} />)
+      render(<RecipeDetail recipe={makeRecipe({ difficulty: "easy" })} />)
       const line = screen.getByTestId("print-meta-line")
       expect(line).toHaveClass("hidden")
       expect(line).toHaveClass("print:block")
@@ -714,18 +714,13 @@ describe("RecipeDetail — compact print meta line", () => {
   })
 
   describe("TC-5: all fields null (FR4)", () => {
-    it("renders empty print-meta-line when all meta fields are null", () => {
+    it("does not render print-meta-line when all meta fields are null", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ prepTime: null, cookTime: null, servings: null, difficulty: null })}
         />,
       )
-      const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent?.trim()).toBe("")
-      expect(line.textContent).not.toContain("N/A")
-      expect(line.textContent).not.toContain("Prep:")
-      expect(line.textContent).not.toContain("Cook:")
-      expect(line.textContent).not.toContain("Serves:")
+      expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
     })
   })
 
@@ -753,6 +748,19 @@ describe("RecipeDetail — compact print meta line", () => {
       expect(line.textContent).toBe("Serves: 4 · Easy")
       expect(line.textContent).not.toContain("Prep:")
       expect(line.textContent).not.toContain("Cook:")
+    })
+  })
+
+  describe("TC-8: print meta line reflects currentServings after scaling", () => {
+    it("shows scaled serving count after user increments servings", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, difficulty: "easy" })}
+        />,
+      )
+      fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toContain("Serves: 5")
     })
   })
 })
