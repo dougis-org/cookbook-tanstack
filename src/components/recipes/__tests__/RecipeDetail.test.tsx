@@ -280,6 +280,72 @@ describe("RecipeDetail", () => {
     expect(screen.queryByTestId("chiclet-wrapper")).not.toBeInTheDocument()
   })
 
+  describe("source and chiclet DOM order", () => {
+    it("source renders before chiclet wrapper when recipe has both source and taxonomy", () => {
+      render(
+        <RecipeDetail
+          recipe={{
+            ...makeRecipe(),
+            sourceName: "Bon Appétit",
+            sourceUrl: "https://bonappetit.com",
+            meals: [{ id: "m1", name: "Breakfast" }],
+          }}
+        />,
+      )
+      const source = screen.getByText(/source:/i).closest("p")!
+      const chicletWrapper = screen.getByTestId("chiclet-wrapper")
+      // source precedes chiclet wrapper in the DOM
+      expect(source.compareDocumentPosition(chicletWrapper) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it("source renders when recipe has source but no taxonomy tags", () => {
+      render(<RecipeDetail recipe={{ ...makeRecipe(), sourceName: "Grandma's Cookbook" }} />)
+      expect(screen.getByText("Grandma's Cookbook")).toBeInTheDocument()
+      expect(screen.queryByTestId("chiclet-wrapper")).not.toBeInTheDocument()
+    })
+  })
+
+  describe("title-source inner wrapper", () => {
+    it("inner wrapper has print flex-row classes", () => {
+      render(<RecipeDetail recipe={makeRecipe()} />)
+      const wrapper = screen.getByTestId("title-source-wrapper")
+      expect(wrapper).toHaveClass("print:flex-row")
+      expect(wrapper).toHaveClass("print:items-baseline")
+      expect(wrapper).toHaveClass("print:justify-between")
+    })
+
+    it("inner wrapper renders without source child when sourceName is absent", () => {
+      render(<RecipeDetail recipe={makeRecipe()} />)
+      const wrapper = screen.getByTestId("title-source-wrapper")
+      expect(wrapper.querySelector("p")).toBeNull()
+    })
+
+    it("source element retains text-sm class", () => {
+      render(<RecipeDetail recipe={{ ...makeRecipe(), sourceName: "Bon Appétit" }} />)
+      const sourceP = screen.getByText(/source:/i).closest("p")!
+      expect(sourceP).toHaveClass("text-sm")
+    })
+  })
+
+  describe("actions wrapper print visibility", () => {
+    it("actions wrapper div has print:hidden class", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe()}
+          actions={<button>Edit</button>}
+        />,
+      )
+      const actionsWrapper = screen.getByTestId("actions-wrapper")
+      expect(actionsWrapper).toHaveClass("print:hidden")
+    })
+
+    it("no actions wrapper rendered when actions prop is absent", () => {
+      render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
+      expect(screen.getByRole("heading", { name: "Pasta" })).toBeInTheDocument()
+      expect(screen.queryByTestId("actions-wrapper")).not.toBeInTheDocument()
+    })
+  })
+
   describe("actions prop", () => {
     it("renders provided actions content in the title row", () => {
       render(
@@ -458,7 +524,7 @@ describe("RecipeDetail", () => {
 
   it.each([
     {
-      label: "as a link when sourceUrl is provided",
+      label: "as a link when sourceUrl is provided with https",
       props: { sourceName: "Bon Appétit", sourceUrl: "https://bonappetit.com" },
       assert: () => {
         const link = screen.getByRole("link", { name: "Bon Appétit" })
@@ -467,11 +533,34 @@ describe("RecipeDetail", () => {
       },
     },
     {
+      label: "as a link when sourceUrl is provided with http",
+      props: { sourceName: "Bon Appétit", sourceUrl: "http://bonappetit.com" },
+      assert: () => {
+        expect(screen.getByRole("link", { name: "Bon Appétit" })).toBeInTheDocument()
+      },
+    },
+    {
       label: "as plain text when sourceUrl is absent",
       props: { sourceName: "Grandma's Cookbook", sourceUrl: null },
       assert: () => {
         expect(screen.getByText("Grandma's Cookbook")).toBeInTheDocument()
         expect(screen.queryByRole("link", { name: "Grandma's Cookbook" })).not.toBeInTheDocument()
+      },
+    },
+    {
+      label: "as plain text when sourceUrl uses a javascript: scheme",
+      props: { sourceName: "Evil Source", sourceUrl: "javascript:alert(1)" },
+      assert: () => {
+        expect(screen.getByText("Evil Source")).toBeInTheDocument()
+        expect(screen.queryByRole("link", { name: "Evil Source" })).not.toBeInTheDocument()
+      },
+    },
+    {
+      label: "as plain text when sourceUrl uses a data: scheme",
+      props: { sourceName: "Evil Source", sourceUrl: "data:text/html,<script>alert(1)</script>" },
+      assert: () => {
+        expect(screen.getByText("Evil Source")).toBeInTheDocument()
+        expect(screen.queryByRole("link", { name: "Evil Source" })).not.toBeInTheDocument()
       },
     },
     {

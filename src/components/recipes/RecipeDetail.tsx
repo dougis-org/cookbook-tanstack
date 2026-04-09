@@ -88,6 +88,15 @@ export function splitLines(text: string | null): string[] {
   return result
 }
 
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
@@ -132,12 +141,35 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
         {/* Recipe Content */}
         <div className="p-8">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1
-              className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}
+            <div
+              className="flex-1 flex flex-col print:flex-row print:items-baseline print:justify-between"
+              data-testid="title-source-wrapper"
             >
-              {recipe.name}
-            </h1>
-            {actions && <div className="shrink-0">{actions}</div>}
+              <h1
+                className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}
+              >
+                {recipe.name}
+              </h1>
+              {/* Source — directly below title on screen; inline right of title on print */}
+              {recipe.sourceName && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 print:mb-0">
+                  Source:{" "}
+                  {recipe.sourceUrl && isSafeUrl(recipe.sourceUrl) ? (
+                    <a
+                      href={recipe.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
+                    >
+                      {recipe.sourceName}
+                    </a>
+                  ) : (
+                    <span>{recipe.sourceName}</span>
+                  )}
+                </p>
+              )}
+            </div>
+            {actions && <div className="shrink-0 print:hidden" data-testid="actions-wrapper">{actions}</div>}
           </div>
 
           {/* Classification + taxonomy tags */}
@@ -163,25 +195,6 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 variant="preparation"
               />
             </div>
-          )}
-
-          {/* Source */}
-          {recipe.sourceName && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              Source:{" "}
-              {recipe.sourceUrl ? (
-                <a
-                  href={recipe.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
-                >
-                  {recipe.sourceName}
-                </a>
-              ) : (
-                <span className="text-gray-300">{recipe.sourceName}</span>
-              )}
-            </p>
           )}
 
           {/* Recipe Meta */}
