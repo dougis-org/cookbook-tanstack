@@ -67,13 +67,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review before committing
-- [ ] Commit all changes to `recipe-print-meta-compact` and push to remote
-- [ ] Open PR from `recipe-print-meta-compact` to `main` — reference `dougis-org/cookbook-tanstack#284` in the PR body
-- [ ] Enable auto-merge
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address, commit fixes, validate locally, push; repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — diagnose failures, fix, commit, validate locally, push; repeat until all checks pass
-- [ ] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
+- [x] Commit all changes to `recipe-print-meta-compact` and push to remote
+- [x] Open PR from `recipe-print-meta-compact` to `main` — reference `dougis-org/cookbook-tanstack#284` in the PR body
+- [x] Enable auto-merge
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address, commit fixes, validate locally, push; repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — diagnose failures, fix, commit, validate locally, push; repeat until all checks pass
+- [x] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
 
 Ownership metadata:
 
@@ -89,12 +89,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (none expected)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/recipe-print-meta-compact-2026-04-09/` to `openspec/changes/archive/2026-04-09-recipe-print-meta-compact/` — stage both the new location and the deletion of the old in a **single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-09-recipe-print-meta-compact/` exists and `openspec/changes/recipe-print-meta-compact-2026-04-09/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d recipe-print-meta-compact`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (none expected)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/recipe-print-meta-compact-2026-04-09/` to `openspec/changes/archive/2026-04-09-recipe-print-meta-compact/` — stage both the new location and the deletion of the old in a **single commit**
+- [x] Confirm `openspec/changes/archive/2026-04-09-recipe-print-meta-compact/` exists and `openspec/changes/recipe-print-meta-compact-2026-04-09/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d recipe-print-meta-compact`
