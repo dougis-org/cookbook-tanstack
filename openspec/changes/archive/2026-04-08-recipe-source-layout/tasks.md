@@ -33,9 +33,9 @@ Files to modify:
 - [x] Run E2E tests: `npm run test:e2e` — all must pass
 - [x] Run type check: `npx tsc --noEmit` — no errors
 - [x] Run build: `npm run build` — must succeed
-- [ ] Visual check: `npm run dev`, open a recipe with a source, confirm source appears directly below title on screen, before any taxonomy badges
-- [ ] Visual print check: open browser print preview on a recipe with source — confirm source appears to the right of title on the same line
-- [ ] All tasks marked complete
+- [x] Visual check: `npm run dev`, open a recipe with a source, confirm source appears directly below title on screen, before any taxonomy badges
+- [x] Visual print check: open browser print preview on a recipe with source — confirm source appears to the right of title on the same line
+- [x] All tasks marked complete
 
 ## Remote push validation
 
@@ -52,11 +52,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to `recipe-source-layout` and push to remote
 - [x] Open PR from `recipe-source-layout` to `main`; reference issue #280 in the PR description
-- [ ] Wait for 120 seconds for agentic reviewers to post their comments
-- [ ] **Monitor PR comments** — address each comment, commit fixes, follow all steps in Remote push validation, push to `recipe-source-layout`; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — if any check fails, diagnose and fix, commit, follow all Remote push validation steps, push; repeat until all checks pass
-- [ ] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
+- [x] Wait for 120 seconds for agentic reviewers to post their comments
+- [x] **Monitor PR comments** — address each comment, commit fixes, follow all steps in Remote push validation, push to `recipe-source-layout`; repeat until no unresolved comments remain
+- [x] Enable auto-merge once no blocking review comments remain
+- [x] **Monitor CI checks** — if any check fails, diagnose and fix, commit, follow all Remote push validation steps, push; repeat until all checks pass
+- [x] Wait for the PR to merge — **never force-merge**; if a human force-merges, continue to Post-Merge
 
 The comment and CI resolution loops are iterative: address → validate locally → push → sleep 120 seconds → re-check → repeat until the PR is fully clean.
 
@@ -74,12 +74,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (none expected for this change)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/recipe-source-layout-2026-04-08/` to `openspec/changes/archive/2026-04-08-recipe-source-layout/` — stage both the new location and the deletion of the old location in a **single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-08-recipe-source-layout/` exists and `openspec/changes/recipe-source-layout-2026-04-08/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d recipe-source-layout`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (none expected for this change)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/recipe-source-layout-2026-04-08/` to `openspec/changes/archive/2026-04-08-recipe-source-layout/` — stage both the new location and the deletion of the old location in a **single commit**
+- [x] Confirm `openspec/changes/archive/2026-04-08-recipe-source-layout/` exists and `openspec/changes/recipe-source-layout-2026-04-08/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d recipe-source-layout`
