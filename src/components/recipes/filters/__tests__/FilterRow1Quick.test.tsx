@@ -48,6 +48,38 @@ describe('FilterRow1Quick', () => {
     })
   })
 
+  describe('icon rendering', () => {
+    it('renders an icon for each visible quick filter toggle when logged in', () => {
+      const { container } = render(
+        <FilterRow1Quick
+          {...createDefaultFilterRow1QuickProps()}
+          isLoggedIn={true}
+          updateSearch={mockUpdateSearch}
+        />
+      )
+
+      expect(container.querySelectorAll('svg')).toHaveLength(3)
+      expect(screen.getByText('My Recipes')).toBeInTheDocument()
+      expect(screen.getByText('Favorites')).toBeInTheDocument()
+      expect(screen.getByText('Has Image')).toBeInTheDocument()
+    })
+
+    it('keeps auth-only icons hidden when logged out', () => {
+      const { container } = render(
+        <FilterRow1Quick
+          {...createDefaultFilterRow1QuickProps()}
+          isLoggedIn={false}
+          updateSearch={mockUpdateSearch}
+        />
+      )
+
+      expect(container.querySelectorAll('svg')).toHaveLength(1)
+      expect(screen.queryByText('My Recipes')).not.toBeInTheDocument()
+      expect(screen.queryByText('Favorites')).not.toBeInTheDocument()
+      expect(screen.getByText('Has Image')).toBeInTheDocument()
+    })
+  })
+
   // Data-driven toggle tests
   describe.each(QUICK_FILTER_TOGGLE_CASES)(
     'toggle: %s',
