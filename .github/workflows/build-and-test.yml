@@ -26,6 +26,8 @@ jobs:
       MONGODB_URI: mongodb://localhost:27017/cookbook
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
+      PLAYWRIGHT_CI_WORKERS: 2
+      PLAYWRIGHT_RUNTIME_REPORT: playwright-report/results.json
 
     steps:
       - name: Start MongoDB replica set
@@ -98,6 +100,10 @@ jobs:
         env:
           CI: true
         run: npm run test:e2e
+
+      - name: Run Playwright runtime summary
+        if: always()
+        run: node scripts/ci/report-playwright-runtime.mjs
 
       - name: Upload test results
         if: always()

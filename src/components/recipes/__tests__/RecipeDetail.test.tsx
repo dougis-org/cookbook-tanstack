@@ -188,11 +188,12 @@ describe("RecipeDetail", () => {
           ingredients: "Spaghetti\nEggs\nPancetta",
           instructions: "Boil water\nCook pasta\nMix sauce",
           calories: 450,
+          notes: "A classic Roman dish",
         })}
       />,
     )
 
-    for (const headingName of ["Ingredients", "Instructions", "Nutrition"]) {
+    for (const headingName of ["Ingredients", "Instructions", "Nutrition", "Notes"]) {
       expect(screen.getByRole("heading", { name: headingName })).toHaveClass(
         "print-heading-density",
         "print-heading-density-section",
@@ -200,7 +201,7 @@ describe("RecipeDetail", () => {
     }
   })
 
-  it("keeps notes as unlabeled body copy while heading density remains print-only", () => {
+  it("keeps note body copy separate from the shared print heading density classes", () => {
     render(
       <RecipeDetail
         recipe={makeRecipe({
@@ -216,9 +217,6 @@ describe("RecipeDetail", () => {
       "print-heading-density-section",
       "print-heading-density-page",
     )
-    expect(
-      screen.queryByRole("heading", { name: "Notes" }),
-    ).not.toBeInTheDocument()
 
     const ingredientsHeading = screen.getByRole("heading", { name: "Ingredients" })
     expect(ingredientsHeading).toHaveClass("text-2xl", "mb-4")
