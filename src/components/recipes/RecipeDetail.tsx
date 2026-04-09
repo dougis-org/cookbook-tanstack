@@ -160,7 +160,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 </p>
               )}
             </div>
-            {actions && <div className="shrink-0 print:hidden">{actions}</div>}
+            {actions && <div className="shrink-0 print:hidden" data-testid="actions-wrapper">{actions}</div>}
           </div>
 
           {/* Classification + taxonomy tags */}

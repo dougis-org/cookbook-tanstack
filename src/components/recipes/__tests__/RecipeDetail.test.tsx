@@ -332,17 +332,17 @@ describe("RecipeDetail", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe()}
-          actions={<button data-testid="edit-btn">Edit</button>}
+          actions={<button>Edit</button>}
         />,
       )
-      const actionsWrapper = screen.getByTestId("edit-btn").parentElement!
+      const actionsWrapper = screen.getByTestId("actions-wrapper")
       expect(actionsWrapper).toHaveClass("print:hidden")
     })
 
-    it("does not render actions content when actions prop is absent", () => {
+    it("no actions wrapper rendered when actions prop is absent", () => {
       render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
       expect(screen.getByRole("heading", { name: "Pasta" })).toBeInTheDocument()
-      expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument()
+      expect(screen.queryByTestId("actions-wrapper")).not.toBeInTheDocument()
     })
   })
 
