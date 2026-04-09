@@ -278,14 +278,14 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           })()}
 
           {/* Ingredients Section */}
-          <section className="mb-8">
+          <section className="mb-8 print:mb-4">
             <h2
               className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
               Ingredients
             </h2>
             {ingredientLines.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2 print:columns-2 print:gap-x-8 print:space-y-1">
                 {scaledIngredientLines.map((line, i) =>
                   line === "" ? (
                     <li
@@ -313,7 +313,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           </section>
 
           {/* Instructions Section */}
-          <section className="mb-8">
+          <section className="mb-8 print:mb-4">
             <h2
               className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
@@ -351,7 +351,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Notes Section */}
           {trimmedNotes && (
-            <section className="mb-8">
+            <section className="mb-8 print:mb-4">
               <h2
                 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
               >
@@ -365,7 +365,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {/* Nutrition Panel */}
           {hasNutrition && (
-            <section className="mb-8">
+            <section className="mb-8 print:mb-4">
               <h2
                 className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
               >
