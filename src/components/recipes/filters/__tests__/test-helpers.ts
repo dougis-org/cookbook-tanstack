@@ -16,6 +16,14 @@ export interface QuickFilterUpdates {
   hasImage?: boolean;
 }
 
+export interface MoreFiltersUpdates {
+  mealIds?: string[] | undefined;
+  courseIds?: string[] | undefined;
+  preparationIds?: string[] | undefined;
+  minServings?: number | undefined;
+  maxServings?: number | undefined;
+}
+
 export const MOCK_MEALS = [
   { id: "m1", name: "Breakfast" },
   { id: "m2", name: "Lunch" },
@@ -34,16 +42,16 @@ export const MOCK_PREPARATIONS = [
   { id: "p3", name: "Grilled" },
 ];
 
-export function createMockUpdateSearch() {
-  return vi.fn();
-}
-
 export function createMockFilterDropdownUpdateSearch() {
   return vi.fn<(updates: FilterDropdownUpdates) => void>();
 }
 
 export function createMockQuickFilterUpdateSearch() {
   return vi.fn<(updates: QuickFilterUpdates) => void>();
+}
+
+export function createMockMoreFiltersUpdateSearch() {
+  return vi.fn<(updates: MoreFiltersUpdates) => void>();
 }
 
 export function createDefaultFilterMoreFiltersPanelProps() {
@@ -56,7 +64,7 @@ export function createDefaultFilterMoreFiltersPanelProps() {
     allMeals: MOCK_MEALS,
     allCourses: MOCK_COURSES,
     allPreparations: MOCK_PREPARATIONS,
-    updateSearch: createMockUpdateSearch(),
+    updateSearch: createMockMoreFiltersUpdateSearch(),
   };
 }
 
