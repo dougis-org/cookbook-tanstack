@@ -1,14 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterRow1Quick } from '../FilterRow1Quick'
-import { createDefaultFilterRow1QuickProps, QUICK_FILTER_TOGGLE_CASES } from './test-helpers'
+import {
+  createDefaultFilterRow1QuickProps,
+  createMockQuickFilterUpdateSearch,
+  QUICK_FILTER_TOGGLE_CASES,
+} from './test-helpers'
 
 describe('FilterRow1Quick', () => {
-  let mockUpdateSearch: ReturnType<typeof vi.fn>
+  let mockUpdateSearch: ReturnType<typeof createMockQuickFilterUpdateSearch>
 
   beforeEach(() => {
-    mockUpdateSearch = vi.fn()
+    mockUpdateSearch = createMockQuickFilterUpdateSearch()
   })
 
   describe('visibility', () => {

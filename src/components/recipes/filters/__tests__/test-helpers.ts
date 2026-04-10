@@ -2,6 +2,20 @@ import { vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+export interface FilterDropdownUpdates {
+  classificationIds?: string[] | undefined;
+  sourceIds?: string[] | undefined;
+  mealIds?: string[] | undefined;
+  courseIds?: string[] | undefined;
+  preparationIds?: string[] | undefined;
+}
+
+export interface QuickFilterUpdates {
+  myRecipes?: boolean;
+  markedByMe?: boolean;
+  hasImage?: boolean;
+}
+
 export const MOCK_MEALS = [
   { id: "m1", name: "Breakfast" },
   { id: "m2", name: "Lunch" },
@@ -24,6 +38,14 @@ export function createMockUpdateSearch() {
   return vi.fn();
 }
 
+export function createMockFilterDropdownUpdateSearch() {
+  return vi.fn<(updates: FilterDropdownUpdates) => void>();
+}
+
+export function createMockQuickFilterUpdateSearch() {
+  return vi.fn<(updates: QuickFilterUpdates) => void>();
+}
+
 export function createDefaultFilterMoreFiltersPanelProps() {
   return {
     mealIds: undefined,
@@ -44,7 +66,7 @@ export function createDefaultFilterRow1QuickProps() {
     markedByMe: false,
     hasImage: false,
     isLoggedIn: false,
-    updateSearch: createMockUpdateSearch(),
+    updateSearch: createMockQuickFilterUpdateSearch(),
   };
 }
 
