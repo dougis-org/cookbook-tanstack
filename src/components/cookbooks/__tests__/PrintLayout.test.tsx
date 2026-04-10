@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render } from '@testing-library/react'
 import { PrintLayout } from '@/components/cookbooks/PrintLayout'
 
@@ -32,5 +32,36 @@ describe('PrintLayout', () => {
     const { container } = render(<PrintLayout><span /></PrintLayout>)
     const div = container.firstChild as HTMLElement
     expect(div.className).not.toContain('dark:')
+  })
+})
+
+describe('PrintLayout dark-class management', () => {
+  beforeEach(() => {
+    document.documentElement.classList.add('dark')
+  })
+
+  afterEach(() => {
+    document.documentElement.classList.remove('dark')
+    delete document.documentElement.dataset['printLayoutDarkOverrideCount']
+    delete document.documentElement.dataset['printLayoutDarkOverrideHadDark']
+  })
+
+  it('removes dark class from <html> on mount', () => {
+    render(<PrintLayout><span /></PrintLayout>)
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+  })
+
+  it('restores dark class on unmount', () => {
+    const { unmount } = render(<PrintLayout><span /></PrintLayout>)
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
+    unmount()
+    expect(document.documentElement.classList.contains('dark')).toBe(true)
+  })
+
+  it('does not restore dark class if it was not present before mount', () => {
+    document.documentElement.classList.remove('dark')
+    const { unmount } = render(<PrintLayout><span /></PrintLayout>)
+    unmount()
+    expect(document.documentElement.classList.contains('dark')).toBe(false)
   })
 })

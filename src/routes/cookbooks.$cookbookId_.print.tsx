@@ -91,7 +91,7 @@ export function CookbookPrintPage() {
               <RecipeDetail recipe={recipeForDetail} />
               {pageNumber !== undefined && (
                 <div
-                  className="cookbook-recipe-position-label mt-4 pt-2 border-t border-slate-700/30 text-right text-xs text-gray-500 tabular-nums"
+                  className="cookbook-recipe-position-label mt-4 pt-2 border-t border-gray-300 text-right text-xs text-gray-500 tabular-nums"
                   data-testid="cookbook-recipe-position-label"
                 >
                   #{pageNumber}
