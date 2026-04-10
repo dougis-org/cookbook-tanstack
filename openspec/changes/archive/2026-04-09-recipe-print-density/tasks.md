@@ -62,13 +62,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run pre-PR self-review before committing
-- [ ] Commit all changes to `recipe-print-density-2026-04-09` branch and push to remote
-- [ ] Open PR from `recipe-print-density-2026-04-09` to `main`; reference issue dougis-org/cookbook-tanstack#290
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address each comment, commit fixes, run full validation, push; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — fix any failures, commit, validate locally, push; repeat until all checks pass
-- [ ] Wait for the PR to merge — **never force-merge**
+- [x] Commit all changes to `recipe-print-density-2026-04-09` branch and push to remote
+- [x] Open PR from `recipe-print-density-2026-04-09` to `main`; reference issue dougis-org/cookbook-tanstack#290
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address each comment, commit fixes, run full validation, push; repeat until no unresolved comments remain
+- [x] Enable auto-merge once no blocking review comments remain
+- [x] **Monitor CI checks** — fix any failures, commit, validate locally, push; repeat until all checks pass
+- [x] Wait for the PR to merge — **never force-merge**
 
 Ownership metadata:
 
@@ -84,11 +84,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on main
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No documentation updates required (CSS/styling change only)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on main
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No documentation updates required (CSS/styling change only)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
 - [ ] Archive the change: move `openspec/changes/recipe-print-density-2026-04-09/` to `openspec/changes/archive/2026-04-09-recipe-print-density/` — stage both copy and deletion in a **single commit**
 - [ ] Confirm `openspec/changes/archive/2026-04-09-recipe-print-density/` exists and `openspec/changes/recipe-print-density-2026-04-09/` is gone
 - [ ] Commit and push the archive to main in one commit
