@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FilterDropdowns } from '../FilterDropdowns'
+import { createMockFilterDropdownUpdateSearch } from './test-helpers'
 
 const mockClassifications = [
   { id: '1', name: 'Desserts' },
@@ -43,10 +44,10 @@ const defaultProps = {
 }
 
 describe('FilterDropdowns', () => {
-  let mockUpdateSearch: ReturnType<typeof vi.fn>
+  let mockUpdateSearch: ReturnType<typeof createMockFilterDropdownUpdateSearch>
 
   beforeEach(() => {
-    mockUpdateSearch = vi.fn()
+    mockUpdateSearch = createMockFilterDropdownUpdateSearch()
   })
 
   describe('rendering', () => {
