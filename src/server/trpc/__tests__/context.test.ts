@@ -49,7 +49,18 @@ describe("createContext", () => {
       req: new Request("http://localhost/api/trpc", { headers }),
     })
 
-    expect(mockGetSession).toHaveBeenCalledWith({ headers })
+    expect(mockGetSession).toHaveBeenCalledWith({
+      headers: expect.any(Headers),
+    })
+
+    const [{ headers: passedHeaders }] = mockGetSession.mock.calls[0] as [
+      { headers: Headers },
+    ]
+
+    expect(passedHeaders.get("cookie")).toBe(
+      "better-auth.session_token=test-token",
+    )
+    expect(passedHeaders.get("x-forwarded-host")).toBe("localhost:3000")
   })
 
   it("does not include a db property on the context", async () => {
