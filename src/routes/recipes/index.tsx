@@ -1,7 +1,7 @@
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react'
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
@@ -62,11 +62,6 @@ function RecipesPage() {
   } = Route.useSearch()
 
   const { isLoggedIn, userId } = useAuth()
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const [searchValue, setSearchValue] = useState(search)
-  // Keep the controlled input in sync when the URL search param changes externally
-  // (e.g. "Clear all filters", navigating back/forward)
-  useEffect(() => { setSearchValue(search) }, [search])
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
@@ -125,29 +120,6 @@ function RecipesPage() {
     [navigate],
   )
 
-  // Debounced text search
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const debouncedSearch = useCallback(
-    (value: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      debounceRef.current = setTimeout(() => updateSearch({ search: value || undefined }), 300)
-    },
-    [updateSearch],
-  )
-  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
-
-  // Keyboard shortcut: '/' focuses the search input
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === '/' && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'TEXTAREA') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      }
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [])
-
   function clearFilters() {
     navigate({ search: (prev) => ({ search: prev.search, sort: prev.sort, page: 1, pageSize: prev.pageSize }) })
   }
@@ -190,23 +162,8 @@ function RecipesPage() {
 
   return (
     <PageLayout title="Recipes" description="Browse and discover delicious recipes">
-      {/* Search + Sort + Page-size bar */}
+      {/* Sort + Page-size bar */}
       <div className="print:hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex-1 w-full sm:max-w-md">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              ref={searchInputRef}
-              data-testid="recipe-search-input"
-              type="text"
-              placeholder="Search recipes..."
-              value={searchValue}
-              onChange={(e) => { setSearchValue(e.target.value); debouncedSearch(e.target.value) }}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
-        </div>
-
         <div className="flex items-center gap-3 flex-wrap">
           <select
             value={sort}

@@ -18,9 +18,9 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await submitRecipeForm(page, { name: recipeName });
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
 
-    // Navigate to recipe list and search
+    // Navigate to recipe list and search via header input
     await gotoAndWaitForHydration(page, "/recipes");
-    const searchInput = page.getByTestId("recipe-search-input");
+    const searchInput = page.getByTestId("header-search-input");
     await searchInput.fill(uniqueWord);
 
     // waitForURL blocks until the debounced search updates the URL query param;
@@ -33,13 +33,104 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, "/recipes");
 
-    const searchInput = page.getByTestId("recipe-search-input");
+    const searchInput = page.getByTestId("header-search-input");
     await searchInput.fill(`NoMatchXYZ${Date.now()}`);
 
     // waitForURL blocks until the debounced search updates the URL;
     // toBeVisible auto-retries until the empty state renders.
     await page.waitForURL(/search=.+/);
     await expect(page.getByText("No recipes found")).toBeVisible();
+  });
+
+  test("recipe-search-input no longer exists in DOM", async ({ page }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await expect(page.getByTestId("recipe-search-input")).toHaveCount(0);
+  });
+
+  test("header search input is visible on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await expect(page.getByTestId("header-search-input")).toBeVisible();
+  });
+
+  test("header input populates from URL on load", async ({ page }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes?search=tacos");
+    await expect(page.getByTestId("header-search-input")).toHaveValue("tacos");
+  });
+
+  test("clearing header input removes search param", async ({ page }) => {
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes?search=chicken");
+    const searchInput = page.getByTestId("header-search-input");
+    await searchInput.clear();
+    await page.waitForFunction(() => !window.location.search.includes("search="));
+    await expect(page).not.toHaveURL(/search=/);
+  });
+
+  test("cyan dot visible on desktop when search is active", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes?search=pasta");
+    // Desktop dot is the first one (inside the md:flex search container)
+    await expect(page.getByTestId("header-search-dot").first()).toBeVisible();
+  });
+
+  test("cyan dot hidden on desktop when no search", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await expect(page.getByTestId("header-search-dot")).toHaveCount(0);
+  });
+
+  test("mobile shows icon button, not input field", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await expect(page.getByTestId("header-search-input")).not.toBeVisible();
+    await expect(page.getByTestId("header-search-icon-btn")).toBeVisible();
+  });
+
+  test("tapping search icon opens overlay with focused input", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await page.getByTestId("header-search-icon-btn").click();
+    const input = page.getByTestId("header-search-input");
+    await expect(input).toBeVisible();
+    await expect(input).toBeFocused();
+  });
+
+  test("close button closes mobile overlay", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await page.getByTestId("header-search-icon-btn").click();
+    await expect(page.getByTestId("header-search-input")).toBeVisible();
+    await page.getByTestId("header-search-close-btn").click();
+    await expect(page.getByTestId("header-search-input")).not.toBeVisible();
+    // Logo should be restored
+    await expect(page.getByRole("link", { name: /cookbook/i }).first()).toBeVisible();
+  });
+
+  test("Escape key closes mobile overlay", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes");
+    await page.getByTestId("header-search-icon-btn").click();
+    await expect(page.getByTestId("header-search-input")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("header-search-input")).not.toBeVisible();
+  });
+
+  test("cyan dot visible on mobile icon when search is active", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, "/recipes?search=pasta");
+    // Mobile dot is the last one (inside the md:hidden icon button wrapper)
+    await expect(page.getByTestId("header-search-dot").last()).toBeVisible();
   });
 
   test("should change sort order and update URL", async ({ page }) => {
@@ -179,7 +270,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     await gotoAndWaitForHydration(page, "/categories");
 
     const categoryHeadings = page.getByRole("heading", { level: 3 });
-    
+
     // Wait for at least one heading to appear or timeout
     try {
       await expect(categoryHeadings.first()).toBeVisible({ timeout: 15000 });
