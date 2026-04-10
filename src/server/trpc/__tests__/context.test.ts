@@ -36,6 +36,22 @@ describe("createContext", () => {
     expect(ctx.user).toBeNull()
   })
 
+  it("passes the incoming request headers to Better Auth session lookup", async () => {
+    const { createContext } = await import("@/server/trpc/context")
+    mockGetSession.mockResolvedValue(null)
+    const headers = new Headers({
+      cookie: "better-auth.session_token=test-token",
+      "x-forwarded-host": "localhost:3000",
+    })
+
+    await createContext({
+      ...fetchOpts,
+      req: new Request("http://localhost/api/trpc", { headers }),
+    })
+
+    expect(mockGetSession).toHaveBeenCalledWith({ headers })
+  })
+
   it("does not include a db property on the context", async () => {
     const { createContext } = await import("@/server/trpc/context")
     mockGetSession.mockResolvedValue(null)
