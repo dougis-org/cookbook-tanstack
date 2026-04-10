@@ -10,6 +10,7 @@ import {
   CookbookTocList,
   CookbookEmptyState,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
+import { PrintLayout } from '@/components/cookbooks/PrintLayout'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/toc')({
   component: CookbookTocPage,
@@ -28,23 +29,25 @@ function CookbookTocPage() {
   const chapters = cookbook.chapters ?? []
 
   return (
-    <CookbookStandalonePage>
-      <CookbookPageChrome
-        cookbookId={cookbookId}
-        cookbookName={cookbook.name}
-        breadcrumbLabel="Table of Contents"
-      />
-      <CookbookPageHeader name={cookbook.name} description={cookbook.description} subtitle="Table of Contents" />
+    <PrintLayout>
+      <CookbookStandalonePage>
+        <CookbookPageChrome
+          cookbookId={cookbookId}
+          cookbookName={cookbook.name}
+          breadcrumbLabel="Table of Contents"
+        />
+        <CookbookPageHeader name={cookbook.name} description={cookbook.description} subtitle="Table of Contents" />
 
-      {recipes.length === 0 ? (
-        <CookbookEmptyState />
-      ) : (
-        <CookbookTocList recipes={recipes} chapters={chapters} />
-      )}
+        {recipes.length === 0 ? (
+          <CookbookEmptyState />
+        ) : (
+          <CookbookTocList recipes={recipes} chapters={chapters} />
+        )}
 
-      <footer className="mt-12 text-center text-gray-500 print:text-gray-400 text-sm print:mt-16">
-        {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
-      </footer>
-    </CookbookStandalonePage>
+        <footer className="mt-12 text-center text-gray-500 text-sm print:mt-16">
+          {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
+        </footer>
+      </CookbookStandalonePage>
+    </PrintLayout>
   )
 }
