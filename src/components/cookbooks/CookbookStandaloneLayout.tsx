@@ -35,9 +35,9 @@ export function RecipePageRow({
 }) {
   return (
     <li className="print:break-inside-avoid">
-      <div className="flex items-baseline gap-3 py-2 border-b border-slate-700/50">
+      <div className="flex items-baseline gap-3 py-2 border-b border-gray-200">
         {index !== undefined && <RecipeIndexNumber index={index} />}
-        <span className="text-white">
+        <span className="text-gray-900">
           {recipe.name}
         </span>
         <span className="flex-1" />
@@ -68,10 +68,10 @@ function TocRecipeItem({
       <Link
         to="/recipes/$recipeId"
         params={{ recipeId: recipe.id }}
-        className="flex items-baseline gap-3 group py-2 border-b border-slate-700/50"
+        className="flex items-baseline gap-3 group py-2 border-b border-gray-200"
       >
         <RecipeIndexNumber index={index} />
-        <span className="text-white group-hover:text-cyan-400 transition-colors">
+        <span className="text-gray-900 group-hover:text-cyan-600 transition-colors">
           {recipe.name}
         </span>
         <span className="flex-1" />
@@ -136,7 +136,7 @@ export function CookbookTocList({
       <div className="space-y-6">
         {chapterRows.map(({ chapter, rows }) => (
           <div key={chapter.id}>
-            <h2 className={`text-lg font-semibold text-white mb-2 border-b border-slate-600 pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
+            <h2 className={`text-lg font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
               {chapter.name}
             </h2>
             <ol className={TOC_LIST_CLASSES}>
@@ -194,7 +194,7 @@ export function CookbookStandalonePage({
 }) {
   const widthClass = maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-2xl'
   return (
-    <div className={pageBaseClass}>
+    <div className="min-h-screen">
       <div className={`${widthClass} print:max-w-4xl mx-auto px-6 py-10`}>{children}</div>
     </div>
   )
@@ -300,12 +300,12 @@ export function CookbookPageHeader({
   subtitle?: string
 }) {
   return (
-    <header className="mb-8 text-center border-b border-slate-700 pb-6">
-      <h1 className={`text-4xl font-bold text-white mb-2 ${PRINT_HEADING_DENSITY_PAGE}`}>{name}</h1>
+    <header className="mb-8 text-center border-b border-gray-200 pb-6">
+      <h1 className={`text-4xl font-bold text-gray-900 mb-2 ${PRINT_HEADING_DENSITY_PAGE}`}>{name}</h1>
       {description && (
-        <p className="text-gray-300">{description}</p>
+        <p className="text-gray-600">{description}</p>
       )}
-      <p className="text-gray-400 text-sm mt-2">
+      <p className="text-gray-500 text-sm mt-2">
         {subtitle}
       </p>
     </header>
@@ -353,7 +353,7 @@ export function CookbookAlphaIndex({
 
   return (
     <div className="mt-12 print:mt-0 print:break-before-page">
-      <h2 className={`text-2xl font-bold text-white border-b border-slate-700 pb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
+      <h2 className={`text-2xl font-bold text-gray-900 border-b border-gray-200 pb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
         Alphabetical Index
       </h2>
       <ol className={TOC_LIST_CLASSES}>
@@ -361,7 +361,7 @@ export function CookbookAlphaIndex({
           item.type === 'letter' ? (
             <li
               key={item.letter}
-              className="font-bold text-white print:break-after-avoid pt-4 first:pt-0"
+              className="font-bold text-gray-900 print:break-after-avoid pt-4 first:pt-0"
             >
               {item.letter}
             </li>
