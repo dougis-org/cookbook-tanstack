@@ -25,11 +25,28 @@ export default function Header() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const locationSearch = useRouterState({ select: (s) => s.location.search })
 
-  // Sync header input from URL ?search= param whenever route changes
+  // Sync header input from URL ?search= param whenever route changes.
+  // Cancel any pending debounce first to prevent stale navigations.
+  // Preserve trailing spaces mid-typing: only update if trimmed values differ.
   useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
     const search = (locationSearch as Record<string, unknown>).search
-    setInputValue(typeof search === 'string' ? search : '')
+    const urlValue = typeof search === 'string' ? search : ''
+    setInputValue((prev) => (urlValue === prev.trim() ? prev : urlValue))
   }, [locationSearch])
+
+  // Cancel debounce on unmount to prevent navigation on an unmounted component
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+    }
+  }, [])
 
   async function handleSignOut() {
     try {
@@ -46,7 +63,7 @@ export default function Header() {
     setInputValue(value)
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      navigate({ to: '/recipes', search: (prev) => ({ ...prev, search: value || undefined }) })
+      navigate({ to: '/recipes', search: (prev) => ({ ...prev, page: undefined, search: value.trim() || undefined }) })
     }, 300)
   }
 
@@ -99,17 +116,16 @@ export default function Header() {
             {/* Desktop search: always visible on md+ */}
             <div className="hidden md:flex items-center flex-1 max-w-sm mx-4">
               <div className="relative w-full">
-                <div className="relative">
-                  <Search
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                    size={16}
-                  />
-                  {inputValue && (
-                    <span
-                      data-testid="header-search-dot"
-                      className="absolute top-0 right-0 w-2 h-2 rounded-full bg-cyan-400"
-                    />
-                  )}
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
+                  <div className="relative">
+                    <Search className="text-gray-400" size={16} />
+                    {inputValue.trim() && (
+                      <span
+                        data-testid="header-search-dot"
+                        className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-400"
+                      />
+                    )}
+                  </div>
                 </div>
                 <input
                   data-testid="header-search-input"
@@ -133,7 +149,7 @@ export default function Header() {
                 >
                   <Search size={20} />
                 </button>
-                {inputValue && (
+                {inputValue.trim() && (
                   <span
                     data-testid="header-search-dot"
                     className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-400 pointer-events-none"

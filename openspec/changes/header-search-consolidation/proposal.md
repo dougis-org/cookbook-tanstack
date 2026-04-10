@@ -17,7 +17,7 @@
 - Edge cases considered:
   - User navigates to `/recipes?search=foo` via external link — header input should populate with "foo"
   - User clears the search input — URL search param is removed, not set to empty string
-  - User presses Escape while overlay is open — overlay closes, search is cleared
+  - User presses Escape while overlay is open — overlay closes, active search term/URL is preserved
   - User is not on `/recipes` when searching — navigation to `/recipes` occurs with the search param
 
 ## Scope
