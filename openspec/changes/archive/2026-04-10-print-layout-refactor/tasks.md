@@ -62,8 +62,8 @@
 - [x] `npx tsc --noEmit` — no TypeScript errors
 - [x] `npm run build` — build succeeds
 - [x] `grep -rn "print:text-\|print:bg-\|print:border-" src/components/cookbooks/CookbookStandaloneLayout.tsx` returns zero matches
-- [ ] Visual check: navigate to `/cookbooks/:id/toc` and `/cookbooks/:id/print` — pages render with white background on screen
-- [ ] Visual check: trigger browser print preview on `/cookbooks/:id/print` — output is black text on white background
+- [x] Visual check: navigate to `/cookbooks/:id/toc` and `/cookbooks/:id/print` — pages render with white background on screen
+- [x] Visual check: trigger browser print preview on `/cookbooks/:id/print` — output is black text on white background
 
 ## Remote push validation
 
@@ -76,13 +76,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Commit all changes to `feat/print-layout-refactor` and push to remote
-- [ ] Open PR from `feat/print-layout-refactor` to `main`
-- [ ] Enable auto-merge after PR is opened
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address each comment, commit fixes, follow Remote push validation, push; repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — diagnose and fix any failure, commit, follow Remote push validation, push; repeat until all checks pass
-- [ ] Wait for the PR to merge — never force-merge; if a human force-merges, continue to Post-Merge
+- [x] Commit all changes to `feat/print-layout-refactor` and push to remote
+- [x] Open PR from `feat/print-layout-refactor` to `main`
+- [x] Enable auto-merge after PR is opened
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address each comment, commit fixes, follow Remote push validation, push; repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — diagnose and fix any failure, commit, follow Remote push validation, push; repeat until all checks pass
+- [x] Wait for the PR to merge — never force-merge; if a human force-merges, continue to Post-Merge
 
 Ownership metadata:
 
@@ -98,12 +98,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No documentation updates required (CLAUDE.md print conventions are unchanged; `print:hidden` rule still applies to chrome elements)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
-- [ ] Archive the change: move `openspec/changes/print-layout-refactor-2026-04-10/` to `openspec/changes/archive/2026-04-10-print-layout-refactor/` — stage both the new location and the deletion of the old in **a single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-10-print-layout-refactor/` exists and `openspec/changes/print-layout-refactor-2026-04-10/` is gone
-- [ ] Push the archive commit to `main`
-- [ ] Prune merged branch: `git fetch --prune` and `git branch -d feat/print-layout-refactor`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No documentation updates required (CLAUDE.md print conventions are unchanged; `print:hidden` rule still applies to chrome elements)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
+- [x] Archive the change: move `openspec/changes/print-layout-refactor-2026-04-10/` to `openspec/changes/archive/2026-04-10-print-layout-refactor/` — stage both the new location and the deletion of the old in **a single commit**
+- [x] Confirm `openspec/changes/archive/2026-04-10-print-layout-refactor/` exists and `openspec/changes/print-layout-refactor-2026-04-10/` is gone
+- [x] Push the archive commit to `main`
+- [x] Prune merged branch: `git fetch --prune` and `git branch -d feat/print-layout-refactor`
