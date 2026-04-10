@@ -56,11 +56,11 @@ The system SHALL render print-surface components (`CookbookStandalonePage`, `Coo
 
 The system SHALL render `CookbookStandalonePage` without `print:bg-white` or `print:text-black` — these are superseded by `PrintLayout`.
 
-#### Scenario: CookbookStandalonePage base class unchanged
+#### Scenario: CookbookStandalonePage no longer applies the dark gradient
 
 - **Given** `CookbookStandalonePage` renders inside `PrintLayout`
 - **When** the component is inspected
-- **Then** its `className` contains `min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900` (display gradient) and does NOT contain `print:bg-white` or `print:text-black`
+- **Then** its `className` contains `min-h-screen` and does NOT contain `bg-gradient-to-b`, `from-slate-900`, `via-slate-800`, `to-slate-900`, `print:bg-white`, or `print:text-black`
 
 ## REMOVED Requirements
 

@@ -1,4 +1,9 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect, useLayoutEffect } from 'react'
+
+// useLayoutEffect on the client (runs before paint, preventing a dark flash on
+// client-side navigation); falls back to useEffect on the server where
+// useLayoutEffect is a no-op and would produce an SSR warning.
+const useDarkOverrideEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect
 
 // Removes the `dark` class from <html> while mounted so that Tailwind `dark:`
 // variants inside this subtree (e.g. RecipeDetail) do not activate from the
@@ -10,7 +15,7 @@ import { type ReactNode, useEffect } from 'react'
 // element (e.g. `style={{ '--color-background': 'white', '--color-text': '...' }}`).
 // That will keep print output fixed regardless of the active theme.
 export function PrintLayout({ children }: { children: ReactNode }) {
-  useEffect(() => {
+  useDarkOverrideEffect(() => {
     const root = document.documentElement
     const countKey = 'printLayoutDarkOverrideCount'
     const hadDarkKey = 'printLayoutDarkOverrideHadDark'

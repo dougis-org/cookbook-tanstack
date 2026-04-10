@@ -22,14 +22,15 @@
 
 ## Decisions
 
-### Decision 1: PrintLayout as a component-level light-context boundary
+### Decision 1: PrintLayout as a print-route light-mode boundary with document-level dark-mode override
 
-- **Chosen:** A `PrintLayout` React component (`src/components/cookbooks/PrintLayout.tsx`) that wraps its children in `<div className="bg-white text-gray-900">`. Both print routes wrap their top-level content in `<PrintLayout>`.
+- **Chosen:** A `PrintLayout` React component (`src/components/cookbooks/PrintLayout.tsx`) that wraps its children in `<div className="bg-white text-gray-900">` and, while mounted, removes the `dark` class from `<html>` (using `useLayoutEffect` to avoid a dark flash before paint, with an isomorphic fallback for SSR).
 - **Alternatives considered:**
   - Separate print stylesheet (Option 1): moves pairing to CSS; fragile selector coupling, no structural improvement.
   - CSS `@layer print` (Option 3): same structural coupling as Option 1.
-- **Rationale:** Wrapping in a light-context div shadows the `<html class="dark">` cascade for all descendants that don't have explicit `dark:` overrides. Components inside PrintLayout can use plain light-mode Tailwind without needing `print:` or `dark:` variants.
-- **Trade-offs:** Print routes now appear light on screen (print-preview aesthetic). Accepted — these are print-oriented pages.
+  - Subtree-only `bg-white` wrapper without class removal: insufficient — `dark:` variants on descendants still activate from `<html class="dark">`.
+- **Rationale:** The wrapper div provides light visual defaults; removing `<html class="dark">` while mounted prevents root-level `dark:` variants (e.g. in `RecipeDetail`) from activating anywhere in the document while a print route is active.
+- **Trade-offs:** The dark-mode override is document-level, not subtree-level, so shared chrome (e.g. `Header`) also loses dark-mode styling while a print route is mounted. Accepted — these are print-oriented pages and intentionally present a consistent light print-preview. Loading/not-found states (which return before `PrintLayout` mounts) remain dark; this is intentional since they are transient and shared UI, not print-surface content.
 
 ### Decision 2: Hardcoded light values (no CSS variable scoping yet)
 
