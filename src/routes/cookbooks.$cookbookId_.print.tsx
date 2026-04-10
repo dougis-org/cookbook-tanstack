@@ -13,6 +13,7 @@ import {
   CookbookEmptyState,
   CookbookAlphaIndex,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
+import { PrintLayout } from '@/components/cookbooks/PrintLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 
@@ -54,52 +55,54 @@ export function CookbookPrintPage() {
   const pageMap = buildPageMap(orderedRecipes)
 
   return (
-    <CookbookStandalonePage maxWidth="4xl">
-      <CookbookPageChrome
-        cookbookId={cookbookId}
-        cookbookName={name}
-        breadcrumbLabel="Print View"
-      />
-      <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
+    <PrintLayout>
+      <CookbookStandalonePage maxWidth="4xl">
+        <CookbookPageChrome
+          cookbookId={cookbookId}
+          cookbookName={name}
+          breadcrumbLabel="Print View"
+        />
+        <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
 
-      {recipes.length === 0 ? (
-        <CookbookEmptyState />
-      ) : (
-        <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
-      )}
+        {recipes.length === 0 ? (
+          <CookbookEmptyState />
+        ) : (
+          <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
+        )}
 
-      {orderedRecipes.map((recipe) => {
-        const recipeForDetail: Recipe & {
-          meals?: TaxonomyItem[]
-          courses?: TaxonomyItem[]
-          preparations?: TaxonomyItem[]
-          classificationName?: string | null
-          sourceName?: string | null
-          sourceUrl?: string | null
-        } = {
-          ...recipe,
-          imageUrl: null,
-          marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
-        }
+        {orderedRecipes.map((recipe) => {
+          const recipeForDetail: Recipe & {
+            meals?: TaxonomyItem[]
+            courses?: TaxonomyItem[]
+            preparations?: TaxonomyItem[]
+            classificationName?: string | null
+            sourceName?: string | null
+            sourceUrl?: string | null
+          } = {
+            ...recipe,
+            imageUrl: null,
+            marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
+          }
 
-        const pageNumber = pageMap.get(recipe.id)
+          const pageNumber = pageMap.get(recipe.id)
 
-        return (
-          <div key={recipe.id} className="cookbook-recipe-section">
-            <RecipeDetail recipe={recipeForDetail} />
-            {pageNumber !== undefined && (
-              <div
-                className="cookbook-recipe-position-label mt-4 pt-2 border-t border-slate-700/30 print:border-gray-200 text-right text-xs text-gray-500 print:text-gray-600 tabular-nums"
-                data-testid="cookbook-recipe-position-label"
-              >
-                #{pageNumber}
-              </div>
-            )}
-          </div>
-        )
-      })}
+          return (
+            <div key={recipe.id} className="cookbook-recipe-section">
+              <RecipeDetail recipe={recipeForDetail} />
+              {pageNumber !== undefined && (
+                <div
+                  className="cookbook-recipe-position-label mt-4 pt-2 border-t border-gray-300 text-right text-xs text-gray-500 tabular-nums"
+                  data-testid="cookbook-recipe-position-label"
+                >
+                  #{pageNumber}
+                </div>
+              )}
+            </div>
+          )
+        })}
 
-      {recipes.length > 0 && <CookbookAlphaIndex recipes={recipes} chapters={chapters ?? []} />}
-    </CookbookStandalonePage>
+        {recipes.length > 0 && <CookbookAlphaIndex recipes={recipes} chapters={chapters ?? []} />}
+      </CookbookStandalonePage>
+    </PrintLayout>
   )
 }
