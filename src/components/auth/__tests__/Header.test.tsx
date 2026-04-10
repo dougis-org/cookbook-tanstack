@@ -8,6 +8,8 @@ vi.mock("@tanstack/react-router", () => ({
     <a href={to}>{children}</a>
   ),
   useNavigate: () => mockNavigate,
+  useRouterState: ({ select }: { select: (s: unknown) => unknown }) =>
+    select({ location: { search: {} } }),
 }))
 
 const mockUseAuth = vi.fn()
