@@ -1,5 +1,38 @@
 @import "tailwindcss";
+
+/* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.
+   Remaining dark: usages (badge tints, draft banner) depend on this. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+html.dark {
+  --theme-bg: theme(colors.slate.900);
+  --theme-surface: theme(colors.slate.800);
+  --theme-surface-raised: theme(colors.gray.800);
+  --theme-surface-hover: theme(colors.gray.700);
+  --theme-border: theme(colors.slate.700);
+  --theme-border-muted: theme(colors.gray.700);
+  --theme-fg: theme(colors.white);
+  --theme-fg-muted: theme(colors.gray.300);
+  --theme-fg-subtle: theme(colors.gray.400);
+  --theme-accent: theme(colors.cyan.400);
+  --theme-accent-hover: theme(colors.cyan.500);
+  --theme-accent-emphasis: theme(colors.cyan.600);
+}
+
+html.light {
+  --theme-bg: theme(colors.gray.50);
+  --theme-surface: theme(colors.white);
+  --theme-surface-raised: theme(colors.gray.100);
+  --theme-surface-hover: theme(colors.gray.200);
+  --theme-border: theme(colors.gray.200);
+  --theme-border-muted: theme(colors.gray.100);
+  --theme-fg: theme(colors.gray.900);
+  --theme-fg-muted: theme(colors.gray.600);
+  --theme-fg-subtle: theme(colors.gray.400);
+  --theme-accent: theme(colors.cyan.600);
+  --theme-accent-hover: theme(colors.cyan.700);
+  --theme-accent-emphasis: theme(colors.cyan.800);
+}
 
 body {
   @apply m-0;

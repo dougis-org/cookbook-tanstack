@@ -278,7 +278,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     <div className="max-w-4xl mx-auto">
       {showDraftPrompt && (
         <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg flex items-center justify-between">
-          <div className="text-cyan-700 dark:text-cyan-300">
+          <div className="text-cyan-700 dark:text-cyan-300"> {/* dark: retained — draft banner accent */}
             <span className="font-semibold">You have an unsaved draft.</span> Would you like to restore it?
           </div>
           <div className="flex gap-2">
@@ -293,7 +293,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 purgeDraft()
                 setShowDraftPrompt(false)
               }}
-              className="px-4 py-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-sm font-semibold rounded transition-colors"
+              className="px-4 py-1 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] text-sm font-semibold rounded transition-colors"
             >
               Discard
             </button>
@@ -301,9 +301,9 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-8">
+      <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg p-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-[var(--theme-fg)]">
             {isEdit ? "Edit Recipe" : "Create New Recipe"}
           </h2>
           <StatusIndicator status={autoSaveStatus} onRetry={isEdit ? retryAutoSave : undefined} />
@@ -312,7 +312,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Recipe Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Recipe Name
             </label>
             <input
@@ -320,7 +320,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               type="text"
               placeholder="Enter recipe name"
               {...register("name")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
@@ -329,13 +329,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
           {/* Classification */}
           <div>
-            <label htmlFor="classificationId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="classificationId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Category
             </label>
             <select
               id="classificationId"
               {...register("classificationId")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             >
               <option value="">Select a category</option>
               {classifications?.map((c) => (
@@ -346,7 +346,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
           {/* Source */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Source (cookbook, website, etc.)
             </label>
             <SourcePickerDropdown
@@ -361,7 +361,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
           {/* Notes */}
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="notes" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Notes
             </label>
             <textarea
@@ -369,14 +369,14 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={3}
               placeholder="Add notes about this recipe"
               {...register("notes")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             />
           </div>
 
           {/* Timings & Servings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="prepTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="prepTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                 Prep Time (minutes)
               </label>
               <input
@@ -384,11 +384,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="30"
                 {...register("prepTime")}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
             <div>
-              <label htmlFor="cookTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="cookTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                 Cook Time (minutes)
               </label>
               <input
@@ -396,11 +396,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="45"
                 {...register("cookTime")}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
             <div>
-              <label htmlFor="servings" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="servings" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                 Servings
               </label>
               <input
@@ -408,20 +408,20 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="4"
                 {...register("servings")}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
           </div>
 
           {/* Difficulty */}
           <div>
-            <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="difficulty" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Difficulty
             </label>
             <select
               id="difficulty"
               {...register("difficulty")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             >
               <option value="">Select difficulty</option>
               <option value="easy">Easy</option>
@@ -461,16 +461,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="isPublic"
               type="checkbox"
               {...register("isPublic")}
-              className="w-4 h-4 text-cyan-500 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 dark:bg-gray-700 dark:border-gray-600"
+              className="w-4 h-4 text-cyan-500 bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-cyan-500"
             />
-            <label htmlFor="isPublic" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="isPublic" className="text-sm font-medium text-[var(--theme-fg-muted)]">
               Public recipe (visible to everyone)
             </label>
           </div>
 
           {/* Ingredients */}
           <div>
-            <label htmlFor="ingredients" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="ingredients" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Ingredients
             </label>
             <textarea
@@ -478,13 +478,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={8}
               placeholder="Enter ingredients, one per line"
               {...register("ingredients")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white font-mono text-sm"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
           </div>
 
           {/* Instructions */}
           <div>
-            <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="instructions" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Instructions
             </label>
             <textarea
@@ -492,16 +492,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={8}
               placeholder="Enter instructions, one step per line"
               {...register("instructions")}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white font-mono text-sm"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
           </div>
 
           {/* Nutrition */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Nutrition (per serving)</h3>
+            <h3 className="text-lg font-semibold text-[var(--theme-fg)] mb-3">Nutrition (per serving)</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div>
-                <label htmlFor="calories" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="calories" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                   Calories
                 </label>
                 <input
@@ -509,11 +509,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("calories")}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
-                <label htmlFor="fat" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="fat" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                   Fat (g)
                 </label>
                 <input
@@ -521,11 +521,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("fat")}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
-                <label htmlFor="cholesterol" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="cholesterol" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                   Cholesterol (mg)
                 </label>
                 <input
@@ -533,11 +533,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("cholesterol")}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
-                <label htmlFor="sodium" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="sodium" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                   Sodium (mg)
                 </label>
                 <input
@@ -545,11 +545,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("sodium")}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
-                <label htmlFor="protein" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="protein" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
                   Protein (g)
                 </label>
                 <input
@@ -557,7 +557,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("protein")}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
             </div>
@@ -585,7 +585,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <button
               type="button"
               onClick={isEdit ? handleRevert : handleCancel}
-              className="px-6 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
             >
               {isEdit ? "Revert" : "Cancel"}
             </button>

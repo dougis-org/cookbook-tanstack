@@ -38,7 +38,7 @@ function CardBody({
       <CardImage
         src={recipe.imageUrl}
         alt={recipe.name}
-        className="h-32 w-full bg-gray-200 dark:bg-gray-700 overflow-hidden"
+        className="h-32 w-full bg-[var(--theme-surface-hover)] overflow-hidden"
       />
       <div className="flex items-start gap-2 p-3">
         {dragHandle}
@@ -47,7 +47,7 @@ function CardBody({
           <Link
             to="/recipes/$recipeId"
             params={{ recipeId: recipe.id }}
-            className="font-medium text-gray-900 dark:text-white hover:text-cyan-400 transition-colors truncate block"
+            className="font-medium text-[var(--theme-fg)] hover:text-cyan-400 transition-colors truncate block"
           >
             {recipe.name}
           </Link>
@@ -86,7 +86,7 @@ export function SortableRecipeCard({
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
-      className="relative group bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden"
+      className="relative group bg-[var(--theme-surface)] rounded-lg shadow-sm overflow-hidden"
       data-testid="recipe-card"
     >
       <button
@@ -109,7 +109,7 @@ export function StaticRecipeCard({
   index: number
 }) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm overflow-hidden">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-sm overflow-hidden">
       <CardBody recipe={recipe} index={index} />
     </div>
   )

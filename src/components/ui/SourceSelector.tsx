@@ -72,9 +72,9 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
   return (
     <div ref={containerRef} className="relative">
       {value && selectedName ? (
-        <div className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-900">
-          <span className="flex-1 text-white">{selectedName}</span>
-          <button type="button" onClick={clearSource} className="text-gray-400 hover:text-white">
+        <div className="flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-bg)]">
+          <span className="flex-1 text-[var(--theme-fg)]">{selectedName}</span>
+          <button type="button" onClick={clearSource} className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg)]">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -94,18 +94,18 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
             setOpen(true)
           }}
           onFocus={() => setOpen(true)}
-          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+          className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
         />
       )}
 
       {showDropdown && (
-        <ul className="absolute z-10 mt-1 w-full bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <ul className="absolute z-10 mt-1 w-full bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto">
           {results.map((source) => (
             <li key={source.id}>
               <button
                 type="button"
                 onMouseDown={() => selectSource(source.id, source.name)}
-                className="w-full text-left px-4 py-2 text-sm text-white hover:bg-slate-700 transition-colors"
+                className="w-full text-left px-4 py-2 text-sm text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)] transition-colors"
               >
                 {source.name}
                 {source.url && (
@@ -120,7 +120,7 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
                 type="button"
                 disabled={createMutation.isPending}
                 onMouseDown={() => createMutation.mutate({ name: trimmedInput })}
-                className="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-slate-700 transition-colors disabled:opacity-50"
+                className="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
               >
                 {createMutation.isPending ? "Creating…" : `Create "${trimmedInput}"`}
               </button>

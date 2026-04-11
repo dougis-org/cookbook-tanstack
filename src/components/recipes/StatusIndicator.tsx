@@ -14,7 +14,7 @@ export default function StatusIndicator({ status, onRetry }: StatusIndicatorProp
       {status === "saving" && (
         <>
           <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
-          <span className="text-gray-500 dark:text-gray-400">Saving...</span>
+          <span className="text-[var(--theme-fg-subtle)]">Saving...</span>
         </>
       )}
       {status === "saved" && (

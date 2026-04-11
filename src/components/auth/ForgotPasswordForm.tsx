@@ -37,7 +37,7 @@ export default function ForgotPasswordForm() {
   if (isSubmitted) {
     return (
       <div className="text-center space-y-4">
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-[var(--theme-fg-muted)]">
           If an account with that email exists, we&apos;ve sent you a password reset link.
         </p>
         <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
@@ -50,12 +50,12 @@ export default function ForgotPasswordForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <FormError message={error} />
-      <p className="text-gray-500 dark:text-gray-400 text-sm">
+      <p className="text-[var(--theme-fg-subtle)] text-sm">
         Enter your email address and we&apos;ll send you a link to reset your password.
       </p>
       <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldError} />
       <FormSubmitButton isLoading={isLoading} label="Send Reset Link" loadingLabel="Sending..." />
-      <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
+      <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
         <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Back to sign in</Link>
       </p>
     </form>

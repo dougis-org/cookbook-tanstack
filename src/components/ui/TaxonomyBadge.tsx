@@ -1,5 +1,6 @@
 type BadgeVariant = 'meal' | 'course' | 'preparation'
 
+// dark: retained — categorical badge colours (exempt from theme token migration per spec)
 const variantStyles: Record<BadgeVariant, string> = {
   meal: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30',
   course: 'bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/30',
