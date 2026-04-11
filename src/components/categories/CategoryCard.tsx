@@ -6,17 +6,17 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
       <div className="p-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        <h3 className="text-xl font-semibold text-[var(--theme-fg)] mb-2">
           {category.name}
         </h3>
         {category.description && (
-          <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+          <p className="text-[var(--theme-fg-muted)] text-sm mb-3">
             {category.description}
           </p>
         )}
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-[var(--theme-fg-subtle)]">
           {category.recipeCount} recipes
         </p>
       </div>

@@ -14,19 +14,19 @@ export default function StatusIndicator({ status, onRetry }: StatusIndicatorProp
       {status === "saving" && (
         <>
           <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
-          <span className="text-gray-500 dark:text-gray-400">Saving...</span>
+          <span className="text-[var(--theme-fg-subtle)]">Saving...</span>
         </>
       )}
       {status === "saved" && (
         <>
           <Check className="h-4 w-4 text-green-500" />
-          <span className="text-green-600 dark:text-green-400 font-medium">Saved</span>
+          <span className="text-green-600 font-medium">Saved</span>
         </>
       )}
       {status === "error" && (
         <>
           <AlertCircle className="h-4 w-4 text-red-500" />
-          <span className="text-red-600 dark:text-red-400 font-medium">Failed to save</span>
+          <span className="text-red-600 font-medium">Failed to save</span>
           {onRetry && (
             <button
               type="button"

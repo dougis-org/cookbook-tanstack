@@ -687,7 +687,7 @@ function SortableChapterRow({ chapter, recipeCount }: { chapter: Chapter; recipe
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}
-      className="flex items-center gap-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm p-3"
+      className="flex items-center gap-3 bg-[var(--theme-surface)] rounded-lg shadow-sm p-3"
     >
       <button
         {...attributes}

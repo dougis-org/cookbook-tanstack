@@ -15,12 +15,14 @@ import {
 } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
+import { useTheme, THEMES } from '@/contexts/ThemeContext'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const { session, isPending } = useAuth()
+  const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const locationSearch = useRouterState({ select: (s) => s.location.search })
@@ -69,12 +71,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="site-header print:hidden p-4 flex items-center justify-between bg-slate-100 dark:bg-gray-800 text-gray-900 dark:text-white shadow-lg">
+      <header className="site-header print:hidden p-4 flex items-center justify-between bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] shadow-lg">
         {mobileSearchOpen ? (
           <div className="flex items-center w-full gap-2">
             <div className="relative flex-1">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--theme-fg-subtle)] pointer-events-none"
                 size={16}
               />
               <input
@@ -84,7 +86,7 @@ export default function Header() {
                 value={inputValue}
                 onChange={(e) => debouncedNavigate(e.target.value)}
                 placeholder="Search recipes…"
-                className="w-full pl-9 pr-4 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 onKeyDown={(e) => { if (e.key === 'Escape') setMobileSearchOpen(false) }}
               />
             </div>
@@ -92,7 +94,7 @@ export default function Header() {
               data-testid="header-search-close-btn"
               aria-label="Close search"
               onClick={() => setMobileSearchOpen(false)}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-[var(--theme-surface-hover)] rounded-lg transition-colors"
             >
               <X size={20} />
             </button>
@@ -102,7 +104,7 @@ export default function Header() {
             <div className="flex items-center">
               <button
                 onClick={() => setIsOpen(true)}
-                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--theme-surface-hover)] rounded-lg transition-colors"
                 aria-label="Open menu"
               >
                 <Menu size={24} />
@@ -118,7 +120,7 @@ export default function Header() {
               <div className="relative w-full">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center">
                   <div className="relative">
-                    <Search className="text-gray-400" size={16} />
+                    <Search className="text-[var(--theme-fg-subtle)]" size={16} />
                     {inputValue.trim() && (
                       <span
                         data-testid="header-search-dot"
@@ -133,7 +135,7 @@ export default function Header() {
                   value={inputValue}
                   onChange={(e) => debouncedNavigate(e.target.value)}
                   placeholder="Search recipes…"
-                  className="w-full pl-9 pr-4 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
             </div>
@@ -145,7 +147,7 @@ export default function Header() {
                   data-testid="header-search-icon-btn"
                   aria-label="Search recipes"
                   onClick={() => setMobileSearchOpen(true)}
-                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-[var(--theme-surface-hover)] rounded-lg transition-colors"
                 >
                   <Search size={20} />
                 </button>
@@ -161,14 +163,14 @@ export default function Header() {
                 <>
                   <Link
                     to="/auth/profile"
-                    className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    className="flex items-center gap-2 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
                   >
                     <User size={18} />
                     <span className="hidden sm:inline">{session.user.name || session.user.email}</span>
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-1.5 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--theme-surface-hover)]"
                   >
                     <LogOut size={16} />
                     <span className="hidden sm:inline">Logout</span>
@@ -178,7 +180,7 @@ export default function Header() {
                 <>
                   <Link
                     to="/auth/login"
-                    className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="flex items-center gap-1.5 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--theme-surface-hover)]"
                   >
                     <LogIn size={16} />
                     <span className="hidden sm:inline">Login</span>
@@ -198,18 +200,18 @@ export default function Header() {
       </header>
 
       <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 h-full w-80 bg-[var(--theme-bg)] text-[var(--theme-fg)] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--theme-border)]">
           <div className="flex items-center gap-3">
             <ChefHat className="w-6 h-6 text-cyan-400" />
             <h2 className="text-xl font-bold">CookBook</h2>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-[var(--theme-surface-hover)] rounded-lg transition-colors"
             aria-label="Close menu"
           >
             <X size={24} />
@@ -220,7 +222,7 @@ export default function Header() {
           <Link
             to="/"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -233,7 +235,7 @@ export default function Header() {
           <Link
             to="/recipes"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -246,7 +248,7 @@ export default function Header() {
           <Link
             to="/categories"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -259,7 +261,7 @@ export default function Header() {
           <Link
             to="/cookbooks"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -272,7 +274,7 @@ export default function Header() {
           <Link
             to="/recipes/new"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -285,7 +287,7 @@ export default function Header() {
           <Link
             to="/import"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors mb-2"
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
                 'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
@@ -295,6 +297,28 @@ export default function Header() {
             <span className="font-medium">Import Recipe</span>
           </Link>
         </nav>
+
+        <div className="border-t border-[var(--theme-border)] p-4">
+          <p className="text-xs font-medium text-[var(--theme-fg-subtle)] mb-2 uppercase tracking-wider">
+            Theme
+          </p>
+          <div className="flex gap-2">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                aria-pressed={theme === t.id}
+                className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                  theme === t.id
+                    ? 'bg-[var(--theme-accent)] text-[var(--theme-bg)]'
+                    : 'bg-[var(--theme-surface-hover)] text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)]'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </aside>
     </>
   )

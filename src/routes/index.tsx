@@ -49,10 +49,10 @@ function HomePage() {
               </span>
             </h1>
           </div>
-          <p className="text-2xl md:text-3xl text-gray-600 dark:text-gray-300 mb-4 font-light">
+          <p className="text-2xl md:text-3xl text-[var(--theme-fg-muted)] mb-4 font-light">
             Your Personal Recipe Management System
           </p>
-          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto mb-8">
+          <p className="text-lg text-[var(--theme-fg-subtle)] max-w-3xl mx-auto mb-8">
             Discover, create, and organize your favorite recipes. Built with TanStack Start
             for a modern, full-stack experience.
           </p>
@@ -65,7 +65,7 @@ function HomePage() {
             </Link>
             <Link
               to="/recipes/new"
-              className="px-8 py-3 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
+              className="px-8 py-3 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
             >
               Create Recipe
             </Link>
@@ -74,7 +74,7 @@ function HomePage() {
       </section>
 
       <section className="py-16 px-6 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
+        <h2 className="text-3xl font-bold text-[var(--theme-fg)] text-center mb-12">
           Features
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -82,13 +82,13 @@ function HomePage() {
             <Link
               key={index}
               to={feature.link}
-              className="bg-white dark:bg-slate-800/50 backdrop-blur-sm border border-gray-200 dark:border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
+              className="bg-[var(--theme-surface)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
             >
               <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              <h3 className="text-xl font-semibold text-[var(--theme-fg)] mb-3">
                 {feature.title}
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+              <p className="text-[var(--theme-fg-subtle)] leading-relaxed">
                 {feature.description}
               </p>
             </Link>

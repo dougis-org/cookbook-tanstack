@@ -12,8 +12,8 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
   return (
-    <div data-testid="recipe-card" className="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-gray-200 dark:bg-gray-700" data-testid="recipe-card-image" />
+    <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+      <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-[var(--theme-surface-hover)]" data-testid="recipe-card-image" />
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
@@ -25,7 +25,7 @@ export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
                 />
               </div>
             )}
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-xl font-semibold text-[var(--theme-fg)]">
               {recipe.name}
             </h3>
           </div>
@@ -39,11 +39,11 @@ export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
           )}
         </div>
         {recipe.notes && (
-          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
+          <p className="text-[var(--theme-fg-muted)] text-sm line-clamp-2 mb-3">
             {recipe.notes}
           </p>
         )}
-        <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex justify-between items-center text-sm text-[var(--theme-fg-subtle)]">
           <div className="flex gap-3">
             {recipe.prepTime && (
               <span>Prep: {recipe.prepTime} min</span>
@@ -53,7 +53,7 @@ export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
             )}
           </div>
           {recipe.difficulty && (
-            <span className="capitalize px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+            <span className="capitalize px-2 py-1 bg-[var(--theme-surface-hover)] rounded">
               {recipe.difficulty}
             </span>
           )}
