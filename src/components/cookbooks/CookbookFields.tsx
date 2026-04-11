@@ -28,7 +28,7 @@ export default function CookbookFields({
   return (
     <>
       <div>
-        <label htmlFor={nameId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label htmlFor={nameId} className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">
           Name <span className="text-red-400">*</span>
         </label>
         <input
@@ -42,7 +42,7 @@ export default function CookbookFields({
         />
       </div>
       <div>
-        <label htmlFor={descId} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+        <label htmlFor={descId} className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">Description</label>
         <textarea
           id={descId}
           value={description}
@@ -61,7 +61,7 @@ export default function CookbookFields({
           onChange={(e) => onIsPublicChange(e.target.checked)}
           className="w-4 h-4 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
         />
-        <label htmlFor={checkboxId} className="text-sm text-gray-700 dark:text-gray-300">
+        <label htmlFor={checkboxId} className="text-sm text-[var(--theme-fg-muted)]">
           Public (visible to everyone)
         </label>
       </div>

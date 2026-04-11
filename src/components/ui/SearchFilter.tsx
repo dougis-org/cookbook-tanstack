@@ -5,23 +5,28 @@ interface SearchFilterProps {
   onFiltersChange: (filters: RecipeFilters) => void
 }
 
+const inputClass =
+  'w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]'
+
+const labelClass = 'block text-sm font-medium text-[var(--theme-fg-muted)] mb-2'
+
 export default function SearchFilter({ filters, onFiltersChange }: SearchFilterProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold text-[var(--theme-fg)] mb-4">
         Search & Filter
       </h2>
 
       <div className="space-y-4">
         {/* Search Input */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className={labelClass}>
             Search Recipes
           </label>
           <input
             type="text"
             placeholder="Search by name or ingredients..."
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+            className={inputClass}
             value={filters.search ?? ''}
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           />
@@ -29,11 +34,11 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
 
         {/* Difficulty Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className={labelClass}>
             Difficulty
           </label>
           <select
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+            className={inputClass}
             value={filters.difficulty ?? ''}
             onChange={(e) =>
               onFiltersChange({
@@ -52,13 +57,13 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
         {/* Time Filters */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className={labelClass}>
               Max Prep Time
             </label>
             <input
               type="number"
               placeholder="Minutes"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className={inputClass}
               value={filters.maxPrepTime ?? ''}
               onChange={(e) =>
                 onFiltersChange({ ...filters, maxPrepTime: Number(e.target.value) || undefined })
@@ -66,13 +71,13 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className={labelClass}>
               Max Cook Time
             </label>
             <input
               type="number"
               placeholder="Minutes"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent dark:bg-gray-900 dark:text-white"
+              className={inputClass}
               value={filters.maxCookTime ?? ''}
               onChange={(e) =>
                 onFiltersChange({ ...filters, maxCookTime: Number(e.target.value) || undefined })
@@ -83,7 +88,7 @@ export default function SearchFilter({ filters, onFiltersChange }: SearchFilterP
 
         {/* Clear Filters Button */}
         <button
-          className="w-full px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold rounded-lg transition-colors"
+          className="w-full px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
           onClick={() => onFiltersChange({})}
         >
           Clear Filters

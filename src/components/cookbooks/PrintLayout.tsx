@@ -1,51 +1,28 @@
-import { type ReactNode, useEffect, useLayoutEffect } from 'react'
+import type { ReactNode } from 'react'
 
-// useLayoutEffect on the client (runs before paint, preventing a dark flash on
-// client-side navigation); falls back to useEffect on the server where
-// useLayoutEffect is a no-op and would produce an SSR warning.
-const useDarkOverrideEffect = typeof document !== 'undefined' ? useLayoutEffect : useEffect
-
-// Removes the `dark` class from <html> while mounted so that Tailwind `dark:`
-// variants inside this subtree (e.g. RecipeDetail) do not activate from the
-// global `.dark` root class. Uses a ref-count in case multiple PrintLayout
-// instances are ever nested.
-//
-// TODO (#281): When the theming system lands, replace the hardcoded
-// `bg-white text-gray-900` with CSS variable overrides scoped to this
-// element (e.g. `style={{ '--color-background': 'white', '--color-text': '...' }}`).
-// That will keep print output fixed regardless of the active theme.
+// Scopes print-safe CSS variable values to this subtree so that print output
+// is always white-background / dark-text regardless of the active theme.
+// No DOM side effects — CSS variable cascade replaces the old useLayoutEffect approach.
 export function PrintLayout({ children }: { children: ReactNode }) {
-  useDarkOverrideEffect(() => {
-    const root = document.documentElement
-    const countKey = 'printLayoutDarkOverrideCount'
-    const hadDarkKey = 'printLayoutDarkOverrideHadDark'
-    const currentCount = Number.parseInt(root.dataset[countKey] ?? '0', 10)
-
-    if (currentCount === 0) {
-      root.dataset[hadDarkKey] = root.classList.contains('dark') ? 'true' : 'false'
-    }
-
-    root.dataset[countKey] = String(currentCount + 1)
-    root.classList.remove('dark')
-
-    return () => {
-      const nextCount = Math.max(
-        0,
-        Number.parseInt(root.dataset[countKey] ?? '1', 10) - 1,
-      )
-
-      if (nextCount === 0) {
-        if (root.dataset[hadDarkKey] === 'true') {
-          root.classList.add('dark')
-        }
-        delete root.dataset[countKey]
-        delete root.dataset[hadDarkKey]
-        return
+  return (
+    <div
+      style={
+        {
+          '--theme-bg': 'white',
+          '--theme-surface': '#f9fafb',
+          '--theme-surface-raised': '#f3f4f6',
+          '--theme-fg': '#111827',
+          '--theme-fg-muted': '#4b5563',
+          '--theme-fg-subtle': '#9ca3af',
+          '--theme-border': '#e5e7eb',
+          '--theme-border-muted': '#f3f4f6',
+          '--theme-accent': '#0891b2',
+          '--theme-accent-hover': '#0e7490',
+          '--theme-accent-emphasis': '#155e75',
+        } as React.CSSProperties
       }
-
-      root.dataset[countKey] = String(nextCount)
-    }
-  }, [])
-
-  return <div className="bg-white text-gray-900">{children}</div>
+    >
+      {children}
+    </div>
+  )
 }

@@ -24,6 +24,17 @@ vi.mock("@/lib/auth-client", () => ({
   signOut: (...args: unknown[]) => mockSignOut(...args),
 }))
 
+const mockSetTheme = vi.fn()
+let mockTheme = 'dark'
+
+vi.mock("@/contexts/ThemeContext", () => ({
+  useTheme: () => ({ theme: mockTheme, setTheme: mockSetTheme }),
+  THEMES: [
+    { id: 'dark', label: 'Dark' },
+    { id: 'light', label: 'Light' },
+  ],
+}))
+
 import Header from "@/components/Header"
 
 const defaultAuth = { session: null, isPending: false, isLoggedIn: false, userId: null }
@@ -38,6 +49,7 @@ describe("Header", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockLocationSearch = {}
+    mockTheme = 'dark'
   })
 
   // ─── Auth display ──────────────────────────────────────────────────────────
@@ -252,5 +264,50 @@ describe("Header", () => {
 
     // After closing overlay, the desktop input should still show the search value
     expect(screen.getByTestId("header-search-input")).toHaveValue("soup")
+  })
+
+  // ─── Theme selector ────────────────────────────────────────────────────────
+
+  it("renders theme selector with all THEMES options in the sidebar", () => {
+    mockUseAuth.mockReturnValue(defaultAuth)
+    render(<Header />)
+
+    // Open sidebar
+    fireEvent.click(screen.getByLabelText("Open menu"))
+
+    expect(screen.getByText("Dark")).toBeInTheDocument()
+    expect(screen.getByText("Light")).toBeInTheDocument()
+  })
+
+  it("active theme button has distinguishing visual class", () => {
+    mockTheme = 'dark'
+    mockUseAuth.mockReturnValue(defaultAuth)
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+
+    const darkBtn = screen.getByRole("button", { name: "Dark" })
+    const lightBtn = screen.getByRole("button", { name: "Light" })
+    expect(darkBtn.className).not.toBe(lightBtn.className)
+  })
+
+  it("clicking a non-active theme calls setTheme with that theme id", () => {
+    mockTheme = 'dark'
+    mockUseAuth.mockReturnValue(defaultAuth)
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+
+    fireEvent.click(screen.getByRole("button", { name: "Light" }))
+    expect(mockSetTheme).toHaveBeenCalledWith("light")
+  })
+
+  it("each theme button has aria-pressed attribute", () => {
+    mockUseAuth.mockReturnValue(defaultAuth)
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+
+    const darkBtn = screen.getByRole("button", { name: "Dark" })
+    const lightBtn = screen.getByRole("button", { name: "Light" })
+    expect(darkBtn).toHaveAttribute("aria-pressed")
+    expect(lightBtn).toHaveAttribute("aria-pressed")
   })
 })

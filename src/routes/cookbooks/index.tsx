@@ -94,10 +94,10 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white">New Cookbook</h2>
-        <button type="button" onClick={onClose} aria-label="Close create cookbook form" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+        <h2 className="text-xl font-bold text-[var(--theme-fg)]">New Cookbook</h2>
+        <button type="button" onClick={onClose} aria-label="Close create cookbook form" className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg)]">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -123,7 +123,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
           >
             Cancel
           </button>

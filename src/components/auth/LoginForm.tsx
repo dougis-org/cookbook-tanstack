@@ -56,9 +56,9 @@ export default function LoginForm() {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-cyan-500 focus:ring-cyan-500"
+            className="w-4 h-4 rounded border-[var(--theme-border)] bg-[var(--theme-surface-raised)] text-cyan-500 focus:ring-cyan-500"
           />
-          <span className="text-sm text-gray-600 dark:text-gray-300">Remember me</span>
+          <span className="text-sm text-[var(--theme-fg-muted)]">Remember me</span>
         </label>
         <Link to="/auth/forgot-password" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
           Forgot password?
@@ -66,7 +66,7 @@ export default function LoginForm() {
       </div>
 
       <FormSubmitButton isLoading={isLoading} label="Sign In" loadingLabel="Signing in..." />
-      <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
+      <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
         Don&apos;t have an account?{" "}
         <Link to="/auth/register" className="text-cyan-400 hover:text-cyan-300 transition-colors">Create one</Link>
       </p>

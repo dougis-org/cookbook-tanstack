@@ -29,8 +29,8 @@ function RecipeMetaItem({
 }) {
   return (
     <div>
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-      <p className={`text-lg font-semibold text-gray-900 dark:text-white ${className}`}>{value}</p>
+      <p className="text-sm text-[var(--theme-fg-subtle)]">{label}</p>
+      <p className={`text-lg font-semibold text-[var(--theme-fg)] ${className}`}>{value}</p>
     </div>
   )
 }
@@ -39,7 +39,7 @@ function NutritionItem({ value, unit = '', label }: { value: number; unit?: stri
   return (
     <div className="text-center">
       <p className="text-2xl font-bold text-cyan-400">{value}{unit}</p>
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-sm text-[var(--theme-fg-subtle)]">{label}</p>
     </div>
   )
 }
@@ -129,12 +129,12 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg overflow-hidden">
         {/* Header Image */}
         <CardImage
           src={recipe.imageUrl}
           alt={recipe.name}
-          className="h-96 bg-gray-200 dark:bg-gray-700"
+          className="h-96 bg-[var(--theme-surface-hover)]"
           data-testid="recipe-detail-image"
         />
 
@@ -146,13 +146,13 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               data-testid="title-source-wrapper"
             >
               <h1
-                className={`text-4xl font-bold text-gray-900 dark:text-white ${PRINT_HEADING_DENSITY_PAGE}`}
+                className={`text-4xl font-bold text-[var(--theme-fg)] ${PRINT_HEADING_DENSITY_PAGE}`}
               >
                 {recipe.name}
               </h1>
               {/* Source — directly below title on screen; inline right of title on print */}
               {recipe.sourceName && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 print:mb-0">
+                <p className="text-sm text-[var(--theme-fg-subtle)] mb-4 print:mb-0">
                   Source:{" "}
                   {recipe.sourceUrl && isSafeUrl(recipe.sourceUrl) ? (
                     <a
@@ -198,7 +198,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           )}
 
           {/* Recipe Meta */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg print:hidden">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-[var(--theme-bg)] rounded-lg print:hidden">
             <RecipeMetaItem
               label="Prep Time"
               value={recipe.prepTime ? `${recipe.prepTime} min` : "N/A"}
@@ -208,15 +208,15 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               value={recipe.cookTime ? `${recipe.cookTime} min` : "N/A"}
             />
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-[var(--theme-fg-subtle)]">
                 Servings
               </p>
               {recipe.servings == null ? (
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                <p className="text-lg font-semibold text-[var(--theme-fg)]">
                   N/A
                 </p>
               ) : (
-                <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-[var(--theme-fg)]">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <button
                       type="button"
@@ -270,7 +270,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
             return printMetaLine ? (
               <p
                 data-testid="print-meta-line"
-                className="hidden print:block text-sm text-gray-700 dark:text-gray-300 mb-8"
+                className="hidden print:block text-sm text-[var(--theme-fg-muted)] mb-8"
               >
                 {printMetaLine}
               </p>
@@ -280,7 +280,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           {/* Ingredients Section */}
           <section className="mb-8 print:mb-4">
             <h2
-              className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+              className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
               Ingredients
             </h2>
@@ -297,7 +297,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   ) : (
                     <li
                       key={i}
-                      className="recipe-ingredient-item flex items-center text-gray-700 dark:text-gray-300"
+                      className="recipe-ingredient-item flex items-center text-[var(--theme-fg-muted)]"
                     >
                       <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
                       {line}
@@ -306,7 +306,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 )}
               </ul>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-[var(--theme-fg-subtle)]">
                 No ingredients listed
               </p>
             )}
@@ -315,7 +315,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           {/* Instructions Section */}
           <section className="mb-8 print:mb-4">
             <h2
-              className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+              className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
               Instructions
             </h2>
@@ -332,7 +332,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   ) : (
                     <li
                       key={index}
-                      className="recipe-instruction-step flex gap-4 text-gray-700 dark:text-gray-300"
+                      className="recipe-instruction-step flex gap-4 text-[var(--theme-fg-muted)]"
                     >
                       <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
                         {step.number}
@@ -343,7 +343,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                 )}
               </ol>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400">
+              <p className="text-[var(--theme-fg-subtle)]">
                 No instructions provided
               </p>
             )}
@@ -353,11 +353,11 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           {trimmedNotes && (
             <section className="mb-8 print:mb-4">
               <h2
-                className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+                className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
               >
                 Notes
               </h2>
-              <p className="whitespace-pre-wrap text-gray-600 dark:text-gray-300">
+              <p className="whitespace-pre-wrap text-[var(--theme-fg-muted)]">
                 {trimmedNotes}
               </p>
             </section>
@@ -367,11 +367,11 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           {hasNutrition && (
             <section className="mb-8 print:mb-4">
               <h2
-                className={`text-2xl font-bold text-gray-900 dark:text-white mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+                className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
               >
                 Nutrition
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-[var(--theme-bg)] rounded-lg">
                 {recipe.calories != null && (
                   <NutritionItem value={recipe.calories} label="Calories" />
                 )}
