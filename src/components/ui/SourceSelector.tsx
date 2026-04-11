@@ -74,7 +74,7 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
       {value && selectedName ? (
         <div className="flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-bg)]">
           <span className="flex-1 text-[var(--theme-fg)]">{selectedName}</span>
-          <button type="button" onClick={clearSource} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={clearSource} className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg)]">
             <X className="w-4 h-4" />
           </button>
         </div>

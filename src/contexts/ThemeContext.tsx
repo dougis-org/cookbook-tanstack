@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 export const THEMES = [
   { id: 'dark', label: 'Dark' },
@@ -32,15 +32,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // from localStorage after mounting on the client.
   const [theme, setThemeState] = useState<ThemeId>('dark')
 
-  useLayoutEffect(() => {
-    // Apply correct DOM class synchronously before first paint.
-    document.documentElement.className = readStoredTheme()
-  }, [])
-
   useEffect(() => {
-    // Correct React state from localStorage after mount; this triggers a re-render
-    // so all consumers (aria-pressed, conditional classNames) reflect the stored theme.
-    setThemeState(readStoredTheme())
+    // The inline <script> in __root.tsx sets the DOM class before first paint (no flash).
+    // This effect corrects both the DOM class and React state from localStorage after
+    // mount, ensuring consumers (aria-pressed, conditional classNames) reflect the
+    // stored theme and avoiding SSR useLayoutEffect warnings.
+    const storedTheme = readStoredTheme()
+    document.documentElement.className = storedTheme
+    setThemeState(storedTheme)
   }, [])
 
   function setTheme(id: string) {

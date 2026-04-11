@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.
+   Remaining dark: usages (badge tints, draft banner) depend on this. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 html.dark {
   --theme-bg: theme(colors.slate.900);
   --theme-surface: theme(colors.slate.800);

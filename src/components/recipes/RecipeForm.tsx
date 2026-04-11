@@ -293,7 +293,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 purgeDraft()
                 setShowDraftPrompt(false)
               }}
-              className="px-4 py-1 bg-gray-300 hover:bg-gray-400 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] text-sm font-semibold rounded transition-colors"
+              className="px-4 py-1 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] text-sm font-semibold rounded transition-colors"
             >
               Discard
             </button>
@@ -320,7 +320,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               type="text"
               placeholder="Enter recipe name"
               {...register("name")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
@@ -585,7 +585,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <button
               type="button"
               onClick={isEdit ? handleRevert : handleCancel}
-              className="px-6 py-2 bg-gray-300 hover:bg-gray-400 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
+              className="px-6 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
             >
               {isEdit ? "Revert" : "Cancel"}
             </button>

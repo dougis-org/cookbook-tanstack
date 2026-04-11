@@ -1,5 +1,7 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 import { gotoAndWaitForHydration } from './helpers/app'
+import { registerAndLogin } from './helpers/auth'
+import { createCookbookWithRecipe } from './helpers/cookbooks'
 
 test.describe('Theme system', () => {
   test.beforeEach(async ({ page }) => {
@@ -91,26 +93,26 @@ test.describe('Theme system', () => {
   })
 
   test('print isolation: PrintLayout wrapper has white background regardless of theme', async ({ page }) => {
-    // Set light theme — PrintLayout should still use white
+    // Set dark theme to confirm PrintLayout overrides it
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light')
+      localStorage.setItem('cookbook-theme', 'dark')
     })
 
-    await gotoAndWaitForHydration(page, '/cookbooks')
+    // Need a real cookbook to navigate to the print route
+    await registerAndLogin(page)
+    const { cookbookId } = await createCookbookWithRecipe(page, 'ThemePrint')
 
-    // Navigate to any cookbook print route if cookbooks exist, or just verify
-    // the CSS variable override approach works by checking a PrintLayout DOM element.
-    // Since this is a smoke test without seeded data, verify the approach via evaluate.
-    const printLayoutBg = await page.evaluate(() => {
-      // Inject a test PrintLayout-style element to verify CSS var overrides work
-      const div = document.createElement('div')
-      div.style.cssText = '--theme-bg: white;'
-      document.body.appendChild(div)
-      const bg = div.style.getPropertyValue('--theme-bg')
-      document.body.removeChild(div)
-      return bg
+    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`)
+
+    // PrintLayout renders a wrapper div with inline CSS variable overrides.
+    // Assert that the --theme-bg token is overridden to white inside that wrapper.
+    const printBg = await page.evaluate(() => {
+      // The PrintLayout div is the first child of the print route content area
+      const printWrapper = document.querySelector('[style*="--theme-bg"]') as HTMLElement | null
+      if (!printWrapper) return null
+      return printWrapper.style.getPropertyValue('--theme-bg').trim()
     })
 
-    expect(printLayoutBg).toBe('white')
+    expect(printBg).toBe('white')
   })
 })

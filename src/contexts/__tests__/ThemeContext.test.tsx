@@ -35,6 +35,19 @@ describe('ThemeContext', () => {
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
+  it('restores stored theme from localStorage on mount', async () => {
+    localStorage.setItem('cookbook-theme', 'light')
+    render(
+      <ThemeProvider>
+        <TestConsumer />
+      </ThemeProvider>,
+    )
+    // useEffect fires after render; wait for state update
+    await act(async () => {})
+    expect(screen.getByTestId('theme').textContent).toBe('light')
+    expect(document.documentElement.className).toBe('light')
+  })
+
   it('setTheme writes to localStorage', () => {
     render(
       <ThemeProvider>

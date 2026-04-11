@@ -41,8 +41,10 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   // Static string — no user data interpolated. Safe per design Decision 4.
+  // Accepts any single alphanumeric-token theme id from localStorage so new themes
+  // (e.g. 'solarized') work without touching this script. Falls back to 'dark'.
   const themeInitScript =
-    'try{var t=localStorage.getItem("cookbook-theme");document.documentElement.className=(t==="light"||t==="dark")?t:"dark";}catch(e){}'
+    'try{var t=localStorage.getItem("cookbook-theme");document.documentElement.className=(t&&/^\\w+$/.test(t))?t:"dark";}catch(e){}'
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
