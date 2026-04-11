@@ -56,9 +56,9 @@ The system SHALL set `<html class="dark">` as the server-rendered default, which
 
 ## REMOVED Requirements
 
-### Requirement: REMOVED `@custom-variant dark` Tailwind variant (after full migration)
+### Requirement: DEFERRED REMOVAL — `@custom-variant dark` Tailwind variant
 
-Reason for removal: Once all components are migrated to `--theme-*` CSS variables, no component relies on the Tailwind `dark:` custom variant for themed surfaces. The `@custom-variant dark` declaration in `src/styles.css` is removed as part of this change. Badge `dark:` variants are exempt — they use standard Tailwind dark mode and may retain their variants.
+Reason for deferral: This change does not remove the `@custom-variant dark (&:where(.dark, .dark *))` declaration from `src/styles.css`. It is intentionally retained to support remaining `dark:` classes that have not yet been migrated to `--theme-*` CSS variables, including badge tints (`MultiSelectDropdown`, `ClassificationBadge`) and the `RecipeForm` draft banner accent. The custom variant ensures those classes continue to respond to `<html class="dark">` rather than falling back to `prefers-color-scheme`. Full removal is deferred until all remaining `dark:` usages are migrated.
 
 ## Traceability
 

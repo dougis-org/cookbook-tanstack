@@ -49,7 +49,7 @@
 
 ## What Changes
 
-- `src/styles.css` — token definitions for `html.dark` and `html.light`; remove `@custom-variant dark` (no longer needed once all components are migrated)
+- `src/styles.css` — token definitions for `html.dark` and `html.light`; retain `@custom-variant dark` as a compatibility safety net for remaining `dark:` usages (badge tints, draft banner) — full removal deferred to a follow-up change
 - `src/routes/__root.tsx` — add inline theme-init script; `<html>` class becomes `dark` only as a server-rendered default
 - `src/contexts/ThemeContext.tsx` — new file: context + provider + `useTheme` hook
 - `src/components/Header.tsx` — add theme selector at bottom of hamburger sidebar; wrap app in `ThemeProvider`

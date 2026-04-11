@@ -18,6 +18,13 @@ describe('PrintLayout', () => {
     expect(div.style.getPropertyValue('--theme-bg')).toBe('white')
   })
 
+  it('wrapper overrides all theme tokens including --theme-surface-hover', () => {
+    const { container } = render(<PrintLayout><span /></PrintLayout>)
+    const div = container.firstChild as HTMLElement
+    expect(div.style.getPropertyValue('--theme-surface-hover')).toBe('#e5e7eb')
+    expect(div.style.getPropertyValue('--theme-border-muted')).toBe('#f3f4f6')
+  })
+
   it('wrapper has dark foreground CSS variable override', () => {
     const { container } = render(<PrintLayout><span /></PrintLayout>)
     const div = container.firstChild as HTMLElement

@@ -20,13 +20,13 @@ export default function StatusIndicator({ status, onRetry }: StatusIndicatorProp
       {status === "saved" && (
         <>
           <Check className="h-4 w-4 text-green-500" />
-          <span className="text-green-600 font-medium">Saved</span>
+          <span className="text-green-600 dark:text-green-400 font-medium">Saved</span>
         </>
       )}
       {status === "error" && (
         <>
           <AlertCircle className="h-4 w-4 text-red-500" />
-          <span className="text-red-600 font-medium">Failed to save</span>
+          <span className="text-red-600 dark:text-red-400 font-medium">Failed to save</span>
           {onRetry && (
             <button
               type="button"

@@ -9,7 +9,7 @@
 
 ### Task 3 — Define CSS token layer in `src/styles.css`
 
-- [x] Remove `@custom-variant dark (&:where(.dark, .dark *))` (will be replaced by token layer)
+- [x] Retain `@custom-variant dark (&:where(.dark, .dark *))` — intentionally kept so remaining `dark:` usages (badge tints, draft banner) continue responding to `html.dark` rather than `prefers-color-scheme`; full removal is deferred until those usages are migrated
 - [x] Add `html.dark { --theme-*: ...; }` block with all token definitions mapped from current dark colour values:
   - `--theme-bg: theme(colors.slate.900)` (page background)
   - `--theme-surface: theme(colors.slate.800)` (card / panel)
