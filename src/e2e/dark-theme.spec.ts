@@ -29,6 +29,21 @@ test.describe("Dark Theme", () => {
     expect(html).toMatch(/<html[^>]*class=["'][^"']*\bdark\b[^"']*["']/);
   });
 
+  test("dev server HTML includes the React refresh preamble marker", async ({
+    page,
+  }) => {
+    test.skip(
+      process.env.PLAYWRIGHT_VITE_DEV_SMOKE !== "true",
+      "PLAYWRIGHT_VITE_DEV_SMOKE is not enabled",
+    );
+
+    const response = await page.goto("/", { waitUntil: "commit" });
+    expect(response).not.toBeNull();
+
+    const html = await response!.text();
+    expect(html).toContain("window.__vite_plugin_react_preamble_installed__ = true;");
+  });
+
   test("recipe cards render with dark background when dark mode is active", async ({
     page,
   }) => {
