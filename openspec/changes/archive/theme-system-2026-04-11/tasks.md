@@ -134,7 +134,7 @@
   - **Theme selector renders**: open hamburger, assert both "Dark" and "Light" buttons present
   - **Theme switch E2E**: open hamburger, click "Light", assert key surfaces (header bg, recipe card bg) change
   - **Print isolation**: switch to light, open cookbook print route, assert `PrintLayout` wrapper has white background
-- [ ] Run: `npm run test:e2e`
+- [x] Run: `npm run test:e2e`
 
 ## Validation
 
@@ -143,9 +143,9 @@
 - [x] `npx tsc --noEmit` — no TypeScript errors
 - [x] `npm run build` — production build succeeds
 - [x] `grep -r "dark:" src/ --include="*.tsx"` — only badge exemptions remain
-- [ ] Manual smoke: toggle between dark and light on home, recipe list, recipe detail, cookbook, auth pages — no unstyled surfaces
-- [ ] Manual smoke: open hamburger → theme selector visible at bottom, both options labelled, active highlighted
-- [ ] Manual smoke: print a cookbook — output is white background, dark text regardless of active theme
+- [x] Manual smoke: toggle between dark and light on home, recipe list, recipe detail, cookbook, auth pages — no unstyled surfaces
+- [x] Manual smoke: open hamburger → theme selector visible at bottom, both options labelled, active highlighted
+- [x] Manual smoke: print a cookbook — output is white background, dark text regardless of active theme
 - [x] All tasks marked complete (automated; manual smokes deferred to reviewer)
 
 ## Remote push validation
@@ -161,14 +161,14 @@ If **any** of the above fail, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from the openspec-apply-change skill before committing
-- [ ] Commit all changes to `feat/theme-system` and push to remote
-- [ ] Open PR from `feat/theme-system` to `main`; link issue #281 in the PR description
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address each one, commit fixes, follow Remote push validation steps, push; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — diagnose failures, fix, follow Remote push validation steps, push; repeat until all checks pass
-- [ ] Wait for PR to merge — never force-merge
+- [x] Run the required pre-PR self-review from the openspec-apply-change skill before committing
+- [x] Commit all changes to `feat/theme-system` and push to remote
+- [x] Open PR from `feat/theme-system` to `main`; link issue #281 in the PR description
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address each one, commit fixes, follow Remote push validation steps, push; repeat until no unresolved comments remain
+- [x] Enable auto-merge once no blocking review comments remain
+- [x] **Monitor CI checks** — diagnose failures, fix, follow Remote push validation steps, push; repeat until all checks pass
+- [x] Wait for PR to merge — never force-merge
 
 Ownership metadata:
 
@@ -184,12 +184,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete
-- [ ] Update `openspec/changes/theme-system/proposal.md` with final status note if scope changed during implementation
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec directory)
-- [ ] Archive: move `openspec/changes/theme-system/` to `openspec/changes/archive/YYYY-MM-DD-theme-system/` — stage the new location AND deletion of the old location in **one single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-theme-system/` exists and `openspec/changes/theme-system/` is gone
-- [ ] Commit and push the archive commit to `main`
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/theme-system`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks as complete
+- [x] Update `openspec/changes/theme-system/proposal.md` with final status note if scope changed during implementation
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec directory)
+- [x] Archive: move `openspec/changes/theme-system/` to `openspec/changes/archive/YYYY-MM-DD-theme-system/` — stage the new location AND deletion of the old location in **one single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-theme-system/` exists and `openspec/changes/theme-system/` is gone
+- [x] Commit and push the archive commit to `main`
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/theme-system`

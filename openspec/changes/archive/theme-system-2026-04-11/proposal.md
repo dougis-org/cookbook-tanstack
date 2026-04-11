@@ -1,3 +1,9 @@
+## Status
+
+**Merged** — PR #301 merged to `main` on 2026-04-11.
+
+Scope delta from original proposal: `@custom-variant dark` was intentionally retained (not removed) to support remaining `dark:` usages on badge tints and the RecipeForm draft banner. Full removal is deferred to a follow-up change once those usages are migrated to `--theme-*` tokens.
+
 ## GitHub Issues
 
 - dougis-org/cookbook-tanstack#281
