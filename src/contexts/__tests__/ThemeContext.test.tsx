@@ -16,6 +16,16 @@ function TestConsumer() {
   )
 }
 
+function LightLegacySetter() {
+  const { theme, setTheme } = useTheme()
+  return (
+    <div>
+      <span data-testid="theme">{theme}</span>
+      <button onClick={() => setTheme('light' as string)}>set-light-legacy</button>
+    </div>
+  )
+}
+
 describe('ThemeContext', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -35,8 +45,16 @@ describe('ThemeContext', () => {
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
+  it('THEMES contains light-cool and not light', () => {
+    const ids = THEMES.map((t) => t.id)
+    expect(ids).toContain('light-cool')
+    expect(ids).not.toContain('light')
+    const lightCool = THEMES.find((t) => t.id === 'light-cool')
+    expect(lightCool?.label).toBe('Light (cool)')
+  })
+
   it('restores stored theme from localStorage on mount', async () => {
-    localStorage.setItem('cookbook-theme', 'light')
+    localStorage.setItem('cookbook-theme', 'light-cool')
     render(
       <ThemeProvider>
         <TestConsumer />
@@ -44,32 +62,49 @@ describe('ThemeContext', () => {
     )
     // useEffect fires after render; wait for state update
     await act(async () => {})
-    expect(screen.getByTestId('theme').textContent).toBe('light')
-    expect(document.documentElement.className).toBe('light')
+    expect(screen.getByTestId('theme').textContent).toBe('light-cool')
+    expect(document.documentElement.className).toBe('light-cool')
   })
 
-  it('setTheme writes to localStorage', () => {
+  it('setTheme("light-cool") writes to localStorage', () => {
     render(
       <ThemeProvider>
         <TestConsumer />
       </ThemeProvider>,
     )
     act(() => {
-      screen.getByText('Light').click()
+      screen.getByText('Light (cool)').click()
     })
-    expect(localStorage.getItem('cookbook-theme')).toBe('light')
+    expect(localStorage.getItem('cookbook-theme')).toBe('light-cool')
   })
 
-  it('setTheme sets document.documentElement.className', () => {
+  it('setTheme("light-cool") sets document.documentElement.className', () => {
     render(
       <ThemeProvider>
         <TestConsumer />
       </ThemeProvider>,
     )
     act(() => {
-      screen.getByText('Light').click()
+      screen.getByText('Light (cool)').click()
     })
-    expect(document.documentElement.className).toBe('light')
+    expect(document.documentElement.className).toBe('light-cool')
+  })
+
+  it('setTheme("light") is rejected — no class or localStorage change occurs', async () => {
+    render(
+      <ThemeProvider>
+        <LightLegacySetter />
+      </ThemeProvider>,
+    )
+    // Wait for mount effect to set className to 'dark'
+    await act(async () => {})
+    act(() => {
+      screen.getByText('set-light-legacy').click()
+    })
+    expect(localStorage.getItem('cookbook-theme')).toBeNull()
+    // className should remain 'dark' (set by mount effect), not changed to 'light'
+    expect(document.documentElement.className).toBe('dark')
+    expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
   it('returns dark without error when localStorage throws', () => {

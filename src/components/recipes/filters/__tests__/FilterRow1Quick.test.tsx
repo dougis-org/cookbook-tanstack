@@ -133,7 +133,8 @@ describe('FilterRow1Quick', () => {
         }
         render(<FilterRow1Quick {...props} />)
         const button = screen.getByText(label).closest('button')!
-        expect(button).toHaveClass('bg-cyan-500/20', 'border-cyan-500', 'text-cyan-300')
+        expect(button.className).toContain('border-[var(--theme-accent)]')
+        expect(button.className).toContain('text-[var(--theme-accent)]')
       })
 
       it(`displays inactive state with slate styling for ${label}`, () => {
@@ -145,7 +146,9 @@ describe('FilterRow1Quick', () => {
           />
         )
         const button = screen.getByText(label).closest('button')!
-        expect(button).toHaveClass('bg-slate-800', 'border-slate-700', 'text-gray-400')
+        expect(button.className).toContain('bg-[var(--theme-surface)]')
+        expect(button.className).toContain('border-[var(--theme-border)]')
+        expect(button.className).toContain('text-[var(--theme-fg-muted)]')
       })
     },
   )

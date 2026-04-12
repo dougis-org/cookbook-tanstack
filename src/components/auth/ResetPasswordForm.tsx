@@ -44,7 +44,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       <FormInput id="confirmPassword" label="Confirm Password" type="password" value={confirmPassword} onChange={setConfirmPassword} placeholder="Repeat your password" required />
       <FormSubmitButton isLoading={isLoading} label="Reset Password" loadingLabel="Resetting..." />
       <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
-        <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Back to sign in</Link>
+        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Back to sign in</Link>
       </p>
     </form>
   )

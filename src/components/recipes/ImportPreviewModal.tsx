@@ -32,8 +32,8 @@ export default function ImportPreviewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Import preview">
-      <div className="w-full max-w-xl rounded-xl border border-slate-700 bg-slate-900 p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Import Preview</h2>
+      <div className="w-full max-w-xl rounded-xl border border-[var(--theme-border)] bg-[var(--theme-surface-raised)] p-6 shadow-[var(--theme-shadow-md)]">
+        <h2 className="text-xl font-semibold text-[var(--theme-fg)] mb-4">Import Preview</h2>
 
         {versionMismatch && (
           <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-amber-200 text-sm">
@@ -43,29 +43,29 @@ export default function ImportPreviewModal({
 
         <dl className="grid grid-cols-2 gap-3 text-sm mb-4">
           <div>
-            <dt className="text-gray-400">Title</dt>
-            <dd className="text-white">{recipe.name}</dd>
+            <dt className="text-[var(--theme-fg-muted)]">Title</dt>
+            <dd className="text-[var(--theme-fg)]">{recipe.name}</dd>
           </div>
           <div>
-            <dt className="text-gray-400">Servings</dt>
-            <dd className="text-white">{recipe.servings ?? 'N/A'}</dd>
+            <dt className="text-[var(--theme-fg-muted)]">Servings</dt>
+            <dd className="text-[var(--theme-fg)]">{recipe.servings ?? 'N/A'}</dd>
           </div>
           <div>
-            <dt className="text-gray-400">Difficulty</dt>
-            <dd className="text-white capitalize">{recipe.difficulty ?? 'N/A'}</dd>
+            <dt className="text-[var(--theme-fg-muted)]">Difficulty</dt>
+            <dd className="text-[var(--theme-fg)] capitalize">{recipe.difficulty ?? 'N/A'}</dd>
           </div>
           <div>
-            <dt className="text-gray-400">Ingredient Count</dt>
-            <dd className="text-white">{ingredientCount}</dd>
+            <dt className="text-[var(--theme-fg-muted)]">Ingredient Count</dt>
+            <dd className="text-[var(--theme-fg)]">{ingredientCount}</dd>
           </div>
         </dl>
 
         <div className="mb-4">
-          <p className="text-gray-400 text-sm mb-1">Instruction Preview</p>
+          <p className="text-[var(--theme-fg-muted)] text-sm mb-1">Instruction Preview</p>
           {instructionSummary.length === 0 ? (
-            <p className="text-gray-500 text-sm">No instructions provided</p>
+            <p className="text-[var(--theme-fg-subtle)] text-sm">No instructions provided</p>
           ) : (
-            <ul className="list-disc list-inside text-gray-200 text-sm space-y-1">
+            <ul className="list-disc list-inside text-[var(--theme-fg-muted)] text-sm space-y-1">
               {instructionSummary.map((line, index) => (
                 <li key={index}>{line}</li>
               ))}
@@ -79,7 +79,7 @@ export default function ImportPreviewModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg border border-slate-600 text-gray-300 hover:bg-slate-800"
+            className="px-4 py-2 rounded-lg border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)]"
           >
             Cancel
           </button>
@@ -87,7 +87,7 @@ export default function ImportPreviewModal({
             type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white disabled:opacity-60"
+            className="px-4 py-2 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white disabled:opacity-60"
           >
             {isPending ? 'Importing...' : 'Confirm Import'}
           </button>

@@ -284,7 +284,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           <div className="flex gap-2">
             <button
               onClick={handleRestoreDraft}
-              className="px-4 py-1 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded transition-colors"
+              className="px-4 py-1 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white text-sm font-semibold rounded transition-colors"
             >
               Restore
             </button>
@@ -461,7 +461,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="isPublic"
               type="checkbox"
               {...register("isPublic")}
-              className="w-4 h-4 text-cyan-500 bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-cyan-500"
+              className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
             />
             <label htmlFor="isPublic" className="text-sm font-medium text-[var(--theme-fg-muted)]">
               Public recipe (visible to everyone)
@@ -574,7 +574,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <button
               type="submit"
               disabled={isPending}
-              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
             >
               {isPending
                 ? "Saving..."

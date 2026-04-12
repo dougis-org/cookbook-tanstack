@@ -23,6 +23,7 @@ describe("AuthPageLayout", () => {
 
     const icon = container.querySelector("svg")
     expect(icon).toBeInTheDocument()
-    expect(icon).toHaveClass("w-6", "h-6", "text-cyan-400")
+    expect(icon).toHaveClass("w-6", "h-6")
+    expect(icon?.className).toContain('text-[var(--theme-accent)]')
   })
 })

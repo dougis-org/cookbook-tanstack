@@ -1,0 +1,16 @@
+html.dark {
+  --theme-bg: theme(colors.slate.900);
+  --theme-surface: theme(colors.slate.800);
+  --theme-surface-raised: theme(colors.gray.800);
+  --theme-surface-hover: theme(colors.gray.700);
+  --theme-border: theme(colors.slate.700);
+  --theme-border-muted: theme(colors.gray.700);
+  --theme-fg: theme(colors.white);
+  --theme-fg-muted: theme(colors.gray.300);
+  --theme-fg-subtle: theme(colors.gray.400);
+  --theme-accent: theme(colors.cyan.400);
+  --theme-accent-hover: theme(colors.cyan.500);
+  --theme-accent-emphasis: theme(colors.cyan.600);
+  --theme-shadow-sm: 0 0 0 0 transparent;
+  --theme-shadow-md: 0 0 0 0 transparent;
+}

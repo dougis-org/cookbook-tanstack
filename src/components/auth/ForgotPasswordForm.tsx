@@ -40,7 +40,7 @@ export default function ForgotPasswordForm() {
         <p className="text-[var(--theme-fg-muted)]">
           If an account with that email exists, we&apos;ve sent you a password reset link.
         </p>
-        <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors text-sm">
           Back to sign in
         </Link>
       </div>
@@ -56,7 +56,7 @@ export default function ForgotPasswordForm() {
       <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldError} />
       <FormSubmitButton isLoading={isLoading} label="Send Reset Link" loadingLabel="Sending..." />
       <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
-        <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Back to sign in</Link>
+        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Back to sign in</Link>
       </p>
     </form>
   )

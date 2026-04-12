@@ -1,7 +1,7 @@
 /** Shared name/description/isPublic form fields used by both the create and edit forms. */
 
 const inputClass =
-  'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent'
+  'w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent'
 
 interface CookbookFieldsProps {
   name: string
@@ -59,7 +59,7 @@ export default function CookbookFields({
           type="checkbox"
           checked={isPublic}
           onChange={(e) => onIsPublicChange(e.target.checked)}
-          className="w-4 h-4 text-cyan-500 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500"
+          className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-raised)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
         />
         <label htmlFor={checkboxId} className="text-sm text-[var(--theme-fg-muted)]">
           Public (visible to everyone)

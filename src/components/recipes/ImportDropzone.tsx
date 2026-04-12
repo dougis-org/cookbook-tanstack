@@ -78,10 +78,10 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`w-full border-2 border-dashed rounded-xl p-10 text-left transition-colors ${isDragging ? 'border-cyan-500' : 'border-slate-600 hover:border-cyan-500'}`}
+        className={`w-full border-2 border-dashed rounded-xl p-10 text-left transition-colors ${isDragging ? 'border-[var(--theme-accent)]' : 'border-[var(--theme-border)] hover:border-[var(--theme-accent)]'}`}
       >
-        <p className="text-white text-lg font-semibold mb-1">Import recipe JSON</p>
-        <p className="text-gray-400 text-sm">Drag and drop a .json file here, or click to browse.</p>
+        <p className="text-[var(--theme-fg)] text-lg font-semibold mb-1">Import recipe JSON</p>
+        <p className="text-[var(--theme-fg-muted)] text-sm">Drag and drop a .json file here, or click to browse.</p>
       </div>
 
       {error && <p className="mt-3 text-sm text-red-400">{error}</p>}

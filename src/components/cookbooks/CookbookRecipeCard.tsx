@@ -42,16 +42,16 @@ function CardBody({
       />
       <div className="flex items-start gap-2 p-3">
         {dragHandle}
-        <span className="text-sm text-gray-500 flex-shrink-0 pt-0.5">{index + 1}</span>
+        <span className="text-sm text-[var(--theme-fg-subtle)] flex-shrink-0 pt-0.5">{index + 1}</span>
         <div className="flex-1 min-w-0">
           <Link
             to="/recipes/$recipeId"
             params={{ recipeId: recipe.id }}
-            className="font-medium text-[var(--theme-fg)] hover:text-cyan-400 transition-colors truncate block"
+            className="font-medium text-[var(--theme-fg)] hover:text-[var(--theme-accent)] transition-colors truncate block"
           >
             {recipe.name}
           </Link>
-          {meta && <p className="text-xs text-gray-400 mt-0.5">{meta}</p>}
+          {meta && <p className="text-xs text-[var(--theme-fg-muted)] mt-0.5">{meta}</p>}
         </div>
       </div>
     </>
@@ -75,7 +75,7 @@ export function SortableRecipeCard({
     <button
       {...attributes}
       {...listeners}
-      className="text-gray-500 hover:text-gray-300 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none pt-0.5"
+      className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg-muted)] cursor-grab active:cursor-grabbing flex-shrink-0 touch-none pt-0.5"
       aria-label="Drag to reorder"
     >
       <GripVertical className="w-5 h-5" />
@@ -91,7 +91,7 @@ export function SortableRecipeCard({
     >
       <button
         onClick={onRemove}
-        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto text-gray-500 hover:text-red-400 transition-opacity"
+        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto text-[var(--theme-fg-subtle)] hover:text-red-400 transition-opacity"
         aria-label={`Remove ${recipe.name}`}
       >
         <X className="w-4 h-4" />

@@ -46,10 +46,10 @@ export default function DeleteConfirmModal({
       aria-modal="true"
       aria-labelledby="delete-modal-title"
     >
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
-        <h2 id="delete-modal-title" className="text-xl font-bold text-white mb-4">Delete Recipe</h2>
-        <p className="text-gray-300 mb-6">
-          Are you sure you want to delete <span className="font-semibold text-white">{recipeName}</span>? This action cannot be undone.
+      <div className="bg-[var(--theme-surface-raised)] border border-[var(--theme-border)] rounded-xl p-6 max-w-md w-full mx-4 shadow-[var(--theme-shadow-md)]">
+        <h2 id="delete-modal-title" className="text-xl font-bold text-[var(--theme-fg)] mb-4">Delete Recipe</h2>
+        <p className="text-[var(--theme-fg-muted)] mb-6">
+          Are you sure you want to delete <span className="font-semibold text-[var(--theme-fg)]">{recipeName}</span>? This action cannot be undone.
         </p>
         <FormError message={error} />
         <div className="flex justify-end gap-3">
@@ -58,7 +58,7 @@ export default function DeleteConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg border border-slate-600 text-gray-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

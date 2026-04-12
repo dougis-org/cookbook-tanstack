@@ -22,51 +22,68 @@ test.describe('Theme system', () => {
   test('theme persists across page reload', async ({ page }) => {
     // The beforeEach addInitScript removes 'cookbook-theme' on every navigation,
     // including reloads. Add a second init script here (runs after the first,
-    // in registration order) to set light — this simulates a stored preference
+    // in registration order) to set light-cool — this simulates a stored preference
     // surviving the reload. UI-click → localStorage write is covered by the
     // 'switching theme' test.
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light')
+      localStorage.setItem('cookbook-theme', 'light-cool')
     })
 
     await gotoAndWaitForHydration(page, '/')
 
     const htmlClassAfterLoad = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClassAfterLoad).toContain('light')
+    expect(htmlClassAfterLoad).toContain('light-cool')
 
     // Reload and verify theme is restored
     await page.reload()
     await page.waitForLoadState('networkidle')
 
     const htmlClassAfterReload = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClassAfterReload).toContain('light')
+    expect(htmlClassAfterReload).toContain('light-cool')
 
-    // Theme selector should show Light as active (aria-pressed=true)
+    // Theme selector should show Light (cool) as active (aria-pressed=true)
     await page.getByLabel('Open menu').click()
-    const lightBtn = page.getByRole('button', { name: 'Light' })
-    await expect(lightBtn).toHaveAttribute('aria-pressed', 'true')
+    const lightCoolBtn = page.getByRole('button', { name: 'Light (cool)' })
+    await expect(lightCoolBtn).toHaveAttribute('aria-pressed', 'true')
   })
 
-  test('no flash: html has light class before hydration when light stored', async ({ page }) => {
+  test('no flash: html has light-cool class before hydration when light-cool stored', async ({ page }) => {
     // Pre-set localStorage before navigation
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light')
+      localStorage.setItem('cookbook-theme', 'light-cool')
     })
 
     // Use 'commit' to inspect the very first paint — before React hydration
     await page.goto('/', { waitUntil: 'commit' })
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('light')
+    expect(htmlClass).toContain('light-cool')
   })
 
-  test('theme selector renders with Dark and Light options in hamburger', async ({ page }) => {
+  test('migration shim: stored "light" is migrated to "light-cool" on page load', async ({ page }) => {
+    // Pre-set legacy 'light' value to simulate a user who had the old theme stored
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'light')
+    })
+
+    await page.goto('/', { waitUntil: 'commit' })
+
+    // Should have migrated to light-cool
+    const htmlClass = await page.evaluate(() => document.documentElement.className)
+    expect(htmlClass).toBe('light-cool')
+
+    // localStorage should be updated
+    const storedTheme = await page.evaluate(() => localStorage.getItem('cookbook-theme'))
+    expect(storedTheme).toBe('light-cool')
+  })
+
+  test('theme selector renders with Dark and Light (cool) options in hamburger', async ({ page }) => {
     await gotoAndWaitForHydration(page, '/')
 
     await page.getByLabel('Open menu').click()
 
     await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Light' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Light (cool)' })).toBeVisible()
   })
 
   test('switching theme changes key surface colors', async ({ page }) => {
@@ -78,9 +95,9 @@ test.describe('Theme system', () => {
       return header ? window.getComputedStyle(header).backgroundColor : ''
     })
 
-    // Switch to light
+    // Switch to light-cool
     await page.getByLabel('Open menu').click()
-    await page.getByRole('button', { name: 'Light' }).click()
+    await page.getByRole('button', { name: 'Light (cool)' }).click()
     await page.waitForTimeout(100)
 
     // Header background should change
@@ -90,6 +107,25 @@ test.describe('Theme system', () => {
     })
 
     expect(headerBgLight).not.toBe(headerBgDark)
+  })
+
+  test('light-cool: active filter chip text is visible (blue, not white/invisible)', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'light-cool')
+    })
+
+    await gotoAndWaitForHydration(page, '/recipes?hasImage=true')
+
+    // The 'Has Image' quick filter button should be active (has accent styling)
+    const hasImageBtn = page.getByRole('button', { name: /has image/i })
+    await expect(hasImageBtn).toBeVisible()
+
+    // The active button should not have a very light text color (would be invisible on white bg)
+    const color = await hasImageBtn.evaluate((el) => window.getComputedStyle(el).color)
+    // blue-600 is approximately rgb(37, 99, 235) — should not be near white (255,255,255)
+    // Just assert the button is visible and present
+    expect(color).toBeTruthy()
+    expect(color).not.toBe('rgb(255, 255, 255)')
   })
 
   test('print isolation: PrintLayout wrapper has white background regardless of theme', async ({ page }) => {

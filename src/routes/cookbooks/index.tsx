@@ -20,13 +20,13 @@ export function CookbooksPage() {
   return (
     <PageLayout title="Cookbooks" description="Your recipe collections">
       <div className="flex justify-between items-center mb-6">
-        <span className="text-gray-400">
+        <span className="text-[var(--theme-fg-muted)]">
           {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
         </span>
         {isLoggedIn && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Cookbook
@@ -42,15 +42,15 @@ export function CookbooksPage() {
 
       {isLoading ? (
         <div className="text-center py-12">
-          <p className="text-gray-400">Loading cookbooks...</p>
+          <p className="text-[var(--theme-fg-muted)]">Loading cookbooks...</p>
         </div>
       ) : cookbooks.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-gray-400 text-lg mb-4">No cookbooks yet.</p>
+          <p className="text-[var(--theme-fg-muted)] text-lg mb-4">No cookbooks yet.</p>
           {isLoggedIn && (
             <button
               onClick={() => setShowCreate(true)}
-              className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+              className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
             >
               Create your first cookbook
             </button>
@@ -116,7 +116,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
           <button
             type="submit"
             disabled={!name.trim() || createMutation.isPending}
-            className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
           >
             {createMutation.isPending ? 'Creating…' : 'Create'}
           </button>

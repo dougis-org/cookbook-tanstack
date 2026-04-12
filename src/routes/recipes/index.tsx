@@ -35,9 +35,9 @@ export const Route = createFileRoute('/recipes/')({
 /** Badge showing an active filter with an X to remove it. */
 function ActiveBadge({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1 pl-2.5 pr-1 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 text-xs font-medium">
+    <span className="inline-flex items-center gap-1 pl-2.5 pr-1 py-0.5 rounded-full bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/50 text-[var(--theme-accent)] text-xs font-medium">
       {label}
-      <button onClick={onRemove} aria-label={`Remove ${label} filter`} className="p-0.5 rounded-full hover:bg-cyan-500/30 transition-colors">
+      <button onClick={onRemove} aria-label={`Remove ${label} filter`} className="p-0.5 rounded-full hover:bg-[var(--theme-accent)]/20 transition-colors">
         <X className="w-3 h-3" />
       </button>
     </span>
@@ -203,7 +203,7 @@ function RecipesPage() {
               </Link>
               <Link
                 to="/recipes/new"
-                className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50 text-sm"
+                className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
               >
                 <Plus className="w-4 h-4" />
                 New Recipe
@@ -278,7 +278,7 @@ function RecipesPage() {
               Clear all filters
             </button>
           ) : isLoggedIn ? (
-            <Link to="/recipes/new" className="inline-flex items-center gap-2 px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors">
+            <Link to="/recipes/new" className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors">
               <Plus className="w-5 h-5" />
               Create your first recipe
             </Link>

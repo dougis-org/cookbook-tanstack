@@ -25,10 +25,10 @@ export default function ProfileInfo() {
           <img
             src={user.image}
             alt={user.name || "User avatar"}
-            className="w-20 h-20 rounded-full object-cover border-2 border-cyan-500"
+            className="w-20 h-20 rounded-full object-cover border-2 border-[var(--theme-accent)]"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-[var(--theme-surface-raised)] flex items-center justify-center border-2 border-cyan-500">
+          <div className="w-20 h-20 rounded-full bg-[var(--theme-surface-raised)] flex items-center justify-center border-2 border-[var(--theme-accent)]">
             <User className="w-10 h-10 text-[var(--theme-fg-subtle)]" />
           </div>
         )}
@@ -40,12 +40,12 @@ export default function ProfileInfo() {
 
       <div className="space-y-3">
         <div className="flex items-center gap-3 text-[var(--theme-fg-muted)]">
-          <Mail className="w-5 h-5 text-cyan-400" />
+          <Mail className="w-5 h-5 text-[var(--theme-accent)]" />
           <span>{user.email}</span>
         </div>
         {("username" in user) && user.username && (
           <div className="flex items-center gap-3 text-[var(--theme-fg-muted)]">
-            <AtSign className="w-5 h-5 text-cyan-400" />
+            <AtSign className="w-5 h-5 text-[var(--theme-accent)]" />
             <span>{user.username as string}</span>
           </div>
         )}
