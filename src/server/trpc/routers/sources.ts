@@ -68,6 +68,12 @@ export const sourcesRouter = router({
         name: input.name,
         url: input.url ?? null,
       }).save();
-      return source.toObject();
+      return {
+        id: source._id.toString(),
+        name: source.name,
+        url: source.url ?? null,
+        createdAt: source.createdAt,
+        updatedAt: source.updatedAt,
+      };
     }),
 });

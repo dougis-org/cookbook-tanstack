@@ -252,7 +252,8 @@ export const recipesRouter = router({
         preparationIds: preparationIds ?? [],
       }).save();
       return {
-        ...recipe.toObject({ virtuals: true }),
+        ...recipe.toObject(),
+        id: recipe._id.toString(),
         userId: recipe.userId?.toString(),
       };
     }),
@@ -286,7 +287,7 @@ export const recipesRouter = router({
       const doc = await Recipe.findByIdAndUpdate(
         id,
         { $set: updateData },
-        { new: true },
+        { returnDocument: "after" },
       ).select('-marked').lean();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
