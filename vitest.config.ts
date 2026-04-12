@@ -1,14 +1,11 @@
 import { defineConfig } from "vitest/config";
 import viteReact from "@vitejs/plugin-react";
-import viteTsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-    viteReact(),
-  ],
+  resolve: {
+    tsconfigPaths: true,
+  },
+  plugins: [viteReact()],
   test: {
     globalSetup: ["./src/test-helpers/db-global-setup.ts"],
     environment: "jsdom",
