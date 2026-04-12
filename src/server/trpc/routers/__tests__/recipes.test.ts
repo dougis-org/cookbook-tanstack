@@ -538,6 +538,7 @@ describe("recipes.create", () => {
       const caller = await makeAuthCaller(user.id);
       const result = await caller.recipes.create({ name: "My New Recipe" });
       expect(result).toMatchObject({ name: "My New Recipe", userId: user.id });
+      expect(result.id).toEqual(expect.any(String));
     });
   });
 });

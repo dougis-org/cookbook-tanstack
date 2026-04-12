@@ -149,7 +149,9 @@ describe("sources.create", () => {
       await withCleanDb(async () => {
         const user = await seedUser();
         const caller = await makeAuthCaller(user.id);
-        expect(await caller.sources.create(input)).toMatchObject(expected);
+        const result = await caller.sources.create(input);
+        expect(result).toMatchObject(expected);
+        expect(result.id).toEqual(expect.any(String));
       });
     },
   );
