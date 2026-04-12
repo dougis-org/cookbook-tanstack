@@ -1,7 +1,8 @@
 import { useState } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { authClient } from "@/lib/auth-client"
 import { validateEmail } from "@/lib/validation"
+import { REDIRECT_REASON_MESSAGES, type RedirectReason } from "@/lib/auth-guard"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
@@ -11,8 +12,13 @@ interface FieldErrors {
   password?: string
 }
 
+function isSafeRedirectPath(path: string | undefined): path is string {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//")
+}
+
 export default function LoginForm() {
   const navigate = useNavigate()
+  const { reason, from } = useSearch({ strict: false }) as { reason?: RedirectReason; from?: string }
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -36,7 +42,7 @@ export default function LoginForm() {
     await authClient.signIn.email(
       { email, password, rememberMe },
       {
-        onSuccess: () => navigate({ to: "/" }),
+        onSuccess: () => navigate({ to: isSafeRedirectPath(from) ? from : "/" }),
         onError: (ctx) => setError(ctx.error.message || "Invalid credentials"),
       },
     )
@@ -44,8 +50,17 @@ export default function LoginForm() {
     setIsLoading(false)
   }
 
+  const bannerMessage = reason && reason in REDIRECT_REASON_MESSAGES
+    ? REDIRECT_REASON_MESSAGES[reason]
+    : null
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      {bannerMessage && (
+        <div className="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-300">
+          {bannerMessage}
+        </div>
+      )}
       <FormError message={error} />
       <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldErrors.email} />
       <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="Your password" required error={fieldErrors.password} />

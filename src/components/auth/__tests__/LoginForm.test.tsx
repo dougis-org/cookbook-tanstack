@@ -4,12 +4,14 @@ import { mockAuthError } from "@/lib/__tests__/test-helpers"
 
 const mockNavigate = vi.fn()
 const mockSignInEmail = vi.fn()
+let mockSearchParams: { reason?: string; from?: string } = {}
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
   ),
   useNavigate: () => mockNavigate,
+  useSearch: () => mockSearchParams,
 }))
 
 vi.mock("@/lib/auth-client", () => ({
@@ -17,10 +19,12 @@ vi.mock("@/lib/auth-client", () => ({
 }))
 
 import LoginForm from "@/components/auth/LoginForm"
+import { REDIRECT_REASON_MESSAGES } from "@/lib/auth-guard"
 
 describe("LoginForm", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockSearchParams = {}
     mockSignInEmail.mockResolvedValue({})
   })
 
@@ -102,5 +106,71 @@ describe("LoginForm", () => {
 
     expect(screen.getByText("Create one")).toHaveAttribute("href", "/auth/register")
     expect(screen.getByText("Forgot password?")).toHaveAttribute("href", "/auth/forgot-password")
+  })
+
+  describe("redirect banner", () => {
+    it("renders banner when reason=auth-required", () => {
+      mockSearchParams = { reason: "auth-required" }
+      render(<LoginForm />)
+      expect(screen.getByText(REDIRECT_REASON_MESSAGES["auth-required"])).toBeInTheDocument()
+    })
+
+    it("does not render banner when no reason param", () => {
+      mockSearchParams = {}
+      render(<LoginForm />)
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
+    })
+
+    it("does not render banner for unknown reason value", () => {
+      mockSearchParams = { reason: "unknown-value" }
+      render(<LoginForm />)
+      // Neither known message should appear
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["tier-limit-reached"])).not.toBeInTheDocument()
+    })
+  })
+
+  describe("post-login redirect", () => {
+    async function submitSuccessful() {
+      fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: "test@example.com" } })
+      fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: "password123" } })
+
+      // Trigger onSuccess callback
+      mockSignInEmail.mockImplementation((_creds: unknown, callbacks: { onSuccess: () => void }) => {
+        callbacks.onSuccess()
+        return Promise.resolve({})
+      })
+
+      fireEvent.click(screen.getByRole("button", { name: /sign in/i }))
+      await waitFor(() => expect(mockNavigate).toHaveBeenCalled())
+    }
+
+    it("navigates to valid relative from param after success", async () => {
+      mockSearchParams = { from: "/recipes/new" }
+      render(<LoginForm />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/recipes/new" })
+    })
+
+    it("navigates to / when no from param", async () => {
+      mockSearchParams = {}
+      render(<LoginForm />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
+
+    it("navigates to / when from is an absolute URL (open-redirect rejected)", async () => {
+      mockSearchParams = { from: "http://evil.com" }
+      render(<LoginForm />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
+
+    it("navigates to / when from is protocol-relative (open-redirect rejected)", async () => {
+      mockSearchParams = { from: "//evil.com" }
+      render(<LoginForm />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
   })
 })
