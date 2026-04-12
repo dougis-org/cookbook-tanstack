@@ -360,6 +360,7 @@ describe("cookbooks.update", () => {
         description: "Updated",
       });
       expect(result).toMatchObject({
+        id: cb.id,
         name: "New Name",
         description: "Updated",
       });

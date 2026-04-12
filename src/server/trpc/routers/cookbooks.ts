@@ -338,7 +338,7 @@ export const cookbooksRouter = router({
         { $set: data },
         { returnDocument: "after" },
       ).lean();
-      return updated;
+      return updated ? { ...updated, id: updated._id.toString() } : null;
     }),
 
   delete: protectedProcedure
