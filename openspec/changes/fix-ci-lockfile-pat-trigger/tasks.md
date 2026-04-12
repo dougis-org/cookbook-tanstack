@@ -13,15 +13,16 @@
   3. Set resource owner to `dougis-org`
   4. Set repository access to "Only selected repositories" → select `cookbook-tanstack`
   5. Under "Repository permissions", set `Contents` to **Read and write**; leave all others as No access
-  6. Set expiration as desired (or no expiry — see design.md for trade-offs)
+  6. Set a reasonable expiration (90–365 days); set a calendar reminder to rotate before it expires
   7. Generate and copy the token value immediately
 
-- [x] **Store PAT as repo secret:**
-  1. Go to `dougis-org/cookbook-tanstack` → Settings → Secrets and variables → Actions
-  2. Click "New repository secret"
+- [x] **Store PAT as org secret:**
+  1. Go to `dougis-org` → Settings → Secrets and variables → Actions
+  2. Click "New organization secret"
   3. Name: `WORKFLOW_PAT`
   4. Value: paste the PAT copied above
-  5. Save
+  5. Repository access: "Selected repositories" → select `cookbook-tanstack`
+  6. Save
 
 ## Execution
 
