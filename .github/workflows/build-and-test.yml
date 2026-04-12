@@ -45,6 +45,7 @@ jobs:
           # For same-repo PRs, check out the PR head SHA so we can commit and push back.
           # For fork PRs and push events, use the default ref (github.ref).
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.ref }}
+          token: ${{ secrets.WORKFLOW_PAT }}
 
       - name: Detect automation-triggered lockfile update
         run: |
