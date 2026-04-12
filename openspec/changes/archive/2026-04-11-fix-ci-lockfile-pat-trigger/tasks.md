@@ -43,12 +43,12 @@
 ## Validation
 
 - [x] Run type checks — `npx tsc --noEmit` (workflow file is YAML, but confirm no TS errors in the repo)
-- [ ] Run build — `npm run build`
-- [ ] Open a test PR with a dep change that drifts the lockfile (or manually delete a line from `package-lock.json` and commit it to a branch), then:
+- [x] Run build — `npm run build`
+- [x] Open a test PR with a dep change that drifts the lockfile (or manually delete a line from `package-lock.json` and commit it to a branch), then:
   - Observe Run #1 auto-commits the lockfile with message `chore: update package-lock.json [ci-auto-lock-update]`
   - Observe Run #2 is triggered automatically on the bot commit
   - Confirm all four required checks are green on the bot-commit SHA in the "Checks" tab
-- [ ] All completed tasks marked as complete
+- [x] All completed tasks marked as complete
 
 ## Remote push validation
 
@@ -63,11 +63,11 @@ Verification requirements (all must pass before pushing):
 
 - [x] Commit all changes to `fix/ci-lockfile-pat-trigger` and push to remote
 - [x] Open PR from `fix/ci-lockfile-pat-trigger` to `main`
-- [ ] Wait 120 seconds for automated reviewer comments
-- [ ] **Monitor PR comments** — address any comments, commit fixes, validate locally, push; repeat until no unresolved comments remain
+- [x] Wait 120 seconds for automated reviewer comments
+- [x] **Monitor PR comments** — address any comments, commit fixes, validate locally, push; repeat until no unresolved comments remain
 - [x] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — diagnose and fix any failures, push, repeat until all checks pass
-- [ ] Wait for PR to merge — never force-merge
+- [x] **Monitor CI checks** — diagnose and fix any failures, push, repeat until all checks pass
+- [x] Wait for PR to merge — never force-merge
 
 Ownership metadata:
 
@@ -83,10 +83,10 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on main
-- [ ] Mark all remaining tasks as complete
-- [ ] Archive the change: move `openspec/changes/fix-ci-lockfile-pat-trigger/` to `openspec/changes/archive/2026-04-11-fix-ci-lockfile-pat-trigger/` in a single commit
-- [ ] Confirm archive exists and old path is gone
-- [ ] Commit and push the archive to main
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d fix/ci-lockfile-pat-trigger`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on main
+- [x] Mark all remaining tasks as complete
+- [x] Archive the change: move `openspec/changes/fix-ci-lockfile-pat-trigger/` to `openspec/changes/archive/2026-04-11-fix-ci-lockfile-pat-trigger/` in a single commit
+- [x] Confirm archive exists and old path is gone
+- [x] Commit and push the archive to main
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d fix/ci-lockfile-pat-trigger`
