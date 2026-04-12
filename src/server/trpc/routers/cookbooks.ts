@@ -46,6 +46,16 @@ function docFromStub(stub: { recipeId: unknown }, map: Map<string, any>): any | 
   return map.get(stub.recipeId != null ? String(stub.recipeId) : "") ?? null;
 }
 
+function toObjectIds(values: unknown[]): Types.ObjectId[] {
+  return values.flatMap((value) => {
+    if (value instanceof Types.ObjectId) return [value];
+    if (typeof value === "string" && Types.ObjectId.isValid(value)) {
+      return [new Types.ObjectId(value)];
+    }
+    return [];
+  });
+}
+
 /** Shared cookbook shape fields returned by both byId and printById. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function cookbookCoreFields(cb: any) {
@@ -156,7 +166,7 @@ export const cookbooksRouter = router({
       const recipeVisFilter = visibilityFilter(ctx.user);
 
       // Fetch the actual Recipe docs for the ordered stubs
-      const recipeIds = stubs.map((s) => s.recipeId);
+      const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
@@ -210,7 +220,7 @@ export const cookbooksRouter = router({
       if (!row) return null;
 
       const { cookbook, stubs } = row;
-      const recipeIds = stubs.map((s) => s.recipeId);
+      const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
@@ -326,9 +336,9 @@ export const cookbooksRouter = router({
       const updated = await Cookbook.findByIdAndUpdate(
         id,
         { $set: data },
-        { new: true },
+        { returnDocument: "after" },
       ).lean();
-      return updated;
+      return updated ? { ...updated, id: updated._id.toString() } : null;
     }),
 
   delete: protectedProcedure
