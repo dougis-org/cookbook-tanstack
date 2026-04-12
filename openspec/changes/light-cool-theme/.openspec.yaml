@@ -1,0 +1,6 @@
+schema: sdd-with-feedback-loop
+change: light-cool-theme
+status: proposed
+github_issues:
+  - dougis-org/cookbook-tanstack#302
+  - dougis-org/cookbook-tanstack#308
