@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link, useNavigate, useSearch } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { authClient } from "@/lib/auth-client"
 import { validateEmail } from "@/lib/validation"
 import { REDIRECT_REASON_MESSAGES, type RedirectReason } from "@/lib/auth-guard"
@@ -12,13 +12,17 @@ interface FieldErrors {
   password?: string
 }
 
+interface LoginFormProps {
+  reason?: RedirectReason
+  from?: string
+}
+
 function isSafeRedirectPath(path: string | undefined): path is string {
   return typeof path === "string" && path.startsWith("/") && !path.startsWith("//")
 }
 
-export default function LoginForm() {
+export default function LoginForm({ reason, from }: LoginFormProps) {
   const navigate = useNavigate()
-  const { reason, from } = useSearch({ strict: false }) as { reason?: RedirectReason; from?: string }
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)

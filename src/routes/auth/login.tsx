@@ -16,9 +16,10 @@ export const Route = createFileRoute("/auth/login")({
 })
 
 function LoginPage() {
+  const { reason, from } = Route.useSearch()
   return (
     <AuthPageLayout icon={LogIn} title="Sign In">
-      <LoginForm />
+      <LoginForm reason={reason} from={from} />
     </AuthPageLayout>
   )
 }

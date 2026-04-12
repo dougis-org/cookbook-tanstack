@@ -4,14 +4,12 @@ import { mockAuthError } from "@/lib/__tests__/test-helpers"
 
 const mockNavigate = vi.fn()
 const mockSignInEmail = vi.fn()
-let mockSearchParams: { reason?: string; from?: string } = {}
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
   ),
   useNavigate: () => mockNavigate,
-  useSearch: () => mockSearchParams,
 }))
 
 vi.mock("@/lib/auth-client", () => ({
@@ -24,7 +22,6 @@ import { REDIRECT_REASON_MESSAGES } from "@/lib/auth-guard"
 describe("LoginForm", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSearchParams = {}
     mockSignInEmail.mockResolvedValue({})
   })
 
@@ -110,20 +107,18 @@ describe("LoginForm", () => {
 
   describe("redirect banner", () => {
     it("renders banner when reason=auth-required", () => {
-      mockSearchParams = { reason: "auth-required" }
-      render(<LoginForm />)
+      render(<LoginForm reason="auth-required" />)
       expect(screen.getByText(REDIRECT_REASON_MESSAGES["auth-required"])).toBeInTheDocument()
     })
 
-    it("does not render banner when no reason param", () => {
-      mockSearchParams = {}
+    it("does not render banner when no reason prop", () => {
       render(<LoginForm />)
       expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
     })
 
     it("does not render banner for unknown reason value", () => {
-      mockSearchParams = { reason: "unknown-value" }
-      render(<LoginForm />)
+      // TypeScript won't allow passing an invalid reason, so we cast here for the test
+      render(<LoginForm reason={"unknown-value" as never} />)
       // Neither known message should appear
       expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
       expect(screen.queryByText(REDIRECT_REASON_MESSAGES["tier-limit-reached"])).not.toBeInTheDocument()
@@ -146,29 +141,25 @@ describe("LoginForm", () => {
     }
 
     it("navigates to valid relative from param after success", async () => {
-      mockSearchParams = { from: "/recipes/new" }
-      render(<LoginForm />)
+      render(<LoginForm from="/recipes/new" />)
       await submitSuccessful()
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/recipes/new" })
     })
 
-    it("navigates to / when no from param", async () => {
-      mockSearchParams = {}
+    it("navigates to / when no from prop", async () => {
       render(<LoginForm />)
       await submitSuccessful()
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
     })
 
     it("navigates to / when from is an absolute URL (open-redirect rejected)", async () => {
-      mockSearchParams = { from: "http://evil.com" }
-      render(<LoginForm />)
+      render(<LoginForm from="http://evil.com" />)
       await submitSuccessful()
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
     })
 
     it("navigates to / when from is protocol-relative (open-redirect rejected)", async () => {
-      mockSearchParams = { from: "//evil.com" }
-      render(<LoginForm />)
+      render(<LoginForm from="//evil.com" />)
       await submitSuccessful()
       expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
     })

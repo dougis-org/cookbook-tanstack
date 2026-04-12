@@ -178,9 +178,9 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `feat/auth-route-protection` to `main`; reference `dougis-org/cookbook-tanstack#299` in the PR description
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `feat/auth-route-protection` to `main`; reference `dougis-org/cookbook-tanstack#299` in the PR description
 - [ ] Wait for 120 seconds for agentic reviewers to post their comments
 - [ ] **Monitor PR comments** — when comments appear, address them, commit fixes, follow all steps in Remote push validation, then push; repeat until no unresolved comments remain
 - [ ] Enable auto-merge once no blocking review comments remain

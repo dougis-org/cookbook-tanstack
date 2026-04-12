@@ -21,14 +21,14 @@ export function requireAuth() {
     location,
   }: {
     context: RouterContext
-    location: { pathname: string; search: string }
+    location: { href: string }
   }) => {
     if (!context.session) {
       throw redirect({
         to: '/auth/login',
         search: {
           reason: 'auth-required' as RedirectReason,
-          from: location.pathname + (location.search ?? ''),
+          from: location.href,
         },
       })
     }

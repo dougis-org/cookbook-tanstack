@@ -11,7 +11,7 @@ describe('requireAuth()', () => {
   it('throws a redirect when session is null', () => {
     const guard = requireAuth()
     expect(() =>
-      guard({ context: { session: null }, location: { pathname: '/recipes/new', search: '' } }),
+      guard({ context: { session: null }, location: { href: '/recipes/new' } }),
     ).toThrow()
   })
 
@@ -19,7 +19,7 @@ describe('requireAuth()', () => {
     const guard = requireAuth()
     let thrown: unknown
     try {
-      guard({ context: { session: null }, location: { pathname: '/recipes/new', search: '' } })
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
     } catch (e) {
       thrown = e
     }
@@ -31,7 +31,7 @@ describe('requireAuth()', () => {
     const guard = requireAuth()
     let thrown: unknown
     try {
-      guard({ context: { session: null }, location: { pathname: '/recipes/new', search: '' } })
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
     } catch (e) {
       thrown = e
     }
@@ -40,11 +40,11 @@ describe('requireAuth()', () => {
     })
   })
 
-  it('thrown redirect search contains from equal to the location pathname + search', () => {
+  it('thrown redirect search contains from equal to the location href', () => {
     const guard = requireAuth()
     let thrown: unknown
     try {
-      guard({ context: { session: null }, location: { pathname: '/recipes/new', search: '' } })
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
     } catch (e) {
       thrown = e
     }
@@ -53,15 +53,16 @@ describe('requireAuth()', () => {
     })
   })
 
-  it('from param is a relative path (starts with /) even when search is non-empty', () => {
+  it('from param is a relative path (starts with /) including query string', () => {
     const guard = requireAuth()
     let thrown: unknown
     try {
-      guard({ context: { session: null }, location: { pathname: '/recipes', search: '?search=pasta' } })
+      guard({ context: { session: null }, location: { href: '/recipes?search=pasta' } })
     } catch (e) {
       thrown = e
     }
-    const from = (thrown as ReturnType<typeof redirect>).options.search?.from as string
+    const search = (thrown as ReturnType<typeof redirect>).options.search as unknown as Record<string, string>
+    const from = search?.from
     expect(from).toMatch(/^\//)
     expect(from).not.toContain('http')
     expect(from).toBe('/recipes?search=pasta')
@@ -72,7 +73,7 @@ describe('requireAuth()', () => {
     expect(() =>
       guard({
         context: { session: mockSession as never },
-        location: { pathname: '/recipes/new', search: '' },
+        location: { href: '/recipes/new' },
       }),
     ).not.toThrow()
   })
