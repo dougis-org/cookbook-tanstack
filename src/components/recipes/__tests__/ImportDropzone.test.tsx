@@ -111,7 +111,8 @@ describe('ImportDropzone', () => {
       render(<ImportDropzone onFileSelected={vi.fn()} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
       expect(dropZone.className).toContain('border-[var(--theme-border)]')
-      expect(dropZone.className).not.toContain('border-[var(--theme-accent)]')
+      // Active drag class is the bare (non-hover-prefixed) accent border
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
     it('border changes to border-[var(--theme-accent)] when dragging over', () => {
@@ -132,7 +133,7 @@ describe('ImportDropzone', () => {
       fireEvent.dragLeave(dropZone)
 
       expect(dropZone.className).toContain('border-[var(--theme-border)]')
-      expect(dropZone.className).not.toContain('border-[var(--theme-accent)]')
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
     it('border returns to border-[var(--theme-border)] after drop', () => {
@@ -145,7 +146,7 @@ describe('ImportDropzone', () => {
       fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
 
       expect(dropZone.className).toContain('border-[var(--theme-border)]')
-      expect(dropZone.className).not.toContain('border-[var(--theme-accent)]')
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
     it('border stays accent when pointer moves between child elements (no flicker)', () => {
