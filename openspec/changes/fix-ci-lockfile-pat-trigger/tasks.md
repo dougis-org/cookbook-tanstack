@@ -41,7 +41,7 @@
 
 ## Validation
 
-- [ ] Run type checks — `npx tsc --noEmit` (workflow file is YAML, but confirm no TS errors in the repo)
+- [x] Run type checks — `npx tsc --noEmit` (workflow file is YAML, but confirm no TS errors in the repo)
 - [ ] Run build — `npm run build`
 - [ ] Open a test PR with a dep change that drifts the lockfile (or manually delete a line from `package-lock.json` and commit it to a branch), then:
   - Observe Run #1 auto-commits the lockfile with message `chore: update package-lock.json [ci-auto-lock-update]`
@@ -60,11 +60,11 @@ Verification requirements (all must pass before pushing):
 
 ## PR and Merge
 
-- [ ] Commit all changes to `fix/ci-lockfile-pat-trigger` and push to remote
-- [ ] Open PR from `fix/ci-lockfile-pat-trigger` to `main`
+- [x] Commit all changes to `fix/ci-lockfile-pat-trigger` and push to remote
+- [x] Open PR from `fix/ci-lockfile-pat-trigger` to `main`
 - [ ] Wait 120 seconds for automated reviewer comments
 - [ ] **Monitor PR comments** — address any comments, commit fixes, validate locally, push; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
+- [x] Enable auto-merge once no blocking review comments remain
 - [ ] **Monitor CI checks** — diagnose and fix any failures, push, repeat until all checks pass
 - [ ] Wait for PR to merge — never force-merge
 
