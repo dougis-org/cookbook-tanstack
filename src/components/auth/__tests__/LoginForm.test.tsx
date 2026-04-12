@@ -17,6 +17,7 @@ vi.mock("@/lib/auth-client", () => ({
 }))
 
 import LoginForm from "@/components/auth/LoginForm"
+import { REDIRECT_REASON_MESSAGES } from "@/lib/auth-guard"
 
 describe("LoginForm", () => {
   beforeEach(() => {
@@ -102,5 +103,65 @@ describe("LoginForm", () => {
 
     expect(screen.getByText("Create one")).toHaveAttribute("href", "/auth/register")
     expect(screen.getByText("Forgot password?")).toHaveAttribute("href", "/auth/forgot-password")
+  })
+
+  describe("redirect banner", () => {
+    it("renders banner when reason=auth-required", () => {
+      render(<LoginForm reason="auth-required" />)
+      expect(screen.getByText(REDIRECT_REASON_MESSAGES["auth-required"])).toBeInTheDocument()
+    })
+
+    it("does not render banner when no reason prop", () => {
+      render(<LoginForm />)
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
+    })
+
+    it("does not render banner for unknown reason value", () => {
+      // TypeScript won't allow passing an invalid reason, so we cast here for the test
+      render(<LoginForm reason={"unknown-value" as never} />)
+      // Neither known message should appear
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["auth-required"])).not.toBeInTheDocument()
+      expect(screen.queryByText(REDIRECT_REASON_MESSAGES["tier-limit-reached"])).not.toBeInTheDocument()
+    })
+  })
+
+  describe("post-login redirect", () => {
+    async function submitSuccessful() {
+      fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: "test@example.com" } })
+      fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: "password123" } })
+
+      // Trigger onSuccess callback
+      mockSignInEmail.mockImplementation((_creds: unknown, callbacks: { onSuccess: () => void }) => {
+        callbacks.onSuccess()
+        return Promise.resolve({})
+      })
+
+      fireEvent.click(screen.getByRole("button", { name: /sign in/i }))
+      await waitFor(() => expect(mockNavigate).toHaveBeenCalled())
+    }
+
+    it("navigates to valid relative from param after success", async () => {
+      render(<LoginForm from="/recipes/new" />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/recipes/new" })
+    })
+
+    it("navigates to / when no from prop", async () => {
+      render(<LoginForm />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
+
+    it("navigates to / when from is an absolute URL (open-redirect rejected)", async () => {
+      render(<LoginForm from="http://evil.com" />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
+
+    it("navigates to / when from is protocol-relative (open-redirect rejected)", async () => {
+      render(<LoginForm from="//evil.com" />)
+      await submitSuccessful()
+      expect(mockNavigate).toHaveBeenCalledWith({ to: "/" })
+    })
   })
 })
