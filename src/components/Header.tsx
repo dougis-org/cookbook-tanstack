@@ -167,18 +167,6 @@ export default function Header() {
     setIsOpen(false)
   }
 
-  function handleContainerKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Escape' && dropdownOpen) {
-      e.preventDefault()
-      if (previewId !== null) {
-        document.documentElement.className = theme
-        setPreviewId(null)
-        setIsOpen(false)
-      }
-      setDropdownOpen(false)
-    }
-  }
-
   function handleListboxKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     switch (e.key) {
       case 'ArrowDown':
@@ -445,7 +433,7 @@ export default function Header() {
           <p className="text-xs font-medium text-[var(--theme-fg-subtle)] mb-2 uppercase tracking-wider">
             Theme
           </p>
-          <div ref={dropdownContainerRef} className="relative" onKeyDown={handleContainerKeyDown}>
+          <div ref={dropdownContainerRef} className="relative">
             {/* Dropdown trigger */}
             <button
               data-testid="theme-dropdown-trigger"

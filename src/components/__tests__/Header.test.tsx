@@ -266,6 +266,22 @@ describe("Header theme dropdown", () => {
     expect(options[1]).toHaveAttribute("tabIndex", "0")
   })
 
+  // T2k2
+  it("ArrowUp moves keyboard focus to the previous option", () => {
+    render(<Header />)
+    openDropdown()
+    const options = screen.getAllByRole("option")
+    const listbox = screen.getByRole("listbox")
+
+    // Move focus to second option, then ArrowUp back to first
+    fireEvent.keyDown(listbox, { key: "ArrowDown" })
+    expect(options[1]).toHaveAttribute("tabIndex", "0")
+    fireEvent.keyDown(listbox, { key: "ArrowUp" })
+
+    expect(options[1]).toHaveAttribute("tabIndex", "-1")
+    expect(options[0]).toHaveAttribute("tabIndex", "0")
+  })
+
   // T2l
   it("Enter while dropdown is open selects the active option", () => {
     render(<Header />)

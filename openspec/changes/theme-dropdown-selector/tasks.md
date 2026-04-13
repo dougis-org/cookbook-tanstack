@@ -30,6 +30,8 @@ Tests live in `src/components/__tests__/Header.test.tsx` alongside existing Head
 - [x] **T2h** Test: unmounting Header while preview is active reverts `document.documentElement.className`
 - [x] **T2i** Test: trigger button has `aria-expanded="false"` when closed, `aria-expanded="true"` when open
 - [x] **T2j** Test: options container has `role="listbox"`; each option has `role="option"` and correct `aria-selected`
+- [x] **T2k** Test: ArrowDown/ArrowUp move focus to next/previous option
+- [x] **T2l** Test: Enter selects the focused option
 
 Verify tests fail before implementation: `npx vitest run src/components/__tests__/Header.test.tsx`
 

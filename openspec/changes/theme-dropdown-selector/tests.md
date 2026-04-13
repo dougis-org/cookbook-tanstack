@@ -21,7 +21,7 @@ For each task group in `tasks.md`:
 
 ### Unit Tests — `src/components/__tests__/Header.test.tsx`
 
-Mapped to tasks T2a–T2j and specs `dropdown-behavior.md` / `accessibility.md`.
+Mapped to tasks T2a–T2l and specs `dropdown-behavior.md` / `accessibility.md`.
 
 #### Dropdown rendering
 
@@ -57,6 +57,10 @@ Mapped to tasks T2a–T2j and specs `dropdown-behavior.md` / `accessibility.md`.
   - Spec: `accessibility.md` § ADDED ARIA roles — "Trigger reflects expanded state"
 - [ ] **T2j** — Options container has `role="listbox"`; committed-theme option has `aria-selected="true"`; others have `aria-selected="false"`
   - Spec: `accessibility.md` § ADDED ARIA roles — "Options container role" + "Each option role and selection state"
+- [ ] **T2k** — ArrowDown and ArrowUp move focus between adjacent options
+  - Spec: `accessibility.md` § ADDED Keyboard navigation — "ArrowDown moves focus to next option" and "ArrowUp moves focus to previous option"
+- [ ] **T2l** — Enter selects the currently focused option
+  - Spec: `accessibility.md` § ADDED Keyboard navigation — "Enter selects the focused option"
 
 ---
 
