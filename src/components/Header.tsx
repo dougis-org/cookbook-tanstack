@@ -201,7 +201,7 @@ export default function Header() {
 
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-[var(--theme-overlay)]"
+          className="fixed inset-0 z-40 bg-[var(--theme-overlay)] print:hidden"
           aria-hidden="true"
           onClick={() => setIsOpen(false)}
         />
