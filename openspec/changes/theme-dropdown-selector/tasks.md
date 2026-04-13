@@ -82,13 +82,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/theme-dropdown-selector` and push to remote
-- [ ] Open PR from `feat/theme-dropdown-selector` to `main` — title: `feat: theme dropdown selector with live preview (#313)`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until no unresolved comments
-- [ ] **Monitor CI checks** — poll autonomously; diagnose and fix failures, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until all checks pass
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feat/theme-dropdown-selector` and push to remote
+- [x] Open PR from `feat/theme-dropdown-selector` to `main` — title: `feat: theme dropdown selector with live preview (#313)`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until no unresolved comments
+- [x] **Monitor CI checks** — poll autonomously; diagnose and fix failures, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until all checks pass
 - [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report merge; never force-merge
 
 Ownership metadata:
