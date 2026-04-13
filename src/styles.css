@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./styles/themes/dark.css";
 @import "./styles/themes/light-cool.css";
+@import "./styles/themes/light-warm.css";
 
 /* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.
    Remaining dark: usages (badge tints, draft banner) depend on this. */

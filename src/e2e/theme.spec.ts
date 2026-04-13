@@ -86,6 +86,97 @@ test.describe('Theme system', () => {
     await expect(page.getByRole('button', { name: 'Light (cool)' })).toBeVisible()
   })
 
+  test('theme selector renders Dark, Light (cool), and Light (warm) options', async ({ page }) => {
+    await gotoAndWaitForHydration(page, '/')
+
+    await page.getByLabel('Open menu').click()
+
+    await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Light (cool)' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Light (warm)' })).toBeVisible()
+  })
+
+  test('switching to Light (warm) changes key surface colors', async ({ page }) => {
+    await gotoAndWaitForHydration(page, '/')
+
+    const headerBgDark = await page.evaluate(() => {
+      const header = document.querySelector('.site-header')
+      return header ? window.getComputedStyle(header).backgroundColor : ''
+    })
+
+    await page.getByLabel('Open menu').click()
+    await page.getByRole('button', { name: 'Light (warm)' }).click()
+    await page.waitForTimeout(100)
+
+    const headerBgWarm = await page.evaluate(() => {
+      const header = document.querySelector('.site-header')
+      return header ? window.getComputedStyle(header).backgroundColor : ''
+    })
+
+    expect(headerBgWarm).not.toBe(headerBgDark)
+  })
+
+  test('light-warm: active filter chip text matches the theme accent', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'light-warm')
+    })
+
+    await gotoAndWaitForHydration(page, '/recipes?hasImage=true')
+
+    const hasImageBtn = page.getByRole('button', { name: 'Has Image', exact: true })
+    await expect(hasImageBtn).toBeVisible()
+
+    const colors = await hasImageBtn.evaluate((el) => {
+      const buttonColor = window.getComputedStyle(el).color
+      const accentColor = window
+        .getComputedStyle(document.documentElement)
+        .getPropertyValue('--theme-accent')
+        .trim()
+
+      const swatch = document.createElement('div')
+      swatch.style.color = accentColor
+      document.body.appendChild(swatch)
+      const resolvedAccent = window.getComputedStyle(swatch).color
+      swatch.remove()
+
+      return { buttonColor, resolvedAccent }
+    })
+
+    expect(colors.buttonColor).toBe(colors.resolvedAccent)
+  })
+
+  test('Light (warm) theme persists across page reload', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'light-warm')
+    })
+
+    await gotoAndWaitForHydration(page, '/')
+
+    const htmlClassAfterLoad = await page.evaluate(() => document.documentElement.className)
+    expect(htmlClassAfterLoad).toContain('light-warm')
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    const htmlClassAfterReload = await page.evaluate(() => document.documentElement.className)
+    expect(htmlClassAfterReload).toContain('light-warm')
+
+    await page.getByLabel('Open menu').click()
+    const lightWarmBtn = page.getByRole('button', { name: 'Light (warm)' })
+    await expect(lightWarmBtn).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('no flash: html has light-warm class before hydration when light-warm stored', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'light-warm')
+    })
+
+    await page.goto('/', { waitUntil: 'commit' })
+
+    const htmlClass = await page.evaluate(() => document.documentElement.className)
+    expect(htmlClass).toContain('light-warm')
+  })
+
   test('switching theme changes key surface colors', async ({ page }) => {
     await gotoAndWaitForHydration(page, '/')
 

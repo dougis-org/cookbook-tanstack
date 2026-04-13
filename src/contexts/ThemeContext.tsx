@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 export const THEMES = [
   { id: 'dark', label: 'Dark' },
   { id: 'light-cool', label: 'Light (cool)' },
+  { id: 'light-warm', label: 'Light (warm)' },
 ] as const
 
 type ThemeId = (typeof THEMES)[number]['id']

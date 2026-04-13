@@ -49,7 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // Static string — no user data interpolated. Safe per design Decision 4.
   // Migrates legacy 'light' → 'light-cool' and applies from allowlist. Falls back to 'dark'.
   const themeInitScript =
-    'try{var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=(t==="dark"||t==="light-cool")?t:"dark";}catch(e){document.documentElement.className="dark";}'
+    'try{var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=(t==="dark"||t==="light-cool"||t==="light-warm")?t:"dark";}catch(e){document.documentElement.className="dark";}'
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
