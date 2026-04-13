@@ -43,16 +43,16 @@ test.describe('Header sidebar close behaviors', () => {
   // ── AC2: Selecting a theme closes sidebar ─────────────────────────────
 
   test('TC-04: clicking a non-active theme button closes sidebar and updates theme', async ({ page }) => {
-    // Default is dark; switch to light
+    // Default is dark; switch to light-cool
     await page.getByLabel('Open menu').click()
     const aside = page.locator('aside')
     await expect(aside).not.toHaveClass(/-translate-x-full/)
 
-    await page.getByRole('button', { name: 'Light' }).click()
+    await page.getByRole('button', { name: 'Light (cool)' }).click()
 
     await expect(aside).toHaveClass(/-translate-x-full/)
     const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('light')
+    expect(htmlClass).toContain('light-cool')
   })
 
   test('TC-05: clicking the already-active theme button still closes sidebar', async ({ page }) => {

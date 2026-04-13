@@ -54,7 +54,7 @@
 - Requirement: Selecting a theme while the sidebar is open closes the sidebar.
   - Design element: Updated theme button `onClick` (Decision 2).
   - Acceptance criteria reference: specs/sidebar-close-behavior.md — AC2.
-  - Testability notes: Playwright `click` on a theme button; assert sidebar dismissed and `data-theme` attribute on `<html>` updated.
+  - Testability notes: Playwright `click` on a theme button; assert sidebar dismissed and `<html>` has the expected theme class (e.g., `light-cool`).
 
 - Requirement: Existing close behaviors (X button, nav links, sign-out) continue to work.
   - Design element: No changes to those handlers.
