@@ -30,14 +30,14 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing.
-- [ ] Commit all changes to the working branch and push to remote.
-- [ ] Open PR from working branch to `main`.
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`.
-- [ ] **Monitor PR comments** — poll for new comments autonomously; address them, commit fixes, and push.
-- [ ] **Monitor CI checks** — poll for check status autonomously; diagnose and fix any failures.
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge.
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing.
+- [x] Commit all changes to the working branch and push to remote.
+- [x] Open PR from working branch to `main`.
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
+- [x] Enable auto-merge: `gh pr merge --auto --merge`.
+- [x] **Monitor PR comments** — poll for new comments autonomously; address them, commit fixes, and push.
+- [x] **Monitor CI checks** — poll for check status autonomously; diagnose and fix any failures.
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge.
 
 Ownership metadata:
 
@@ -52,11 +52,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`.
-- [ ] Verify the merged changes appear on the default branch.
-- [ ] Mark all remaining tasks as complete (`- [x]`).
-- [ ] Sync approved spec deltas into `openspec/specs/` (specifically `openspec/specs/readme-update/spec.md`).
-- [ ] Archive the change: move `openspec/changes/update-readme-implementation-status/` to `openspec/changes/archive/2026-04-13-update-readme-implementation-status/` and stage both in a single commit.
-- [ ] Confirm archive exists and original is gone.
-- [ ] Commit and push the archive to the default branch in one commit.
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d update-readme-status`.
+- [x] `git checkout main` and `git pull --ff-only`.
+- [x] Verify the merged changes appear on the default branch.
+- [x] Mark all remaining tasks as complete (`- [x]`).
+- [x] Sync approved spec deltas into `openspec/specs/` (specifically `openspec/specs/readme-update/spec.md`).
+- [x] Archive the change: move `openspec/changes/update-readme-implementation-status/` to `openspec/changes/archive/2026-04-13-update-readme-implementation-status/` and stage both in a single commit.
+- [x] Confirm archive exists and original is gone.
+- [x] Commit and push the archive to the default branch in one commit.
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d update-readme-status`.
