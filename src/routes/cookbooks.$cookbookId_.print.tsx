@@ -47,10 +47,8 @@ export function CookbookPrintPage() {
       const originalTitle = document.title
       document.title = printData.name
       window.print()
-      // Restore original title after print completes
-      return () => {
-        document.title = originalTitle
-      }
+      // Restore original title immediately after print dialog
+      document.title = originalTitle
     }
   }, [isLoading, printData, displayOnly])
 

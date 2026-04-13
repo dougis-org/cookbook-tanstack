@@ -113,11 +113,11 @@ If **any** of the above fail, fix and re-run before pushing.
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `openspec/skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/cookbook-print-margin-optimization` and push to remote
-- [ ] Open PR from `feat/cookbook-print-margin-optimization` to `main`
+- [x] Run the required pre-PR self-review from `openspec/skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feat/cookbook-print-margin-optimization` and push to remote
+- [x] Open PR from `feat/cookbook-print-margin-optimization` to `main` (PR #326)
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] Enable auto-merge: `gh pr merge 326 --auto --merge`
 - [ ] **Monitor PR comments** — poll autonomously; when comments appear, address them, run remote push validation, then push; wait 180 seconds and repeat
 - [ ] **Monitor CI checks** — poll autonomously; on any failure, diagnose and fix, run remote push validation, push; wait 180 seconds and repeat
 - [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report the merge; never force-merge
