@@ -176,11 +176,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Commit all changes to `feat/light-cool-theme` and push to remote
-- [ ] Open PR from `feat/light-cool-theme` to `main` — title: `feat: Light (cool) theme — comprehensive redesign (#302)`
+- [x] Commit all changes to `feat/light-cool-theme` and push to remote
+- [x] Open PR from `feat/light-cool-theme` to `main` — title: `feat: Light (cool) theme — comprehensive redesign (#302)`
 - [ ] Wait 120 seconds for agentic reviewers to post comments
 - [ ] **Monitor PR comments** — address each one, commit fixes, validate locally, push; repeat until no unresolved comments remain
-- [ ] Enable auto-merge once no blocking review comments remain
+- [x] Enable auto-merge once no blocking review comments remain
 - [ ] **Monitor CI checks** — diagnose failures, fix, validate locally, push; repeat until all checks pass
 - [ ] Wait for PR to merge — **never force-merge**
 
