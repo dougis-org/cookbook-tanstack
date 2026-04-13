@@ -1,4 +1,4 @@
-html.dark {
+html.dark, [data-theme="dark"] {
   --theme-bg: theme(colors.slate.900);
   --theme-surface: theme(colors.slate.800);
   --theme-surface-raised: theme(colors.gray.800);

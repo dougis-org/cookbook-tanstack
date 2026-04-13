@@ -1,4 +1,4 @@
-html.light-warm {
+html.light-warm, [data-theme="light-warm"] {
   --theme-bg: theme(colors.amber.50);
   --theme-surface: theme(colors.white);
   --theme-surface-raised: theme(colors.stone.50);

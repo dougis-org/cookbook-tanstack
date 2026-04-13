@@ -42,28 +42,34 @@ test.describe('Header sidebar close behaviors', () => {
 
   // ── AC2: Selecting a theme closes sidebar ─────────────────────────────
 
-  test('TC-04: clicking a non-active theme button closes sidebar and updates theme', async ({ page }) => {
-    // Default is dark; switch to light-cool
+  test('TC-04: selecting a non-active theme and pressing OK closes sidebar and commits theme', async ({ page }) => {
+    // Default is dark; switch to light-cool via dropdown
     await page.getByLabel('Open menu').click()
     const aside = page.locator('aside')
     await expect(aside).not.toHaveClass(/-translate-x-full/)
 
-    await page.getByRole('button', { name: 'Light (cool)' }).click()
+    await page.getByTestId('theme-dropdown-trigger').click()
+    await page.getByRole('option', { name: 'Light (cool)' }).click()
+    await page.getByRole('button', { name: 'OK' }).click()
 
     await expect(aside).toHaveClass(/-translate-x-full/)
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toContain('light-cool')
   })
 
-  test('TC-05: clicking the already-active theme button still closes sidebar', async ({ page }) => {
-    // Default is dark; click Dark (already active)
+  test('TC-05: pressing Cancel on the theme dropdown closes sidebar and reverts theme', async ({ page }) => {
+    // Default is dark; preview light-cool then cancel
     await page.getByLabel('Open menu').click()
     const aside = page.locator('aside')
     await expect(aside).not.toHaveClass(/-translate-x-full/)
 
-    await page.getByRole('button', { name: 'Dark' }).click()
+    await page.getByTestId('theme-dropdown-trigger').click()
+    await page.getByRole('option', { name: 'Light (cool)' }).click()
+    await page.getByRole('button', { name: 'Cancel' }).click()
 
     await expect(aside).toHaveClass(/-translate-x-full/)
+    const htmlClass = await page.evaluate(() => document.documentElement.className)
+    expect(htmlClass).toContain('dark')
   })
 
   // ── AC3: Existing close behaviors (regression guard) ──────────────────

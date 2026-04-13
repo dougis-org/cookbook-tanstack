@@ -1,4 +1,4 @@
-html.light-cool {
+html.light-cool, [data-theme="light-cool"] {
   --theme-bg: theme(colors.slate.100);
   --theme-surface: theme(colors.white);
   --theme-surface-raised: theme(colors.slate.50);
