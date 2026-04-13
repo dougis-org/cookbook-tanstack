@@ -354,17 +354,17 @@ function CookbookDetailPage() {
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
-            <h1 className="text-4xl font-bold text-white">{cookbook.name}</h1>
+            <h1 className="text-4xl font-bold text-[var(--theme-fg)]">{cookbook.name}</h1>
             {cookbook.description && (
-              <p className="text-gray-300 mt-2 max-w-2xl">{cookbook.description}</p>
+              <p className="text-[var(--theme-fg-muted)] mt-2 max-w-2xl">{cookbook.description}</p>
             )}
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-[var(--theme-fg-muted)] text-sm mt-2">
               {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
               {hasChapters && (
                 <> · {chapters.length} {chapters.length === 1 ? 'chapter' : 'chapters'}</>
               )}
               {!cookbook.isPublic && (
-                <span className="ml-3 px-2 py-0.5 text-xs bg-slate-700 text-gray-300 rounded">Private</span>
+                <span className="ml-3 px-2 py-0.5 text-xs bg-[var(--theme-surface-hover)] text-[var(--theme-fg-muted)] rounded">Private</span>
               )}
             </p>
           </div>
@@ -372,7 +372,7 @@ function CookbookDetailPage() {
             <Link
               to="/cookbooks/$cookbookId/toc"
               params={{ cookbookId }}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
             >
               <List className="w-4 h-4" />
               Table of Contents
@@ -381,7 +381,7 @@ function CookbookDetailPage() {
               to="/cookbooks/$cookbookId/print"
               params={{ cookbookId }}
               search={{ displayonly: undefined }}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
             >
               <Printer className="w-4 h-4" />
               Print
@@ -390,7 +390,7 @@ function CookbookDetailPage() {
               <>
                 <button
                   onClick={() => setModal({ kind: 'editCookbook' })}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
                   Edit
@@ -415,7 +415,7 @@ function CookbookDetailPage() {
       {modal.kind === 'deleteCookbook' && (
         <ConfirmModal
           title="Delete Cookbook"
-          body={<>Are you sure you want to permanently delete <strong className="text-white">{cookbook.name}</strong>? This cannot be undone.</>}
+          body={<>Are you sure you want to permanently delete <strong className="text-[var(--theme-fg)]">{cookbook.name}</strong>? This cannot be undone.</>}
           confirmLabel="Delete"
           danger
           isPending={deleteMutation.isPending}
@@ -427,7 +427,7 @@ function CookbookDetailPage() {
       {modal.kind === 'removeRecipe' && (
         <ConfirmModal
           title="Remove Recipe"
-          body={<>Remove <strong className="text-white">{modal.recipe.name}</strong> from this cookbook?</>}
+          body={<>Remove <strong className="text-[var(--theme-fg)]">{modal.recipe.name}</strong> from this cookbook?</>}
           confirmLabel="Remove"
           danger
           isPending={removeMutation.isPending}
@@ -459,7 +459,7 @@ function CookbookDetailPage() {
           title="Delete Chapter"
           body={
             <>
-              Delete chapter <strong className="text-white">{modal.chapter.name}</strong>?
+              Delete chapter <strong className="text-[var(--theme-fg)]">{modal.chapter.name}</strong>?
               {chapters.length > 1
                 ? ' All recipes in this chapter will be moved to the first remaining chapter.'
                 : ' All recipes will become unchaptered.'}
@@ -477,11 +477,11 @@ function CookbookDetailPage() {
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-white">Recipes</h2>
+            <h2 className="text-xl font-semibold text-[var(--theme-fg)]">Recipes</h2>
             {isOwner && hasChapters && (
               <button
                 onClick={() => setIsCollapsed((v) => !v)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
                 aria-label={isCollapsed ? 'Expand recipe list' : 'Collapse to chapter view'}
                 title={isCollapsed ? 'Expand' : 'Collapse chapters'}
               >
@@ -494,14 +494,14 @@ function CookbookDetailPage() {
               <button
                 onClick={() => createChapterMutation.mutate({ cookbookId })}
                 disabled={createChapterMutation.isPending}
-                className="flex items-center gap-1.5 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors text-sm disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" />
                 New Chapter
               </button>
               <button
                 onClick={() => setModal({ kind: 'addRecipe' })}
-                className="flex items-center gap-1.5 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors text-sm"
+                className="flex items-center gap-1.5 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 Add Recipe
@@ -512,11 +512,11 @@ function CookbookDetailPage() {
 
         {recipes.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-400 mb-4">No recipes in this cookbook yet.</p>
+            <p className="text-[var(--theme-fg-muted)] mb-4">No recipes in this cookbook yet.</p>
             {isOwner && (
               <button
                 onClick={() => setModal({ kind: 'addRecipe' })}
-                className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors"
+                className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
               >
                 Add your first recipe
               </button>
@@ -631,7 +631,7 @@ function EmptyChapterDropZone({ chapterId }: { chapterId: string }) {
     <div
       ref={setNodeRef}
       className={`text-sm pl-3 py-4 rounded-lg border-2 border-dashed transition-colors ${
-        isOver ? 'border-cyan-500 text-cyan-400' : 'border-gray-700 text-gray-500'
+        isOver ? 'border-[var(--theme-accent)] text-[var(--theme-accent)]' : 'border-[var(--theme-border)] text-[var(--theme-fg-subtle)]'
       }`}
     >
       Drop a recipe here
@@ -654,19 +654,19 @@ function ChapterHeader({
 }) {
   return (
     <div className="flex items-center gap-2 mt-4 mb-1 group">
-      <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">{chapter.name}</h3>
+      <h3 className="text-sm font-semibold text-[var(--theme-fg-muted)] uppercase tracking-wider">{chapter.name}</h3>
       {isOwner && (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <button
             onClick={onRename}
-            className="text-gray-500 hover:text-cyan-400 transition-colors"
+            className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-accent)] transition-colors"
             aria-label={`Rename ${chapter.name}`}
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onDelete}
-            className="text-gray-500 hover:text-red-400 transition-colors"
+            className="text-[var(--theme-fg-subtle)] hover:text-red-400 transition-colors"
             aria-label={`Delete ${chapter.name}`}
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -692,14 +692,14 @@ function SortableChapterRow({ chapter, recipeCount }: { chapter: Chapter; recipe
       <button
         {...attributes}
         {...listeners}
-        className="text-gray-500 hover:text-gray-300 cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
+        className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg-muted)] cursor-grab active:cursor-grabbing flex-shrink-0 touch-none"
         aria-label="Drag to reorder chapter"
       >
         <GripVertical className="w-5 h-5" />
       </button>
       <div className="flex-1">
-        <p className="font-medium text-white">{chapter.name}</p>
-        <p className="text-xs text-gray-400">{recipeCount} {recipeCount === 1 ? 'recipe' : 'recipes'}</p>
+        <p className="font-medium text-[var(--theme-fg)]">{chapter.name}</p>
+        <p className="text-xs text-[var(--theme-fg-muted)]">{recipeCount} {recipeCount === 1 ? 'recipe' : 'recipes'}</p>
       </div>
     </div>
   )
@@ -728,14 +728,14 @@ function RenameChapterModal({
 
   return (
     <DialogOverlay labelId="rename-chapter-title" onClose={onClose} isPending={isPending}>
-      <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm">
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-sm">
         <ModalHeader title="Rename Chapter" titleId="rename-chapter-title" onClose={onClose} />
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
             autoFocus
             aria-label="Chapter name"
           />
@@ -743,11 +743,11 @@ function RenameChapterModal({
             <button
               type="submit"
               disabled={!name.trim() || isPending}
-              className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+              className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
             >
               {isPending ? 'Saving…' : 'Save'}
             </button>
-            <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
               Cancel
             </button>
           </div>
@@ -796,17 +796,17 @@ function AddRecipeModal({
 
   return (
     <DialogOverlay labelId="add-recipe-title" onClose={onClose}>
-      <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-lg max-h-[80vh] flex flex-col">
         <ModalHeader title="Add Recipe" titleId="add-recipe-title" onClose={onClose} />
         <div className="p-4 space-y-3">
           {chapters.length > 0 && (
             <div>
-              <label htmlFor="add-recipe-chapter" className="block text-sm font-medium text-gray-300 mb-1">Chapter</label>
+              <label htmlFor="add-recipe-chapter" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">Chapter</label>
               <select
                 id="add-recipe-chapter"
                 value={selectedChapterId}
                 onChange={(e) => setSelectedChapterId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
               >
                 {chapters.map((ch) => (
                   <option key={ch.id} value={ch.id}>{ch.name}</option>
@@ -820,13 +820,13 @@ function AddRecipeModal({
             aria-label="Search recipes"
             value={inputValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
             autoFocus={chapters.length === 0}
           />
         </div>
         <ul className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
           {available.length === 0 ? (
-            <li className="text-center py-8 text-gray-400">
+            <li className="text-center py-8 text-[var(--theme-fg-muted)]">
               {inputValue.trim() ? 'No matching recipes found.' : 'All your recipes are already in this cookbook.'}
             </li>
           ) : (
@@ -835,17 +835,17 @@ function AddRecipeModal({
                 <button
                   disabled={addMutation.isPending}
                   onClick={() => handleAdd(r.id)}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg text-left bg-slate-700 hover:bg-slate-600 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center gap-3 p-3 rounded-lg text-left bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] transition-colors disabled:opacity-50"
                 >
-                  <CardImage src={r.imageUrl} alt={r.name} className="h-10 w-10 bg-gray-600 rounded overflow-hidden flex-shrink-0" />
-                  <span className="flex-1 text-white font-medium truncate">{r.name}</span>
-                  <Plus className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                  <CardImage src={r.imageUrl} alt={r.name} className="h-10 w-10 bg-[var(--theme-surface-hover)] rounded overflow-hidden flex-shrink-0" />
+                  <span className="flex-1 text-[var(--theme-fg)] font-medium truncate">{r.name}</span>
+                  <Plus className="w-4 h-4 text-[var(--theme-accent)] flex-shrink-0" />
                 </button>
               </li>
             ))
           )}
           {isFetchingNextPage && (
-            <li className="text-center py-2 text-gray-400">Loading…</li>
+            <li className="text-center py-2 text-[var(--theme-fg-muted)]">Loading…</li>
           )}
           <li aria-hidden="true"><div ref={sentinelRef} className="h-px w-full" /></li>
         </ul>
@@ -888,7 +888,7 @@ function EditCookbookModal({
 
   return (
     <DialogOverlay labelId="edit-cookbook-title" onClose={onClose}>
-      <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-md">
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md">
         <ModalHeader title="Edit Cookbook" titleId="edit-cookbook-title" onClose={onClose} />
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <CookbookFields
@@ -905,11 +905,11 @@ function EditCookbookModal({
             <button
               type="submit"
               disabled={!name.trim() || updateMutation.isPending}
-              className="px-5 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+              className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
             >
               {updateMutation.isPending ? 'Saving…' : 'Save'}
             </button>
-            <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
               Cancel
             </button>
           </div>
@@ -923,9 +923,9 @@ function EditCookbookModal({
 
 function ModalHeader({ title, titleId, onClose }: { title: string; titleId: string; onClose: () => void }) {
   return (
-    <div className="flex justify-between items-center p-5 border-b border-slate-700">
-      <h2 id={titleId} className="text-lg font-bold text-white">{title}</h2>
-      <button type="button" aria-label="Close" onClick={onClose} className="text-gray-400 hover:text-white">
+    <div className="flex justify-between items-center p-5 border-b border-[var(--theme-border)]">
+      <h2 id={titleId} className="text-lg font-bold text-[var(--theme-fg)]">{title}</h2>
+      <button type="button" aria-label="Close" onClick={onClose} className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)]">
         <X className="w-5 h-5" />
       </button>
     </div>
@@ -952,12 +952,12 @@ function ConfirmModal({
   onCancel: () => void
 }) {
   const titleId = 'confirm-modal-title'
-  const btnClass = danger ? 'bg-red-600 hover:bg-red-700' : 'bg-cyan-500 hover:bg-cyan-600'
+  const btnClass = danger ? 'bg-red-600 hover:bg-red-700' : 'bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)]'
   return (
     <DialogOverlay labelId={titleId} onClose={onCancel} isPending={isPending}>
-      <div className="bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm p-6">
-        <h2 id={titleId} className="text-lg font-bold text-white mb-3">{title}</h2>
-        <p className="text-gray-300 mb-6">{body}</p>
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-sm p-6">
+        <h2 id={titleId} className="text-lg font-bold text-[var(--theme-fg)] mb-3">{title}</h2>
+        <p className="text-[var(--theme-fg-muted)] mb-6">{body}</p>
         <div className="flex gap-3">
           <button
             type="button"
@@ -971,7 +971,7 @@ function ConfirmModal({
             type="button"
             onClick={onCancel}
             disabled={isPending}
-            className="px-5 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
           >
             Cancel
           </button>

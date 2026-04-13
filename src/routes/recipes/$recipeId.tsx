@@ -90,7 +90,7 @@ export function RecipeDetailPage() {
           <button
             onClick={() => toggleMarkedMutation.mutate({ id: recipeId })}
             disabled={toggleMarkedMutation.isPending}
-            className="print:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-gray-300 hover:bg-slate-700 transition-colors disabled:opacity-50"
+            className="print:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
           >
             <Heart
               className={`w-5 h-5 ${recipe?.marked ? 'fill-red-500 text-red-500' : ''}`}
@@ -109,7 +109,7 @@ export function RecipeDetailPage() {
               <Link
                 to="/recipes/$recipeId/edit"
                 params={{ recipeId }}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                className="px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white text-sm font-semibold rounded-lg transition-colors"
               >
                 Edit Recipe
               </Link>

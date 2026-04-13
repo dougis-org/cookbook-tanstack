@@ -60,23 +60,23 @@ function SourceDetailPage() {
         </Link>
       </div>
 
-      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-8 mb-8">
-        <h1 className="text-4xl font-bold text-white mb-2">{source.name}</h1>
+      <div className="bg-[var(--theme-surface)] border border-[var(--theme-border)] shadow-[var(--theme-shadow-sm)] rounded-xl p-8 mb-8">
+        <h1 className="text-4xl font-bold text-[var(--theme-fg)] mb-2">{source.name}</h1>
         {source.url && (
           <a
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="inline-flex items-center gap-1 text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
             {source.url}
           </a>
         )}
-        <p className="text-gray-500 mt-2">{recipes?.total ?? 0} recipes</p>
+        <p className="text-[var(--theme-fg-subtle)] mt-2">{recipes?.total ?? 0} recipes</p>
       </div>
 
-      <h2 className="text-2xl font-bold text-white mb-6">Recipes from this source</h2>
+      <h2 className="text-2xl font-bold text-[var(--theme-fg)] mb-6">Recipes from this source</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes?.items.map((recipe) => (
           <Link key={recipe.id} to="/recipes/$recipeId" params={{ recipeId: recipe.id }}>

@@ -14,7 +14,7 @@ export default function AuthPageLayout({ icon: Icon, title, children }: AuthPage
       <div className="max-w-md mx-auto">
         <div className="bg-[var(--theme-surface)] rounded-xl p-8 shadow-xl border border-[var(--theme-border)]">
           <div className="flex items-center gap-3 mb-6">
-            <Icon className="w-6 h-6 text-cyan-400" />
+            <Icon className="w-6 h-6 text-[var(--theme-accent)]" />
             <h2 className="text-2xl font-bold text-[var(--theme-fg)]">{title}</h2>
           </div>
           {children}

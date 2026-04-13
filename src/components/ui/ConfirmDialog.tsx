@@ -30,21 +30,21 @@ export default function ConfirmDialog({
       aria-modal="true"
       aria-label={message}
     >
-      <div className="bg-slate-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
-        <p className="text-white text-base mb-6">{message}</p>
+      <div className="bg-[var(--theme-surface-raised)] rounded-lg shadow-[var(--theme-shadow-md)] p-6 max-w-md w-full mx-4">
+        <p className="text-[var(--theme-fg)] text-base mb-6">{message}</p>
         <div className="flex gap-3 justify-end">
           <button
             type="button"
             onClick={onCancel}
             autoFocus
-            className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-medium rounded-lg transition-colors"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-medium rounded-lg transition-colors"
           >
             {confirmLabel}
           </button>

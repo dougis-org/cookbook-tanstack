@@ -6,7 +6,7 @@ interface SearchFilterProps {
 }
 
 const inputClass =
-  'w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]'
+  'w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]'
 
 const labelClass = 'block text-sm font-medium text-[var(--theme-fg-muted)] mb-2'
 

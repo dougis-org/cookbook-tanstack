@@ -38,7 +38,7 @@ function RecipeMetaItem({
 function NutritionItem({ value, unit = '', label }: { value: number; unit?: string; label: string }) {
   return (
     <div className="text-center">
-      <p className="text-2xl font-bold text-cyan-400">{value}{unit}</p>
+      <p className="text-2xl font-bold text-[var(--theme-accent)]">{value}{unit}</p>
       <p className="text-sm text-[var(--theme-fg-subtle)]">{label}</p>
     </div>
   )
@@ -159,7 +159,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       href={recipe.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyan-400 hover:text-cyan-300 transition-colors underline"
+                      className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors underline"
                     >
                       {recipe.sourceName}
                     </a>
@@ -225,7 +225,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       }
                       disabled={currentServings <= 1}
                       aria-label="Decrease servings"
-                      className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm disabled:opacity-40"
+                      className="print:hidden h-7 w-7 rounded border border-[var(--theme-border)] text-sm disabled:opacity-40"
                     >
                       -
                     </button>
@@ -236,7 +236,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       type="button"
                       onClick={() => setCurrentServings((prev) => prev + 1)}
                       aria-label="Increase servings"
-                      className="print:hidden h-7 w-7 rounded border border-slate-600 text-sm"
+                      className="print:hidden h-7 w-7 rounded border border-[var(--theme-border)] text-sm"
                     >
                       +
                     </button>
@@ -245,7 +245,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                     <button
                       type="button"
                       onClick={() => setCurrentServings(recipeServings)}
-                      className="print:hidden rounded border border-slate-600 px-2 py-1 text-xs font-medium"
+                      className="print:hidden rounded border border-[var(--theme-border)] px-2 py-1 text-xs font-medium"
                     >
                       Reset
                     </button>
@@ -299,7 +299,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       key={i}
                       className="recipe-ingredient-item flex items-center text-[var(--theme-fg-muted)]"
                     >
-                      <span className="w-2 h-2 bg-cyan-500 rounded-full mr-3 shrink-0"></span>
+                      <span className="w-2 h-2 bg-[var(--theme-accent)] rounded-full mr-3 shrink-0"></span>
                       {line}
                     </li>
                   ),
@@ -334,7 +334,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                       key={index}
                       className="recipe-instruction-step flex gap-4 text-[var(--theme-fg-muted)]"
                     >
-                      <span className="shrink-0 w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-semibold">
+                      <span className="shrink-0 w-8 h-8 bg-[var(--theme-accent)] text-white rounded-full flex items-center justify-center font-semibold">
                         {step.number}
                       </span>
                       <p className="flex-1 pt-1">{step.content}</p>

@@ -71,7 +71,7 @@ function TocRecipeItem({
         className="flex items-baseline gap-3 group py-2 border-b border-gray-200"
       >
         <RecipeIndexNumber index={index} />
-        <span className="text-gray-900 group-hover:text-cyan-600 transition-colors">
+        <span className="text-[var(--theme-fg)] group-hover:text-[var(--theme-accent)] transition-colors">
           {recipe.name}
         </span>
         <span className="flex-1" />
@@ -183,7 +183,7 @@ export function CookbookTocList({
 }
 
 const pageBaseClass =
-  'min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900'
+  'min-h-screen bg-[var(--theme-bg)]'
 
 export function CookbookStandalonePage({
   children,
@@ -247,8 +247,8 @@ export function CookbookPageLoading() {
 export function CookbookPageNotFound() {
   return (
     <div className={`${pageBaseClass} flex flex-col items-center justify-center gap-4`}>
-      <p className="text-gray-400 text-lg">Cookbook not found.</p>
-      <Link to="/cookbooks" className="text-cyan-400 hover:text-cyan-300">
+      <p className="text-[var(--theme-fg-muted)] text-lg">Cookbook not found.</p>
+      <Link to="/cookbooks" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]">
         Back to Cookbooks
       </Link>
     </div>
@@ -279,7 +279,7 @@ export function CookbookPageChrome({
         <Link
           to="/cookbooks/$cookbookId"
           params={{ cookbookId }}
-          className="print:hidden flex items-center gap-1.5 text-gray-400 hover:text-cyan-400 transition-colors text-sm"
+          className="print:hidden flex items-center gap-1.5 text-[var(--theme-fg-muted)] hover:text-[var(--theme-accent)] transition-colors text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Cookbook

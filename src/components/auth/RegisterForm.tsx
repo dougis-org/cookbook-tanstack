@@ -57,7 +57,7 @@ export default function RegisterForm() {
       <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
       <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
         Already have an account?{" "}
-        <Link to="/auth/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">Sign in</Link>
+        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Sign in</Link>
       </p>
     </form>
   )

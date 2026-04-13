@@ -86,7 +86,7 @@ export default function Header() {
                 value={inputValue}
                 onChange={(e) => debouncedNavigate(e.target.value)}
                 placeholder="Search recipes…"
-                className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
                 onKeyDown={(e) => { if (e.key === 'Escape') setMobileSearchOpen(false) }}
               />
             </div>
@@ -110,7 +110,7 @@ export default function Header() {
                 <Menu size={24} />
               </button>
               <Link to="/" className="ml-4 flex items-center gap-3">
-                <ChefHat className="w-8 h-8 text-cyan-400" />
+                <ChefHat className="w-8 h-8 text-[var(--theme-accent)]" />
                 <h1 className="text-xl font-semibold">CookBook</h1>
               </Link>
             </div>
@@ -124,7 +124,7 @@ export default function Header() {
                     {inputValue.trim() && (
                       <span
                         data-testid="header-search-dot"
-                        className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-400"
+                        className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[var(--theme-accent)]"
                       />
                     )}
                   </div>
@@ -135,7 +135,7 @@ export default function Header() {
                   value={inputValue}
                   onChange={(e) => debouncedNavigate(e.target.value)}
                   placeholder="Search recipes…"
-                  className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
                 />
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function Header() {
                 {inputValue.trim() && (
                   <span
                     data-testid="header-search-dot"
-                    className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-400 pointer-events-none"
+                    className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--theme-accent)] pointer-events-none"
                   />
                 )}
               </div>
@@ -187,7 +187,7 @@ export default function Header() {
                   </Link>
                   <Link
                     to="/auth/register"
-                    className="flex items-center gap-1.5 text-sm bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 text-sm bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <UserPlus size={16} />
                     <span className="hidden sm:inline">Register</span>
@@ -206,7 +206,7 @@ export default function Header() {
       >
         <div className="flex items-center justify-between p-4 border-b border-[var(--theme-border)]">
           <div className="flex items-center gap-3">
-            <ChefHat className="w-6 h-6 text-cyan-400" />
+            <ChefHat className="w-6 h-6 text-[var(--theme-accent)]" />
             <h2 className="text-xl font-bold">CookBook</h2>
           </div>
           <button
@@ -225,7 +225,7 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
             }}
           >
             <Home size={20} />
@@ -238,7 +238,7 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
             }}
           >
             <BookOpen size={20} />
@@ -251,7 +251,7 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
             }}
           >
             <ChefHat size={20} />
@@ -264,7 +264,7 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
             }}
           >
             <BookOpen size={20} />
@@ -278,7 +278,7 @@ export default function Header() {
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
               activeProps={{
                 className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                  'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
               }}
             >
               <Plus size={20} />
@@ -293,7 +293,7 @@ export default function Header() {
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
               activeProps={{
                 className:
-                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors mb-2',
+                  'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
               }}
             >
               <Plus size={20} />

@@ -107,35 +107,36 @@ describe('ImportDropzone', () => {
       return el.className.split(' ')
     }
 
-    it('border is border-slate-600 initially (no drag)', () => {
+    it('border is border-[var(--theme-border)] initially (no drag)', () => {
       render(<ImportDropzone onFileSelected={vi.fn()} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
-      expect(getClasses(dropZone)).toContain('border-slate-600')
-      expect(getClasses(dropZone)).not.toContain('border-cyan-500')
+      expect(dropZone.className).toContain('border-[var(--theme-border)]')
+      // Active drag class is the bare (non-hover-prefixed) accent border
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
-    it('border changes to border-cyan-500 when dragging over', () => {
+    it('border changes to border-[var(--theme-accent)] when dragging over', () => {
       render(<ImportDropzone onFileSelected={vi.fn()} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
 
       fireEvent.dragEnter(dropZone)
 
-      expect(getClasses(dropZone)).toContain('border-cyan-500')
-      expect(getClasses(dropZone)).not.toContain('border-slate-600')
+      expect(dropZone.className).toContain('border-[var(--theme-accent)]')
+      expect(dropZone.className).not.toContain('border-[var(--theme-border)]')
     })
 
-    it('border returns to border-slate-600 after drag leaves', () => {
+    it('border returns to border-[var(--theme-border)] after drag leaves', () => {
       render(<ImportDropzone onFileSelected={vi.fn()} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
 
       fireEvent.dragEnter(dropZone)
       fireEvent.dragLeave(dropZone)
 
-      expect(getClasses(dropZone)).toContain('border-slate-600')
-      expect(getClasses(dropZone)).not.toContain('border-cyan-500')
+      expect(dropZone.className).toContain('border-[var(--theme-border)]')
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
-    it('border returns to border-slate-600 after drop', () => {
+    it('border returns to border-[var(--theme-border)] after drop', () => {
       const onFileSelected = vi.fn()
       render(<ImportDropzone onFileSelected={onFileSelected} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
@@ -144,11 +145,11 @@ describe('ImportDropzone', () => {
       fireEvent.dragEnter(dropZone)
       fireEvent.drop(dropZone, { dataTransfer: { files: [file] } })
 
-      expect(getClasses(dropZone)).toContain('border-slate-600')
-      expect(getClasses(dropZone)).not.toContain('border-cyan-500')
+      expect(dropZone.className).toContain('border-[var(--theme-border)]')
+      expect(getClasses(dropZone)).not.toContain('border-[var(--theme-accent)]')
     })
 
-    it('border stays cyan when pointer moves between child elements (no flicker)', () => {
+    it('border stays accent when pointer moves between child elements (no flicker)', () => {
       render(<ImportDropzone onFileSelected={vi.fn()} />)
       const dropZone = screen.getByRole('button', { name: /import recipe json/i })
       const childEl = dropZone.querySelector('p')!
@@ -159,7 +160,7 @@ describe('ImportDropzone', () => {
       fireEvent.dragLeave(dropZone)
 
       // Counter is still 1 (entered twice, left once) — should stay active
-      expect(getClasses(dropZone)).toContain('border-cyan-500')
+      expect(dropZone.className).toContain('border-[var(--theme-accent)]')
     })
   })
 })

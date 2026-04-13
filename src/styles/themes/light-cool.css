@@ -1,0 +1,16 @@
+html.light-cool {
+  --theme-bg: theme(colors.slate.100);
+  --theme-surface: theme(colors.white);
+  --theme-surface-raised: theme(colors.slate.50);
+  --theme-surface-hover: theme(colors.blue.50);
+  --theme-border: theme(colors.slate.200);
+  --theme-border-muted: theme(colors.slate.100);
+  --theme-fg: theme(colors.slate.900);
+  --theme-fg-muted: theme(colors.slate.600);
+  --theme-fg-subtle: theme(colors.slate.500);
+  --theme-accent: theme(colors.blue.600);
+  --theme-accent-hover: theme(colors.blue.700);
+  --theme-accent-emphasis: theme(colors.blue.800);
+  --theme-shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
+  --theme-shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.08);
+}

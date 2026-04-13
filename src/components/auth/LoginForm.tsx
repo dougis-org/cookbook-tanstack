@@ -61,7 +61,7 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {bannerMessage && (
-        <div className="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-300">
+        <div className="rounded-lg border border-[var(--theme-accent)]/40 bg-[var(--theme-accent)]/10 px-4 py-3 text-sm text-[var(--theme-accent)]">
           {bannerMessage}
         </div>
       )}
@@ -75,11 +75,11 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 rounded border-[var(--theme-border)] bg-[var(--theme-surface-raised)] text-cyan-500 focus:ring-cyan-500"
+            className="w-4 h-4 rounded border-[var(--theme-border)] bg-[var(--theme-surface-raised)] text-[var(--theme-accent)] focus:ring-[var(--theme-accent)]"
           />
           <span className="text-sm text-[var(--theme-fg-muted)]">Remember me</span>
         </label>
-        <Link to="/auth/forgot-password" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
+        <Link to="/auth/forgot-password" className="text-sm text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">
           Forgot password?
         </Link>
       </div>
@@ -87,7 +87,7 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
       <FormSubmitButton isLoading={isLoading} label="Sign In" loadingLabel="Signing in..." />
       <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
         Don&apos;t have an account?{" "}
-        <Link to="/auth/register" className="text-cyan-400 hover:text-cyan-300 transition-colors">Create one</Link>
+        <Link to="/auth/register" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Create one</Link>
       </p>
     </form>
   )

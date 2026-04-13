@@ -31,7 +31,7 @@ export default function ExportButton({ recipe }: ExportButtonProps) {
     <button
       type="button"
       onClick={onExport}
-      className="print:hidden inline-flex items-center gap-2 px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors"
+      className="print:hidden inline-flex items-center gap-2 px-6 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
     >
       <Download className="w-4 h-4" />
       Export
