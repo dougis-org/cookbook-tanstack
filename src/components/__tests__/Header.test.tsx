@@ -204,8 +204,9 @@ describe("Header theme dropdown", () => {
   })
 
   // T2g
-  it("Escape key while dropdown is open with pending preview reverts class and closes dropdown", () => {
+  it("Escape key while dropdown is open with pending preview reverts class and closes sidebar", () => {
     render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
     openDropdown()
     fireEvent.click(screen.getByRole("option", { name: "Light (cool)" }))
     expect(document.documentElement.className).toBe("light-cool")
@@ -214,6 +215,7 @@ describe("Header theme dropdown", () => {
     fireEvent.keyDown(listbox, { key: "Escape" })
     expect(document.documentElement.className).toBe("dark")
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
   })
 
   // T2h

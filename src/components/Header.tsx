@@ -95,6 +95,7 @@ export default function Header() {
         if (previewId !== null) {
           document.documentElement.className = theme
           setPreviewId(null)
+          setIsOpen(false)
         }
         setDropdownOpen(false)
       }
@@ -112,6 +113,7 @@ export default function Header() {
         if (previewId !== null) {
           document.documentElement.className = theme
           setPreviewId(null)
+          setIsOpen(false)
         }
         setDropdownOpen(false)
       }
@@ -171,6 +173,7 @@ export default function Header() {
       if (previewId !== null) {
         document.documentElement.className = theme
         setPreviewId(null)
+        setIsOpen(false)
       }
       setDropdownOpen(false)
     }
@@ -187,6 +190,7 @@ export default function Header() {
         setActiveIndex((prev) => (prev - 1 + THEMES.length) % THEMES.length)
         break
       case 'Enter':
+      case ' ':
         e.preventDefault()
         handleSelect(THEMES[activeIndex].id)
         break
@@ -447,7 +451,14 @@ export default function Header() {
               data-testid="theme-dropdown-trigger"
               aria-expanded={dropdownOpen}
               aria-haspopup="listbox"
-              onClick={() => setDropdownOpen((o) => !o)}
+              aria-controls="theme-listbox"
+              onClick={() => {
+                if (dropdownOpen && previewId !== null) {
+                  document.documentElement.className = theme
+                  setPreviewId(null)
+                }
+                setDropdownOpen((o) => !o)
+              }}
               className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--theme-surface-hover)] text-[var(--theme-fg)] hover:bg-[var(--theme-surface)] transition-colors text-sm font-medium"
             >
               <span>{displayLabel}</span>
@@ -460,6 +471,7 @@ export default function Header() {
             {/* Dropdown options panel */}
             {dropdownOpen && (
               <div
+                id="theme-listbox"
                 role="listbox"
                 aria-label="Select theme"
                 onKeyDown={handleListboxKeyDown}
@@ -473,10 +485,12 @@ export default function Header() {
                     tabIndex={i === activeIndex ? 0 : -1}
                     aria-selected={t.id === (previewId ?? theme)}
                     onClick={() => { handleSelect(t.id); setActiveIndex(i) }}
-                    className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors text-sm ${
+                    className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--theme-accent)] ${
                       t.id === (previewId ?? theme)
                         ? 'bg-[var(--theme-accent)] text-[var(--theme-bg)]'
-                        : 'text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)]'
+                        : i === activeIndex
+                          ? 'bg-[var(--theme-surface-hover)] text-[var(--theme-fg)]'
+                          : 'text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)]'
                     }`}
                   >
                     <span
