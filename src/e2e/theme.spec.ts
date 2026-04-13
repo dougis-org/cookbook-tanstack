@@ -20,6 +20,18 @@ async function selectThemeViaDropdown(
   }
 }
 
+async function previewThemeFromSidebar(page: Page, themeLabel: string) {
+  await page.getByLabel("Open menu").click();
+  await page.getByTestId("theme-dropdown-trigger").click();
+  await page.getByRole("option", { name: themeLabel }).click();
+}
+
+async function expectRevertedAndClosed(page: Page, committedTheme = /dark/) {
+  await expect(page.locator("html")).toHaveClass(committedTheme);
+  await expect(page.getByRole("listbox")).not.toBeVisible();
+  await expect(page.locator("aside")).toHaveClass(/-translate-x-full/);
+}
+
 test.describe("Theme system", () => {
   test.beforeEach(async ({ page }) => {
     await page.context().clearCookies();
@@ -178,9 +190,7 @@ test.describe("Theme system", () => {
     await gotoAndWaitForHydration(page, "/");
 
     // Start in dark theme, preview light-cool, then cancel
-    await page.getByLabel("Open menu").click();
-    await page.getByTestId("theme-dropdown-trigger").click();
-    await page.getByRole("option", { name: "Light (cool)" }).click();
+    await previewThemeFromSidebar(page, "Light (cool)");
     // Verify preview is active
     await expect(page.locator("html")).toHaveClass(/light-cool/);
 
@@ -198,20 +208,13 @@ test.describe("Theme system", () => {
   }) => {
     await gotoAndWaitForHydration(page, "/");
 
-    await page.getByLabel("Open menu").click();
-    await page.getByTestId("theme-dropdown-trigger").click();
-    await page.getByRole("option", { name: "Light (warm)" }).click();
+    await previewThemeFromSidebar(page, "Light (warm)");
     await expect(page.locator("html")).toHaveClass(/light-warm/);
 
     // Press Escape
     await page.keyboard.press("Escape");
 
-    // Class should revert to dark
-    await expect(page.locator("html")).toHaveClass(/dark/);
-    // Dropdown panel should be gone
-    await expect(page.getByRole("listbox")).not.toBeVisible();
-    // Sidebar should be closed
-    await expect(page.locator("aside")).toHaveClass(/-translate-x-full/);
+    await expectRevertedAndClosed(page);
   });
 
   // T4f: click outside — assert dropdown closes, class reverts, and sidebar closes
@@ -220,20 +223,13 @@ test.describe("Theme system", () => {
   }) => {
     await gotoAndWaitForHydration(page, "/");
 
-    await page.getByLabel("Open menu").click();
-    await page.getByTestId("theme-dropdown-trigger").click();
-    await page.getByRole("option", { name: "Light (cool)" }).click();
+    await previewThemeFromSidebar(page, "Light (cool)");
     await expect(page.locator("html")).toHaveClass(/light-cool/);
 
     // Click outside the dropdown (on the sidebar nav area)
     await page.locator("aside nav").click();
 
-    // Class should revert
-    await expect(page.locator("html")).toHaveClass(/dark/);
-    // Dropdown panel should be gone
-    await expect(page.getByRole("listbox")).not.toBeVisible();
-    // Sidebar should be closed
-    await expect(page.locator("aside")).toHaveClass(/-translate-x-full/);
+    await expectRevertedAndClosed(page);
   });
 
   test("switching to Light (warm) changes key surface colors", async ({
