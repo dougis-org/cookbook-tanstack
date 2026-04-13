@@ -53,6 +53,12 @@ describe('ThemeContext', () => {
     expect(lightCool?.label).toBe('Light (cool)')
   })
 
+  it('THEMES contains light-warm with correct label', () => {
+    const lightWarm = THEMES.find((t) => t.id === 'light-warm')
+    expect(lightWarm).toBeDefined()
+    expect(lightWarm?.label).toBe('Light (warm)')
+  })
+
   it('restores stored theme from localStorage on mount', async () => {
     localStorage.setItem('cookbook-theme', 'light-cool')
     render(

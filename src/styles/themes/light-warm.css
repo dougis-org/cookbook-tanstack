@@ -1,0 +1,17 @@
+html.light-warm {
+  --theme-bg: theme(colors.amber.50);
+  --theme-surface: theme(colors.white);
+  --theme-surface-raised: theme(colors.stone.50);
+  --theme-surface-hover: theme(colors.amber.100);
+  --theme-border: theme(colors.stone.200);
+  --theme-border-muted: theme(colors.stone.100);
+  --theme-fg: theme(colors.stone.900);
+  --theme-fg-muted: theme(colors.stone.600);
+  --theme-fg-subtle: theme(colors.stone.500);
+  --theme-accent: theme(colors.amber.700);
+  --theme-accent-hover: theme(colors.amber.800);
+  --theme-accent-emphasis: theme(colors.amber.900);
+  --theme-shadow-sm: 0 1px 3px 0 rgb(120 53 15 / 0.10), 0 1px 2px -1px rgb(120 53 15 / 0.10);
+  --theme-shadow-md: 0 4px 6px -1px rgb(120 53 15 / 0.10), 0 2px 4px -2px rgb(120 53 15 / 0.10);
+  --theme-overlay: rgb(120 53 15 / 0.4);
+}
