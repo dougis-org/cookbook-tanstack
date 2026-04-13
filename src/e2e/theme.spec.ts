@@ -77,16 +77,7 @@ test.describe('Theme system', () => {
     expect(storedTheme).toBe('light-cool')
   })
 
-  test('theme selector renders with Dark and Light (cool) options in hamburger', async ({ page }) => {
-    await gotoAndWaitForHydration(page, '/')
-
-    await page.getByLabel('Open menu').click()
-
-    await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Light (cool)' })).toBeVisible()
-  })
-
-  test('theme selector renders Dark, Light (cool), and Light (warm) options', async ({ page }) => {
+  test('theme selector renders all theme options in hamburger', async ({ page }) => {
     await gotoAndWaitForHydration(page, '/')
 
     await page.getByLabel('Open menu').click()
@@ -106,7 +97,7 @@ test.describe('Theme system', () => {
 
     await page.getByLabel('Open menu').click()
     await page.getByRole('button', { name: 'Light (warm)' }).click()
-    await page.waitForTimeout(100)
+    await expect(page.locator('html')).toHaveClass(/light-warm/)
 
     const headerBgWarm = await page.evaluate(() => {
       const header = document.querySelector('.site-header')

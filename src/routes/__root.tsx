@@ -5,7 +5,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
-import { ThemeProvider } from '@/contexts/ThemeContext'
+import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
 
 import Header from '../components/Header'
 
@@ -46,10 +46,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  // Static string — no user data interpolated. Safe per design Decision 4.
-  // Migrates legacy 'light' → 'light-cool' and applies from allowlist. Falls back to 'dark'.
-  const themeInitScript =
-    'try{var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=(t==="dark"||t==="light-cool"||t==="light-warm")?t:"dark";}catch(e){document.documentElement.className="dark";}'
+  // Allowlist derived from THEMES so new entries are automatically included.
+  // Migrates legacy 'light' → 'light-cool'. No user data interpolated — safe per design Decision 4.
+  const validIds = THEMES.map((t) => `t==="${t.id}"`).join('||')
+  const themeInitScript = `try{var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=(${validIds})?t:"dark";}catch(e){document.documentElement.className="dark";}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
