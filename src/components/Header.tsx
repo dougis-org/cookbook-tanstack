@@ -199,6 +199,14 @@ export default function Header() {
         )}
       </header>
 
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[var(--theme-overlay)] print:hidden"
+          aria-hidden="true"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       <aside
         className={`fixed top-0 left-0 h-full w-80 bg-[var(--theme-bg)] text-[var(--theme-fg)] shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -310,7 +318,7 @@ export default function Header() {
             {THEMES.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setTheme(t.id)}
+                onClick={() => { setTheme(t.id); setIsOpen(false) }}
                 aria-pressed={theme === t.id}
                 className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                   theme === t.id
