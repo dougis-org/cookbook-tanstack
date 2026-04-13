@@ -1,14 +1,14 @@
 ## Context
 
-- Relevant architecture: Per-file theme system introduced in #302. Each theme is a CSS file under `src/styles/themes/` that defines 14 CSS custom properties on an `html.<theme-id>` selector. Components reference tokens via `var(--theme-*)` utilities defined in `src/styles.css`. `ThemeContext.tsx` manages the active class on `document.documentElement` and persists the selection to localStorage.
+- Relevant architecture: Per-file theme system introduced in #302. Each theme is a CSS file under `src/styles/themes/` that defines 15 CSS custom properties on an `html.<theme-id>` selector, including `--theme-overlay` (added in #312 for the hamburger sidebar backdrop). Components reference tokens via `var(--theme-*)` utilities defined in `src/styles.css`. `ThemeContext.tsx` manages the active class on `document.documentElement` and persists the selection to localStorage.
 - Dependencies: #302 (Light (cool) theme + token contract) must be merged. All components consume tokens correctly — validated by existing Light (cool) E2E tests.
-- Interfaces/contracts touched: `THEMES` constant in `src/contexts/ThemeContext.tsx` (adds one entry); 14-token CSS contract (implemented, not modified).
+- Interfaces/contracts touched: `THEMES` constant in `src/contexts/ThemeContext.tsx` (adds one entry); 15-token CSS contract, including `--theme-overlay` (implemented, not modified).
 
 ## Goals / Non-Goals
 
 ### Goals
 
-- Define the complete warm palette using Tailwind color scale values for all 14 tokens
+- Define the complete warm palette using Tailwind color scale values for all 15 tokens
 - Register `light-warm` in ThemeContext so the UI surfaces it as a selectable option
 - Cover the new theme with E2E tests equivalent in depth to the Light (cool) tests
 

@@ -46,10 +46,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  // Allowlist derived from THEMES so new entries are automatically included.
+  // Allowlist serialized as JSON data — avoids injection risk if a theme ID ever contains quotes.
   // Migrates legacy 'light' → 'light-cool'. No user data interpolated — safe per design Decision 4.
-  const validIds = THEMES.map((t) => `t==="${t.id}"`).join('||')
-  const themeInitScript = `try{var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=(${validIds})?t:"dark";}catch(e){document.documentElement.className="dark";}`
+  const validIds = JSON.stringify(THEMES.map((t) => t.id)).replace(/</g, '\\u003c')
+  const themeInitScript = `try{var ids=${validIds};var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>

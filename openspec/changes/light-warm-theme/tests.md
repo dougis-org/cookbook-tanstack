@@ -9,7 +9,7 @@ description: Tests for the light-warm-theme change
 
 This document outlines the tests for the `light-warm-theme` change. All work should follow a strict TDD (Test-Driven Development) process.
 
-All tests are E2E (Playwright) in `src/e2e/theme.spec.ts`. There are no unit tests for this change — the token system is pure CSS and ThemeContext registration is trivially covered by the existing test infrastructure.
+Primary behavioral coverage is E2E (Playwright) in `src/e2e/theme.spec.ts`. In addition, there is unit-test coverage in `src/contexts/__tests__/ThemeContext.test.tsx` verifying that the new `light-warm` theme is registered in `ThemeContext`.
 
 ## Testing Steps
 

@@ -20,7 +20,7 @@
 
 ### In Scope
 
-- New `src/styles/themes/light-warm.css` implementing the 14-token contract
+- New `src/styles/themes/light-warm.css` implementing the 15-token contract (14 original + `--theme-overlay` added in #312)
 - Registration of `{ id: 'light-warm', label: 'Light (warm)' }` in `ThemeContext.THEMES`
 - E2E tests covering theme switching to Light (warm) and visual correctness of key surfaces and accent color
 
@@ -34,7 +34,7 @@
 
 ## What Changes
 
-- `src/styles/themes/light-warm.css` — new file, 16 lines, defines all 14 CSS custom properties under `html.light-warm`
+- `src/styles/themes/light-warm.css` — new file, 17 lines, defines all 15 CSS custom properties under `html.light-warm`
 - `src/contexts/ThemeContext.tsx` — one line added to the `THEMES` array
 - `src/e2e/theme.spec.ts` — new test cases for Light (warm) theme switching, persistence, and accent color correctness
 

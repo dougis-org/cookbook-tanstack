@@ -4,7 +4,7 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED Light (warm) palette applies correct token values
 
-The system SHALL resolve all 14 CSS custom properties to warm-toned values under `html.light-warm` as defined in `src/styles/themes/light-warm.css`.
+The system SHALL resolve all 15 CSS custom properties to warm-toned values under `html.light-warm` as defined in `src/styles/themes/light-warm.css` (includes `--theme-overlay` added in #312).
 
 #### Scenario: Background token resolves to amber.50
 
