@@ -153,7 +153,7 @@ Files: `src/components/recipes/RecipeCard.tsx`, `src/components/cookbooks/Cookbo
 - [x] `npm run test:e2e` — full E2E suite passes (dark theme tests unaffected; new light-cool tests pass)
 - [x] `npx tsc --noEmit` — zero type errors
 - [x] `npm run build` — production build succeeds
-- [ ] Manual visual review: start dev server, switch to Light (cool), check each major page:
+- [x] Manual visual review: start dev server, switch to Light (cool), check each major page:
   - Home page — hero visible, feature cards float with shadow, CTAs in blue
   - Recipes page — filter chips readable, active chip in blue accent
   - Recipe detail — stat values, step circles, source link all visible
@@ -161,9 +161,9 @@ Files: `src/components/recipes/RecipeCard.tsx`, `src/components/cookbooks/Cookbo
   - Cookbook list and detail — Private badge readable, recipe list readable
   - Login / register / forgot password — links in blue accent
   - Confirm dialog — panel not dark
-- [ ] Manual dark theme regression check — no visual change from pre-PR state
+- [x] Manual dark theme regression check — no visual change from pre-PR state
 - [x] Post-migration audit grep (Task 14) returns zero unexpected matches
-- [ ] All completed tasks marked as complete
+- [x] All completed tasks marked as complete
 
 ## Remote push validation
 
@@ -178,11 +178,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 - [x] Commit all changes to `feat/light-cool-theme` and push to remote
 - [x] Open PR from `feat/light-cool-theme` to `main` — title: `feat: Light (cool) theme — comprehensive redesign (#302)`
-- [ ] Wait 120 seconds for agentic reviewers to post comments
-- [ ] **Monitor PR comments** — address each one, commit fixes, validate locally, push; repeat until no unresolved comments remain
+- [x] Wait 120 seconds for agentic reviewers to post comments
+- [x] **Monitor PR comments** — address each one, commit fixes, validate locally, push; repeat until no unresolved comments remain
 - [x] Enable auto-merge once no blocking review comments remain
-- [ ] **Monitor CI checks** — diagnose failures, fix, validate locally, push; repeat until all checks pass
-- [ ] Wait for PR to merge — **never force-merge**
+- [x] **Monitor CI checks** — diagnose failures, fix, validate locally, push; repeat until all checks pass
+- [x] Wait for PR to merge — **never force-merge**
 
 Ownership metadata:
 - Implementer: agent (Claude Code)
@@ -196,11 +196,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on main branch
-- [ ] Mark all remaining tasks as complete
-- [ ] Sync approved spec deltas to `openspec/specs/` — update theme persistence, component migration, and color system specs in the global spec directory
-- [ ] Archive: move `openspec/changes/light-cool-theme/` to `openspec/changes/archive/2026-04-12-light-cool-theme/` **as a single atomic commit** (stage both copy and deletion together — never split)
-- [ ] Confirm `openspec/changes/archive/2026-04-12-light-cool-theme/` exists and `openspec/changes/light-cool-theme/` is gone
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on main branch
+- [x] Mark all remaining tasks as complete
+- [x] Sync approved spec deltas to `openspec/specs/` — update theme persistence, component migration, and color system specs in the global spec directory
+- [x] Archive: move `openspec/changes/light-cool-theme/` to `openspec/changes/archive/2026-04-12-light-cool-theme/` **as a single atomic commit** (stage both copy and deletion together — never split)
+- [x] Confirm `openspec/changes/archive/2026-04-12-light-cool-theme/` exists and `openspec/changes/light-cool-theme/` is gone
 - [ ] Push archive commit to main
 - [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/light-cool-theme`

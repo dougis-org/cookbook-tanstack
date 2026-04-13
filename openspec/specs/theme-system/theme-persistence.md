@@ -1,87 +1,93 @@
-# Spec: Theme Persistence
-
-## ADDED Requirements
-
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
-
-### Requirement: ADDED Theme selection persists to localStorage
-
-The system SHALL store the user's selected theme in `localStorage['cookbook-theme']` and restore it on every subsequent page load, defaulting to `dark` when no preference is stored.
-
-#### Scenario: User selects a theme and reloads
-
-- **Given** the user has the app open with the dark theme active
-- **When** the user opens the hamburger menu, selects "Light" from the theme selector, and then reloads the page
-- **Then** the page loads with the light theme active (`<html>` has class `light`) and the theme selector shows "Light" as the active option
-
-#### Scenario: No stored preference — default to dark
-
-- **Given** the user has no `cookbook-theme` key in localStorage (first visit or cleared storage)
-- **When** the user loads the app
-- **Then** `<html>` has class `dark` and the theme selector shows "Dark" as the active option
-
-#### Scenario: localStorage is unavailable
-
-- **Given** localStorage throws (e.g., private browsing restrictions, sandboxed iframe)
-- **When** the page loads
-- **Then** the app renders in dark theme without throwing a JavaScript error
-
-### Requirement: ADDED No theme flash on SSR page load
-
-The system SHALL apply the correct theme class to `<html>` before the browser first paints, regardless of the active theme stored in localStorage.
-
-#### Scenario: Light theme stored, page loads
-
-- **Given** `localStorage['cookbook-theme']` is `'light'`
-- **When** the browser navigates to the app
-- **Then** `<html class="light">` is set before any content is rendered (no visible dark frame)
-
-#### Scenario: Theme script executes before React hydration
-
-- **Given** the inline theme script is in `<head>` before `<HeadContent />`
-- **When** the browser parses the HTML
-- **Then** `document.documentElement.className` is set to the stored theme before any React component mounts
-
 ## MODIFIED Requirements
 
-### Requirement: MODIFIED `<html>` class is no longer statically hardcoded
+### Requirement: MODIFIED Theme id for light theme changed to `light-cool`
 
-The system SHALL set `<html class="dark">` as the server-rendered default, which is immediately overridden by the inline head script on the client before paint.
+The system SHALL recognise `'light-cool'` as a valid theme id, apply `html.light-cool` class, and display the label `"Light (cool)"` in the theme selector. The old id `'light'` SHALL NOT be listed as a selectable theme.
 
-#### Scenario: SSR renders dark, client corrects to stored preference
+#### Scenario: Theme selector shows "Light (cool)" option
 
-- **Given** the server renders `<html class="dark">`
-- **When** the inline script runs on the client with `localStorage['cookbook-theme'] === 'light'`
-- **Then** `<html class="light">` is in effect before React hydrates
+- **Given** `html.light-cool` support is registered in `ThemeContext.THEMES`
+- **When** a user opens the hamburger menu
+- **Then** a button labelled "Light (cool)" is visible in the theme selector
+- **And** no button labelled "Light" (without qualifier) appears
+
+#### Scenario: Selecting Light (cool) applies the correct class
+
+- **Given** the theme selector is open with Dark currently active
+- **When** the user clicks "Light (cool)"
+- **Then** `document.documentElement.className` becomes `'light-cool'`
+- **And** `localStorage['cookbook-theme']` becomes `'light-cool'`
+
+#### Scenario: Light (cool) theme persists across page reload
+
+- **Given** `localStorage['cookbook-theme']` is `'light-cool'`
+- **When** the page is reloaded
+- **Then** `html.light-cool` is applied before hydration (no dark flash)
+- **And** the theme selector shows "Light (cool)" as the active option (`aria-pressed="true"`)
+
+### Requirement: MODIFIED Inline script allowlist updated to include `light-cool`
+
+The system SHALL apply `'light-cool'` from localStorage before first paint. An unknown stored value SHALL still fall back to `'dark'`.
+
+#### Scenario: `light-cool` stored in localStorage is applied before hydration
+
+- **Given** `localStorage['cookbook-theme']` is `'light-cool'`
+- **When** the page loads at `waitUntil: 'commit'` (before React hydration)
+- **Then** `document.documentElement.className` is `'light-cool'`
+
+#### Scenario: Unknown theme id falls back to dark
+
+- **Given** `localStorage['cookbook-theme']` is `'solarized'` (not yet registered)
+- **When** the page loads
+- **Then** `document.documentElement.className` is `'dark'`
+
+### Requirement: MODIFIED localStorage migration shim upgrades `'light'` to `'light-cool'`
+
+The system SHALL transparently upgrade a stored `'light'` value to `'light-cool'` on next page load, so existing users are not downgraded to dark.
+
+#### Scenario: Stored `'light'` is migrated to `'light-cool'` on load
+
+- **Given** `localStorage['cookbook-theme']` is `'light'`
+- **When** the inline script runs on page load
+- **Then** `localStorage['cookbook-theme']` is rewritten to `'light-cool'`
+- **And** `document.documentElement.className` is set to `'light-cool'`
+- **And** no dark flash occurs
 
 ## REMOVED Requirements
 
-### Requirement: DEFERRED REMOVAL — `@custom-variant dark` Tailwind variant
+### Requirement: REMOVED Theme id `'light'` and label `"Light"`
 
-Reason for deferral: This change does not remove the `@custom-variant dark (&:where(.dark, .dark *))` declaration from `src/styles.css`. It is intentionally retained to support remaining `dark:` classes that have not yet been migrated to `--theme-*` CSS variables, including badge tints (`MultiSelectDropdown`, `ClassificationBadge`) and the `RecipeForm` draft banner accent. The custom variant ensures those classes continue to respond to `<html class="dark">` rather than falling back to `prefers-color-scheme`. Full removal is deferred until all remaining `dark:` usages are migrated.
+Reason for removal: Replaced by `'light-cool'` with label `"Light (cool)"`. The old id is handled only by the migration shim and is not registered as a selectable theme.
 
 ## Traceability
 
-- Proposal element "localStorage persistence" → Requirement: Theme selection persists to localStorage
-- Proposal element "SSR flash prevention via inline head script" → Requirement: No theme flash on SSR page load
-- Design Decision 4 (inline script) → Requirement: No theme flash on SSR page load
-- Design Decision 5 (ThemeContext / useTheme) → Requirement: Theme selection persists to localStorage
-- Requirements → Tasks: Task 1 (branch), Task 3 (token definitions), Task 4 (inline script + ThemeContext), Task 9 (theme selector UI)
+- Proposal element (theme id light-cool) → Requirements: MODIFIED theme id, MODIFIED inline script allowlist
+- Design decision 2 (light-cool id) → Requirement: MODIFIED theme id
+- Design decision 3 (migration shim) → Requirement: MODIFIED localStorage migration shim
+- Requirements → Tasks: T5 (ThemeContext update), T6 (inline script update)
 
 ## Non-Functional Acceptance Criteria
 
-### Requirement: Performance
+### Requirement: Performance — no flash of wrong theme with light-cool stored
 
-#### Scenario: Theme applied before first paint
+#### Scenario: No dark flash when light-cool is the stored preference
 
-- **Given** any stored theme preference in localStorage
-- **When** the browser loads the page
-- **Then** the correct theme class is on `<html>` before any content is visible (inline script runs synchronously in `<head>`)
+- **Given** `localStorage['cookbook-theme']` is `'light-cool'`
+- **When** the page is navigated to and captured at `waitUntil: 'commit'`
+- **Then** `document.documentElement.className` is `'light-cool'` — the dark theme is never painted
 
-### Requirement: Reliability
+### Requirement: Reliability — migration shim is idempotent
 
-#### Scenario: Recovery from localStorage failure
+#### Scenario: Shim does not rewrite `light-cool` to itself repeatedly
 
-- **Given** `localStorage.getItem` throws an exception
-- **When** the inline script executes
-- **Then** the exception is silently caught, the app renders in `dark` theme, and no JavaScript error surfaces to the user
+- **Given** `localStorage['cookbook-theme']` is already `'light-cool'`
+- **When** the inline script runs
+- **Then** `localStorage['cookbook-theme']` remains `'light-cool'` and no unnecessary write occurs
+
+### Requirement: Reliability — localStorage unavailable does not crash the shim
+
+#### Scenario: Inline script handles localStorage access error gracefully
+
+- **Given** localStorage throws on read (e.g., private browsing, sandboxed iframe)
+- **When** the inline script runs
+- **Then** the error is caught; `html` class remains `'dark'`; no JavaScript error propagates
