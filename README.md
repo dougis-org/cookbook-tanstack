@@ -50,15 +50,11 @@ npm run test
 
 ## Project Status
 
-**Note**: This is currently a layout/structure implementation. The application displays placeholder data and UI components, but does not yet implement:
-- Backend API endpoints
-- Database integration
-- Data persistence
-- Authentication
-- Image upload functionality
-- Full CRUD operations
-
-These features will be implemented in future iterations.
+This application is a full-stack recipe management system featuring:
+- **Backend API**: Integrated tRPC API layer for type-safe data fetching and mutations.
+- **Database**: MongoDB integration with Mongoose for robust data modeling and persistence.
+- **Authentication**: Secure user authentication powered by Better Auth.
+- **Recipe Management**: Full CRUD operations for recipes and categories.
 
 ## Tech Stack
 
@@ -66,6 +62,9 @@ These features will be implemented in future iterations.
 - **TanStack Router**: Type-safe routing
 - **React 19**: UI library
 - **Tailwind CSS**: Utility-first CSS framework
+- **tRPC**: End-to-end type-safe API
+- **Better Auth**: Authentication framework
+- **MongoDB & Mongoose**: Database and ODM
 - **TypeScript**: Type safety
 - **Vite**: Build tool
 - **Nitro**: Server deployment
