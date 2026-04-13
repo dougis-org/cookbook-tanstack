@@ -86,4 +86,21 @@ describe("Header sidebar backdrop", () => {
     render(<Header />)
     expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
   })
+
+  it("clicking the backdrop closes the sidebar", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    const backdrop = document.querySelector('div[aria-hidden="true"].fixed') as HTMLElement
+    expect(backdrop).toBeInTheDocument()
+    fireEvent.click(backdrop)
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
+  })
+
+  it("clicking a theme button closes the sidebar", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: "Dark" }))
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
+  })
 })
