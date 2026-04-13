@@ -9,7 +9,7 @@ description: Tests for fix-hamburger-menu-close — sidebar backdrop and theme-b
 
 This document outlines the tests for the `fix-hamburger-menu-close` change. All work follows strict TDD: write failing tests first, implement to make them pass, then refactor.
 
-The fix touches only `src/components/Header.tsx`. The primary test vehicle is Playwright E2E (the UI interaction is the behavior being verified). A Vitest unit test is added for the theme-button handler change.
+The fix touches only `src/components/Header.tsx`. The primary test vehicle is Playwright E2E (the UI interaction is the behavior being verified). A Vitest unit test is added for the backdrop `aria-hidden` attribute (TC-08) in `src/components/__tests__/Header.test.tsx`.
 
 ## Testing Steps
 
@@ -28,7 +28,7 @@ For each task in `tasks.md`:
 Maps to: task E2 | spec AC1 (`specs/sidebar-close-behavior.md`)
 
 - [x] **TC-01**: Open sidebar → click backdrop → assert sidebar is not visible
-  - File: `src/tests/e2e/header-sidebar.spec.ts` (create or extend)
+  - File: `src/e2e/header-sidebar.spec.ts` (create or extend)
   - Steps: click hamburger button → wait for sidebar → click the `[aria-hidden="true"]` overlay div → assert `<aside>` has `translate-x-full` or is not in viewport
   - Expected to fail before E2 is implemented
 
@@ -47,7 +47,7 @@ Maps to: task E2 | spec AC1 (`specs/sidebar-close-behavior.md`)
 Maps to: task E3 | spec AC2 (`specs/sidebar-close-behavior.md`)
 
 - [x] **TC-04**: Open sidebar → click a non-active theme button → assert sidebar closes AND theme updates
-  - Steps: open sidebar → identify a theme button that is not currently active → click it → assert sidebar not visible AND `document.documentElement.dataset.theme` equals chosen theme id
+  - Steps: open sidebar → identify a theme button that is not currently active → click it → assert sidebar not visible AND `document.documentElement.className` contains chosen theme id
   - Expected to fail before E3 is implemented
 
 - [x] **TC-05**: Open sidebar → click already-active theme button → assert sidebar closes
@@ -75,6 +75,6 @@ Maps to: task E4 | spec AC3 (`specs/sidebar-close-behavior.md`)
 Maps to: task E2 | spec AC4 (`specs/sidebar-close-behavior.md`)
 
 - [x] **TC-08**: Backdrop has `aria-hidden="true"`
-  - Type: Vitest unit test on `Header` component (React Testing Library)
+  - Type: Vitest unit test on `Header` component (React Testing Library) — `src/components/__tests__/Header.test.tsx`
   - Steps: render `<Header />`, open sidebar (simulate hamburger click), query backdrop div, assert `aria-hidden="true"` attribute is present
-  - Expected to fail before E2 is implemented
+  - TC-08b: assert no backdrop div exists when sidebar is closed

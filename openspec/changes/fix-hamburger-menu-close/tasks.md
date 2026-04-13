@@ -9,7 +9,7 @@
 
 ### E1 — Write failing E2E tests (TDD first)
 
-- [x] In `src/tests/e2e/` (or equivalent Playwright test directory), add a test file `header-sidebar.spec.ts` (or extend the existing Header E2E spec if one exists) with scenarios:
+- [x] In `src/e2e/` (or equivalent Playwright test directory), add a test file `header-sidebar.spec.ts` (or extend the existing Header E2E spec if one exists) with scenarios:
   - AC1: Open sidebar → click backdrop → assert sidebar is not visible
   - AC2: Open sidebar → click a theme button → assert sidebar is not visible AND theme attribute is updated
   - AC2b: Open sidebar → click already-active theme → assert sidebar closes

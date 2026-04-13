@@ -28,7 +28,7 @@ The system SHALL close the mobile sidebar when the user selects a theme from the
 
 - **Given** the mobile sidebar is open
 - **When** the user clicks a theme button (e.g., "Light", "Dark", "Cool")
-- **Then** the sidebar closes AND the selected theme is applied (the `data-theme` attribute on `<html>` updates to the chosen theme)
+- **Then** the sidebar closes AND the selected theme is applied (the `<html>` element `className` updates to the chosen theme)
 
 #### Scenario: Theme selection on already-active theme still closes the sidebar
 

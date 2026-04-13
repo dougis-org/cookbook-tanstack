@@ -14,7 +14,7 @@
 ### Non-Goals
 
 - Focus trap inside the sidebar.
-- Keyboard (Escape key) close — already works via the X button flow; no regression expected.
+- Keyboard (Escape key) close for the sidebar drawer (Escape only closes the mobile search input, not the sidebar).
 - Swipe-to-close gesture.
 - Any refactor of Header beyond the two targeted changes.
 

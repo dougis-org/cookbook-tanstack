@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 
 const mockNavigate = vi.fn()
 let mockAuthResult: { session: unknown; isPending: boolean } = { session: null, isPending: false }
@@ -65,5 +65,25 @@ describe("Header nav visibility", () => {
     render(<Header />)
     expect(screen.queryByText("New Recipe")).not.toBeInTheDocument()
     expect(screen.queryByText("Import Recipe")).not.toBeInTheDocument()
+  })
+})
+
+describe("Header sidebar backdrop", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuthResult = { session: null, isPending: false }
+  })
+
+  it("TC-08: backdrop has aria-hidden when sidebar is open", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    const backdrop = document.querySelector('div[aria-hidden="true"].fixed')
+    expect(backdrop).toBeInTheDocument()
+    expect(backdrop).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("TC-08b: backdrop is absent from DOM when sidebar is closed", () => {
+    render(<Header />)
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
   })
 })
