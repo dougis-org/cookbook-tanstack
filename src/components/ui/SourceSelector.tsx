@@ -94,12 +94,12 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
             setOpen(true)
           }}
           onFocus={() => setOpen(true)}
-          className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+          className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
         />
       )}
 
       {showDropdown && (
-        <ul className="absolute z-10 mt-1 w-full bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <ul className="absolute z-10 mt-1 w-full bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg shadow-[var(--theme-shadow-md)] max-h-48 overflow-y-auto">
           {results.map((source) => (
             <li key={source.id}>
               <button
@@ -109,7 +109,7 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
               >
                 {source.name}
                 {source.url && (
-                  <span className="ml-2 text-gray-400 text-xs truncate">{source.url}</span>
+                  <span className="ml-2 text-[var(--theme-fg-subtle)] text-xs truncate">{source.url}</span>
                 )}
               </button>
             </li>
@@ -120,7 +120,7 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
                 type="button"
                 disabled={createMutation.isPending}
                 onMouseDown={() => createMutation.mutate({ name: trimmedInput })}
-                className="w-full text-left px-4 py-2 text-sm text-cyan-400 hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
+                className="w-full text-left px-4 py-2 text-sm text-[var(--theme-accent)] hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
               >
                 {createMutation.isPending ? "Creating…" : `Create "${trimmedInput}"`}
               </button>

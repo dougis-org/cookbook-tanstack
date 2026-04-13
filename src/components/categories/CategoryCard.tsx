@@ -6,7 +6,7 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
   return (
-    <div className="bg-[var(--theme-surface)] rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow cursor-pointer">
       <div className="p-4">
         <h3 className="text-xl font-semibold text-[var(--theme-fg)] mb-2">
           {category.name}

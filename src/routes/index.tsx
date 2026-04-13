@@ -82,7 +82,7 @@ function HomePage() {
             <Link
               key={index}
               to={feature.link}
-              className="bg-[var(--theme-surface)] shadow-[var(--theme-shadow-sm)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-[var(--theme-accent)]/50 transition-all duration-300 hover:shadow-lg"
+              className="bg-[var(--theme-surface)] shadow-[var(--theme-shadow-sm)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-[var(--theme-accent)]/50 transition-all duration-300 hover:shadow-[var(--theme-shadow-md)]"
             >
               <div className="mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold text-[var(--theme-fg)] mb-3">

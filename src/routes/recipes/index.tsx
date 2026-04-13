@@ -169,7 +169,7 @@ function RecipesPage() {
             value={sort}
             onChange={(e) => updateSearch({ sort: e.target.value as typeof sort })}
             aria-label="Sort recipes"
-            className="px-3 py-2 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="px-3 py-2 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] text-sm focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -183,7 +183,7 @@ function RecipesPage() {
           <select
             value={pageSize}
             onChange={(e) => updateSearch({ pageSize: Number(e.target.value), page: 1 })}
-            className="px-3 py-2 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            className="px-3 py-2 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] text-sm focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
             aria-label="Results per page"
           >
             <option value={10}>10 / page</option>

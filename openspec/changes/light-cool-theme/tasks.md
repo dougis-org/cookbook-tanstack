@@ -149,10 +149,10 @@ Files: `src/components/recipes/RecipeCard.tsx`, `src/components/cookbooks/Cookbo
 
 ## Validation
 
-- [ ] `npm run test` — all unit and integration tests pass
-- [ ] `npm run test:e2e` — full E2E suite passes (dark theme tests unaffected; new light-cool tests pass)
-- [ ] `npx tsc --noEmit` — zero type errors
-- [ ] `npm run build` — production build succeeds
+- [x] `npm run test` — all unit and integration tests pass
+- [x] `npm run test:e2e` — full E2E suite passes (dark theme tests unaffected; new light-cool tests pass)
+- [x] `npx tsc --noEmit` — zero type errors
+- [x] `npm run build` — production build succeeds
 - [ ] Manual visual review: start dev server, switch to Light (cool), check each major page:
   - Home page — hero visible, feature cards float with shadow, CTAs in blue
   - Recipes page — filter chips readable, active chip in blue accent
@@ -162,7 +162,7 @@ Files: `src/components/recipes/RecipeCard.tsx`, `src/components/cookbooks/Cookbo
   - Login / register / forgot password — links in blue accent
   - Confirm dialog — panel not dark
 - [ ] Manual dark theme regression check — no visual change from pre-PR state
-- [ ] Post-migration audit grep (Task 14) returns zero unexpected matches
+- [x] Post-migration audit grep (Task 14) returns zero unexpected matches
 - [ ] All completed tasks marked as complete
 
 ## Remote push validation

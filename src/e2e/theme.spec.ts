@@ -109,23 +109,33 @@ test.describe('Theme system', () => {
     expect(headerBgLight).not.toBe(headerBgDark)
   })
 
-  test('light-cool: active filter chip text is visible (blue, not white/invisible)', async ({ page }) => {
+  test('light-cool: active filter chip text matches the theme accent', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light-cool')
     })
 
     await gotoAndWaitForHydration(page, '/recipes?hasImage=true')
 
-    // The 'Has Image' quick filter button should be active (has accent styling)
-    const hasImageBtn = page.getByRole('button', { name: /has image/i })
+    const hasImageBtn = page.getByRole('button', { name: 'Has Image', exact: true })
     await expect(hasImageBtn).toBeVisible()
 
-    // The active button should not have a very light text color (would be invisible on white bg)
-    const color = await hasImageBtn.evaluate((el) => window.getComputedStyle(el).color)
-    // blue-600 is approximately rgb(37, 99, 235) — should not be near white (255,255,255)
-    // Just assert the button is visible and present
-    expect(color).toBeTruthy()
-    expect(color).not.toBe('rgb(255, 255, 255)')
+    const colors = await hasImageBtn.evaluate((el) => {
+      const buttonColor = window.getComputedStyle(el).color
+      const accentColor = window
+        .getComputedStyle(document.documentElement)
+        .getPropertyValue('--theme-accent')
+        .trim()
+
+      const swatch = document.createElement('div')
+      swatch.style.color = accentColor
+      document.body.appendChild(swatch)
+      const resolvedAccent = window.getComputedStyle(swatch).color
+      swatch.remove()
+
+      return { buttonColor, resolvedAccent }
+    })
+
+    expect(colors.buttonColor).toBe(colors.resolvedAccent)
   })
 
   test('print isolation: PrintLayout wrapper has white background regardless of theme', async ({ page }) => {

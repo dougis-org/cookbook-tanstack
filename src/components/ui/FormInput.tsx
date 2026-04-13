@@ -34,7 +34,7 @@ export default function FormInput({
         required={required}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
-        className="w-full px-4 py-2.5 bg-[var(--theme-surface-raised)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+        className="w-full px-4 py-2.5 bg-[var(--theme-surface-raised)] border border-[var(--theme-border)] rounded-lg text-[var(--theme-fg)] placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
       />
       {error && <p id={`${id}-error`} className="mt-1 text-sm text-red-400">{error}</p>}
     </div>

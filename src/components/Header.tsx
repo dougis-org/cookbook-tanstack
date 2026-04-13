@@ -86,7 +86,7 @@ export default function Header() {
                 value={inputValue}
                 onChange={(e) => debouncedNavigate(e.target.value)}
                 placeholder="Search recipes…"
-                className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
                 onKeyDown={(e) => { if (e.key === 'Escape') setMobileSearchOpen(false) }}
               />
             </div>
@@ -135,7 +135,7 @@ export default function Header() {
                   value={inputValue}
                   onChange={(e) => debouncedNavigate(e.target.value)}
                   placeholder="Search recipes…"
-                  className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  className="w-full pl-9 pr-4 py-1.5 bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] rounded-lg text-sm placeholder-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
                 />
               </div>
             </div>

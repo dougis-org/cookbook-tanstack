@@ -12,7 +12,7 @@ interface RecipeCardProps {
 
 export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
   return (
-    <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-xl transition-shadow">
+    <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow">
       <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-[var(--theme-surface-hover)]" data-testid="recipe-card-image" />
       <div className="p-4">
         <div className="flex items-start justify-between mb-2">

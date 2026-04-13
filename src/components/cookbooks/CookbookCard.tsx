@@ -15,7 +15,7 @@ interface CookbookCardProps {
 
 export default function CookbookCard({ cookbook }: CookbookCardProps) {
   return (
-    <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
+    <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow cursor-pointer">
       <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-[var(--theme-surface-hover)]" />
       <div className="p-4">
         <h3 className="flex items-center gap-2 text-xl font-semibold text-[var(--theme-fg)] mb-1">

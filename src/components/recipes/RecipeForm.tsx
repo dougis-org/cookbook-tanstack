@@ -320,7 +320,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               type="text"
               placeholder="Enter recipe name"
               {...register("name")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
@@ -335,7 +335,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <select
               id="classificationId"
               {...register("classificationId")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             >
               <option value="">Select a category</option>
               {classifications?.map((c) => (
@@ -369,7 +369,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={3}
               placeholder="Add notes about this recipe"
               {...register("notes")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             />
           </div>
 
@@ -384,7 +384,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="30"
                 {...register("prepTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
             <div>
@@ -396,7 +396,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="45"
                 {...register("cookTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
             <div>
@@ -408,7 +408,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 type="number"
                 placeholder="4"
                 {...register("servings")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
               />
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <select
               id="difficulty"
               {...register("difficulty")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             >
               <option value="">Select difficulty</option>
               <option value="easy">Easy</option>
@@ -478,7 +478,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={8}
               placeholder="Enter ingredients, one per line"
               {...register("ingredients")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
           </div>
 
@@ -492,7 +492,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               rows={8}
               placeholder="Enter instructions, one step per line"
               {...register("instructions")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
           </div>
 
@@ -509,7 +509,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("calories")}
-                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
@@ -521,7 +521,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("fat")}
-                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
@@ -533,7 +533,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("cholesterol")}
-                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
@@ -545,7 +545,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("sodium")}
-                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
               <div>
@@ -557,7 +557,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   type="number"
                   placeholder="0"
                   {...register("protein")}
-                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                  className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
                 />
               </div>
             </div>

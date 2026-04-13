@@ -31,11 +31,11 @@ vi.mock("@/contexts/ThemeContext", () => ({
   useTheme: () => ({ theme: mockTheme, setTheme: mockSetTheme }),
   THEMES: [
     { id: 'dark', label: 'Dark' },
-    { id: 'light', label: 'Light' },
+    { id: 'light-cool', label: 'Light (cool)' },
   ],
 }))
 
-import Header from "@/components/Header"
+import Header from "../../Header"
 
 const defaultAuth = { session: null, isPending: false, isLoggedIn: false, userId: null }
 const authedUser = {
@@ -276,7 +276,7 @@ describe("Header", () => {
     fireEvent.click(screen.getByLabelText("Open menu"))
 
     expect(screen.getByText("Dark")).toBeInTheDocument()
-    expect(screen.getByText("Light")).toBeInTheDocument()
+    expect(screen.getByText("Light (cool)")).toBeInTheDocument()
   })
 
   it("active theme button has distinguishing visual class", () => {
@@ -286,7 +286,7 @@ describe("Header", () => {
     fireEvent.click(screen.getByLabelText("Open menu"))
 
     const darkBtn = screen.getByRole("button", { name: "Dark" })
-    const lightBtn = screen.getByRole("button", { name: "Light" })
+    const lightBtn = screen.getByRole("button", { name: "Light (cool)" })
     expect(darkBtn.className).not.toBe(lightBtn.className)
   })
 
@@ -296,8 +296,8 @@ describe("Header", () => {
     render(<Header />)
     fireEvent.click(screen.getByLabelText("Open menu"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Light" }))
-    expect(mockSetTheme).toHaveBeenCalledWith("light")
+    fireEvent.click(screen.getByRole("button", { name: "Light (cool)" }))
+    expect(mockSetTheme).toHaveBeenCalledWith("light-cool")
   })
 
   it("each theme button has aria-pressed attribute", () => {
@@ -306,7 +306,7 @@ describe("Header", () => {
     fireEvent.click(screen.getByLabelText("Open menu"))
 
     const darkBtn = screen.getByRole("button", { name: "Dark" })
-    const lightBtn = screen.getByRole("button", { name: "Light" })
+    const lightBtn = screen.getByRole("button", { name: "Light (cool)" })
     expect(darkBtn).toHaveAttribute("aria-pressed")
     expect(lightBtn).toHaveAttribute("aria-pressed")
   })
