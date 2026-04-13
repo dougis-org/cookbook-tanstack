@@ -109,10 +109,9 @@ test.describe("Recipe Filter UI — Unified Filter Dropdowns", () => {
 
     await page.waitForURL(/mealIds=/);
 
-    // Meal dropdown button should reflect the selection (active styling)
+    // Meal dropdown button should reflect the selection.
     const mealButton = mealDropdown.getByRole("button");
-    const classList = await mealButton.getAttribute("class");
-    expect(classList).toContain("cyan");
+    await expect(mealButton).not.toHaveText(/All Meals/i);
   });
 
   test("should maintain filter state when applying multiple filters", async ({

@@ -6,7 +6,9 @@ const rootRoute = getRouteApi('__root__')
 export function useAuth() {
   const { session: serverSession } = rootRoute.useRouteContext()
   const { data: session, isPending } = useSession()
-  const effectiveSession = session ?? serverSession ?? null
+  const effectiveSession = isPending
+    ? session ?? serverSession ?? null
+    : session ?? null
 
   return {
     session: effectiveSession,
