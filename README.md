@@ -54,7 +54,7 @@ This application is a full-stack recipe management system featuring:
 - **Backend API**: Integrated tRPC API layer for type-safe data fetching and mutations.
 - **Database**: MongoDB integration with Mongoose for robust data modeling and persistence.
 - **Authentication**: Secure user authentication powered by Better Auth.
-- **Recipe Management**: Full CRUD operations for recipes and categories.
+- **Recipe Management**: Full CRUD operations for recipes, cookbooks, and related metadata (categories, sources, etc.).
 
 ## Tech Stack
 

@@ -18,14 +18,14 @@
 - [x] **Link Check**: Ensure any modified sections didn't break internal README links (if any).
 - [x] **Linting**: Run `npm run lint` if markdown linting is configured. (Note: Skipped as no general lint script exists, build passed).
 - [x] All completed tasks marked as complete.
-- [x] All steps in [Remote push validation].
+- [x] All steps in [Remote push validation](#remote-push-validation).
 
 ## Remote push validation
 
 Verification requirements (all must pass before PR or pushing updates to a PR):
 
 - **Build** — `npm run build`; build must succeed with no errors.
-- **Lint** — `npm run lint`; ensure no documentation or code linting errors.
+- **Lint** — Ensure no documentation or code linting errors (e.g., via IDE or manual check).
 - if **ANY** of the above fail, you **MUST** iterate and address the failure.
 
 ## PR and Merge
