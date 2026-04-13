@@ -3,6 +3,11 @@
     margin: 1cm;
   }
 
+  /* Named page for cookbook print sections — adjust top/bottom independently of left/right */
+  @page cookbook-page {
+    margin: 0.5cm 1cm; /* top/bottom: 0.5cm | left/right: 1cm */
+  }
+
   body {
     background: #fff !important;
     color: #000 !important;
@@ -38,5 +43,10 @@
   .cookbook-recipe-section {
     break-before: page;
     page-break-before: always;
+    page: cookbook-page;
+  }
+
+  .cookbook-toc-page {
+    page: cookbook-page;
   }
 }

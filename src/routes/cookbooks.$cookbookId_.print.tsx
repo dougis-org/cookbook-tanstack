@@ -43,7 +43,14 @@ export function CookbookPrintPage() {
   useEffect(() => {
     if (!isLoading && printData && !displayOnly && !hasPrinted.current) {
       hasPrinted.current = true
+      // Save original title and swap to cookbook name for print header
+      const originalTitle = document.title
+      document.title = printData.name
       window.print()
+      // Restore original title after print completes
+      return () => {
+        document.title = originalTitle
+      }
     }
   }, [isLoading, printData, displayOnly])
 
@@ -67,7 +74,9 @@ export function CookbookPrintPage() {
         {recipes.length === 0 ? (
           <CookbookEmptyState />
         ) : (
-          <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
+          <div className="cookbook-toc-page">
+            <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
+          </div>
         )}
 
         {orderedRecipes.map((recipe) => {
