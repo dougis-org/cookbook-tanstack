@@ -31,7 +31,7 @@ import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
-import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight } from 'lucide-react'
+import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
 import { useScrollSentinel } from '@/hooks/useScrollSentinel'
 
@@ -354,7 +354,16 @@ function CookbookDetailPage() {
       <div className="mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
           <div>
-            <h1 className="text-4xl font-bold text-[var(--theme-fg)]">{cookbook.name}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-bold text-[var(--theme-fg)]">{cookbook.name}</h1>
+              {isOwner && (
+                <User
+                  className="w-5 h-5 text-[var(--theme-accent)] print:hidden"
+                  role="img"
+                  aria-label="You own this"
+                />
+              )}
+            </div>
             {cookbook.description && (
               <p className="text-[var(--theme-fg-muted)] mt-2 max-w-2xl">{cookbook.description}</p>
             )}
