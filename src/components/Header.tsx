@@ -87,13 +87,15 @@ export default function Header() {
     }
   }, [])
 
-  // Click-outside: treat as Cancel if preview is pending, otherwise just close dropdown
+  // Click-outside: treat as Cancel if preview is pending, otherwise just close dropdown.
+  // Reads previewId/theme from refs (not closure) so it always sees the latest state
+  // even if called in the same paint cycle as a handleSelect() state update.
   useEffect(() => {
     if (!dropdownOpen) return
     function handleMouseDown(e: MouseEvent) {
       if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target as Node)) {
-        if (previewId !== null) {
-          document.documentElement.className = theme
+        if (previewIdRef.current !== null) {
+          document.documentElement.className = themeRef.current
           setPreviewId(null)
           setIsOpen(false)
         }
@@ -102,16 +104,17 @@ export default function Header() {
     }
     document.addEventListener('mousedown', handleMouseDown)
     return () => document.removeEventListener('mousedown', handleMouseDown)
-  }, [dropdownOpen, previewId, theme])
+  }, [dropdownOpen])
 
-  // Document-level Escape: close dropdown and revert preview from anywhere on the page
+  // Document-level Escape: close dropdown and revert preview from anywhere on the page.
+  // Reads previewId/theme from refs to avoid closure staleness (same reason as mousedown above).
   useEffect(() => {
     if (!dropdownOpen) return
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.preventDefault()
-        if (previewId !== null) {
-          document.documentElement.className = theme
+        if (previewIdRef.current !== null) {
+          document.documentElement.className = themeRef.current
           setPreviewId(null)
           setIsOpen(false)
         }
@@ -120,7 +123,7 @@ export default function Header() {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [dropdownOpen, previewId, theme])
+  }, [dropdownOpen])
 
   async function handleSignOut() {
     try {
@@ -181,6 +184,11 @@ export default function Header() {
       case ' ':
         e.preventDefault()
         handleSelect(THEMES[activeIndex].id)
+        break
+      case 'Escape':
+        // Stop propagation so the document-level Escape listener doesn't also fire
+        e.stopPropagation()
+        handleCancel()
         break
     }
   }
