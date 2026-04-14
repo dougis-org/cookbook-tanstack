@@ -19,6 +19,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+    await page.waitForLoadState("networkidle");
 
     const icon = page.getByRole("img", { name: OWN_THIS });
     await expect(icon).toBeVisible();
@@ -33,6 +34,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+    await page.waitForLoadState("networkidle");
     const recipeUrl = page.url();
 
     // Log in as a different user and navigate to the same recipe
@@ -40,7 +42,9 @@ test.describe("Owner icon — recipe detail page", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, recipeUrl);
 
-    await expect(page.getByRole("img", { name: OWN_THIS })).not.toBeVisible();
+    // Wait for page to finish rendering before asserting absence
+    await expect(page.getByRole("heading", { name })).toBeVisible();
+    await expect(page.getByRole("img", { name: OWN_THIS })).toHaveCount(0);
   });
 
   test("TC-P.1: User icon not visible in print media on recipe detail", async ({
@@ -51,6 +55,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+    await page.waitForLoadState("networkidle");
 
     await page.emulateMedia({ media: "print" });
 
@@ -88,7 +93,9 @@ test.describe("Owner icon — cookbook detail page", () => {
     await registerAndLogin(page);
     await gotoAndWaitForHydration(page, cookbookUrl);
 
-    await expect(page.getByRole("img", { name: OWN_THIS })).not.toBeVisible();
+    // Wait for page to finish rendering before asserting absence
+    await expect(page.getByRole("heading", { name: cookbookName })).toBeVisible();
+    await expect(page.getByRole("img", { name: OWN_THIS })).toHaveCount(0);
   });
 
   test("TC-P.2: User icon not visible in print media on cookbook detail", async ({
@@ -114,17 +121,17 @@ test.describe("Owner icon — logged-out user sees no icons", () => {
     page,
   }) => {
     await gotoAndWaitForHydration(page, "/recipes");
-    await expect(
-      page.getByRole("img", { name: OWN_THIS }).first(),
-    ).not.toBeVisible();
+    // Wait for the page heading to confirm rendering is complete
+    await expect(page.getByRole("heading", { name: "Recipes" })).toBeVisible();
+    await expect(page.getByRole("img", { name: OWN_THIS })).toHaveCount(0);
   });
 
   test("TC-E2E.2: logged-out user sees no User icon on cookbook listing", async ({
     page,
   }) => {
     await gotoAndWaitForHydration(page, "/cookbooks");
-    await expect(
-      page.getByRole("img", { name: OWN_THIS }).first(),
-    ).not.toBeVisible();
+    // Wait for the page heading to confirm rendering is complete
+    await expect(page.getByRole("heading", { name: "Cookbooks" })).toBeVisible();
+    await expect(page.getByRole("img", { name: OWN_THIS })).toHaveCount(0);
   });
 });

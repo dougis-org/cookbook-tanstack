@@ -152,7 +152,7 @@ export const cookbooksRouter = router({
       imageUrl: (cb.imageUrl ?? null) as string | null,
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
       chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
-      userId: (cb.userId?.toString() ?? null) as string | null,
+      userId: cb.userId?.toString() as string,
     }));
   }),
 
