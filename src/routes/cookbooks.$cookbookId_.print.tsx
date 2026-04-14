@@ -67,15 +67,15 @@ export function CookbookPrintPage() {
           cookbookName={name}
           breadcrumbLabel="Print View"
         />
-        <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
+        <div className="cookbook-toc-page">
+          <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
 
-        {recipes.length === 0 ? (
-          <CookbookEmptyState />
-        ) : (
-          <div className="cookbook-toc-page">
+          {recipes.length === 0 ? (
+            <CookbookEmptyState />
+          ) : (
             <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
-          </div>
-        )}
+          )}
+        </div>
 
         {orderedRecipes.map((recipe) => {
           const recipeForDetail: Recipe & {
