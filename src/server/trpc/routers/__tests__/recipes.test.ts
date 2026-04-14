@@ -302,6 +302,22 @@ describe("recipes.list", () => {
   });
 });
 
+// ─── recipes.list — userId field ─────────────────────────────────────────────
+
+describe("recipes.list — userId field", () => {
+  it("TC-4.1: items include userId as an explicit string field", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "My Recipe", userId: owner.id, isPublic: true }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id });
+      expect(result.items).toHaveLength(1);
+      expect(typeof result.items[0].userId).toBe("string");
+      expect(result.items[0].userId).toBe(owner.id);
+    });
+  });
+});
+
 // ─── recipes.list — classificationName ───────────────────────────────────────
 
 describe("recipes.list — classificationName", () => {

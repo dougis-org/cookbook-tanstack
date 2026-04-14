@@ -1,4 +1,4 @@
-import { BookOpen } from 'lucide-react'
+import { BookOpen, User } from 'lucide-react'
 import CardImage from '@/components/ui/CardImage'
 
 interface CookbookCardProps {
@@ -11,9 +11,10 @@ interface CookbookCardProps {
     recipeCount?: number
     chapterCount?: number
   }
+  isOwner?: boolean
 }
 
-export default function CookbookCard({ cookbook }: CookbookCardProps) {
+export default function CookbookCard({ cookbook, isOwner }: CookbookCardProps) {
   return (
     <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow cursor-pointer">
       <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-[var(--theme-surface-hover)]" />
@@ -28,12 +29,21 @@ export default function CookbookCard({ cookbook }: CookbookCardProps) {
           </p>
         )}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-[var(--theme-fg-subtle)]">
-            {cookbook.recipeCount ?? 0} {cookbook.recipeCount === 1 ? 'recipe' : 'recipes'}
-            {(cookbook.chapterCount ?? 0) > 0 && (
-              <> · {cookbook.chapterCount} {cookbook.chapterCount === 1 ? 'chapter' : 'chapters'}</>
+          <div className="flex items-center gap-2">
+            {isOwner && (
+              <User
+                className="w-4 h-4 shrink-0 text-[var(--theme-accent)] print:hidden"
+                role="img"
+                aria-label="You own this"
+              />
             )}
-          </p>
+            <p className="text-sm text-[var(--theme-fg-subtle)]">
+              {cookbook.recipeCount ?? 0} {cookbook.recipeCount === 1 ? 'recipe' : 'recipes'}
+              {(cookbook.chapterCount ?? 0) > 0 && (
+                <> · {cookbook.chapterCount} {cookbook.chapterCount === 1 ? 'chapter' : 'chapters'}</>
+              )}
+            </p>
+          </div>
           {!cookbook.isPublic && (
             <span className="text-xs px-2 py-0.5 bg-[var(--theme-surface-hover)] text-[var(--theme-fg-muted)] rounded">Private</span>
           )}

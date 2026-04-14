@@ -159,6 +159,7 @@ export const recipesRouter = router({
       const items = (rawItems as any[]).map((r) => ({
         ...r,
         id: r._id.toString() as string,
+        userId: (r.userId?.toString() ?? null) as string | null,
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
