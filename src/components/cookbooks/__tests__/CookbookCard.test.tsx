@@ -98,4 +98,21 @@ describe("CookbookCard", () => {
     render(<CookbookCard cookbook={makeCookbook({ recipeCount: 2, chapterCount: 1 })} />)
     expect(screen.getByText(/1 chapter/)).toBeInTheDocument()
   })
+
+  describe("isOwner prop", () => {
+    it("renders User icon when isOwner={true}", () => {
+      render(<CookbookCard cookbook={makeCookbook()} isOwner={true} />)
+      expect(screen.getByRole("img", { name: "You own this" })).toBeInTheDocument()
+    })
+
+    it("does not render User icon when isOwner={false}", () => {
+      render(<CookbookCard cookbook={makeCookbook()} isOwner={false} />)
+      expect(screen.queryByRole("img", { name: "You own this" })).not.toBeInTheDocument()
+    })
+
+    it("does not render User icon when isOwner is omitted", () => {
+      render(<CookbookCard cookbook={makeCookbook()} />)
+      expect(screen.queryByRole("img", { name: "You own this" })).not.toBeInTheDocument()
+    })
+  })
 })

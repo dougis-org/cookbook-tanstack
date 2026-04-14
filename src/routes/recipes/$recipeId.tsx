@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Heart } from 'lucide-react'
+import { Heart, User } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
 import PageLayout from '@/components/layout/PageLayout'
@@ -84,7 +84,15 @@ export function RecipeDetailPage() {
         <Breadcrumb items={[{ label: 'Recipes', to: '/recipes' }, { label: recipe.name }]} />
       </div>
       <div className="mb-6 flex items-center justify-between">
-        <span />
+        {isLoggedIn && isOwner ? (
+          <User
+            className="w-5 h-5 text-[var(--theme-accent)] print:hidden"
+            role="img"
+            aria-label="You own this"
+          />
+        ) : (
+          <span />
+        )}
 
         {isLoggedIn && (
           <button

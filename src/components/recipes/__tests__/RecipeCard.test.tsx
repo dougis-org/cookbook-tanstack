@@ -88,4 +88,27 @@ describe("RecipeCard", () => {
 
     expect(screen.queryByTestId("heart-icon")).not.toBeInTheDocument()
   })
+
+  describe("isOwner prop", () => {
+    it("renders User icon when isOwner={true}", () => {
+      render(<RecipeCard recipe={makeRecipe()} isOwner={true} />)
+      expect(screen.getByRole("img", { name: "You own this" })).toBeInTheDocument()
+    })
+
+    it("does not render User icon when isOwner={false}", () => {
+      render(<RecipeCard recipe={makeRecipe()} isOwner={false} />)
+      expect(screen.queryByRole("img", { name: "You own this" })).not.toBeInTheDocument()
+    })
+
+    it("does not render User icon when isOwner is omitted", () => {
+      render(<RecipeCard recipe={makeRecipe()} />)
+      expect(screen.queryByRole("img", { name: "You own this" })).not.toBeInTheDocument()
+    })
+
+    it("icon has role='img' and aria-label='You own this' when rendered", () => {
+      render(<RecipeCard recipe={makeRecipe()} isOwner={true} />)
+      const icon = screen.getByRole("img", { name: "You own this" })
+      expect(icon).toHaveAttribute("aria-label", "You own this")
+    })
+  })
 })

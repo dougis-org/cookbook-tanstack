@@ -216,6 +216,33 @@ describe("cookbooks.list", () => {
       expect(found!.chapterCount).toBe(2);
     });
   });
+
+  it("TC-3.1: returns userId as a string for each item", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results.length).toBeGreaterThan(0);
+      for (const cb of results) {
+        expect(typeof cb.userId).toBe("string");
+        expect(cb.userId).toBe(owner.id);
+      }
+    });
+  });
+
+  it("TC-3.2: returns userId on public cookbooks for anonymous caller", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id, { isPublic: true });
+      const caller = await makeAnonCaller();
+      const results = await caller.cookbooks.list();
+      expect(results.length).toBeGreaterThan(0);
+      for (const cb of results) {
+        expect(typeof cb.userId).toBe("string");
+      }
+    });
+  });
 });
 
 // ─── cookbooks.byId ──────────────────────────────────────────────────────────

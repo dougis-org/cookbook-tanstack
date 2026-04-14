@@ -1,4 +1,4 @@
-import { Heart } from 'lucide-react'
+import { Heart, User } from 'lucide-react'
 import type { Recipe } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
@@ -8,9 +8,10 @@ interface RecipeCardProps {
     classificationName?: string | null
   }
   marked?: boolean
+  isOwner?: boolean
 }
 
-export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
+export default function RecipeCard({ recipe, marked, isOwner }: RecipeCardProps) {
   return (
     <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow">
       <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-[var(--theme-surface-hover)]" data-testid="recipe-card-image" />
@@ -29,14 +30,23 @@ export default function RecipeCard({ recipe, marked }: RecipeCardProps) {
               {recipe.name}
             </h3>
           </div>
-          {marked !== undefined && (
-            <Heart
-              data-testid="heart-icon"
-              className={`w-5 h-5 shrink-0 ml-2 mt-1 ${marked ? 'fill-red-500 text-red-500' : 'text-[var(--theme-fg-muted)]'}`}
-              role="img"
-              aria-label={marked ? 'Recipe saved' : 'Recipe not saved'}
-            />
-          )}
+          <div className="flex items-center">
+            {isOwner && (
+              <User
+                className="w-4 h-4 shrink-0 ml-2 mt-1 text-[var(--theme-accent)] print:hidden"
+                role="img"
+                aria-label="You own this"
+              />
+            )}
+            {marked !== undefined && (
+              <Heart
+                data-testid="heart-icon"
+                className={`w-5 h-5 shrink-0 ml-2 mt-1 ${marked ? 'fill-red-500 text-red-500' : 'text-[var(--theme-fg-muted)]'}`}
+                role="img"
+                aria-label={marked ? 'Recipe saved' : 'Recipe not saved'}
+              />
+            )}
+          </div>
         </div>
         {recipe.notes && (
           <p className="text-[var(--theme-fg-muted)] text-sm line-clamp-2 mb-3">

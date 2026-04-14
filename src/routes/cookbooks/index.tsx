@@ -14,7 +14,7 @@ export const Route = createFileRoute('/cookbooks/')({
 
 export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, userId } = useAuth()
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
 
   return (
@@ -60,7 +60,10 @@ export function CookbooksPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {cookbooks.map((cb) => (
             <Link key={cb.id} to="/cookbooks/$cookbookId" params={{ cookbookId: cb.id }}>
-              <CookbookCard cookbook={{ ...cb, description: cb.description ?? null, imageUrl: cb.imageUrl ?? null }} />
+              <CookbookCard
+                cookbook={{ ...cb, description: cb.description ?? null, imageUrl: cb.imageUrl ?? null }}
+                isOwner={isLoggedIn && cb.userId === userId}
+              />
             </Link>
           ))}
         </div>
