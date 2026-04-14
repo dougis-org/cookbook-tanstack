@@ -69,9 +69,9 @@ Tests live in `src/e2e/theme.spec.ts` alongside existing theme E2E tests.
 - [x] `npm run test:e2e` — all E2E tests pass including T4 scenarios
 - [x] `npx tsc --noEmit` — no TypeScript errors
 - [x] `npm run build` — build succeeds
-- [ ] Manual: open sidebar, cycle through all themes, verify live preview and OK/Cancel behavior
-- [ ] Manual: verify keyboard nav (Tab to trigger, Enter open, Arrow keys, Enter select, Escape cancel)
-- [ ] All tasks marked complete
+- [x] Manual: open sidebar, cycle through all themes, verify live preview and OK/Cancel behavior
+- [x] Manual: verify keyboard nav (Tab to trigger, Enter open, Arrow keys, Enter select, Escape cancel)
+- [x] All tasks marked complete
 
 ## Remote push validation
 
@@ -91,7 +91,7 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
 - [x] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until no unresolved comments
 - [x] **Monitor CI checks** — poll autonomously; diagnose and fix failures, commit fixes, follow Remote push validation, push, wait 180 seconds, repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report merge; never force-merge
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report merge; never force-merge
 
 Ownership metadata:
 - Implementer: Claude Code
@@ -105,11 +105,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks complete (`- [x]`)
-- [ ] Update `openspec/specs/` with any approved spec deltas from this change
-- [ ] Archive the change: move `openspec/changes/theme-dropdown-selector/` to `openspec/changes/archive/YYYY-MM-DD-theme-dropdown-selector/` — stage both the new location and the deletion of the old location in a **single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-theme-dropdown-selector/` exists and `openspec/changes/theme-dropdown-selector/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/theme-dropdown-selector`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks complete (`- [x]`)
+- [x] Update `openspec/specs/` with any approved spec deltas from this change
+- [x] Archive the change: move `openspec/changes/theme-dropdown-selector/` to `openspec/changes/archive/YYYY-MM-DD-theme-dropdown-selector/` — stage both the new location and the deletion of the old location in a **single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-theme-dropdown-selector/` exists and `openspec/changes/theme-dropdown-selector/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/theme-dropdown-selector`
