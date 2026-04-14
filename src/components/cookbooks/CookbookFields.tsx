@@ -29,7 +29,7 @@ export default function CookbookFields({
     <>
       <div>
         <label htmlFor={nameId} className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">
-          Name <span className="text-red-400">*</span>
+          Name <span className="text-[var(--theme-error)]">*</span>
         </label>
         <input
           id={nameId}

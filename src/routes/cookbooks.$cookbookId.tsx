@@ -333,15 +333,15 @@ function CookbookDetailPage() {
   const activeDragRecipe = activeDragId ? recipes.find((r) => r.id === activeDragId) : null
 
   if (isLoading) {
-    return <PageLayout><p className="text-gray-400 text-center py-12">Loading…</p></PageLayout>
+    return <PageLayout><p className="text-[var(--theme-fg-subtle)] text-center py-12">Loading…</p></PageLayout>
   }
 
   if (!cookbook) {
     return (
       <PageLayout>
         <div className="text-center py-20">
-          <p className="text-gray-400 text-lg mb-4">Cookbook not found.</p>
-          <Link to="/cookbooks" className="text-cyan-400 hover:text-cyan-300">Back to Cookbooks</Link>
+          <p className="text-[var(--theme-fg-subtle)] text-lg mb-4">Cookbook not found.</p>
+          <Link to="/cookbooks" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]">Back to Cookbooks</Link>
         </div>
       </PageLayout>
     )
@@ -406,7 +406,7 @@ function CookbookDetailPage() {
                 </button>
                 <button
                   onClick={() => setModal({ kind: 'deleteCookbook' })}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-900/50 hover:bg-red-800/50 text-red-300 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors" /* theme-intentional: destructive action button */
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
@@ -675,7 +675,7 @@ function ChapterHeader({
           </button>
           <button
             onClick={onDelete}
-            className="text-[var(--theme-fg-subtle)] hover:text-red-400 transition-colors"
+            className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-error)] transition-colors"
             aria-label={`Delete ${chapter.name}`}
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -909,7 +909,7 @@ function EditCookbookModal({
             onDescriptionChange={setDescription}
             onIsPublicChange={setIsPublic}
           />
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-[var(--theme-error)] text-sm">{error}</p>}
           <div className="flex gap-3">
             <button
               type="submit"
@@ -961,7 +961,7 @@ function ConfirmModal({
   onCancel: () => void
 }) {
   const titleId = 'confirm-modal-title'
-  const btnClass = danger ? 'bg-red-600 hover:bg-red-700' : 'bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)]'
+  const btnClass = danger ? 'bg-red-600 hover:bg-red-700' /* theme-intentional: danger/destructive action convention */ : 'bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)]'
   return (
     <DialogOverlay labelId={titleId} onClose={onCancel} isPending={isPending}>
       <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-sm p-6">

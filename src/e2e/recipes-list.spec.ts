@@ -172,9 +172,9 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
     // URL should contain mealIds filter param
     await expect(page).toHaveURL(/mealIds=/);
 
-    // Meal dropdown button should reflect active state
+    // Meal dropdown button should reflect active state (uses classification badge tokens for active tint)
     const mealButton = mealDropdown.getByRole("button");
-    await expect(mealButton).toHaveClass(/cyan/);
+    await expect(mealButton).toHaveClass(/theme-accent-subtle/);
 
     // Deselect — URL should no longer have the filter param
     await firstCheckbox.click();

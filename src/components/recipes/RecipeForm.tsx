@@ -277,8 +277,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {showDraftPrompt && (
-        <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg flex items-center justify-between">
-          <div className="text-cyan-700 dark:text-cyan-300"> {/* dark: retained — draft banner accent */}
+        <div className="mb-6 p-4 bg-[color:var(--theme-accent-subtle-bg)] border border-[color:var(--theme-accent-subtle-border)] rounded-lg flex items-center justify-between">
+          <div className="text-[var(--theme-accent-subtle-text)]">
             <span className="font-semibold">You have an unsaved draft.</span> Would you like to restore it?
           </div>
           <div className="flex gap-2">
@@ -323,7 +323,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+              <p className="mt-1 text-sm text-[var(--theme-error)]">{errors.name.message}</p>
             )}
           </div>
 
@@ -564,7 +564,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
 
           {submitError && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+            <div className="p-4 bg-[color:var(--theme-error-bg)] border border-[color:var(--theme-error-border)] rounded-lg text-[var(--theme-error)]">
               {submitError}
             </div>
           )}

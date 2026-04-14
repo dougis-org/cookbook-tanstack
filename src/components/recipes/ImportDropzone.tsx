@@ -84,7 +84,7 @@ export default function ImportDropzone({ onFileSelected }: ImportDropzoneProps) 
         <p className="text-[var(--theme-fg-muted)] text-sm">Drag and drop a .json file here, or click to browse.</p>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-sm text-[var(--theme-error)]">{error}</p>}
     </div>
   )
 }

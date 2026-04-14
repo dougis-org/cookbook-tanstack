@@ -86,7 +86,7 @@ export function MultiSelectDropdown({
         aria-label={ariaLabel ? `${buttonLabel()} ${ariaLabel}` : undefined}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
           isActive
-            ? 'bg-cyan-100 dark:bg-cyan-500/20 border-cyan-400 text-cyan-700 dark:text-cyan-300' /* dark: retained — cyan accent tint, no token equivalent */
+            ? 'bg-[color:var(--theme-accent-subtle-bg)] border-[color:var(--theme-accent-subtle-border)] text-[var(--theme-accent-subtle-text)]'
             : 'bg-[var(--theme-surface)] border-[var(--theme-border)] text-[var(--theme-fg-subtle)] hover:border-[var(--theme-border-muted)]'
         }`}
       >
@@ -100,7 +100,7 @@ export function MultiSelectDropdown({
           className="absolute z-20 mt-1 min-w-[180px] max-h-64 overflow-y-auto rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-lg"
         >
           {options.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-gray-500">No options</p>
+            <p className="px-3 py-2 text-sm text-[var(--theme-fg-subtle)]">No options</p>
           ) : (
             <ul className="py-1">
               {sortedOptions.map((opt) => {
@@ -113,10 +113,9 @@ export function MultiSelectDropdown({
                         type="checkbox"
                         checked={checked}
                         onChange={() => toggle(opt.id)}
-                        className="accent-cyan-500 w-3.5 h-3.5"
+                        className="accent-cyan-500 w-3.5 h-3.5" /* theme-intentional: native checkbox accent-color, no CSS custom property equivalent */
                       />
-                      {/* dark: retained on checked — cyan accent tint, no token equivalent */}
-                      <span className={checked ? 'text-cyan-600 dark:text-cyan-300' : 'text-[var(--theme-fg)]'}>
+                      <span className={checked ? 'text-[var(--theme-accent-subtle-text)]' : 'text-[var(--theme-fg)]'}>
                         {opt.name}
                         {count !== undefined && (
                           <span className="ml-1 text-[var(--theme-fg-subtle)]">({count})</span>

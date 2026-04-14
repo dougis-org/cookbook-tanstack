@@ -13,25 +13,25 @@ export default function StatusIndicator({ status, onRetry }: StatusIndicatorProp
     <div className="flex items-center gap-2 text-sm transition-opacity duration-300">
       {status === "saving" && (
         <>
-          <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
+          <Loader2 className="h-4 w-4 animate-spin text-[var(--theme-accent)]" />
           <span className="text-[var(--theme-fg-subtle)]">Saving...</span>
         </>
       )}
       {status === "saved" && (
         <>
-          <Check className="h-4 w-4 text-green-500" />
-          <span className="text-green-600 dark:text-green-400 font-medium">Saved</span>
+          <Check className="h-4 w-4 text-[var(--theme-success)]" />
+          <span className="text-[var(--theme-success)] font-medium">Saved</span>
         </>
       )}
       {status === "error" && (
         <>
-          <AlertCircle className="h-4 w-4 text-red-500" />
-          <span className="text-red-600 dark:text-red-400 font-medium">Failed to save</span>
+          <AlertCircle className="h-4 w-4 text-[var(--theme-error)]" />
+          <span className="text-[var(--theme-error)] font-medium">Failed to save</span>
           {onRetry && (
             <button
               type="button"
               onClick={onRetry}
-              className="text-cyan-500 hover:text-cyan-400 underline"
+              className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] underline"
             >
               Retry
             </button>

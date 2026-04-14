@@ -21,7 +21,7 @@ function EditRecipePage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400">Loading recipe...</p>
+          <p className="text-[var(--theme-fg-subtle)]">Loading recipe...</p>
         </div>
       </PageLayout>
     )
@@ -31,10 +31,10 @@ function EditRecipePage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">Recipe not found</p>
+          <p className="text-[var(--theme-fg-subtle)] mb-4">Recipe not found</p>
           <Link
             to="/recipes"
-            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
           >
             Back to Recipes
           </Link>

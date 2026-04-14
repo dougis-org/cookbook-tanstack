@@ -26,7 +26,7 @@ function SourceDetailPage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400">Loading source...</p>
+          <p className="text-[var(--theme-fg-subtle)]">Loading source...</p>
         </div>
       </PageLayout>
     )
@@ -36,10 +36,10 @@ function SourceDetailPage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">Source not found</p>
+          <p className="text-[var(--theme-fg-subtle)] mb-4">Source not found</p>
           <Link
             to="/recipes"
-            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
           >
             Back to Recipes
           </Link>
@@ -53,7 +53,7 @@ function SourceDetailPage() {
       <div className="mb-6">
         <Link
           to="/recipes"
-          className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
+          className="inline-flex items-center gap-2 text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Recipes
@@ -87,7 +87,7 @@ function SourceDetailPage() {
 
       {!recipes?.items.length && (
         <div className="text-center py-12">
-          <p className="text-gray-400">No recipes from this source yet</p>
+          <p className="text-[var(--theme-fg-subtle)]">No recipes from this source yet</p>
         </div>
       )}
     </PageLayout>

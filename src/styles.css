@@ -1,10 +1,13 @@
 @import "tailwindcss";
+/* base.css MUST precede theme files — :root defaults have lower specificity than html.dark etc. */
+@import "./styles/base.css";
 @import "./styles/themes/dark.css";
 @import "./styles/themes/light-cool.css";
 @import "./styles/themes/light-warm.css";
 
 /* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.
-   Remaining dark: usages (badge tints, draft banner) depend on this. */
+   All dark: usages have been replaced by CSS token cascade as of the standardize-theme-tokens refactor.
+   This directive is retained so future dark: utilities work correctly without additional config. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 body {

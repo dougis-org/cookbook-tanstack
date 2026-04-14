@@ -15,7 +15,7 @@ function NewRecipePage() {
       <div className="mb-6">
         <Link
           to="/recipes"
-          className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors"
+          className="inline-flex items-center gap-2 text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to Recipes

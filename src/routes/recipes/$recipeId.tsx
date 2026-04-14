@@ -56,7 +56,7 @@ export function RecipeDetailPage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400">Loading recipe...</p>
+          <p className="text-[var(--theme-fg-subtle)]">Loading recipe...</p>
         </div>
       </PageLayout>
     )
@@ -66,10 +66,10 @@ export function RecipeDetailPage() {
     return (
       <PageLayout>
         <div className="text-center py-12">
-          <p className="text-gray-400 mb-4">Recipe not found</p>
+          <p className="text-[var(--theme-fg-subtle)] mb-4">Recipe not found</p>
           <Link
             to="/recipes"
-            className="text-cyan-400 hover:text-cyan-300 transition-colors"
+            className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
           >
             Back to Recipes
           </Link>
@@ -101,7 +101,7 @@ export function RecipeDetailPage() {
             className="print:hidden inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
           >
             <Heart
-              className={`w-5 h-5 ${recipe?.marked ? 'fill-red-500 text-red-500' : ''}`}
+              className={`w-5 h-5 ${recipe?.marked ? 'fill-red-500 text-red-500' : ''}`} /* theme-intentional: heart/like affordance, not an error state */
             />
             {recipe?.marked ? 'Saved' : 'Save'}
           </button>
@@ -131,7 +131,7 @@ export function RecipeDetailPage() {
         {isOwner && (
           <button
             onClick={() => setShowDelete(true)}
-            className="print:hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors"
+            className="print:hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-colors" /* theme-intentional: danger/destructive action convention */
           >
             Delete Recipe
           </button>

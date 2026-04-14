@@ -66,7 +66,7 @@ export default function DeleteConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={isPending}
-            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors disabled:opacity-50" /* theme-intentional: danger/destructive action convention */
           >
             {isPending ? "Deleting..." : "Delete"}
           </button>
