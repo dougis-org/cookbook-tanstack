@@ -92,6 +92,6 @@
 }
 
 /* PDF export override — applied when renderer sets data-pdf-export on <html> */
-[data-pdf-export] {
+html[data-pdf-export] {
   --theme-print-accent: theme(colors.cyan.700);
 }

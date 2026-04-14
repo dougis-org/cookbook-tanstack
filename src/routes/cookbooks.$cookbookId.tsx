@@ -406,7 +406,7 @@ function CookbookDetailPage() {
                 </button>
                 <button
                   onClick={() => setModal({ kind: 'deleteCookbook' })}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[color:var(--theme-error)] hover:opacity-90 text-white rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors" /* theme-intentional: destructive action button */
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete
