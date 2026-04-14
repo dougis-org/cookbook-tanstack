@@ -148,7 +148,7 @@ If **ANY** of the above fail, diagnose and fix before pushing.
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/owner-icon-listings-and-detail` and push to remote
+- [x] Commit all changes to `feat/owner-icon-listings-and-detail` and push to remote
 - [ ] Open PR from `feat/owner-icon-listings-and-detail` to `main`; enable auto-merge
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
 - [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
