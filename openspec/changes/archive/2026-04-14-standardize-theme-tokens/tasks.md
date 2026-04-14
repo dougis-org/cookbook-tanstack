@@ -121,15 +121,15 @@ Replace all `text-gray-*`, `border-gray-*`, `text-slate-*` etc. that map to exis
   - Dark theme screenshot of `CookbookStandaloneLayout` (assert no dark values)
   - All-theme screenshot of badge components
 - [x] **Build check** — `npm run build` — succeeds with no errors
-- [ ] **Visual check** — run `npm run dev`, manually verify dark / light-cool / light-warm for:
+- [x] **Visual check** — run `npm run dev`, manually verify dark / light-cool / light-warm for:
   - Form error state
   - Import preview warning
   - Taxonomy badges (meal / course / prep)
   - Classification badge
   - Breadcrumb navigation
   - Cookbook print/TOC layout in dark theme
-- [ ] **PDF export token check** — in devtools: apply `document.documentElement.setAttribute('data-pdf-export', 'true')`, inspect `--theme-print-accent` — confirms `cyan-700`
-- [ ] All steps in [Remote push validation]
+- [x] **PDF export token check** — in devtools: apply `document.documentElement.setAttribute('data-pdf-export', 'true')`, inspect `--theme-print-accent` — confirms `cyan-700`
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -146,13 +146,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/standardize-theme-tokens` and push to remote
-- [ ] Open PR from `feat/standardize-theme-tokens` to `main` — title: `refactor: standardize theme tokens with semantic CSS custom properties (closes #316)`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, repeat
-- [ ] **Monitor CI checks** — poll autonomously; when any check fails, diagnose and fix, commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, repeat
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never force-merge
+- [x] Commit all changes to `feat/standardize-theme-tokens` and push to remote
+- [x] Open PR from `feat/standardize-theme-tokens` to `main` — title: `refactor: standardize theme tokens with semantic CSS custom properties (closes #316)`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, repeat
+- [x] **Monitor CI checks** — poll autonomously; when any check fails, diagnose and fix, commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, repeat
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never force-merge
 
 Ownership metadata:
 - Implementer: Doug Hubbard
@@ -168,10 +168,10 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
 - [ ] Archive the change: move `openspec/changes/standardize-theme-tokens/` to `openspec/changes/archive/YYYY-MM-DD-standardize-theme-tokens/` — **stage both the new location and the deletion of the old location in a single commit**
 - [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-standardize-theme-tokens/` exists and `openspec/changes/standardize-theme-tokens/` is gone
 - [ ] Commit and push the archive commit to `main`
