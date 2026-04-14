@@ -43,7 +43,12 @@ export function CookbookPrintPage() {
   useEffect(() => {
     if (!isLoading && printData && !displayOnly && !hasPrinted.current) {
       hasPrinted.current = true
+      // Save original title and swap to cookbook name for print header
+      const originalTitle = document.title
+      document.title = printData.name
       window.print()
+      // Restore original title immediately after print dialog
+      document.title = originalTitle
     }
   }, [isLoading, printData, displayOnly])
 
@@ -62,13 +67,15 @@ export function CookbookPrintPage() {
           cookbookName={name}
           breadcrumbLabel="Print View"
         />
-        <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
+        <div className="cookbook-toc-page">
+          <CookbookPageHeader name={name} description={description} subtitle="Table of Contents" />
 
-        {recipes.length === 0 ? (
-          <CookbookEmptyState />
-        ) : (
-          <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
-        )}
+          {recipes.length === 0 ? (
+            <CookbookEmptyState />
+          ) : (
+            <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
+          )}
+        </div>
 
         {orderedRecipes.map((recipe) => {
           const recipeForDetail: Recipe & {
