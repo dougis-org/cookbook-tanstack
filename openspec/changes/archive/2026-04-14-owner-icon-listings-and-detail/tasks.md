@@ -126,13 +126,13 @@
 - [x] Run unit/integration tests: `npm run test`
 - [x] Run E2E tests: `npm run test:e2e`
 - [x] Run type check / build: `npm run build`
-- [ ] Manually verify in browser:
-  - [ ] Owner's recipe cards show `User` icon; others' do not
-  - [ ] Owner's cookbook cards show `User` icon; others' do not
-  - [ ] Recipe detail page shows icon for owner, absent for non-owner
-  - [ ] Cookbook detail page shows icon for owner, absent for non-owner
-  - [ ] Logged-out: no icons anywhere
-  - [ ] Print preview: no icons visible
+- [x] Manually verify in browser:
+  - [x] Owner's recipe cards show `User` icon; others' do not
+  - [x] Owner's cookbook cards show `User` icon; others' do not
+  - [x] Recipe detail page shows icon for owner, absent for non-owner
+  - [x] Cookbook detail page shows icon for owner, absent for non-owner
+  - [x] Logged-out: no icons anywhere
+  - [x] Print preview: no icons visible
 - [x] All completed tasks marked as complete
 
 ## Remote push validation
@@ -149,12 +149,12 @@ If **ANY** of the above fail, diagnose and fix before pushing.
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to `feat/owner-icon-listings-and-detail` and push to remote
-- [ ] Open PR from `feat/owner-icon-listings-and-detail` to `main`; enable auto-merge
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address comments → commit fixes → validate locally → push → wait 180 s → repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll autonomously; diagnose failures → fix → commit → validate locally → push → wait 180 s → repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never force-merge
+- [x] Open PR from `feat/owner-icon-listings-and-detail` to `main`; enable auto-merge
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address comments → commit fixes → validate locally → push → wait 180 s → repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — poll autonomously; diagnose failures → fix → commit → validate locally → push → wait 180 s → repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never force-merge
 
 Ownership metadata:
 
@@ -170,11 +170,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/owner-icon-listings-and-detail/` to `openspec/changes/archive/YYYY-MM-DD-owner-icon-listings-and-detail/` **in a single atomic commit** that includes both the new location and deletion of the old — do not split into two commits
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-owner-icon-listings-and-detail/` exists and `openspec/changes/owner-icon-listings-and-detail/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/owner-icon-listings-and-detail`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/owner-icon-listings-and-detail/` to `openspec/changes/archive/YYYY-MM-DD-owner-icon-listings-and-detail/` **in a single atomic commit** that includes both the new location and deletion of the old — do not split into two commits
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-owner-icon-listings-and-detail/` exists and `openspec/changes/owner-icon-listings-and-detail/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/owner-icon-listings-and-detail`
