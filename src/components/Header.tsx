@@ -12,20 +12,57 @@ import {
   UserPlus,
   LogOut,
   User,
+  ChevronDown,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme, THEMES } from '@/contexts/ThemeContext'
 
+type ThemeId = (typeof THEMES)[number]['id']
+
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
+  const [previewId, setPreviewId] = useState<ThemeId | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
   const { session, isPending } = useAuth()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const locationSearch = useRouterState({ select: (s) => s.location.search })
+  const dropdownContainerRef = useRef<HTMLDivElement>(null)
+  const themeRef = useRef<ThemeId>(theme)
+  const previewIdRef = useRef<ThemeId | null>(null)
+  const optionRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Keep refs in sync with state
+  useEffect(() => { themeRef.current = theme }, [theme])
+  useEffect(() => { previewIdRef.current = previewId }, [previewId])
+
+  // Revert any pending preview on unmount (e.g. navigating away mid-preview)
+  useEffect(() => {
+    return () => {
+      if (previewIdRef.current !== null) {
+        document.documentElement.className = themeRef.current
+      }
+    }
+  }, [])
+
+  // When dropdown opens, focus the option matching the current display theme
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const idx = THEMES.findIndex((t) => t.id === (previewId ?? theme))
+    setActiveIndex(idx >= 0 ? idx : 0)
+  }, [dropdownOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Focus the active option whenever activeIndex changes while dropdown is open
+  useEffect(() => {
+    if (dropdownOpen) {
+      optionRefs.current[activeIndex]?.focus()
+    }
+  }, [dropdownOpen, activeIndex])
 
   // Sync header input from URL ?search= param whenever route changes.
   // Cancel any pending debounce first to prevent stale navigations.
@@ -50,6 +87,44 @@ export default function Header() {
     }
   }, [])
 
+  // Click-outside: treat as Cancel if preview is pending, otherwise just close dropdown.
+  // Reads previewId/theme from refs (not closure) so it always sees the latest state
+  // even if called in the same paint cycle as a handleSelect() state update.
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleMouseDown(e: MouseEvent) {
+      if (dropdownContainerRef.current && !dropdownContainerRef.current.contains(e.target as Node)) {
+        if (previewIdRef.current !== null) {
+          document.documentElement.className = themeRef.current
+          setPreviewId(null)
+          setIsOpen(false)
+        }
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [dropdownOpen])
+
+  // Document-level Escape: close dropdown and revert preview from anywhere on the page.
+  // Reads previewId/theme from refs to avoid closure staleness (same reason as mousedown above).
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        if (previewIdRef.current !== null) {
+          document.documentElement.className = themeRef.current
+          setPreviewId(null)
+          setIsOpen(false)
+        }
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [dropdownOpen])
+
   async function handleSignOut() {
     try {
       await signOut()
@@ -68,6 +143,58 @@ export default function Header() {
       navigate({ to: '/recipes', search: (prev) => ({ ...prev, page: undefined, search: value.trim() || undefined }) })
     }, 300)
   }
+
+  function handleSelect(id: ThemeId) {
+    // Selecting the committed theme clears any pending preview
+    if (id === theme) {
+      setPreviewId(null)
+    } else {
+      setPreviewId(id)
+    }
+    document.documentElement.className = id
+  }
+
+  function handleOk() {
+    if (previewId !== null) {
+      setTheme(previewId)
+      setPreviewId(null)
+    }
+    setDropdownOpen(false)
+    setIsOpen(false)
+  }
+
+  function handleCancel() {
+    document.documentElement.className = theme
+    setPreviewId(null)
+    setDropdownOpen(false)
+    setIsOpen(false)
+  }
+
+  function handleListboxKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setActiveIndex((prev) => (prev + 1) % THEMES.length)
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setActiveIndex((prev) => (prev - 1 + THEMES.length) % THEMES.length)
+        break
+      case 'Enter':
+      case ' ':
+        e.preventDefault()
+        handleSelect(THEMES[activeIndex].id)
+        break
+      case 'Escape':
+        // Stop propagation so the document-level Escape listener doesn't also fire
+        e.stopPropagation()
+        handleCancel()
+        break
+    }
+  }
+
+  const displayTheme = previewId ?? theme
+  const displayLabel = THEMES.find((t) => t.id === displayTheme)?.label ?? displayTheme
 
   return (
     <>
@@ -314,21 +441,82 @@ export default function Header() {
           <p className="text-xs font-medium text-[var(--theme-fg-subtle)] mb-2 uppercase tracking-wider">
             Theme
           </p>
-          <div className="flex gap-2">
-            {THEMES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => { setTheme(t.id); setIsOpen(false) }}
-                aria-pressed={theme === t.id}
-                className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  theme === t.id
-                    ? 'bg-[var(--theme-accent)] text-[var(--theme-bg)]'
-                    : 'bg-[var(--theme-surface-hover)] text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)]'
-                }`}
+          <div ref={dropdownContainerRef} className="relative">
+            {/* Dropdown trigger */}
+            <button
+              data-testid="theme-dropdown-trigger"
+              aria-expanded={dropdownOpen}
+              aria-haspopup="listbox"
+              aria-controls="theme-listbox"
+              onClick={() => {
+                if (dropdownOpen && previewId !== null) {
+                  document.documentElement.className = theme
+                  setPreviewId(null)
+                }
+                setDropdownOpen((o) => !o)
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--theme-surface-hover)] text-[var(--theme-fg)] hover:bg-[var(--theme-surface)] transition-colors text-sm font-medium"
+            >
+              <span>{displayLabel}</span>
+              <ChevronDown
+                size={16}
+                className={`text-[var(--theme-fg-subtle)] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {/* Dropdown options panel */}
+            {dropdownOpen && (
+              <div
+                id="theme-listbox"
+                role="listbox"
+                aria-label="Select theme"
+                onKeyDown={handleListboxKeyDown}
+                className="absolute bottom-full left-0 right-0 mb-1 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-bg)] shadow-lg overflow-hidden z-10"
               >
-                {t.label}
-              </button>
-            ))}
+                {THEMES.map((t, i) => (
+                  <div
+                    key={t.id}
+                    ref={(el) => { optionRefs.current[i] = el }}
+                    role="option"
+                    tabIndex={i === activeIndex ? 0 : -1}
+                    aria-selected={t.id === (previewId ?? theme)}
+                    onClick={() => { handleSelect(t.id); setActiveIndex(i) }}
+                    className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors text-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[var(--theme-accent)] ${
+                      t.id === (previewId ?? theme)
+                        ? 'bg-[var(--theme-accent)] text-[var(--theme-bg)]'
+                        : i === activeIndex
+                          ? 'bg-[var(--theme-surface-hover)] text-[var(--theme-fg)]'
+                          : 'text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)]'
+                    }`}
+                  >
+                    <span
+                      data-theme={t.id}
+                      style={{ background: 'var(--theme-bg)' }}
+                      className="w-4 h-4 rounded-full border border-[var(--theme-border)] flex-shrink-0"
+                    />
+                    {t.label}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* OK / Cancel — only when a different theme is previewed */}
+            {previewId !== null && previewId !== theme && (
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={handleOk}
+                  className="flex-1 py-1.5 text-sm font-medium rounded-lg bg-[var(--theme-accent)] text-[var(--theme-bg)] hover:bg-[var(--theme-accent-hover)] transition-colors"
+                >
+                  OK
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="flex-1 py-1.5 text-sm font-medium rounded-lg bg-[var(--theme-surface-hover)] text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </aside>

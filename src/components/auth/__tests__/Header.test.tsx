@@ -272,42 +272,47 @@ describe("Header", () => {
     mockUseAuth.mockReturnValue(defaultAuth)
     render(<Header />)
 
-    // Open sidebar
+    // Open sidebar, then open dropdown to see options
     fireEvent.click(screen.getByLabelText("Open menu"))
+    fireEvent.click(screen.getByTestId("theme-dropdown-trigger"))
 
-    expect(screen.getByText("Dark")).toBeInTheDocument()
-    expect(screen.getByText("Light (cool)")).toBeInTheDocument()
+    expect(screen.getByRole("option", { name: "Dark" })).toBeInTheDocument()
+    expect(screen.getByRole("option", { name: "Light (cool)" })).toBeInTheDocument()
   })
 
-  it("active theme button has distinguishing visual class", () => {
+  it("active theme option has distinguishing visual class", () => {
     mockTheme = 'dark'
     mockUseAuth.mockReturnValue(defaultAuth)
     render(<Header />)
     fireEvent.click(screen.getByLabelText("Open menu"))
+    fireEvent.click(screen.getByTestId("theme-dropdown-trigger"))
 
-    const darkBtn = screen.getByRole("button", { name: "Dark" })
-    const lightBtn = screen.getByRole("button", { name: "Light (cool)" })
-    expect(darkBtn.className).not.toBe(lightBtn.className)
+    const darkOpt = screen.getByRole("option", { name: "Dark" })
+    const lightOpt = screen.getByRole("option", { name: "Light (cool)" })
+    expect(darkOpt.className).not.toBe(lightOpt.className)
   })
 
-  it("clicking a non-active theme calls setTheme with that theme id", () => {
+  it("selecting a non-active theme and pressing OK calls setTheme with that theme id", () => {
     mockTheme = 'dark'
     mockUseAuth.mockReturnValue(defaultAuth)
     render(<Header />)
     fireEvent.click(screen.getByLabelText("Open menu"))
+    fireEvent.click(screen.getByTestId("theme-dropdown-trigger"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Light (cool)" }))
+    fireEvent.click(screen.getByRole("option", { name: "Light (cool)" }))
+    fireEvent.click(screen.getByRole("button", { name: "OK" }))
     expect(mockSetTheme).toHaveBeenCalledWith("light-cool")
   })
 
-  it("each theme button has aria-pressed attribute", () => {
+  it("each theme option has aria-selected attribute", () => {
     mockUseAuth.mockReturnValue(defaultAuth)
     render(<Header />)
     fireEvent.click(screen.getByLabelText("Open menu"))
+    fireEvent.click(screen.getByTestId("theme-dropdown-trigger"))
 
-    const darkBtn = screen.getByRole("button", { name: "Dark" })
-    const lightBtn = screen.getByRole("button", { name: "Light (cool)" })
-    expect(darkBtn).toHaveAttribute("aria-pressed")
-    expect(lightBtn).toHaveAttribute("aria-pressed")
+    const darkOpt = screen.getByRole("option", { name: "Dark" })
+    const lightOpt = screen.getByRole("option", { name: "Light (cool)" })
+    expect(darkOpt).toHaveAttribute("aria-selected")
+    expect(lightOpt).toHaveAttribute("aria-selected")
   })
 })
