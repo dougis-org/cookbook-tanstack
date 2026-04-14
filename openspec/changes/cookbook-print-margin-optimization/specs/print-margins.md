@@ -38,12 +38,12 @@ The system SHALL apply reduced top/bottom (0.5 cm) and defined left/right (1 cm)
 
 ### Requirement: ADDED `cookbook-toc-page` class on TOC section wrapper
 
-The system SHALL apply a `cookbook-toc-page` CSS class to the TOC section wrapper in `CookbookStandaloneLayout`.
+The system SHALL apply a `cookbook-toc-page` CSS class to the TOC section wrapper in the cookbook print route component.
 
-#### Scenario: TOC wrapper receives class
+#### Scenario: TOC wrapper receives class from the route component
 
 - **Given** a cookbook with recipes is displayed in the standalone/print layout
-- **When** the component renders
+- **When** the route component renders
 - **Then** the TOC section wrapper element has the CSS class `cookbook-toc-page`
 
 ---
@@ -63,8 +63,8 @@ The system SHALL temporarily set `document.title` to the cookbook name before tr
 #### Scenario: Original document title is restored after print
 
 - **Given** the print dialog has been opened and then dismissed or confirmed
-- **When** the `useEffect` cleanup function runs
-- **Then** `document.title` is reset to the value it had before the print route mounted
+- **When** `window.print()` returns (the call is synchronous/blocking)
+- **Then** `document.title` is reset to the value it had before the print dialog opened
 
 #### Scenario: Title is not changed in display-only mode
 
@@ -89,7 +89,7 @@ No requirements are removed by this change.
 - Design decision D2 (`document.title` swap) → MODIFIED: browser tab title during print
 - Design decision D3 (CSS literal values, no variables) → ADDED: named `@page` rule (no variable usage)
 - ADDED: named `@page` rule → Task: add rule to `src/styles/print.css`; add `page: cookbook-page` to `.cookbook-recipe-section`
-- ADDED: `cookbook-toc-page` class → Task: add class to TOC wrapper in `CookbookStandaloneLayout.tsx`; add `page: cookbook-page` for `.cookbook-toc-page` in `print.css`
+- ADDED: `cookbook-toc-page` class → Task: add class to TOC wrapper in `cookbooks.$cookbookId_.print.tsx`; add `page: cookbook-page` for `.cookbook-toc-page` in `print.css`
 - MODIFIED: browser tab title → Task: update `useEffect` in `cookbooks.$cookbookId_.print.tsx`
 
 ---
@@ -102,7 +102,7 @@ No requirements are removed by this change.
 
 - **Given** a cookbook print page with 20+ recipes
 - **When** the browser renders the print layout
-- **Then** the named `@page` rule adds no measurable rendering delay compared to the baseline (styled-components swap is a trivial CSS property assignment)
+- **Then** the named `@page` rule adds no measurable rendering delay compared to the baseline, because the change is limited to static print CSS
 
 ### Requirement: Reliability
 

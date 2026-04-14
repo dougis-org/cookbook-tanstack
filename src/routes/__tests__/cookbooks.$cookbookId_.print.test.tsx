@@ -1,71 +1,101 @@
+import { render, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Test the document.title swap behavior
+const { mockUseParams, mockUseSearch } = vi.hoisted(() => ({
+  mockUseParams: vi.fn(),
+  mockUseSearch: vi.fn(),
+}))
+
+vi.mock('@tanstack/react-router', () => ({
+  createFileRoute: () => (opts: Record<string, unknown>) => ({
+    ...opts,
+    useParams: mockUseParams,
+    useSearch: mockUseSearch,
+  }),
+  Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+}))
+
+vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
+vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
+vi.mock('@/components/recipes/RecipeDetail', () => ({
+  default: ({ recipe }: { recipe: { name: string } }) => <div>{recipe.name}</div>,
+}))
+
+const mockUseQuery = vi.fn()
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: (...args: unknown[]) => mockUseQuery(...args),
+}))
+
+vi.mock('@/lib/trpc', () => ({
+  trpc: {
+    cookbooks: {
+      printById: {
+        queryOptions: ({ id }: { id: string }) => ({
+          queryKey: ['cookbooks', 'printById', id],
+        }),
+      },
+    },
+  },
+}))
+
+import { CookbookPrintPage } from '@/routes/cookbooks.$cookbookId_.print'
+
+const printData = {
+  name: 'Test Cookbook',
+  description: null,
+  chapters: [],
+  recipes: [],
+}
+
 describe('CookbookPrintPage — document.title swap', () => {
   let originalTitle: string
-  let mockPrint: ReturnType<typeof vi.fn>
+  let titleAtPrint: string | undefined
 
   beforeEach(() => {
     originalTitle = document.title
-    mockPrint = vi.fn()
-    vi.stubGlobal('print', mockPrint)
+    titleAtPrint = undefined
+
+    mockUseParams.mockReturnValue({ cookbookId: 'cookbook-1' })
+    mockUseSearch.mockReturnValue({})
+    mockUseQuery.mockReturnValue({ data: printData, isLoading: false })
+
+    vi.spyOn(window, 'print').mockImplementation(() => {
+      titleAtPrint = document.title
+    })
   })
 
   afterEach(() => {
     document.title = originalTitle
-    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
-  it('should save and restore document.title around window.print() call', () => {
-    const testTitle = 'Test Cookbook'
-    const titlesBefore: string[] = []
+  it('sets the cookbook name as document.title when window.print() is called', async () => {
+    render(<CookbookPrintPage />)
 
-    // Mock print to capture title at call time
-    mockPrint.mockImplementation(() => {
-      titlesBefore.push(document.title)
+    await waitFor(() => {
+      expect(window.print).toHaveBeenCalled()
     })
 
-    // Simulate the effect logic
-    const savedTitle = document.title
-    document.title = testTitle
-    window.print()
-    document.title = savedTitle
+    expect(titleAtPrint).toBe('Test Cookbook')
+  })
 
-    // Verify title was set to testTitle when print was called
-    expect(titlesBefore[0]).toBe(testTitle)
-    // Verify title was restored after
+  it('restores the original document.title immediately after window.print()', async () => {
+    render(<CookbookPrintPage />)
+
+    await waitFor(() => {
+      expect(window.print).toHaveBeenCalled()
+    })
+
     expect(document.title).toBe(originalTitle)
   })
 
-  it('should track title changes during print effect', () => {
-    const titleChanges: string[] = []
-    const originalDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'title')
+  it('does not swap document.title or call window.print() when displayonly=1', () => {
+    mockUseSearch.mockReturnValue({ displayonly: '1' })
 
-    // Track all title changes
-    Object.defineProperty(document, 'title', {
-      configurable: true,
-      get() {
-        return this._title || originalTitle
-      },
-      set(value: string) {
-        titleChanges.push(value)
-        this._title = value
-      },
-    })
+    render(<CookbookPrintPage />)
 
-    // Simulate the effect logic
-    const saved = document.title
-    document.title = 'Cookbook Name'
-    window.print()
-    document.title = saved
-
-    expect(titleChanges).toContain('Cookbook Name')
+    expect(window.print).not.toHaveBeenCalled()
     expect(document.title).toBe(originalTitle)
-
-    // Restore original descriptor
-    if (originalDescriptor) {
-      Object.defineProperty(document, 'title', originalDescriptor)
-    }
   })
 })
-

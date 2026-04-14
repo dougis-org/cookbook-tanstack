@@ -23,16 +23,16 @@
 
 ### Decision 1: Named `@page` rule scoped to cookbook print
 
-- Chosen: Define `@page cookbook-page { margin: 0.5cm 1cm; }` in `print.css`. Apply via `page: cookbook-page` CSS property on `.cookbook-recipe-section` (already exists) and a new `.cookbook-toc-page` class added to the TOC container in `CookbookStandaloneLayout`.
+- Chosen: Define `@page cookbook-page { margin: 0.5cm 1cm; }` in `print.css`. Apply via `page: cookbook-page` CSS property on `.cookbook-recipe-section` (already exists) and a new `.cookbook-toc-page` class added to the TOC container in the print route component (`cookbooks.$cookbookId_.print.tsx`).
 - Alternatives considered: (a) Global margin reduction — rejected, would also shrink single-recipe print. (b) Inline `style` on the wrapper — rejected, `page` named rules require a CSS class or selector, not an inline style.
 - Rationale: Named `@page` is the standards-correct mechanism for per-section page formatting. The `page` property cascades to the first element that starts a new page context, so assigning it to `.cookbook-recipe-section` (which already has `break-before: page`) is natural.
 - Trade-offs: Safari support for named `@page` is partial; the existing `@page { margin: 1cm }` default remains as fallback so Safari degrades gracefully.
 
 ### Decision 2: `document.title` swap in print effect
 
-- Chosen: In `CookbookPrintPage`'s `useEffect`, save `document.title`, set it to the cookbook name, call `window.print()`, then restore in the effect's cleanup function (i.e. the returned teardown function).
+- Chosen: In `CookbookPrintPage`'s `useEffect`, save `document.title`, set it to the cookbook name, call `window.print()`, then restore it immediately after the call (synchronous; `window.print()` blocks until the dialog closes).
 - Alternatives considered: (a) Mutate title before effect fires — too early, `printData` may not be available. (b) Use `<title>` tag manipulation via `@tanstack/router`'s `head` API — heavier and asynchronous; effect is simpler for this transient swap.
-- Rationale: The effect already gates on `!isLoading && printData`. Wrapping `window.print()` with title save/restore is the minimal change. Restoring in cleanup handles navigation-away-before-print edge case.
+- Rationale: The effect already gates on `!isLoading && printData`. Restoring immediately after `window.print()` returns ensures the tab title reverts as soon as the print dialog closes, satisfying the requirement even when the user stays on the page.
 - Trade-offs: Title change is momentary and invisible to users unless they inspect during the print dialog. No persistent side effects.
 
 ### Decision 3: Margin values as CSS custom properties

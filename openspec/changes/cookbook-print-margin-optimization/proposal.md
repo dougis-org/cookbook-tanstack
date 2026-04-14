@@ -35,8 +35,7 @@
 ## What Changes
 
 - `src/styles/print.css` — add `@page cookbook-page { margin: 0.5cm 1cm; }` named rule; assign `page: cookbook-page` to `.cookbook-recipe-section` and a new `.cookbook-toc-page` wrapper
-- `src/routes/cookbooks.$cookbookId_.print.tsx` — swap `document.title` to cookbook name before `window.print()`, restore in cleanup
-- `src/components/cookbooks/CookbookStandaloneLayout.tsx` — add `cookbook-toc-page` class to the TOC section wrapper so the named `@page` rule applies
+- `src/routes/cookbooks.$cookbookId_.print.tsx` — swap `document.title` to cookbook name before `window.print()`, restore immediately after, and add the `cookbook-toc-page` class to the TOC section wrapper so the named `@page` rule applies
 
 ## Risks
 
@@ -45,7 +44,7 @@
   - Mitigation: The existing `@page { margin: 1cm }` rule remains as fallback — Safari silently ignores the named rule and keeps working.
 - Risk: `document.title` swap may leave stale title if user navigates away mid-print.
   - Impact: Minor cosmetic — wrong tab title until next navigation.
-  - Mitigation: Restore title in `useEffect` cleanup function.
+  - Mitigation: Title is restored immediately after `window.print()` returns (blocking call); effect cleanup handles the navigation-away edge case.
 
 ## Open Questions
 
