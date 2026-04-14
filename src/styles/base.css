@@ -37,6 +37,17 @@
   --theme-warning-border: color-mix(in srgb, var(--theme-warning-base) 30%, transparent);
 
   /* ─────────────────────────────────────────────
+     Subtle accent tokens — for active/selected UI states
+     Derived from the same cyan base as the dark-theme accent for consistency,
+     but kept separate from badge tokens so they can evolve independently
+     ───────────────────────────────────────────── */
+
+  --theme-accent-subtle-base: theme(colors.cyan.500);
+  --theme-accent-subtle-bg: color-mix(in srgb, var(--theme-accent-subtle-base) 15%, transparent);
+  --theme-accent-subtle-text: theme(colors.cyan.700);
+  --theme-accent-subtle-border: color-mix(in srgb, var(--theme-accent-subtle-base) 35%, transparent);
+
+  /* ─────────────────────────────────────────────
      Badge tokens — per-category, light defaults
      bg and border derived from base; text is explicit
      ───────────────────────────────────────────── */

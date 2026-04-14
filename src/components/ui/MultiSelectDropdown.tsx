@@ -86,7 +86,7 @@ export function MultiSelectDropdown({
         aria-label={ariaLabel ? `${buttonLabel()} ${ariaLabel}` : undefined}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
           isActive
-            ? 'bg-[color:var(--theme-badge-classification-bg)] border-[color:var(--theme-badge-classification-border)] text-[var(--theme-badge-classification-text)]' /* uses classification token family as active-filter accent tint */
+            ? 'bg-[color:var(--theme-accent-subtle-bg)] border-[color:var(--theme-accent-subtle-border)] text-[var(--theme-accent-subtle-text)]'
             : 'bg-[var(--theme-surface)] border-[var(--theme-border)] text-[var(--theme-fg-subtle)] hover:border-[var(--theme-border-muted)]'
         }`}
       >
@@ -115,7 +115,7 @@ export function MultiSelectDropdown({
                         onChange={() => toggle(opt.id)}
                         className="accent-cyan-500 w-3.5 h-3.5" /* theme-intentional: native checkbox accent-color, no CSS custom property equivalent */
                       />
-                      <span className={checked ? 'text-[var(--theme-badge-classification-text)]' : 'text-[var(--theme-fg)]'}>
+                      <span className={checked ? 'text-[var(--theme-accent-subtle-text)]' : 'text-[var(--theme-fg)]'}>
                         {opt.name}
                         {count !== undefined && (
                           <span className="ml-1 text-[var(--theme-fg-subtle)]">({count})</span>

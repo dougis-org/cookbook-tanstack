@@ -277,8 +277,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   return (
     <div className="max-w-4xl mx-auto">
       {showDraftPrompt && (
-        <div className="mb-6 p-4 bg-[color:var(--theme-badge-classification-bg)] border border-[color:var(--theme-badge-classification-border)] rounded-lg flex items-center justify-between">
-          <div className="text-[var(--theme-badge-classification-text)]">
+        <div className="mb-6 p-4 bg-[color:var(--theme-accent-subtle-bg)] border border-[color:var(--theme-accent-subtle-border)] rounded-lg flex items-center justify-between">
+          <div className="text-[var(--theme-accent-subtle-text)]">
             <span className="font-semibold">You have an unsaved draft.</span> Would you like to restore it?
           </div>
           <div className="flex gap-2">

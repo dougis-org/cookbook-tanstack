@@ -71,7 +71,7 @@ function TocRecipeItem({
         className="flex items-baseline gap-3 group py-2 border-b border-[color:var(--theme-print-border)]"
       >
         <RecipeIndexNumber index={index} />
-        <span className="text-[var(--theme-fg)] group-hover:text-[var(--theme-accent)] transition-colors">
+        <span className="text-[var(--theme-print-fg)] group-hover:text-[var(--theme-print-accent)] transition-colors">
           {recipe.name}
         </span>
         <span className="flex-1" />

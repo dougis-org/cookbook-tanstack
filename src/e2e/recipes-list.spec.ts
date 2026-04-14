@@ -174,7 +174,7 @@ test.describe("Recipe List — Search, Sort, Filter, Paginate", () => {
 
     // Meal dropdown button should reflect active state (uses classification badge tokens for active tint)
     const mealButton = mealDropdown.getByRole("button");
-    await expect(mealButton).toHaveClass(/theme-badge-classification/);
+    await expect(mealButton).toHaveClass(/theme-accent-subtle/);
 
     // Deselect — URL should no longer have the filter param
     await firstCheckbox.click();
