@@ -1,4 +1,12 @@
 @media print {
+  /* Print token overrides — increases contrast slightly for legibility on paper.
+     Note: theme() cannot be used here because print.css is loaded as ?url (bypasses Tailwind transform).
+     gray.700 = #374151 (fg-muted darker for print legibility), gray.300 = #d1d5db (border slightly darker) */
+  :root {
+    --theme-print-fg-muted: #374151;
+    --theme-print-border: #d1d5db;
+  }
+
   @page {
     margin: 1cm;
   }

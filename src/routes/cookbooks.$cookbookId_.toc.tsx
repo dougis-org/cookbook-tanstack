@@ -44,7 +44,7 @@ function CookbookTocPage() {
           <CookbookTocList recipes={recipes} chapters={chapters} />
         )}
 
-        <footer className="mt-12 text-center text-gray-500 text-sm print:mt-16">
+        <footer className="mt-12 text-center text-[var(--theme-print-fg-subtle)] text-sm print:mt-16">
           {recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}
         </footer>
       </CookbookStandalonePage>

@@ -35,13 +35,13 @@ export function RecipePageRow({
 }) {
   return (
     <li className="print:break-inside-avoid">
-      <div className="flex items-baseline gap-3 py-2 border-b border-gray-200">
+      <div className="flex items-baseline gap-3 py-2 border-b border-[color:var(--theme-print-border)]">
         {index !== undefined && <RecipeIndexNumber index={index} />}
-        <span className="text-gray-900">
+        <span className="text-[var(--theme-print-fg)]">
           {recipe.name}
         </span>
         <span className="flex-1" />
-        <span className="text-gray-500 text-xs tabular-nums print:text-sm shrink-0">
+        <span className="text-[var(--theme-print-fg-subtle)] text-xs tabular-nums print:text-sm shrink-0">
           #{pageNumber}
         </span>
         <RecipeTimeSpan
@@ -68,14 +68,14 @@ function TocRecipeItem({
       <Link
         to="/recipes/$recipeId"
         params={{ recipeId: recipe.id }}
-        className="flex items-baseline gap-3 group py-2 border-b border-gray-200"
+        className="flex items-baseline gap-3 group py-2 border-b border-[color:var(--theme-print-border)]"
       >
         <RecipeIndexNumber index={index} />
         <span className="text-[var(--theme-fg)] group-hover:text-[var(--theme-accent)] transition-colors">
           {recipe.name}
         </span>
         <span className="flex-1" />
-        <span className="text-gray-500 text-xs tabular-nums print:text-sm shrink-0">
+        <span className="text-[var(--theme-print-fg-subtle)] text-xs tabular-nums print:text-sm shrink-0">
           #{pageNumber}
         </span>
         <RecipeTimeSpan
@@ -136,7 +136,7 @@ export function CookbookTocList({
       <div className="space-y-6">
         {chapterRows.map(({ chapter, rows }) => (
           <div key={chapter.id}>
-            <h2 className={`text-lg font-semibold text-gray-900 mb-2 border-b border-gray-200 pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
+            <h2 className={`text-lg font-semibold text-[var(--theme-print-fg)] mb-2 border-b border-[color:var(--theme-print-border)] pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
               {chapter.name}
             </h2>
             <ol className={TOC_LIST_CLASSES}>
@@ -216,7 +216,7 @@ export function RecipeTimeSpan({
     .filter(Boolean)
     .join(', ')
   return (
-    <span className={`text-gray-500 text-xs${className ? ` ${className}` : ''}`}>
+    <span className={`text-[var(--theme-print-fg-subtle)] text-xs${className ? ` ${className}` : ''}`}>
       {label}
     </span>
   )
@@ -224,13 +224,13 @@ export function RecipeTimeSpan({
 
 export function CookbookEmptyState() {
   return (
-    <p className="text-gray-400 text-center py-12 print:hidden">No recipes in this cookbook.</p>
+    <p className="text-[var(--theme-print-fg-subtle)] text-center py-12 print:hidden">No recipes in this cookbook.</p>
   )
 }
 
 export function RecipeIndexNumber({ index }: { index: number }) {
   return (
-    <span className="text-gray-500 w-6 text-right shrink-0 text-sm">
+    <span className="text-[var(--theme-print-fg-subtle)] w-6 text-right shrink-0 text-sm">
       {index + 1}.
     </span>
   )
@@ -239,7 +239,7 @@ export function RecipeIndexNumber({ index }: { index: number }) {
 export function CookbookPageLoading() {
   return (
     <div className={`${pageBaseClass} flex items-center justify-center`}>
-      <p className="text-gray-400">Loading…</p>
+      <p className="text-[var(--theme-print-fg-subtle)]">Loading…</p>
     </div>
   )
 }
@@ -300,12 +300,12 @@ export function CookbookPageHeader({
   subtitle?: string
 }) {
   return (
-    <header className="mb-8 text-center border-b border-gray-200 pb-6">
-      <h1 className={`text-4xl font-bold text-gray-900 mb-2 ${PRINT_HEADING_DENSITY_PAGE}`}>{name}</h1>
+    <header className="mb-8 text-center border-b border-[color:var(--theme-print-border)] pb-6">
+      <h1 className={`text-4xl font-bold text-[var(--theme-print-fg)] mb-2 ${PRINT_HEADING_DENSITY_PAGE}`}>{name}</h1>
       {description && (
-        <p className="text-gray-600">{description}</p>
+        <p className="text-[var(--theme-print-fg-muted)]">{description}</p>
       )}
-      <p className="text-gray-500 text-sm mt-2">
+      <p className="text-[var(--theme-print-fg-subtle)] text-sm mt-2">
         {subtitle}
       </p>
     </header>
@@ -353,7 +353,7 @@ export function CookbookAlphaIndex({
 
   return (
     <div className="mt-12 print:mt-0 print:break-before-page">
-      <h2 className={`text-2xl font-bold text-gray-900 border-b border-gray-200 pb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
+      <h2 className={`text-2xl font-bold text-[var(--theme-print-fg)] border-b border-[color:var(--theme-print-border)] pb-4 ${PRINT_HEADING_DENSITY_SECTION}`}>
         Alphabetical Index
       </h2>
       <ol className={TOC_LIST_CLASSES}>
@@ -361,7 +361,7 @@ export function CookbookAlphaIndex({
           item.type === 'letter' ? (
             <li
               key={item.letter}
-              className="font-bold text-gray-900 print:break-after-avoid pt-4 first:pt-0"
+              className="font-bold text-[var(--theme-print-fg)] print:break-after-avoid pt-4 first:pt-0"
             >
               {item.letter}
             </li>

@@ -1,10 +1,9 @@
 type BadgeVariant = 'meal' | 'course' | 'preparation'
 
-// dark: retained — categorical badge colours (exempt from theme token migration per spec)
 const variantStyles: Record<BadgeVariant, string> = {
-  meal: 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30',
-  course: 'bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-500/20 dark:text-violet-300 dark:border-violet-500/30',
-  preparation: 'bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30',
+  meal: 'bg-[color:var(--theme-badge-meal-bg)] text-[var(--theme-badge-meal-text)] border-[color:var(--theme-badge-meal-border)]',
+  course: 'bg-[color:var(--theme-badge-course-bg)] text-[var(--theme-badge-course-text)] border-[color:var(--theme-badge-course-border)]',
+  preparation: 'bg-[color:var(--theme-badge-prep-bg)] text-[var(--theme-badge-prep-text)] border-[color:var(--theme-badge-prep-border)]',
 }
 
 interface TaxonomyBadgeProps {

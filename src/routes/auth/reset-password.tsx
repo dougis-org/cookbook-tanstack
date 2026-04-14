@@ -20,7 +20,7 @@ function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthPageLayout icon={KeyRound} title="Reset Password">
-        <p className="text-red-400 text-center">Invalid or missing reset token.</p>
+        <p className="text-[var(--theme-error)] text-center">Invalid or missing reset token.</p>
       </AuthPageLayout>
     )
   }

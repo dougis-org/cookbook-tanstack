@@ -36,7 +36,7 @@ export default function ImportPreviewModal({
         <h2 className="text-xl font-semibold text-[var(--theme-fg)] mb-4">Import Preview</h2>
 
         {versionMismatch && (
-          <div className="mb-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-amber-200 text-sm">
+          <div className="mb-4 rounded-lg border border-[color:var(--theme-warning-border)] bg-[color:var(--theme-warning-bg)] px-3 py-2 text-[var(--theme-warning)] text-sm">
             This file was exported with a different schema version. You can still continue.
           </div>
         )}
@@ -73,7 +73,7 @@ export default function ImportPreviewModal({
           )}
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-3 text-sm text-[var(--theme-error)]">{error}</p>}
 
         <div className="flex justify-end gap-2">
           <button

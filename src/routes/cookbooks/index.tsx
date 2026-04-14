@@ -111,7 +111,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
           onDescriptionChange={setDescription}
           onIsPublicChange={setIsPublic}
         />
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && <p className="text-[var(--theme-error)] text-sm">{error}</p>}
         <div className="flex gap-3">
           <button
             type="submit"

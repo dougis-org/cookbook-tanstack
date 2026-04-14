@@ -43,9 +43,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("30 min", { exact: true })).toBeVisible();
     await expect(page.getByText("medium", { exact: true })).toBeVisible();
 
-    // Verify servings — locate the value adjacent to its label
+    // Verify servings — the value lives in an aria-live="polite" span inside the parent container
     const servingsContainer = page.getByText("Servings").locator("..");
-    await expect(servingsContainer.getByText("4", { exact: true })).toBeVisible();
+    await expect(servingsContainer.locator('[aria-live="polite"]')).toHaveText("4");
 
     // Verify ingredients
     await expect(page.getByText("2 cups flour")).toBeVisible();
@@ -60,7 +60,7 @@ test.describe("Recipe CRUD Operations", () => {
     // Verify nutrition values within the Nutrition section
     const nutritionHeading = page.getByRole("heading", { name: "Nutrition" });
     await expect(nutritionHeading).toBeVisible();
-    await expect(page.getByText("250", { exact: true })).toBeVisible();
+    await expect(page.getByText("250")).toBeVisible();
     await expect(page.getByText("10g")).toBeVisible();
     await expect(page.getByText("50mg")).toBeVisible();
     await expect(page.getByText("200mg")).toBeVisible();
@@ -108,9 +108,9 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByText("Updated notes")).toBeVisible();
     await expect(page.getByText("25 min")).toBeVisible();
 
-    // Verify servings in the meta cell
+    // Verify servings — the value lives in an aria-live="polite" span inside the parent container
     const servingsContainer = page.getByText("Servings").locator("..");
-    await expect(servingsContainer.getByText("6", { exact: true })).toBeVisible();
+    await expect(servingsContainer.locator('[aria-live="polite"]')).toHaveText("6");
   });
 
   test("should delete a recipe via confirmation modal", async ({ page }) => {

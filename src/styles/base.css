@@ -1,0 +1,86 @@
+/*
+ * base.css — semantic token defaults
+ *
+ * IMPORT ORDER MATTERS: This file must be imported BEFORE all theme files
+ * in src/styles.css. Theme-specific overrides (html.dark, html.light-cool,
+ * html.light-warm) have higher specificity than :root and will always win.
+ *
+ * Token namespaces defined here:
+ *   --theme-error-*       Error / validation failure state
+ *   --theme-success-*     Success / saved state
+ *   --theme-warning-*     Warning / caution state
+ *   --theme-badge-meal-*        Meal taxonomy badge
+ *   --theme-badge-course-*      Course taxonomy badge
+ *   --theme-badge-prep-*        Preparation taxonomy badge
+ *   --theme-badge-classification-*  Classification badge
+ *   --theme-print-*       Print / cookbook standalone layout (always light)
+ */
+
+:root {
+  /* ─────────────────────────────────────────────
+     Status tokens — light-theme defaults
+     bg and border derived from base via color-mix()
+     ───────────────────────────────────────────── */
+
+  --theme-error-base: theme(colors.red.600);
+  --theme-error: theme(colors.red.600);
+  --theme-error-bg: color-mix(in srgb, var(--theme-error-base) 10%, transparent);
+  --theme-error-border: color-mix(in srgb, var(--theme-error-base) 30%, transparent);
+
+  --theme-success-base: theme(colors.green.600);
+  --theme-success: theme(colors.green.600);
+  --theme-success-bg: color-mix(in srgb, var(--theme-success-base) 10%, transparent);
+
+  --theme-warning-base: theme(colors.amber.600);
+  --theme-warning: theme(colors.amber.600);
+  --theme-warning-bg: color-mix(in srgb, var(--theme-warning-base) 10%, transparent);
+  --theme-warning-border: color-mix(in srgb, var(--theme-warning-base) 30%, transparent);
+
+  /* ─────────────────────────────────────────────
+     Badge tokens — per-category, light defaults
+     bg and border derived from base; text is explicit
+     ───────────────────────────────────────────── */
+
+  /* Meal — amber family */
+  --theme-badge-meal-base: theme(colors.amber.500);
+  --theme-badge-meal-bg: color-mix(in srgb, var(--theme-badge-meal-base) 15%, transparent);
+  --theme-badge-meal-text: theme(colors.amber.700);
+  --theme-badge-meal-border: color-mix(in srgb, var(--theme-badge-meal-base) 35%, transparent);
+
+  /* Course — violet family */
+  --theme-badge-course-base: theme(colors.violet.500);
+  --theme-badge-course-bg: color-mix(in srgb, var(--theme-badge-course-base) 15%, transparent);
+  --theme-badge-course-text: theme(colors.violet.700);
+  --theme-badge-course-border: color-mix(in srgb, var(--theme-badge-course-base) 35%, transparent);
+
+  /* Preparation — emerald family */
+  --theme-badge-prep-base: theme(colors.emerald.500);
+  --theme-badge-prep-bg: color-mix(in srgb, var(--theme-badge-prep-base) 15%, transparent);
+  --theme-badge-prep-text: theme(colors.emerald.700);
+  --theme-badge-prep-border: color-mix(in srgb, var(--theme-badge-prep-base) 35%, transparent);
+
+  /* Classification — cyan family */
+  --theme-badge-classification-base: theme(colors.cyan.500);
+  --theme-badge-classification-bg: color-mix(in srgb, var(--theme-badge-classification-base) 15%, transparent);
+  --theme-badge-classification-text: theme(colors.cyan.700);
+  --theme-badge-classification-border: color-mix(in srgb, var(--theme-badge-classification-base) 35%, transparent);
+
+  /* ─────────────────────────────────────────────
+     Print tokens — always explicit light values
+     NOT inherited from --theme-* structural tokens
+     so dark-theme values never bleed into print
+     ───────────────────────────────────────────── */
+
+  --theme-print-bg: theme(colors.white);
+  --theme-print-surface: theme(colors.white);
+  --theme-print-fg: theme(colors.gray.900);
+  --theme-print-fg-muted: theme(colors.gray.600);
+  --theme-print-fg-subtle: theme(colors.gray.500);
+  --theme-print-border: theme(colors.gray.200);
+  --theme-print-accent: theme(colors.gray.900);
+}
+
+/* PDF export override — applied when renderer sets data-pdf-export on <html> */
+[data-pdf-export] {
+  --theme-print-accent: theme(colors.cyan.700);
+}

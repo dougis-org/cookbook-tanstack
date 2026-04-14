@@ -79,9 +79,9 @@ function ImportPage() {
         <ImportDropzone onFileSelected={handleSelectedFile} />
 
         {fieldErrors.length > 0 && (
-          <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3">
-            <p className="text-red-300 font-medium mb-2">Validation errors</p>
-            <ul className="list-disc list-inside text-red-200 text-sm space-y-1">
+          <div className="rounded-lg border border-[color:var(--theme-error-border)] bg-[color:var(--theme-error-bg)] p-3">
+            <p className="text-[var(--theme-error)] font-medium mb-2">Validation errors</p>
+            <ul className="list-disc list-inside text-[var(--theme-error)] text-sm space-y-1">
               {fieldErrors.map((error) => (
                 <li key={error}>{error}</li>
               ))}
