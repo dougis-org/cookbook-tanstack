@@ -1,6 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import superjson from "superjson"
 import type { Context } from "./context"
+import type { UserTier } from "@/types/user"
+import { hasAtLeastTier } from "@/types/user"
 
 const t = initTRPC.context<Context>().create({ transformer: superjson })
 
@@ -11,4 +13,34 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
   return next({ ctx: { ...ctx, user: ctx.user, session: ctx.session } })
+})
+
+/**
+ * Procedure factory that requires the caller to be authenticated and have at
+ * least the specified tier. Admins always pass regardless of tier.
+ *
+ * Usage: `tierProcedure('sous-chef').query(...)` or `.mutation(...)`
+ */
+export function tierProcedure(tier: UserTier) {
+  return protectedProcedure.use(async ({ ctx, next }) => {
+    const user = ctx.user as { tier?: UserTier; isAdmin?: boolean } & typeof ctx.user
+    if (!hasAtLeastTier({ tier: user.tier, isAdmin: user.isAdmin ?? false }, tier)) {
+      throw new TRPCError({ code: "FORBIDDEN" })
+    }
+    return next({ ctx })
+  })
+}
+
+/**
+ * Procedure that requires the caller to be an admin.
+ *
+ * @future No procedures use this yet. Implemented with real enforcement logic
+ * so it is safe to wire up when an admin procedure is added.
+ */
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const user = ctx.user as { isAdmin?: boolean } & typeof ctx.user
+  if (!user.isAdmin) {
+    throw new TRPCError({ code: "FORBIDDEN" })
+  }
+  return next({ ctx })
 })

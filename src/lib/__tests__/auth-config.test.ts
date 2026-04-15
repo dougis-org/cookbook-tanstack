@@ -71,4 +71,36 @@ describe("auth configuration", () => {
       "tanstack-start-cookies-plugin",
     ])
   })
+
+  it("includes user.additionalFields.tier with type string and default home-cook", async () => {
+    await import("@/lib/auth")
+
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+
+    expect(config.user?.additionalFields?.tier).toMatchObject({
+      type: "string",
+      defaultValue: "home-cook",
+    })
+  })
+
+  it("includes user.additionalFields.isAdmin with type boolean and default false", async () => {
+    await import("@/lib/auth")
+
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+
+    expect(config.user?.additionalFields?.isAdmin).toMatchObject({
+      type: "boolean",
+      defaultValue: false,
+    })
+  })
+
+  it("preserves existing config keys (emailAndPassword, session, plugins)", async () => {
+    await import("@/lib/auth")
+
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+
+    expect(config.emailAndPassword).toBeDefined()
+    expect(config.session).toBeDefined()
+    expect(config.plugins).toBeDefined()
+  })
 })
