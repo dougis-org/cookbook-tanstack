@@ -38,8 +38,8 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to the working branch and push to remote
 - [x] Open PR from working branch to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
 - [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
 - [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all checks pass
 - [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
@@ -63,7 +63,7 @@ Blocking resolution flow:
 - [ ] Mark all remaining tasks as complete (`- [x]`)
 - [ ] Update repository documentation impacted by the change
 - [ ] Sync approved spec deltas into `openspec/specs/`
-- [ ] Archive the change: move `openspec/changes/refactor-secure-test-helper-random/` to `openspec/changes/archive/2026-04-14-refactor-secure-test-helper-random/` **and stage both the new location and the deletion of the old location in a single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-14-refactor-secure-test-helper-random/` exists and `openspec/changes/refactor-secure-test-helper-random/` is gone
+- [ ] Archive the change: move `openspec/changes/refactor-secure-test-helper-random/` to `openspec/changes/archive/2026-04-15-refactor-secure-test-helper-random/` **and stage both the new location and the deletion of the old location in a single commit**
+- [ ] Confirm `openspec/changes/archive/2026-04-15-refactor-secure-test-helper-random/` exists and `openspec/changes/refactor-secure-test-helper-random/` is gone
 - [ ] Commit and push the archive to the default branch in one commit
 - [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d refactor-secure-test-helper-random`

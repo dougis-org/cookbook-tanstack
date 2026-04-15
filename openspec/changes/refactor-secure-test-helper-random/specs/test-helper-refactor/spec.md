@@ -23,7 +23,7 @@ The E2E test helpers (Auth, Cookbooks, Recipes) SHALL use the centralized `getUn
 
 - **Given** A call to `getUniqueRecipeName("My Recipe")`
 - **When** The function executes
-- **Then** It returns a string in the format "My Recipe <timestamp>-<random-8-chars>"
+- **Then** It returns a string in the format "My Recipe <timestamp><random-8-chars>"
 - **Then** The `Math.random()` logic is no longer present in `src/e2e/helpers/recipes.ts`
 
 #### Scenario: Create a unique user registration

@@ -1,7 +1,7 @@
 ## Context
 
 - Relevant architecture: Playwright E2E test suite uses shared helpers in `src/e2e/helpers/` to perform common actions (auth, resource creation).
-- Dependencies: `node:crypto` (standard library in Node.js >=20.19.0).
+- Dependencies: `globalThis.crypto` (Web Crypto API, available globally in Node.js >=19).
 - Interfaces/contracts touched: `RegisterOptions` in `auth.ts`, `getUniqueRecipeName` in `recipes.ts`, and `getUniqueCookbookName` in `cookbooks.ts`.
 
 ## Goals / Non-Goals
@@ -28,7 +28,7 @@
 
 ### Decision 2: Suffix Generation Strategy
 
-- Chosen: `${Date.now()}-${randomUUID().slice(0, 8)}`.
+- Chosen: `${Date.now()}${randomUUID().slice(0, 8)}` (no separator — alphanumeric-only, safe for username fields).
 - Alternatives considered: `randomBytes(3).toString('hex')`, full `randomUUID()`.
 - Rationale: Using a slice of a UUID provides high uniqueness while keeping the string length manageable. Including `Date.now()` helps with chronological sorting/debugging of created resources.
 - Trade-offs: A slice of a UUID is less unique than a full UUID, but for test suffixes, 8 characters (~16^8 possibilities) is more than sufficient.
@@ -36,7 +36,7 @@
 ## Proposal to Design Mapping
 
 - Proposal element: Use `node:crypto` instead of `Math.random()`.
-  - Design decision: Decision 2 (using `randomUUID().slice(0, 8)`).
+  - Design decision: Decision 2 (using `crypto.randomUUID().slice(0, 8)`).
   - Validation approach: Manual verification of generated strings and running E2E tests.
 - Proposal element: Centralize logic in `utils.ts`.
   - Design decision: Decision 1.
@@ -53,7 +53,7 @@
 
 - Requirement category: Security
   - Requirement: Use cryptographically secure random values.
-  - Design element: `node:crypto.randomUUID()`.
+  - Design element: `crypto.randomUUID()` (global Web Crypto API).
   - Acceptance criteria reference: No `Math.random()` usage in `src/e2e/helpers/`.
   - Testability notes: Static analysis (grep) and code review.
 
