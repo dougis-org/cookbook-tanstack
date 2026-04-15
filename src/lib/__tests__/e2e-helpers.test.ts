@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getUniqueSuffix } from "../utils";
+import { getUniqueSuffix } from "@/e2e/helpers/utils";
 
 describe("e2e utils helper", () => {
   describe("getUniqueSuffix", () => {

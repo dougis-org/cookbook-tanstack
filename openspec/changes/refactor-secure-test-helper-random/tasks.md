@@ -17,9 +17,9 @@
 
 - [x] Run unit/integration tests: `npm run test`
 - [x] Run E2E tests: `npx playwright test` (Focus on `src/e2e/helpers/` consumers)
-- [x] Run type checks: `npm run type-check` (or `tsc --noEmit`)
+- [x] Run type checks: `tsc --noEmit`
 - [x] Run build: `npm run build`
-- [x] Run linting: `npm run lint`
+- [x] Run linting: `npm run lint:route-outlet`
 - [x] All completed tasks marked as complete
 - [x] All steps in [Remote push validation]
 
@@ -36,8 +36,8 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from working branch to `main`
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from working branch to `main`
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [ ] Enable auto-merge: `gh pr merge --auto --merge`
 - [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
