@@ -36,7 +36,8 @@ vi.mock('@/db/models', async (importOriginal) => {
   return {
     ...actual,
     AdminAuditLog: {
-      create: (...args: unknown[]) => mockInsertOne(...args),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      create: (...args: any[]) => (mockInsertOne as (...a: any[]) => unknown)(...args),
     },
   }
 })
@@ -165,6 +166,21 @@ describe('admin.users.setTier', () => {
     await expect(
       caller.admin.users.setTier({ userId: TARGET_ID, tier: 'invalid-tier' as never }),
     ).rejects.toThrow()
+  })
+
+  it('throws BAD_REQUEST when userId is not a valid ObjectId format', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    await expect(
+      caller.admin.users.setTier({ userId: 'not-a-valid-id', tier: 'sous-chef' }),
+    ).rejects.toMatchObject({ code: 'BAD_REQUEST' })
+  })
+
+  it('throws NOT_FOUND when target user does not exist', async () => {
+    mockFindOneUser = vi.fn().mockResolvedValue(null)
+    const caller = await makeAdminCaller(ADMIN_ID)
+    await expect(
+      caller.admin.users.setTier({ userId: TARGET_ID, tier: 'sous-chef' }),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' })
   })
 
   it('throws FORBIDDEN when caller is not admin', async () => {

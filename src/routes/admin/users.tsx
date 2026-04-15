@@ -94,7 +94,7 @@ export function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <select
                       disabled={isSelf}
-                      value={currentTier}
+                      value={pending?.userId === user.id ? pending.toTier : currentTier}
                       onChange={(e) =>
                         handleTierChange(user.id, user.email, currentTier, e.target.value as UserTier)
                       }
@@ -109,13 +109,17 @@ export function AdminUsersPage() {
                     </select>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className="text-xs text-[var(--theme-fg-subtle)] cursor-not-allowed"
-                      title="Audit log viewer coming soon"
+                    <a
+                      href={`/admin/audit?userId=${user.id}`}
+                      aria-disabled="true"
+                      tabIndex={-1}
+                      onClick={(e) => e.preventDefault()}
                       data-user-id={user.id}
+                      className="text-xs text-[var(--theme-fg-subtle)] opacity-50 cursor-not-allowed"
+                      title="Audit log viewer coming soon"
                     >
-                      View audit log (coming soon)
-                    </span>
+                      View audit log
+                    </a>
                   </td>
                 </tr>
               )

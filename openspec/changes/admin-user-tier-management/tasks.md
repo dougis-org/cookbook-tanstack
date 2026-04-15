@@ -22,7 +22,7 @@
 - [x] Create `src/server/trpc/routers/admin.ts` with:
   - `admin.users.list` — `adminProcedure` query: fetch all users from MongoDB "user" collection, transform via `transformUserDoc`
   - `admin.users.setTier` — `adminProcedure` mutation: validate input (userId: string, tier: `z.enum([...UserTier values])`); reject self-change; fetch current tier; no-op if same; update user; write audit log in try/catch
-- [x] Add `admin` router to `src/server/trpc/root.ts`
+- [x] Add `admin` router to `src/server/trpc/router.ts`
 - [x] Verify tests pass: `npx vitest run src/server/trpc/routers/__tests__/admin.test.ts`
 - [x] Verify: `npx tsc --noEmit`
 
@@ -99,9 +99,9 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/admin-user-tier-management` and push to remote
-- [ ] Open PR from `feat/admin-user-tier-management` to `main`; title: `feat: admin UI for user tier management (#330)`
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feat/admin-user-tier-management` and push to remote
+- [x] Open PR from `feat/admin-user-tier-management` to `main`; title: `feat: admin UI for user tier management (#330)`
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
 - [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
 - [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push; wait 180 seconds then repeat until no unresolved comments remain

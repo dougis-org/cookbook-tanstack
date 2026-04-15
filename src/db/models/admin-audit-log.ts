@@ -27,7 +27,7 @@ const adminAuditLogSchema = new Schema<AdminAuditLogDocument>(
       tier: { type: String, required: true },
     },
   },
-  { timestamps: true },
+  { timestamps: true, collection: 'adminAuditLog' },
 )
 
 export const AdminAuditLog =

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { TRPCError } from '@trpc/server'
 import { adminProcedure, router } from '../init'
 import { getMongoClient } from '@/db'
+import { objectId } from './_helpers'
 import { transformUserDoc } from './users'
 import type { UserTier } from '@/types/user'
 
@@ -24,7 +25,7 @@ const usersRouter = router({
   setTier: adminProcedure
     .input(
       z.object({
-        userId: z.string(),
+        userId: objectId,
         tier: z.enum(USER_TIERS),
       }),
     )
@@ -36,12 +37,7 @@ const usersRouter = router({
         })
       }
 
-      let targetObjectId: ObjectId
-      try {
-        targetObjectId = new ObjectId(input.userId)
-      } catch {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid user ID' })
-      }
+      const targetObjectId = new ObjectId(input.userId)
 
       const usersCollection = getMongoClient().db().collection('user')
       const targetUser = await usersCollection.findOne({ _id: targetObjectId })
