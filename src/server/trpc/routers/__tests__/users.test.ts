@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { withSeededUser } from "./test-helpers";
+import { transformUserDoc } from "@/server/trpc/routers/users";
 
 async function withLoggedIn<TReturn>(
   fn: (user: any, caller: any) => Promise<TReturn>,
@@ -278,5 +279,40 @@ describe("users router - error cases", () => {
         caller.users.updateProfile({ image: "://invalid" }),
       ).rejects.toThrow();
     });
+  });
+});
+
+describe("transformUserDoc — tier and isAdmin fields", () => {
+  const baseDoc = {
+    _id: { toHexString: () => "a".repeat(24) },
+    email: "test@example.com",
+    emailVerified: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  it("passes through tier field when present", () => {
+    const result = transformUserDoc({ ...baseDoc, tier: "sous-chef" });
+    expect(result).not.toBeNull();
+    expect(result!.tier).toBe("sous-chef");
+  });
+
+  it("passes through isAdmin field when false", () => {
+    const result = transformUserDoc({ ...baseDoc, isAdmin: false });
+    expect(result).not.toBeNull();
+    expect(result!.isAdmin).toBe(false);
+  });
+
+  it("passes through isAdmin field when true", () => {
+    const result = transformUserDoc({ ...baseDoc, isAdmin: true });
+    expect(result).not.toBeNull();
+    expect(result!.isAdmin).toBe(true);
+  });
+
+  it("does not throw when tier field is missing; tier is undefined", () => {
+    expect(() => transformUserDoc(baseDoc)).not.toThrow();
+    const result = transformUserDoc(baseDoc);
+    expect(result).not.toBeNull();
+    expect(result!.tier).toBeUndefined();
   });
 });

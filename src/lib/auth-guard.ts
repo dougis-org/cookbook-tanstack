@@ -1,5 +1,7 @@
 import { redirect } from '@tanstack/react-router'
 import type { RouterContext } from '@/types/router'
+import type { UserTier } from '@/types/user'
+import { hasAtLeastTier } from '@/types/user'
 
 export type RedirectReason = 'auth-required' | 'tier-limit-reached'
 
@@ -36,9 +38,44 @@ export function requireAuth() {
 }
 
 /**
- * @future requireTier(tier: UserTier)
+ * Route guard factory. Usage: `beforeLoad: requireTier('sous-chef')`
  *
- * Will read `context.session.user.tier` and redirect already-logged-in users
- * to `/account` with `reason: 'tier-limit-reached'` when they lack the
- * required tier. Usage: `beforeLoad: requireTier('premium')`
+ * Reads `context.session.user.tier` and `context.session.user.isAdmin`.
+ * Redirects logged-in users who don't meet the required tier to `/account`
+ * with `reason: 'tier-limit-reached'`. Has no effect when session is null
+ * (unauthenticated state is handled by `requireAuth`).
  */
+export function requireTier(tier: UserTier) {
+  return ({ context }: { context: RouterContext; location: { href: string } }) => {
+    if (!context.session) return
+
+    if (!hasAtLeastTier(context.session.user, tier)) {
+      throw redirect({
+        to: '/account',
+        search: { reason: 'tier-limit-reached' as RedirectReason },
+      })
+    }
+  }
+}
+
+/**
+ * Route guard factory. Usage: `beforeLoad: requireAdmin()`
+ *
+ * Redirects non-admin users to `/account` with `reason: 'tier-limit-reached'`.
+ * Has no effect when session is null (unauthenticated state is handled by `requireAuth`).
+ *
+ * @future No routes use this guard yet. It is implemented with real enforcement
+ * logic so it is safe to wire up when an admin route is added.
+ */
+export function requireAdmin() {
+  return ({ context }: { context: RouterContext; location: { href: string } }) => {
+    if (!context.session) return
+
+    if (!context.session.user.isAdmin) {
+      throw redirect({
+        to: '/account',
+        search: { reason: 'tier-limit-reached' as RedirectReason },
+      })
+    }
+  }
+}

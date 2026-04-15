@@ -14,6 +14,20 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
   },
+  user: {
+    additionalFields: {
+      tier: {
+        type: "string" as const,
+        defaultValue: "home-cook",
+        required: false,
+      },
+      isAdmin: {
+        type: "boolean" as const,
+        defaultValue: false,
+        required: false,
+      },
+    },
+  },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 24 hours
@@ -27,3 +41,5 @@ export const auth = betterAuth({
     tanstackStartCookies(), // must be last
   ],
 });
+
+export type Auth = typeof auth;

@@ -3,6 +3,8 @@ import { ObjectId } from "mongodb";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../init";
 import { getMongoClient, toHexString } from "@/db";
+import type { UserTier } from "@/types/user";
+import { TIER_RANK } from "@/types/user";
 
 interface UserDocument {
   _id: ObjectId;
@@ -12,6 +14,8 @@ interface UserDocument {
   image?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  tier?: UserTier;
+  isAdmin?: boolean;
 }
 
 interface TransformedUser {
@@ -22,9 +26,11 @@ interface TransformedUser {
   image: string | null;
   createdAt: Date;
   updatedAt: Date;
+  tier?: UserTier;
+  isAdmin?: boolean;
 }
 
-function transformUserDoc(
+export function transformUserDoc(
   doc: Record<string, unknown>,
 ): TransformedUser | null {
   // Validate required fields exist before transformation
@@ -52,6 +58,11 @@ function transformUserDoc(
     image: typeof typed.image === "string" ? typed.image : null,
     createdAt: typed.createdAt instanceof Date ? typed.createdAt : new Date(),
     updatedAt: typed.updatedAt instanceof Date ? typed.updatedAt : new Date(),
+    tier:
+      typeof typed.tier === "string" && typed.tier in TIER_RANK
+        ? (typed.tier as UserTier)
+        : undefined,
+    isAdmin: typeof typed.isAdmin === "boolean" ? typed.isAdmin : undefined,
   };
 }
 
