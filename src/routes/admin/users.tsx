@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
@@ -60,8 +60,18 @@ export function AdminUsersPage() {
   }
 
   function handleCancel() {
+    if (setTierMutation.isPending) return
     setPending(null)
   }
+
+  useEffect(() => {
+    if (!pending) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleCancel()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [pending, setTierMutation.isPending])
 
   return (
     <div>

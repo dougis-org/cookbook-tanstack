@@ -16,7 +16,7 @@ export async function registerAndLoginAsAdmin(page: Page) {
   const client = new MongoClient(mongoUri)
   try {
     await client.connect()
-    await client.db('cookbook').collection('user').updateOne(
+    await client.db().collection('user').updateOne(
       { email: creds.email },
       { $set: { isAdmin: true } },
     )

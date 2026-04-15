@@ -14,7 +14,7 @@ const usersRouter = router({
     const users = await getMongoClient()
       .db()
       .collection('user')
-      .find({}, { projection: { email: 1, name: 1, tier: 1, isAdmin: 1 } })
+      .find({}, { projection: { email: 1, emailVerified: 1, name: 1, image: 1, tier: 1, isAdmin: 1, createdAt: 1, updatedAt: 1 } })
       .toArray()
 
     return users.map(transformUserDoc).filter(Boolean) as NonNullable<
@@ -46,7 +46,9 @@ const usersRouter = router({
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
       }
 
-      const currentTier = (targetUser.tier as UserTier | undefined) ?? 'home-cook'
+      const currentTier: UserTier = USER_TIERS.includes(targetUser.tier as UserTier)
+        ? (targetUser.tier as UserTier)
+        : 'home-cook'
 
       if (currentTier === input.tier) {
         return { success: true, noOp: true }
