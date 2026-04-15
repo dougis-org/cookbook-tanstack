@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "../init";
 import { getMongoClient, toHexString } from "@/db";
 import type { UserTier } from "@/types/user";
+import { TIER_RANK } from "@/types/user";
 
 interface UserDocument {
   _id: ObjectId;
@@ -57,8 +58,11 @@ export function transformUserDoc(
     image: typeof typed.image === "string" ? typed.image : null,
     createdAt: typed.createdAt instanceof Date ? typed.createdAt : new Date(),
     updatedAt: typed.updatedAt instanceof Date ? typed.updatedAt : new Date(),
-    tier: typed.tier,
-    isAdmin: typed.isAdmin,
+    tier:
+      typeof typed.tier === "string" && typed.tier in TIER_RANK
+        ? (typed.tier as UserTier)
+        : undefined,
+    isAdmin: typeof typed.isAdmin === "boolean" ? typed.isAdmin : undefined,
   };
 }
 

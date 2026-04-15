@@ -23,8 +23,7 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
  */
 export function tierProcedure(tier: UserTier) {
   return protectedProcedure.use(async ({ ctx, next }) => {
-    const user = ctx.user as { tier?: UserTier; isAdmin?: boolean } & typeof ctx.user
-    if (!hasAtLeastTier({ tier: user.tier, isAdmin: user.isAdmin ?? false }, tier)) {
+    if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, tier)) {
       throw new TRPCError({ code: "FORBIDDEN" })
     }
     return next({ ctx })
@@ -38,8 +37,7 @@ export function tierProcedure(tier: UserTier) {
  * so it is safe to wire up when an admin procedure is added.
  */
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  const user = ctx.user as { isAdmin?: boolean } & typeof ctx.user
-  if (!user.isAdmin) {
+  if (!ctx.user.isAdmin) {
     throw new TRPCError({ code: "FORBIDDEN" })
   }
   return next({ ctx })

@@ -8,15 +8,18 @@ export const TIER_RANK: Record<UserTier, number> = {
 }
 
 export interface TierUser {
-  tier?: UserTier
-  isAdmin: boolean
+  tier?: UserTier | string | null
+  isAdmin?: boolean | null
 }
 
 /**
  * Returns true if the user meets or exceeds the required tier.
- * Admins always pass regardless of tier. Undefined tier is treated as 'home-cook'.
+ * Admins always pass regardless of tier. Null/undefined tier is treated as 'home-cook'.
+ * Unrecognized tier strings are also treated as 'home-cook'.
  */
 export function hasAtLeastTier(user: TierUser, required: UserTier): boolean {
   if (user.isAdmin) return true
-  return TIER_RANK[user.tier ?? 'home-cook'] >= TIER_RANK[required]
+  const tier = (user.tier ?? 'home-cook') as UserTier
+  const rank = TIER_RANK[tier] ?? TIER_RANK['home-cook']
+  return rank >= TIER_RANK[required]
 }

@@ -41,3 +41,5 @@ export const auth = betterAuth({
     tanstackStartCookies(), // must be last
   ],
 });
+
+export type Auth = typeof auth;

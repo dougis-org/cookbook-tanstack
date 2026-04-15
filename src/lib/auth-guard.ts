@@ -49,8 +49,7 @@ export function requireTier(tier: UserTier) {
   return ({ context }: { context: RouterContext; location: { href: string } }) => {
     if (!context.session) return
 
-    const user = context.session.user as { tier?: UserTier; isAdmin?: boolean }
-    if (!hasAtLeastTier({ tier: user.tier, isAdmin: user.isAdmin ?? false }, tier)) {
+    if (!hasAtLeastTier(context.session.user, tier)) {
       throw redirect({
         to: '/account',
         search: { reason: 'tier-limit-reached' as RedirectReason },
@@ -72,8 +71,7 @@ export function requireAdmin() {
   return ({ context }: { context: RouterContext; location: { href: string } }) => {
     if (!context.session) return
 
-    const user = context.session.user as { isAdmin?: boolean }
-    if (!user.isAdmin) {
+    if (!context.session.user.isAdmin) {
       throw redirect({
         to: '/account',
         search: { reason: 'tier-limit-reached' as RedirectReason },
