@@ -7,3 +7,4 @@ export { Preparation } from "./preparation";
 export { Recipe } from "./recipe";
 export { Cookbook } from "./cookbook";
 export { RecipeLike } from "./recipe-like";
+export { AdminAuditLog } from "./admin-audit-log";

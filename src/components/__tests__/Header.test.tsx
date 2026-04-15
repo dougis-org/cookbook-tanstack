@@ -77,6 +77,61 @@ describe("Header nav visibility", () => {
   })
 })
 
+describe("Header admin nav link", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuthResult = { session: null, isPending: false }
+    mockCurrentTheme = "dark"
+    mockSetTheme = vi.fn()
+    document.documentElement.className = "dark"
+  })
+
+  const adminSession = {
+    user: { id: "admin-1", email: "admin@example.com", name: "Admin User", isAdmin: true },
+    session: { id: "session-1", userId: "admin-1", expiresAt: new Date() },
+  }
+  const nonAdminSession = {
+    user: { id: "user-1", email: "user@example.com", name: "Regular User", isAdmin: false },
+    session: { id: "session-1", userId: "user-1", expiresAt: new Date() },
+  }
+
+  it("renders admin link when isAdmin is true and session is loaded", () => {
+    mockAuthResult = { session: adminSession, isPending: false }
+    render(<Header />)
+    expect(screen.getByText("Admin")).toBeInTheDocument()
+  })
+
+  it("does not render admin link when isAdmin is false", () => {
+    mockAuthResult = { session: nonAdminSession, isPending: false }
+    render(<Header />)
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument()
+  })
+
+  it("does not render admin link when isAdmin is absent/undefined", () => {
+    mockAuthResult = {
+      session: {
+        user: { id: "user-1", email: "user@example.com", name: "User" },
+        session: { id: "session-1", userId: "user-1", expiresAt: new Date() },
+      },
+      isPending: false,
+    }
+    render(<Header />)
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument()
+  })
+
+  it("does not render admin link when isPending is true", () => {
+    mockAuthResult = { session: null, isPending: true }
+    render(<Header />)
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument()
+  })
+
+  it("does not render admin link when session is null (unauthenticated)", () => {
+    mockAuthResult = { session: null, isPending: false }
+    render(<Header />)
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument()
+  })
+})
+
 describe("Header sidebar backdrop", () => {
   beforeEach(() => {
     vi.clearAllMocks()

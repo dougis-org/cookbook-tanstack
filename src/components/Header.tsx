@@ -286,6 +286,15 @@ export default function Header() {
                 )}
               </div>
 
+              {!isPending && session?.user.isAdmin && (
+                <Link
+                  to="/admin/users"
+                  aria-label="Admin"
+                  className="flex items-center gap-1.5 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--theme-surface-hover)]"
+                >
+                  <span aria-hidden="true">Admin</span>
+                </Link>
+              )}
               {isPending ? null : session ? (
                 <>
                   <Link
