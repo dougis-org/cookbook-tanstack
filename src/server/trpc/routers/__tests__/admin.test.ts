@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ─── Module-level mocks ────────────────────────────────────────────────────
 // We mock @/db to control the MongoDB collection used by the admin router.
-// This avoids needing a real collection for admin.users.list/setTier unit tests.
+// We mock @/db/models to control AdminAuditLog.create used for audit logging.
 
 let mockFindUsers: ReturnType<typeof vi.fn>
 let mockFindOneUser: ReturnType<typeof vi.fn>
@@ -24,13 +24,20 @@ vi.mock('@/db', async (importOriginal) => {
               updateOne: mockUpdateOne,
             }
           }
-          if (name === 'adminAuditLog') {
-            return { insertOne: mockInsertOne }
-          }
           return {}
         },
       }),
     }),
+  }
+})
+
+vi.mock('@/db/models', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/db/models')>()
+  return {
+    ...actual,
+    AdminAuditLog: {
+      create: (...args: unknown[]) => mockInsertOne(...args),
+    },
   }
 })
 

@@ -13,7 +13,7 @@ const usersRouter = router({
     const users = await getMongoClient()
       .db()
       .collection('user')
-      .find({})
+      .find({}, { projection: { email: 1, name: 1, tier: 1, isAdmin: 1 } })
       .toArray()
 
     return users.map(transformUserDoc).filter(Boolean) as NonNullable<
@@ -62,20 +62,16 @@ const usersRouter = router({
       )
 
       try {
-        await getMongoClient()
-          .db()
-          .collection('adminAuditLog')
-          .insertOne({
-            adminId: ctx.user.id,
-            adminEmail: ctx.user.email,
-            targetUserId: input.userId,
-            targetEmail: String(targetUser.email ?? ''),
-            action: 'set-tier',
-            before: { tier: currentTier },
-            after: { tier: input.tier },
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
+        const { AdminAuditLog } = await import('@/db/models')
+        await AdminAuditLog.create({
+          adminId: ctx.user.id,
+          adminEmail: ctx.user.email,
+          targetUserId: input.userId,
+          targetEmail: String(targetUser.email ?? ''),
+          action: 'set-tier',
+          before: { tier: currentTier },
+          after: { tier: input.tier },
+        })
       } catch (err) {
         console.error('[admin.setTier] Audit log write failed:', err)
       }

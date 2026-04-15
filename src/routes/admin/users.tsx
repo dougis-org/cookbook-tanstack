@@ -130,6 +130,9 @@ export function AdminUsersPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-dialog-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCancel()
+          }}
         >
           <div className="bg-[var(--theme-bg)] rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-[var(--theme-border)]">
             <h3 id="confirm-dialog-title" className="text-lg font-semibold text-[var(--theme-fg)] mb-2">
