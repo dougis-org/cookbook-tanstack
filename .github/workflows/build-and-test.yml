@@ -72,6 +72,9 @@ jobs:
       - name: Commit updated lock file
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         continue-on-error: true
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -81,8 +84,8 @@ jobs:
             git commit -m "chore: update package-lock.json [ci-auto-lock-update]"
             # Only push if the remote branch is still at the SHA this run was triggered by.
             # --force-with-lease=<ref>:<sha> prevents overwriting concurrent pushes.
-            git push origin HEAD:${{ github.head_ref }} \
-              --force-with-lease=refs/heads/${{ github.head_ref }}:${{ github.event.pull_request.head.sha }}
+            git push origin HEAD:"$HEAD_REF" \
+              --force-with-lease=refs/heads/"$HEAD_REF":"$HEAD_SHA"
           else
             echo "package-lock.json is already up to date"
           fi
