@@ -1,11 +1,12 @@
 import type { Page } from "@playwright/test";
 import { gotoAndWaitForHydration } from "./app";
 import { getUniqueRecipeName, submitRecipeForm } from "./recipes";
+import { getUniqueSuffix } from "./utils";
 
 const COOKBOOK_ID_PATTERN = "[a-f0-9]{24}";
 
 export function getUniqueCookbookName(prefix = "Test Cookbook") {
-  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+  const suffix = getUniqueSuffix();
   return `${prefix}-${suffix}`;
 }
 

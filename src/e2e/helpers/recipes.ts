@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { getUniqueSuffix } from "./utils";
 
 export interface RecipeData {
   name: string;
@@ -19,8 +20,7 @@ export interface RecipeData {
 
 /** Generate a unique recipe name for test isolation. */
 export function getUniqueRecipeName(prefix = "Test Recipe") {
-  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-  return `${prefix} ${suffix}`;
+  return `${prefix} ${getUniqueSuffix()}`;
 }
 
 /** Fields that map directly from RecipeData keys to form labels. */

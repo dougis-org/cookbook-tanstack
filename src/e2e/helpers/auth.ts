@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { gotoAndWaitForHydration } from "./app";
+import { getUniqueSuffix } from "./utils";
 
 interface RegisterOptions {
   name?: string;
@@ -15,7 +16,7 @@ interface RegisterOptions {
  * Returns the credentials used so tests can re-login if needed.
  */
 export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
-  const suffix = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+  const suffix = getUniqueSuffix();
   const name = opts.name ?? "Test User";
   const username = opts.username ?? `testuser${suffix}`;
   const email = opts.email ?? `testuser${suffix}@example.com`;
