@@ -1,52 +1,52 @@
 # AGENTS.md
 
-Agent and contributor specifications for working with the CookBook repository.
+Agent + contributor specs for CookBook repo.
 
 ## Repository Standards
 
-All development work must follow the repository-wide standards. See **[docs/standards/](./docs/standards/)** for comprehensive guidelines:
+All dev work follow repo-wide standards. See **[docs/standards/](./docs/standards/)**:
 
-- **[Code Quality](./docs/standards/code-quality.md)** — TDD workflow (RED → GREEN → REFACTOR), testing strategy, coverage requirements, test-first workflow examples
-- **[Analysis & Security](./docs/standards/analysis-and-security.md)** — When to run code analysis, security scanning, remediation workflow
-- **[Tooling](./docs/standards/tooling.md)** — Working with analysis tools, error handling, graceful fallbacks
+- **[Code Quality](./docs/standards/code-quality.md)** — TDD (RED → GREEN → REFACTOR), testing strategy, coverage, test-first examples
+- **[Analysis & Security](./docs/standards/analysis-and-security.md)** — When run analysis, security scanning, remediation
+- **[Tooling](./docs/standards/tooling.md)** — Analysis tools, error handling, graceful fallbacks
 - **[CI/CD Workflow](./docs/standards/ci-cd.md)** — Local vs CI/CD validation, merge readiness
 
-Use [CONTRIBUTING.md](./CONTRIBUTING.md) as a quick reference for getting started.
+Use [CONTRIBUTING.md](./CONTRIBUTING.md) quick-start reference.
 
 ---
 ## Tooling
 
-- Use MCP servers first for any task they cover; never request a raw shell session.
-- If no MCP tool exists for the task, run the command via `run_in_terminal` only.
-- Examples: use MCP `read_file`/`write_file` for files; GitHub MCP for git; Jira/Confluence MCP for tickets; `run_in_terminal` for commands like `npm run test` or `npm run build` when no MCP wrapper exists.
+- MCP servers first for any task they cover. No raw shell sessions.
+- No MCP tool? Use `run_in_terminal` only.
+- Examples: MCP `read_file`/`write_file` for files; GitHub MCP for git; Jira/Confluence MCP for tickets; `run_in_terminal` for `npm run test` or `npm run build`.
 
 ### CodeGraph Tools (Available)
 
-This codebase has CodeGraph initialized (`.codegraph/` exists). Use these tools for instant code lookups:
+Codebase has CodeGraph initialized (`.codegraph/` exists). Use for instant lookups:
 - **`codegraph_search`** — Find symbols by name (functions, classes, types)
-- **`codegraph_context`** — Get relevant code context for a task
-- **`codegraph_callers`** — Find what calls a function
-- **`codegraph_callees`** — Find what a function calls
-- **`codegraph_impact`** — See what's affected by changing a symbol
-- **`codegraph_node`** — Get details + source code for a symbol
+- **`codegraph_context`** — Get relevant code context for task
+- **`codegraph_callers`** — Find what calls function
+- **`codegraph_callees`** — Find what function calls
+- **`codegraph_impact`** — See what's affected by changing symbol
+- **`codegraph_node`** — Get details + source code for symbol
 
-Use CodeGraph instead of grep for faster exploration.
+Use CodeGraph over grep. Faster.
 
 ## Architecture Guidelines
 
-Agents working with this codebase should follow these architectural patterns:
+Follow these patterns:
 
 ### File-Based Routing
-Routes live in `src/routes/` and follow TanStack Router conventions:
+Routes in `src/routes/`, follow TanStack Router conventions:
 - `__root.tsx` — root layout (Header + DevTools shell)
-- `index.tsx` — page component for that directory's route
+- `index.tsx` — page component for directory route
 - `$param.tsx` — dynamic segment (e.g., `$recipeId.tsx` for `/recipes/:recipeId`)
 - `$param.edit.tsx` — nested route (e.g., `/recipes/:recipeId/edit`)
 
-The route tree is auto-generated into `src/routeTree.gen.ts` — **never edit this file manually**.
+Route tree auto-generated into `src/routeTree.gen.ts` — **never edit manually**.
 
 ### Route Component Pattern
-Every route file exports a `Route` object and a named page function:
+Every route file exports `Route` object + named page function:
 ```typescript
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -67,28 +67,28 @@ src/components/
 └── ui/                     # Generic reusable UI components
 ```
 
-Components use default exports and explicit props interfaces.
+Components use default exports + explicit props interfaces.
 
 ### Database & API Patterns
 
 **MongoDB/Mongoose:**
-- Models live in `src/db/models/` and are barrel-exported from `index.ts`
-- All models use Mongoose `timestamps: true` option (auto-managed `createdAt`/`updatedAt`)
-- Mongoose strict mode is globally enabled in `src/db/index.ts`
-- Taxonomy (meals, courses, preparations) are embedded as ObjectId arrays in recipes
-- Seeds are idempotent (upsert by slug) and live in `src/db/seeds/`
-- Database connection reads `MONGODB_URI` from `.env.local`; throws if missing
+- Models in `src/db/models/`, barrel-exported from `index.ts`
+- All models use Mongoose `timestamps: true` (auto-managed `createdAt`/`updatedAt`)
+- Mongoose strict mode globally enabled in `src/db/index.ts`
+- Taxonomy (meals, courses, preparations) embedded as ObjectId arrays in recipes
+- Seeds idempotent (upsert by slug), live in `src/db/seeds/`
+- DB connection reads `MONGODB_URI` from `.env.local`; throws if missing
 
 **tRPC & Type-Safe API:**
-- Server procedures live in `src/server/trpc/routers/` (one file per domain, e.g., `recipes.ts`)
-- Import procedures into `src/server/trpc/router.ts` and merge into root router
-- Client queries via tRPC context initialized in `src/server/trpc/context.ts`
-- Leverage automatic type inference from server to client (no manual typing needed)
+- Server procedures in `src/server/trpc/routers/` (one file per domain, e.g., `recipes.ts`)
+- Import procedures into `src/server/trpc/router.ts`, merge into root router
+- Client queries via tRPC context in `src/server/trpc/context.ts`
+- Auto type inference server→client. No manual typing needed.
 
 **Authentication (Better-Auth):**
 - Sessions stored in MongoDB (collections: `user`, `session`, `account`, `verification`)
-- Retrieved via `getMongoClient()` and `getBetterAuthCollection()` from `src/db/index.ts`
-- Use Better-Auth client in route components to check auth status and retrieve user info
+- Retrieved via `getMongoClient()` + `getBetterAuthCollection()` from `src/db/index.ts`
+- Use Better-Auth client in route components to check auth status + user info
 
 **Database Commands:**
 ```bash
@@ -99,51 +99,51 @@ npm run db:seed      # Seed taxonomy data (idempotent, safe to run multiple time
 ### Conventions
 
 **Routing & Navigation:**
-Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. For typed params, use `Route.useParams()`.
+Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. Typed params: use `Route.useParams()`.
 
 **Styling:**
-- Dark-first design with cyan accent color (`cyan-400` through `cyan-600`)
-- Dark backgrounds use `slate-800`/`slate-900` gradients
+- Dark-first, cyan accent (`cyan-400` through `cyan-600`)
+- Dark backgrounds: `slate-800`/`slate-900` gradients
 - Always include `dark:` variants on color properties
-- Mobile-first responsive using `sm:`, `md:`, `lg:` breakpoints
-- Dark mode is class-based (`@custom-variant dark` in `src/styles.css`); the `.dark` class is applied to `<html>` in `src/routes/__root.tsx`
+- Mobile-first responsive: `sm:`, `md:`, `lg:` breakpoints
+- Dark mode class-based (`@custom-variant dark` in `src/styles.css`); `.dark` applied to `<html>` in `src/routes/__root.tsx`
 
 **Path Aliases:**
-`@/*` maps to `./src/*` (configured in tsconfig.json). Always use `@/` imports instead of relative paths.
+`@/*` maps to `./src/*` (tsconfig.json). Always use `@/` over relative paths.
 
 **Vite Plugin Order:**
-The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPaths → tailwindcss → tanstackStart → react.
+Order in `vite.config.ts` matters: devtools → nitro → tsConfigPaths → tailwindcss → tanstackStart → react.
 
 ---
 
 ## Code Quality & Security
 
 ### TypeScript Strictness
-- Strict mode enabled with `noUnusedLocals` and `noUnusedParameters`
-- No `any` types without justification
-- Proper type narrowing and exhaustive checks
+- Strict mode with `noUnusedLocals` + `noUnusedParameters`
+- No `any` without justification
+- Proper type narrowing + exhaustive checks
 
 ### Security & Code Analysis
 See [Analysis & Security Standards](./docs/standards/analysis-and-security.md) for:
-- When to run code analysis (Codacy)
-- Security scanning (Snyk)
-- Vulnerability remediation workflow
+- When run Codacy analysis
+- Snyk security scanning
+- Vulnerability remediation
 
-Tool-specific configurations are in `.github/instructions/`:
+Tool configs in `.github/instructions/`:
 - [Codacy integration](./github/instructions/codacy.instructions.md)
 - [Snyk integration](./github/instructions/snyk_rules.instructions.md)
 
 ### Markdown Quality
 When editing `.md` files:
-1. Run `fix_markdown` tool on the file
-2. Run `lint_markdown` to check for issues
-3. Fix remaining issues (see [Tooling Standards](./docs/standards/tooling.md) if tools unavailable)
+1. Run `fix_markdown` on file
+2. Run `lint_markdown` check
+3. Fix remaining (see [Tooling Standards](./docs/standards/tooling.md) if tools unavailable)
 
 ---
 
 ## Implementation Workflow
 
-When implementing a feature, follow this checklist:
+Feature checklist:
 
 1. **Start with tests (RED phase)**
    - [ ] Write failing Vitest tests for business logic
@@ -154,34 +154,34 @@ When implementing a feature, follow this checklist:
    - [ ] Co-locate test files with implementation
 
 3. **Quality checks (REFACTOR phase)**
-   - [ ] Improve code readability and structure
+   - [ ] Improve readability + structure
    - [ ] Keep all tests passing
    - [ ] Run all tests: `npm run test && npm run test:e2e`
    - [ ] Verify TypeScript: `npx tsc --noEmit`
-   - [ ] Check for unused imports/variables
+   - [ ] Check unused imports/variables
 
 4. **Security & Analysis**
-   - [ ] Run Codacy analysis if available (see [Analysis Standards](./docs/standards/analysis-and-security.md))
-   - [ ] Run Snyk scan if new dependencies added
-   - [ ] Fix critical/high severity issues before merge
+   - [ ] Run Codacy if available (see [Analysis Standards](./docs/standards/analysis-and-security.md))
+   - [ ] Run Snyk if new dependencies added
+   - [ ] Fix critical/high severity before merge
 
 5. **Create pull request**
    - [ ] All tests pass locally
    - [ ] TypeScript compilation succeeds
-   - [ ] Local quality gates met (ready for CI/CD validation)
-   - [ ] **Enable auto-merge** immediately when PR is created
-   - [ ] CI/CD will validate quality gates before merge
-   - [ ] Address all PR comments and feedback
-   - [ ] PR will merge automatically when all checks pass and comments are resolved
+   - [ ] Local quality gates met
+   - [ ] **Enable auto-merge** immediately on PR create
+   - [ ] CI/CD validates quality gates before merge
+   - [ ] Address all PR comments
+   - [ ] PR merges automatically when checks pass + comments resolved
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for a quick reference.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) quick reference.
 
 ---
 
 ## Tech Stack Reference
 
 - **Framework:** TanStack Start with React 19, deployed via Nitro
-- **Routing:** TanStack Router — file-based routing in `src/routes/`
+- **Routing:** TanStack Router — file-based in `src/routes/`
 - **Database:** MongoDB 7 (Docker or Atlas) with Mongoose ODM
 - **API Layer:** tRPC (type-safe RPC) with `@trpc/server` and `@trpc/tanstack-react-query`
 - **Authentication:** Better-Auth (Nitro-based sessions, stored in MongoDB)
