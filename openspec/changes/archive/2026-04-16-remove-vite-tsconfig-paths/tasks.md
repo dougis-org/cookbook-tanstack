@@ -41,13 +41,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `fix/remove-vite-tsconfig-paths` and push to remote
-- [ ] Open PR from `fix/remove-vite-tsconfig-paths` to `main`; reference issue dougis-org/cookbook-tanstack#328 in PR body
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address each comment, commit fix, run full validation, push; wait 180 seconds; repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll autonomously; if any check fails, diagnose and fix, commit, run full validation, push; wait 180 seconds; repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user
+- [x] Commit all changes to `fix/remove-vite-tsconfig-paths` and push to remote
+- [x] Open PR from `fix/remove-vite-tsconfig-paths` to `main`; reference issue dougis-org/cookbook-tanstack#328 in PR body
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address each comment, commit fix, run full validation, push; wait 180 seconds; repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — poll autonomously; if any check fails, diagnose and fix, commit, run full validation, push; wait 180 seconds; repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user
 
 Ownership metadata:
 
@@ -63,12 +63,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No repository documentation changes required beyond CLAUDE.md (already in Execution)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
-- [ ] Archive the change: move `openspec/changes/remove-vite-tsconfig-paths/` to `openspec/changes/archive/YYYY-MM-DD-remove-vite-tsconfig-paths/` — stage both new location and deletion of old location in a **single commit**
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No repository documentation changes required beyond CLAUDE.md (already in Execution)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) if applicable
+- [x] Archive the change: move `openspec/changes/remove-vite-tsconfig-paths/` to `openspec/changes/archive/YYYY-MM-DD-remove-vite-tsconfig-paths/` — stage both new location and deletion of old location in a **single commit**
 - [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-remove-vite-tsconfig-paths/` exists and `openspec/changes/remove-vite-tsconfig-paths/` is gone
 - [ ] Commit and push the archive to `main` in one commit
 - [ ] Prune merged local branch: `git fetch --prune` and `git branch -d fix/remove-vite-tsconfig-paths`
