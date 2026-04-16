@@ -79,7 +79,6 @@
     "mongodb-memory-server": "^11.0.1",
     "typescript": "^6.0.2",
     "vite": "^8.0.8",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.4",
     "web-vitals": "^5.2.0"
   }

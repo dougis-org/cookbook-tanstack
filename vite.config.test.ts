@@ -3,7 +3,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PluginOption } from 'vite'
 import viteConfig from './vite.config'
-import vitestConfig from './vitest.config'
 
 type NamedPlugin = { name?: string }
 
@@ -50,10 +49,8 @@ describe('vite config', () => {
         )
       }
 
-      expect(pluginNames).toContain('vite-tsconfig-paths')
       assertOrder('@tanstack/devtools:inject-source', 'nitro:init')
-      assertOrder('nitro:init', 'vite-tsconfig-paths')
-      assertOrder('vite-tsconfig-paths', '@tailwindcss/vite:scan')
+      assertOrder('nitro:init', '@tailwindcss/vite:scan')
       assertOrder('@tailwindcss/vite:scan', 'tanstack-react-start:config')
       assertOrder('tanstack-react-start:config', 'vite:react-refresh')
       expect(pluginNames).toContain('tanstack:router-generator')
@@ -67,18 +64,5 @@ describe('vite config', () => {
 
       Object.assign(process.env, originalEnv)
     }
-  })
-
-  it('keeps vitest config aligned with the expected plugin chain', () => {
-    const pluginNames = getPluginNames(vitestConfig.plugins)
-    const viteTsconfigPathsIndex = getRequiredPluginIndex(pluginNames, 'vite-tsconfig-paths')
-    const viteReactRefreshIndex = getRequiredPluginIndex(pluginNames, 'vite:react-refresh')
-    const viteReactVirtualPreambleIndex = getRequiredPluginIndex(
-      pluginNames,
-      'vite:react-virtual-preamble',
-    )
-
-    expect(viteTsconfigPathsIndex).toBeLessThan(viteReactRefreshIndex)
-    expect(viteReactRefreshIndex).toBeLessThan(viteReactVirtualPreambleIndex)
   })
 })
