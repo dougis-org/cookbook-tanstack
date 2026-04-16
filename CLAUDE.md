@@ -41,12 +41,12 @@ npm run db:seed      # Seed taxonomy data (meals, courses, preparations) — ide
 - **Database:** MongoDB 7 (Docker or Atlas) with Mongoose ODM
 - **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 - **Icons:** Lucide React
-- **Build:** Vite 7
+- **Build:** Vite 8
 - **Testing:** Vitest + React Testing Library (units) + Playwright (E2E)
 - **TypeScript:** Strict mode with `noUnusedLocals` and `noUnusedParameters`
 
 ### Path Alias
-`@/*` maps to `./src/*` (configured in tsconfig.json, resolved by `vite-tsconfig-paths`). Always use `@/` imports instead of relative paths.
+`@/*` maps to `./src/*` (configured in tsconfig.json, resolved by Vite's native `resolve.tsconfigPaths`). Always use `@/` imports instead of relative paths.
 
 ### File-Based Routing
 Routes live in `src/routes/` and follow TanStack Router conventions:
@@ -107,7 +107,7 @@ Always use `<Link>` from `@tanstack/react-router`, never raw `<a>` tags. For typ
 - **Dark mode is class-based** (`@custom-variant dark` in `src/styles.css`). The `.dark` class is applied statically to `<html>` in `src/routes/__root.tsx`. Do not use `prefers-color-scheme` for dark mode detection — it is overridden by the custom variant. When the user theme toggle is built, manage the class on `document.documentElement` rather than relying on the media query.
 
 ### Vite Plugin Order
-The plugin order in `vite.config.ts` matters: devtools → nitro → tsConfigPaths → tailwindcss → tanstackStart → react.
+The plugin order in `vite.config.ts` matters: devtools → nitro → tailwindcss → tanstackStart → react.
 
 ## Development Workflow
 
