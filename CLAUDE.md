@@ -41,7 +41,7 @@ npm run db:seed      # Seed taxonomy data (meals, courses, preparations) — ide
 - **Database:** MongoDB 7 (Docker or Atlas) with Mongoose ODM
 - **Styling:** Tailwind CSS 4 (via `@tailwindcss/vite` plugin)
 - **Icons:** Lucide React
-- **Build:** Vite 7
+- **Build:** Vite 8
 - **Testing:** Vitest + React Testing Library (units) + Playwright (E2E)
 - **TypeScript:** Strict mode with `noUnusedLocals` and `noUnusedParameters`
 
