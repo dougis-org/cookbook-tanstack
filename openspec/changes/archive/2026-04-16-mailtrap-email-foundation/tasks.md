@@ -48,11 +48,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to the working branch and push to remote
 - [x] Open PR from working branch to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll for new comments autonomously
-- [ ] **Monitor CI checks** — poll for check status autonomously
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`
+- [x] **Monitor PR comments** — poll for new comments autonomously
+- [x] **Monitor CI checks** — poll for check status autonomously
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`
 
 Ownership metadata:
 
@@ -68,12 +68,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/mailtrap-email-foundation/foundation.md`
-- [ ] Archive the change: move `openspec/changes/mailtrap-email-foundation/` to `openspec/changes/archive/2026-04-16-mailtrap-email-foundation/` **and stage both the new location and the deletion of the old location in a single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-16-mailtrap-email-foundation/` exists and `openspec/changes/mailtrap-email-foundation/` is gone
-- [ ] Commit and push the archive to the default branch in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/mailtrap-email-foundation`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/mailtrap-email-foundation/foundation.md`
+- [x] Archive the change: move `openspec/changes/mailtrap-email-foundation/` to `openspec/changes/archive/2026-04-16-mailtrap-email-foundation/` **and stage both the new location and the deletion of the old location in a single commit**
+- [x] Confirm `openspec/changes/archive/2026-04-16-mailtrap-email-foundation/` exists and `openspec/changes/mailtrap-email-foundation/` is gone
+- [x] Commit and push the archive to the default branch in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/mailtrap-email-foundation`
