@@ -6,15 +6,14 @@ vi.mock('nodemailer');
 
 describe('sendEmail', () => {
   const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-id' });
-  const mockCreateTransport = vi.fn().mockReturnValue({
-    sendMail: mockSendMail,
-  });
 
   beforeEach(() => {
     vi.clearAllMocks();
     resetTransporter();
-    (nodemailer.createTransport as any) = mockCreateTransport;
-    
+    vi.mocked(nodemailer.createTransport).mockReturnValue({
+      sendMail: mockSendMail,
+    } as any);
+
     process.env.MAILTRAP_HOST = 'test.host';
     process.env.MAILTRAP_PORT = '2525';
     process.env.MAILTRAP_USER = 'test-user';
@@ -43,7 +42,7 @@ describe('sendEmail', () => {
     vi.clearAllMocks();
     await sendEmail({ to: '1@ex.com', subject: 's', text: 't' });
     await sendEmail({ to: '2@ex.com', subject: 's', text: 't' });
-    expect(mockCreateTransport).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(nodemailer.createTransport)).toHaveBeenCalledTimes(1);
   });
 
   it('warns if environment variables are missing', async () => {
@@ -66,7 +65,7 @@ describe('sendEmail', () => {
     resetTransporter();
     await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
     
-    expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({
+    expect(vi.mocked(nodemailer.createTransport)).toHaveBeenCalledWith(expect.objectContaining({
       port: 2525
     }));
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid MAILTRAP_PORT'));
