@@ -9,8 +9,9 @@ Welcome! This document provides a quick start for contributing to the CookBook p
    git clone https://github.com/dougis-org/cookbook-tanstack.git
    cd cookbook-tanstack
    npm install
-   docker compose up -d  # Start PostgreSQL
-   npm run db:push && npm run db:seed
+   docker compose up -d  # Start MongoDB
+   # Copy .env.example to .env and configure MONGODB_URI and MAILTRAP_*
+   npm run db:seed
    npm run dev
    ```
 
@@ -113,7 +114,7 @@ See [Code Quality Standards](./docs/standards/code-quality.md) for:
 - **Components:** Domain-organized in `src/components/`
 - **Imports:** Use `@/*` path aliases, never relative paths
 - **Styling:** Tailwind CSS, dark-first, cyan accent color
-- **Database:** PostgreSQL 16 with Drizzle ORM
+- **Database:** MongoDB with Mongoose
 
 See [AGENTS.md](./AGENTS.md#architecture-guidelines) and [CLAUDE.md](./CLAUDE.md) for full architecture details.
 

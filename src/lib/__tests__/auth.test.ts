@@ -34,4 +34,16 @@ describe("auth server config", () => {
 
     expect(mockDb).toHaveBeenCalledOnce()
   })
+
+  it("has sendResetPassword hook configured", async () => {
+    const { auth } = await import("@/lib/auth")
+    expect(auth.options.emailAndPassword?.sendResetPassword).toBeDefined()
+    expect(typeof auth.options.emailAndPassword?.sendResetPassword).toBe("function")
+  })
+
+  it("has sendVerificationEmail hook configured", async () => {
+    const { auth } = await import("@/lib/auth")
+    expect(auth.options.emailVerification?.sendVerificationEmail).toBeDefined()
+    expect(typeof auth.options.emailVerification?.sendVerificationEmail).toBe("function")
+  })
 })
