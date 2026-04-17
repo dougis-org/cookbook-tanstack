@@ -7,7 +7,9 @@ function getTransporter() {
     const { MAILTRAP_HOST, MAILTRAP_USER, MAILTRAP_PASS, MAILTRAP_PORT } = process.env;
 
     if (!MAILTRAP_HOST || !MAILTRAP_USER || !MAILTRAP_PASS) {
-      console.warn('Missing Mailtrap configuration. Email delivery will likely fail.');
+      const msg = 'Missing Mailtrap configuration (MAILTRAP_HOST, MAILTRAP_USER, MAILTRAP_PASS). Email delivery disabled.';
+      console.warn(msg);
+      throw new Error(msg);
     }
 
     const port = parseInt(MAILTRAP_PORT || '2525', 10);
@@ -35,7 +37,7 @@ export interface SendEmailOptions {
 }
 
 export async function sendEmail(options: SendEmailOptions) {
-  const from = process.env.MAIL_FROM || 'Cookbook <noreply@example.com>';
+  const from = process.env.MAIL_FROM || 'Cookbook App <noreply@example.com>';
   const transport = getTransporter();
   return transport.sendMail({
     from,

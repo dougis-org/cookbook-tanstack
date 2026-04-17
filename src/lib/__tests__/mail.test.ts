@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import nodemailer from 'nodemailer';
-import { sendEmail, resetTransporter } from '../mail';
+import { sendEmail, resetTransporter } from '@/lib/mail';
 
 vi.mock('nodemailer');
 
@@ -45,15 +45,15 @@ describe('sendEmail', () => {
     expect(vi.mocked(nodemailer.createTransport)).toHaveBeenCalledTimes(1);
   });
 
-  it('warns if environment variables are missing', async () => {
+  it('warns and rejects if environment variables are missing', async () => {
     delete process.env.MAILTRAP_HOST;
     delete process.env.MAILTRAP_USER;
     delete process.env.MAILTRAP_PASS;
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
+
     resetTransporter();
-    await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
-    
+    await expect(sendEmail({ to: 'u@e.com', subject: 's', text: 't' })).rejects.toThrow('Missing Mailtrap configuration');
+
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Missing Mailtrap configuration'));
     warnSpy.mockRestore();
   });
@@ -76,7 +76,7 @@ describe('sendEmail', () => {
     delete process.env.MAIL_FROM;
     await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
     expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
-      from: 'Cookbook <noreply@example.com>',
+      from: 'Cookbook App <noreply@example.com>',
     }));
   });
 });
