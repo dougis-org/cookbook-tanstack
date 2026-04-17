@@ -1,9 +1,14 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 
 const mockDb = vi.fn(() => ({}))
+const mockSendEmail = vi.fn().mockResolvedValue({ messageId: "test-id" })
 
 vi.mock("@/db", () => ({
   getMongoClient: vi.fn(() => ({ db: mockDb })),
+}))
+
+vi.mock("@/lib/mail", () => ({
+  sendEmail: mockSendEmail,
 }))
 
 describe("auth server config", () => {
@@ -33,5 +38,47 @@ describe("auth server config", () => {
     await import("@/lib/auth")
 
     expect(mockDb).toHaveBeenCalledOnce()
+  })
+
+  it("has sendResetPassword hook configured", async () => {
+    const { auth } = await import("@/lib/auth")
+    expect(auth.options.emailAndPassword?.sendResetPassword).toBeDefined()
+    expect(typeof auth.options.emailAndPassword?.sendResetPassword).toBe("function")
+  })
+
+  it("has sendVerificationEmail hook configured", async () => {
+    const { auth } = await import("@/lib/auth")
+    expect(auth.options.emailVerification?.sendVerificationEmail).toBeDefined()
+    expect(typeof auth.options.emailVerification?.sendVerificationEmail).toBe("function")
+  })
+})
+
+describe("auth email hooks behavior", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("sendResetPassword hook sends email to user with reset url", async () => {
+    const { auth } = await import("@/lib/auth")
+    const hook = auth.options.emailAndPassword?.sendResetPassword
+    await hook?.({ user: { email: "user@example.com" } as any, url: "https://example.com/reset" })
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: "user@example.com" })
+    )
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ text: expect.stringContaining("https://example.com/reset") })
+    )
+  })
+
+  it("sendVerificationEmail hook sends email to user with verification url", async () => {
+    const { auth } = await import("@/lib/auth")
+    const hook = auth.options.emailVerification?.sendVerificationEmail
+    await hook?.({ user: { email: "user@example.com" } as any, url: "https://example.com/verify" })
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: "user@example.com" })
+    )
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ text: expect.stringContaining("https://example.com/verify") })
+    )
   })
 })
