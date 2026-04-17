@@ -38,18 +38,39 @@ describe('sendEmail', () => {
     });
   });
 
-  it('reuse transporter instance', async () => {
-    // Need to NOT reset in between these two calls to test singleton
-    // But beforeEach resets it.
-    // Let's test in one 'it' block.
-  });
-
   it('singleton works in sequence', async () => {
     resetTransporter();
     vi.clearAllMocks();
     await sendEmail({ to: '1@ex.com', subject: 's', text: 't' });
     await sendEmail({ to: '2@ex.com', subject: 's', text: 't' });
     expect(mockCreateTransport).toHaveBeenCalledTimes(1);
+  });
+
+  it('warns if environment variables are missing', async () => {
+    delete process.env.MAILTRAP_HOST;
+    delete process.env.MAILTRAP_USER;
+    delete process.env.MAILTRAP_PASS;
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    resetTransporter();
+    await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
+    
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Missing Mailtrap configuration'));
+    warnSpy.mockRestore();
+  });
+
+  it('handles invalid port by defaulting to 2525', async () => {
+    process.env.MAILTRAP_PORT = 'invalid';
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    
+    resetTransporter();
+    await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
+    
+    expect(mockCreateTransport).toHaveBeenCalledWith(expect.objectContaining({
+      port: 2525
+    }));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid MAILTRAP_PORT'));
+    warnSpy.mockRestore();
   });
 
   it('use default from address if MAIL_FROM missing', async () => {

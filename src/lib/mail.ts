@@ -4,12 +4,23 @@ let transporter: nodemailer.Transporter | null = null;
 
 function getTransporter() {
   if (!transporter) {
+    const { MAILTRAP_HOST, MAILTRAP_USER, MAILTRAP_PASS, MAILTRAP_PORT } = process.env;
+
+    if (!MAILTRAP_HOST || !MAILTRAP_USER || !MAILTRAP_PASS) {
+      console.warn('Missing Mailtrap configuration. Email delivery will likely fail.');
+    }
+
+    const port = parseInt(MAILTRAP_PORT || '2525', 10);
+    if (isNaN(port)) {
+      console.warn(`Invalid MAILTRAP_PORT: ${MAILTRAP_PORT}. Defaulting to 2525.`);
+    }
+
     transporter = nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
-      port: parseInt(process.env.MAILTRAP_PORT || '2525'),
+      host: MAILTRAP_HOST,
+      port: isNaN(port) ? 2525 : port,
       auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASS,
+        user: MAILTRAP_USER,
+        pass: MAILTRAP_PASS,
       },
     });
   }

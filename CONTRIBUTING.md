@@ -39,9 +39,9 @@ npx vitest run src/path/to/file.test.ts  # Single test file
 npx playwright test --headed              # E2E with visible browser
 
 # Database
-npm run db:push           # Push schema to DB (dev only)
+npm run db:connect        # Test MongoDB connection
 npm run db:seed           # Seed taxonomy data
-npm run db:studio         # Open Drizzle Studio
+npm run db:migrate-tiers  # Migrate user tiers
 
 # Build & Quality
 npm run build             # Production build
