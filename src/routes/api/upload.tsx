@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { toFile } from "@imagekit/nodejs"
 import { auth } from "@/lib/auth"
-import { imagekit } from "@/lib/imagekit"
+import { getImageKit } from "@/lib/imagekit"
 import { getMongoClient } from "@/db"
 import {
   MAX_RECIPE_IMAGE_UPLOAD_SIZE_BYTES,
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/api/upload")({
         try {
           const buffer = Buffer.from(await file.arrayBuffer())
           const uploadFile = await toFile(buffer, file.name, { type: file.type })
-          const upload = await imagekit.files.upload({
+          const upload = await getImageKit().files.upload({
             file: uploadFile,
             fileName: file.name,
             folder: UPLOAD_FOLDER,

@@ -56,12 +56,12 @@ vi.mock("@/db", () => ({
 }))
 
 vi.mock("@/lib/imagekit", () => ({
-  imagekit: {
+  getImageKit: vi.fn(() => ({
     files: {
       upload: mockUpload,
       delete: mockDeleteFile,
     },
-  },
+  })),
 }))
 
 type PostHandler = (args: { request: Request }) => Promise<Response>
