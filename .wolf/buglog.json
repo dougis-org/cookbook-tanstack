@@ -80,6 +80,38 @@
       "related_bugs": [],
       "occurrences": 3,
       "last_seen": "2026-04-18T23:22:48.773Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-18T23:35:12.406Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/theming.md",
+      "root_cause": "Had `<style>`",
+      "fix": "Changed to `RootDocument`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:35:12.406Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-18T23:35:16.470Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/e2e/fouc-prevention.spec.ts",
+      "root_cause": "Had 'light-warm theme: unknown stored value falls back",
+      "fix": "Changed to 'unknown stored theme value falls back to dark'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:35:16.470Z"
     }
   ]
 }

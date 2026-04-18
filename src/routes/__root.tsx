@@ -49,7 +49,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   // Allowlist serialized as JSON data — avoids injection risk if a theme ID ever contains quotes.
-  // Migrates legacy 'light' → 'light-cool'. No user data interpolated — safe per design Decision 4.
+  // Migrates legacy 'light' → 'light-cool'. Only theme IDs from THEMES are serialized here.
   const validIds = JSON.stringify(THEMES.map((t) => t.id)).replace(/</g, '\\u003c')
 
   /*

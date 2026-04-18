@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:28:06.805Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:35:16.460Z
 > Files: 528 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -735,7 +735,7 @@
 
 ## docs/
 
-- `theming.md` — Theming Guide (~536 tok)
+- `theming.md` — Theming Guide (~549 tok)
 
 ## openspec/changes/fix-fouc-theme-flash/
 
@@ -750,8 +750,8 @@
 
 ## src/e2e/
 
-- `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2226 tok)
+- `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2222 tok)
 
 ## src/routes/
 
-- `__root.tsx` — Route (~1258 tok)
+- `__root.tsx` — Route (~1256 tok)

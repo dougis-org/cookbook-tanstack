@@ -55,3 +55,13 @@
 | 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~116 |
 | 16:27 | Edited src/routes/__root.tsx | inline fix | ~28 |
 | 16:28 | Created src/e2e/fouc-prevention.spec.ts | — | ~2226 |
+| 16:28 | Session end: 35 writes across 5 files (tasks.md, fouc-prevention.spec.ts, __root.tsx, theming.md, tests.md) | 8 reads | ~20079 tok |
+| 16:32 | Session end: 35 writes across 5 files (tasks.md, fouc-prevention.spec.ts, __root.tsx, theming.md, tests.md) | 8 reads | ~20079 tok |
+| 16:35 | Edited src/routes/__root.tsx | 2→2 lines | ~55 |
+| 16:35 | Edited docs/theming.md | 3→3 lines | ~155 |
+| 16:35 | Edited src/e2e/fouc-prevention.spec.ts | 2→2 lines | ~44 |
+
+## Session: 2026-04-18 16:36
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

@@ -104,7 +104,7 @@ test.describe('FOUC prevention', () => {
   })
 
   // TC-6: unknown theme falls back to dark — abort external CSS to isolate critical CSS
-  test('light-warm theme: unknown stored value falls back to dark', async ({
+  test('unknown stored theme value falls back to dark', async ({
     page,
   }) => {
     await setupThemeAndGoto(page, 'unknown-value')

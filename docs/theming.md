@@ -28,6 +28,6 @@ CookBook uses a class-based dark-mode system. Theme selection is stored in `loca
 
 ## Why critical CSS exists
 
-The `criticalCss` constant in `src/routes/__root.tsx` is injected as a `<style>` element via the inline init script before the external stylesheet loads. Without it, users see a white flash on first page load because CSS custom properties (`--theme-bg`, etc.) are only defined in the external stylesheet file.
+The `criticalCss` constant in `src/routes/__root.tsx` is emitted by `RootDocument` as a static SSR `<style>` element, alongside the inline init script, before the external stylesheet loads. Without it, users see a white flash on first page load because CSS custom properties (`--theme-bg`, etc.) are only defined in the external stylesheet file.
 
-The inline script sets the correct `<html>` class before any paint, and the critical CSS block maps those classes to actual color values — covering the window between "class is set" and "external stylesheet arrives".
+The inline script sets the correct `<html>` class before any paint, and the server-rendered critical CSS block maps those classes to actual color values — covering the window between "class is set" and "external stylesheet arrives".
