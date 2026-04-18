@@ -27,6 +27,14 @@ async function uploadAndWaitForPreview(file = makeImageFile()) {
   return screen.findByRole("img", { name: /recipe image preview/i });
 }
 
+function mockUploadSuccess(url: string, fileId: string) {
+  return fetchMock.mockResolvedValueOnce(jsonResponse({ url, fileId }));
+}
+
+function mockDeleteSuccess() {
+  return fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }));
+}
+
 function deferredResponse() {
   let resolve!: (value: Response) => void;
   const promise = new Promise<Response>((res) => {
@@ -158,14 +166,8 @@ describe("ImageUploadField", () => {
 
   it("deletes a pending upload when Remove is clicked", async () => {
     const onRemove = vi.fn();
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/pending.jpg",
-          fileId: "pending-1",
-        }),
-      )
-      .mockResolvedValueOnce(jsonResponse({ success: true }));
+    mockUploadSuccess("https://ik.imagekit.io/demo/pending.jpg", "pending-1");
+    mockDeleteSuccess();
     renderControlled({ onRemove });
 
     await uploadAndWaitForPreview();
@@ -210,20 +212,9 @@ describe("ImageUploadField", () => {
   });
 
   it("deletes the first pending upload before replacing it", async () => {
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/a.jpg",
-          fileId: "file-a",
-        }),
-      )
-      .mockResolvedValueOnce(jsonResponse({ success: true }))
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/b.jpg",
-          fileId: "file-b",
-        }),
-      );
+    mockUploadSuccess("https://ik.imagekit.io/demo/a.jpg", "file-a");
+    mockDeleteSuccess();
+    mockUploadSuccess("https://ik.imagekit.io/demo/b.jpg", "file-b");
     renderControlled();
 
     await uploadAndWaitForPreview(makeImageFile("a.jpg"));
@@ -242,20 +233,9 @@ describe("ImageUploadField", () => {
 
   it("continues replacement upload when deleting the previous pending upload fails", async () => {
     const onUpload = vi.fn();
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/a.jpg",
-          fileId: "file-a",
-        }),
-      )
-      .mockRejectedValueOnce(new Error("delete failed"))
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/b.jpg",
-          fileId: "file-b",
-        }),
-      );
+    mockUploadSuccess("https://ik.imagekit.io/demo/a.jpg", "file-a");
+    fetchMock.mockRejectedValueOnce(new Error("delete failed"));
+    mockUploadSuccess("https://ik.imagekit.io/demo/b.jpg", "file-b");
     renderControlled({ onUpload });
 
     await uploadAndWaitForPreview(makeImageFile("a.jpg"));
@@ -273,14 +253,8 @@ describe("ImageUploadField", () => {
 
   it("removes pending preview when pending delete fails", async () => {
     const onRemove = vi.fn();
-    fetchMock
-      .mockResolvedValueOnce(
-        jsonResponse({
-          url: "https://ik.imagekit.io/demo/pending.jpg",
-          fileId: "pending-1",
-        }),
-      )
-      .mockRejectedValueOnce(new Error("delete failed"));
+    mockUploadSuccess("https://ik.imagekit.io/demo/pending.jpg", "pending-1");
+    fetchMock.mockRejectedValueOnce(new Error("delete failed"));
     renderControlled({ onRemove });
 
     await uploadAndWaitForPreview();
@@ -316,12 +290,7 @@ describe("ImageUploadField", () => {
       );
     }
 
-    fetchMock.mockResolvedValueOnce(
-      jsonResponse({
-        url: "https://ik.imagekit.io/demo/pending.jpg",
-        fileId: "pending-1",
-      }),
-    );
+    mockUploadSuccess("https://ik.imagekit.io/demo/pending.jpg", "pending-1");
     render(<Harness />);
 
     const input = screen.getByLabelText(/change recipe image/i);

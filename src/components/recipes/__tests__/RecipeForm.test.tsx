@@ -101,6 +101,19 @@ function renderWithProviders(ui: React.ReactElement) {
   )
 }
 
+async function renderBlockedWithPendingUpload() {
+  mockBlocker.status = "blocked"
+  renderWithProviders(<RecipeForm />)
+  await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+}
+
+function expectPendingUploadDeleted() {
+  expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
+    method: "DELETE",
+    keepalive: true,
+  })
+}
+
 describe("RecipeForm", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -299,10 +312,8 @@ describe("RecipeForm", () => {
     })
 
     it("clears pending upload reference when onRemove is called", async () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
+      await renderBlockedWithPendingUpload()
 
-      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
       await userEvent.click(screen.getByRole("button", { name: /mock remove image/i }))
       await userEvent.click(screen.getByRole("button", { name: /discard changes/i }))
 
@@ -312,24 +323,15 @@ describe("RecipeForm", () => {
     })
 
     it("deletes pending upload before proceeding through blocker discard", async () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
-
-      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await renderBlockedWithPendingUpload()
       await userEvent.click(screen.getByRole("button", { name: /discard changes/i }))
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
-        method: "DELETE",
-        keepalive: true,
-      })
+      expectPendingUploadDeleted()
       expect(mockBlockerProceed).toHaveBeenCalled()
     })
 
     it("keeps pending upload when blocker dialog is cancelled", async () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
-
-      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await renderBlockedWithPendingUpload()
       await userEvent.click(screen.getByRole("button", { name: /keep editing/i }))
 
       expect(mockFetch).not.toHaveBeenCalled()
@@ -358,10 +360,7 @@ describe("RecipeForm", () => {
 
       await userEvent.click(screen.getByRole("button", { name: /revert/i }))
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
-        method: "DELETE",
-        keepalive: true,
-      })
+      expectPendingUploadDeleted()
       expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
         "data-value",
         "https://ik.imagekit.io/demo/existing.jpg",

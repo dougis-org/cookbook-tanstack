@@ -11,24 +11,36 @@ vi.mock("@/lib/mail", () => ({
   sendEmail: mockSendEmail,
 }))
 
+async function getAuth() {
+  const { auth } = await import("@/lib/auth")
+  return auth
+}
+
+function assertIsFunction(value: unknown) {
+  expect(value).toBeDefined()
+  expect(typeof value).toBe("function")
+}
+
+function assertEmailSentTo(to: string, urlContaining: string) {
+  expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ to }))
+  expect(mockSendEmail).toHaveBeenCalledWith(
+    expect.objectContaining({ text: expect.stringContaining(urlContaining) })
+  )
+}
+
 describe("auth server config", () => {
   it("exports an auth instance with handler", async () => {
-    const { auth } = await import("@/lib/auth")
+    const auth = await getAuth()
     expect(auth).toBeDefined()
-    expect(auth.handler).toBeDefined()
-    expect(typeof auth.handler).toBe("function")
+    assertIsFunction(auth.handler)
   })
 
   it("exposes getSession on the API", async () => {
-    const { auth } = await import("@/lib/auth")
-    expect(auth.api.getSession).toBeDefined()
-    expect(typeof auth.api.getSession).toBe("function")
+    assertIsFunction((await getAuth()).api.getSession)
   })
 
   it("exposes signUpEmail on the API", async () => {
-    const { auth } = await import("@/lib/auth")
-    expect(auth.api.signUpEmail).toBeDefined()
-    expect(typeof auth.api.signUpEmail).toBe("function")
+    assertIsFunction((await getAuth()).api.signUpEmail)
   })
 
   it("initializes the auth adapter from the Mongo client db handle", async () => {
@@ -41,15 +53,11 @@ describe("auth server config", () => {
   })
 
   it("has sendResetPassword hook configured", async () => {
-    const { auth } = await import("@/lib/auth")
-    expect(auth.options.emailAndPassword?.sendResetPassword).toBeDefined()
-    expect(typeof auth.options.emailAndPassword?.sendResetPassword).toBe("function")
+    assertIsFunction((await getAuth()).options.emailAndPassword?.sendResetPassword)
   })
 
   it("has sendVerificationEmail hook configured", async () => {
-    const { auth } = await import("@/lib/auth")
-    expect(auth.options.emailVerification?.sendVerificationEmail).toBeDefined()
-    expect(typeof auth.options.emailVerification?.sendVerificationEmail).toBe("function")
+    assertIsFunction((await getAuth()).options.emailVerification?.sendVerificationEmail)
   })
 })
 
@@ -66,12 +74,7 @@ describe("auth email hooks behavior", () => {
       url: "https://example.com/reset",
       token: "test-token",
     })
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: "user@example.com" })
-    )
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ text: expect.stringContaining("https://example.com/reset") })
-    )
+    assertEmailSentTo("user@example.com", "https://example.com/reset")
   })
 
   it("sendVerificationEmail hook sends email to user with verification url", async () => {
@@ -82,11 +85,6 @@ describe("auth email hooks behavior", () => {
       url: "https://example.com/verify",
       token: "test-token",
     })
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ to: "user@example.com" })
-    )
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ text: expect.stringContaining("https://example.com/verify") })
-    )
+    assertEmailSentTo("user@example.com", "https://example.com/verify")
   })
 })
