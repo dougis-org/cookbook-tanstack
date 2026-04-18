@@ -588,6 +588,27 @@ describe("recipes.update", () => {
     });
   });
 
+  it("clears imageUrl when update receives null", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "With Image",
+        userId: user.id,
+        imageUrl: "https://example.com/recipe.jpg",
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.update({
+        id: recipe.id,
+        imageUrl: null,
+      });
+
+      expect(result).toMatchObject({ imageUrl: null });
+      const persisted = await Recipe.findById(recipe.id).lean();
+      expect(persisted?.imageUrl).toBeNull();
+    });
+  });
+
   it("returns current record unchanged when only taxonomy IDs are updated", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();

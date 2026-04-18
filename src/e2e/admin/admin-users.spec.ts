@@ -64,7 +64,7 @@ test.describe('Admin users page — admin access', () => {
     // Register a target user first, then register admin
     const context = page.context()
     await context.clearCookies()
-    await registerAndLogin(page) // creates target user in DB
+    const targetUser = await registerAndLogin(page) // creates target user in DB
     await context.clearCookies()
 
     await registerAndLoginAsAdmin(page) // creates admin
@@ -74,25 +74,10 @@ test.describe('Admin users page — admin access', () => {
     await expect(page.getByRole('table')).toBeVisible()
     await expect(page.locator('tbody tr').first()).toBeVisible()
 
-    // Find a non-disabled (non-self) tier selector
-    const allSelects = page.locator('select[aria-label^="Change tier for"]')
-    await expect(allSelects.first()).toBeVisible()
-
-    const selectCount = await allSelects.count()
-    let targetSelect = null
-    for (let i = 0; i < selectCount; i++) {
-      const s = allSelects.nth(i)
-      if (!(await s.isDisabled())) {
-        targetSelect = s
-        break
-      }
-    }
-
-    if (!targetSelect) {
-      // Only one user — admin alone, skip gracefully
-      test.skip()
-      return
-    }
+    const targetRow = page.locator('tbody tr').filter({ hasText: targetUser.email })
+    await expect(targetRow).toBeVisible()
+    const targetSelect = targetRow.getByLabel(`Change tier for ${targetUser.email}`)
+    await expect(targetSelect).toBeEnabled()
 
     // Select a tier different from the current value (avoids no-op early return)
     const currentValue = await targetSelect.inputValue()
@@ -110,5 +95,6 @@ test.describe('Admin users page — admin access', () => {
 
     // Modal should close
     await expect(page.getByRole('dialog')).not.toBeVisible()
+    await expect(targetSelect).toHaveValue(newTier)
   })
 })
