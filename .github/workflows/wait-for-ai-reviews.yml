@@ -11,8 +11,6 @@ concurrency:
 
 permissions:
   checks: read
-  contents: read
-  pull-requests: read
 
 jobs:
   wait-for-ai-reviews:
