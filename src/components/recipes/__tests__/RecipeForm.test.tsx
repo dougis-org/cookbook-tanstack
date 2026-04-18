@@ -4,6 +4,18 @@ import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { Recipe } from "@/types/recipe"
 
+const {
+  mockCreateMutationFn,
+  mockUpdateMutationFn,
+  mockImageUploadProps,
+  mockFetch,
+} = vi.hoisted(() => ({
+  mockCreateMutationFn: vi.fn(),
+  mockUpdateMutationFn: vi.fn(),
+  mockImageUploadProps: vi.fn(),
+  mockFetch: vi.fn(),
+}))
+
 const mockNavigate = vi.fn()
 const mockRouterBack = vi.fn()
 const mockBlockerProceed = vi.fn()
@@ -30,8 +42,8 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     recipes: {
-      create: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
-      update: { mutationOptions: () => ({ mutationFn: vi.fn() }) },
+      create: { mutationOptions: () => ({ mutationFn: mockCreateMutationFn }) },
+      update: { mutationOptions: () => ({ mutationFn: mockUpdateMutationFn }) },
     },
     classifications: {
       list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [] }) },
@@ -52,6 +64,32 @@ vi.mock("@/lib/trpc", () => ({
   },
 }))
 
+vi.mock("@/components/ui/ImageUploadField", () => ({
+  default: (props: {
+    value: string | null
+    initialUrl?: string | null
+    onUpload: (url: string, fileId: string) => void
+    onRemove: () => void
+  }) => {
+    mockImageUploadProps(props)
+
+    return (
+      <div data-testid="image-upload-field" data-value={props.value ?? ""}>
+        <span>{props.value ? "Image preview" : "Click to upload"}</span>
+        <button
+          type="button"
+          onClick={() => props.onUpload("https://ik.imagekit.io/demo/new.jpg", "file-1")}
+        >
+          Mock upload image
+        </button>
+        <button type="button" onClick={props.onRemove}>
+          Mock remove image
+        </button>
+      </div>
+    )
+  },
+}))
+
 import RecipeForm from "@/components/recipes/RecipeForm"
 
 function renderWithProviders(ui: React.ReactElement) {
@@ -68,6 +106,10 @@ describe("RecipeForm", () => {
     vi.clearAllMocks()
     mockBlocker.status = "idle"
     capturedShouldBlockFn = undefined
+    mockCreateMutationFn.mockResolvedValue({ id: "created-id" })
+    mockUpdateMutationFn.mockResolvedValue({})
+    mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", mockFetch)
   })
 
   describe("rendering", () => {
@@ -152,6 +194,134 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/cook time/i)).toHaveValue(20)
       expect(screen.getByLabelText(/servings/i)).toHaveValue(4)
       expect(screen.getByLabelText(/difficulty/i)).toHaveValue("easy")
+    })
+
+    it("renders ImageUploadField in the form", () => {
+      renderWithProviders(<RecipeForm />)
+
+      expect(screen.getByTestId("image-upload-field")).toBeInTheDocument()
+      expect(screen.getByText("Click to upload")).toBeInTheDocument()
+    })
+
+    it("passes initialData.imageUrl to ImageUploadField", () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={makeRecipe({
+            imageUrl: "https://ik.imagekit.io/demo/existing.jpg",
+          })}
+        />,
+      )
+
+      expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
+        "data-value",
+        "https://ik.imagekit.io/demo/existing.jpg",
+      )
+      expect(mockImageUploadProps).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          value: "https://ik.imagekit.io/demo/existing.jpg",
+          initialUrl: "https://ik.imagekit.io/demo/existing.jpg",
+        }),
+      )
+    })
+  })
+
+  describe("image upload integration", () => {
+    it("includes imageUrl in create mutation payload after upload", async () => {
+      renderWithProviders(<RecipeForm />)
+
+      await userEvent.type(screen.getByLabelText(/recipe name/i), "New Recipe")
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(mockCreateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockCreateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({
+          name: "New Recipe",
+          imageUrl: "https://ik.imagekit.io/demo/new.jpg",
+        }),
+      )
+    })
+
+    it("includes imageUrl in update mutation payload after upload", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ name: "Original" })} />)
+
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({
+          id: "test-id",
+          imageUrl: "https://ik.imagekit.io/demo/new.jpg",
+        }),
+      )
+    })
+
+    it("omits imageUrl from create mutation payload when no image is uploaded", async () => {
+      renderWithProviders(<RecipeForm />)
+
+      await userEvent.type(screen.getByLabelText(/recipe name/i), "No Image")
+      await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(mockCreateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockCreateMutationFn.mock.calls[0]?.[0].imageUrl).toBeUndefined()
+    })
+
+    it("deletes pending upload before proceeding through blocker discard", async () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /discard changes/i }))
+
+      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", { method: "DELETE" })
+      expect(mockBlockerProceed).toHaveBeenCalled()
+    })
+
+    it("keeps pending upload when blocker dialog is cancelled", async () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /keep editing/i }))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(mockBlockerReset).toHaveBeenCalled()
+      expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
+        "data-value",
+        "https://ik.imagekit.io/demo/new.jpg",
+      )
+    })
+
+    it("deletes pending upload and restores existing image when reverting", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={makeRecipe({
+            name: "Original",
+            imageUrl: "https://ik.imagekit.io/demo/existing.jpg",
+          })}
+        />,
+      )
+
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
+        "data-value",
+        "https://ik.imagekit.io/demo/new.jpg",
+      )
+
+      await userEvent.click(screen.getByRole("button", { name: /revert/i }))
+
+      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", { method: "DELETE" })
+      expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
+        "data-value",
+        "https://ik.imagekit.io/demo/existing.jpg",
+      )
     })
   })
 
