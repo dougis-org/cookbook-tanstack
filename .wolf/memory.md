@@ -47,3 +47,9 @@
 | 16:22 | Edited openspec/changes/fix-fouc-theme-flash/tests.md | inline fix | ~64 |
 | 16:22 | Edited openspec/changes/fix-fouc-theme-flash/tests.md | inline fix | ~64 |
 | 16:22 | Edited openspec/changes/fix-fouc-theme-flash/tests.md | 4→4 lines | ~84 |
+| 16:23 | Session end: 28 writes across 5 files (tasks.md, fouc-prevention.spec.ts, __root.tsx, theming.md, tests.md) | 8 reads | ~17230 tok |
+| 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~116 |
+| 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~123 |
+| 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~117 |
+| 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~123 |
+| 16:26 | Edited src/e2e/fouc-prevention.spec.ts | 9→10 lines | ~116 |

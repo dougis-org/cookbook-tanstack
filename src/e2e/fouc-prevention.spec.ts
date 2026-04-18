@@ -1,13 +1,14 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 
 test.describe('FOUC prevention', () => {
-  // TC-1: dark theme — critical CSS applies correct background via waitUntil:'commit' (before hydration)
+  // TC-1: dark theme — abort external CSS so only critical CSS supplies the background
   test('dark theme: html has dark class and correct background before hydration', async ({
     page,
   }) => {
     await page.addInitScript(() => {
       localStorage.removeItem('cookbook-theme')
     })
+    await page.route(/\.css($|\?|#)/, (route) => route.abort())
 
     await page.goto('/', { waitUntil: 'commit' })
 
@@ -47,13 +48,14 @@ test.describe('FOUC prevention', () => {
     expect(htmlClass).toContain('dark')
   })
 
-  // TC-3: light-cool — critical CSS applies correct background via waitUntil:'commit'
+  // TC-3: light-cool — abort external CSS so only critical CSS supplies the background
   test('light-cool theme: html has light-cool class and correct background before hydration', async ({
     page,
   }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light-cool')
     })
+    await page.route(/\.css($|\?|#)/, (route) => route.abort())
 
     await page.goto('/', { waitUntil: 'commit' })
 
@@ -67,13 +69,14 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(241, 245, 249)')
   })
 
-  // TC-4: legacy "light" migrated to light-cool
+  // TC-4: legacy "light" migrated to light-cool — abort external CSS to isolate critical CSS
   test('light-cool theme: legacy "light" value migrates to light-cool', async ({
     page,
   }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light')
     })
+    await page.route(/\.css($|\?|#)/, (route) => route.abort())
 
     await page.goto('/', { waitUntil: 'commit' })
 
@@ -86,13 +89,14 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(241, 245, 249)')
   })
 
-  // TC-5: light-warm — critical CSS applies correct background via waitUntil:'commit'
+  // TC-5: light-warm — abort external CSS so only critical CSS supplies the background
   test('light-warm theme: html has light-warm class and correct background before hydration', async ({
     page,
   }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light-warm')
     })
+    await page.route(/\.css($|\?|#)/, (route) => route.abort())
 
     await page.goto('/', { waitUntil: 'commit' })
 
@@ -106,13 +110,14 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(255, 251, 235)')
   })
 
-  // TC-6: unknown theme falls back to dark
+  // TC-6: unknown theme falls back to dark — abort external CSS to isolate critical CSS
   test('light-warm theme: unknown stored value falls back to dark', async ({
     page,
   }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'unknown-value')
     })
+    await page.route(/\.css($|\?|#)/, (route) => route.abort())
 
     await page.goto('/', { waitUntil: 'commit' })
 
