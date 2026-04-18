@@ -8,15 +8,9 @@ import {
   MAX_RECIPE_IMAGE_UPLOAD_SIZE_MB,
   isAllowedRecipeImageFile,
 } from "@/lib/recipe-image-upload"
+import { jsonResponse } from "@/lib/api-response"
 
 const UPLOAD_FOLDER = "/cookbook/recipes/"
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  })
-}
 
 function isUploadFile(value: unknown): value is File {
   return (

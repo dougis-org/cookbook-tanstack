@@ -22,6 +22,11 @@ function makeTextFile() {
   return new File(["not image"], "recipe.txt", { type: "text/plain" });
 }
 
+async function uploadAndWaitForPreview(file = makeImageFile()) {
+  await userEvent.upload(screen.getByLabelText(/click to upload/i), file);
+  return screen.findByRole("img", { name: /recipe image preview/i });
+}
+
 function deferredResponse() {
   let resolve!: (value: Response) => void;
   const promise = new Promise<Response>((res) => {
@@ -163,11 +168,7 @@ describe("ImageUploadField", () => {
       .mockResolvedValueOnce(jsonResponse({ success: true }));
     renderControlled({ onRemove });
 
-    await userEvent.upload(
-      screen.getByLabelText(/click to upload/i),
-      makeImageFile(),
-    );
-    await screen.findByRole("img", { name: /recipe image preview/i });
+    await uploadAndWaitForPreview();
     await userEvent.click(screen.getByRole("button", { name: /remove/i }));
 
     await waitFor(() => {
@@ -225,10 +226,8 @@ describe("ImageUploadField", () => {
       );
     renderControlled();
 
-    const input = screen.getByLabelText(/click to upload/i);
-    await userEvent.upload(input, makeImageFile("a.jpg"));
-    await screen.findByRole("img", { name: /recipe image preview/i });
-    await userEvent.upload(input, makeImageFile("b.jpg"));
+    await uploadAndWaitForPreview(makeImageFile("a.jpg"));
+    await userEvent.upload(screen.getByLabelText(/change recipe image/i), makeImageFile("b.jpg"));
 
     await waitFor(() => {
       expect(screen.getByRole("img", { name: /recipe image preview/i }))
@@ -259,10 +258,8 @@ describe("ImageUploadField", () => {
       );
     renderControlled({ onUpload });
 
-    const input = screen.getByLabelText(/click to upload/i);
-    await userEvent.upload(input, makeImageFile("a.jpg"));
-    await screen.findByRole("img", { name: /recipe image preview/i });
-    await userEvent.upload(input, makeImageFile("b.jpg"));
+    await uploadAndWaitForPreview(makeImageFile("a.jpg"));
+    await userEvent.upload(screen.getByLabelText(/change recipe image/i), makeImageFile("b.jpg"));
 
     await waitFor(() => {
       expect(screen.getByRole("img", { name: /recipe image preview/i }))
@@ -286,11 +283,7 @@ describe("ImageUploadField", () => {
       .mockRejectedValueOnce(new Error("delete failed"));
     renderControlled({ onRemove });
 
-    await userEvent.upload(
-      screen.getByLabelText(/click to upload/i),
-      makeImageFile(),
-    );
-    await screen.findByRole("img", { name: /recipe image preview/i });
+    await uploadAndWaitForPreview();
     await userEvent.click(screen.getByRole("button", { name: /remove/i }));
 
     await waitFor(() => {

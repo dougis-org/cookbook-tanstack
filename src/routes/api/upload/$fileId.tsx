@@ -2,13 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { auth } from "@/lib/auth"
 import { getImageKit } from "@/lib/imagekit"
 import { getMongoClient } from "@/db"
-
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  })
-}
+import { jsonResponse } from "@/lib/api-response"
 
 function isNotFoundError(error: unknown) {
   return (

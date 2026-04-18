@@ -95,6 +95,14 @@ function createUploadRequest(formData: FormData) {
   } as unknown as Request
 }
 
+async function deleteFile(fileId: string) {
+  const handler = await getDeleteHandler()
+  return handler({
+    request: new Request(`http://localhost/api/upload/${fileId}`, { method: "DELETE" }),
+    params: { fileId },
+  })
+}
+
 describe("POST /api/upload", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -221,13 +229,7 @@ describe("DELETE /api/upload/:fileId", () => {
   })
 
   it("deletes an ImageKit file for an authenticated user", async () => {
-    const handler = await getDeleteHandler()
-    const response = await handler({
-      request: new Request("http://localhost/api/upload/file-123", {
-        method: "DELETE",
-      }),
-      params: { fileId: "file-123" },
-    })
+    const response = await deleteFile("file-123")
 
     await expect(response.json()).resolves.toEqual({ success: true })
     expect(response.status).toBe(200)
@@ -244,14 +246,7 @@ describe("DELETE /api/upload/:fileId", () => {
 
   it("returns 401 when deleting without a session", async () => {
     mockGetSession.mockResolvedValue(null)
-
-    const handler = await getDeleteHandler()
-    const response = await handler({
-      request: new Request("http://localhost/api/upload/file-123", {
-        method: "DELETE",
-      }),
-      params: { fileId: "file-123" },
-    })
+    const response = await deleteFile("file-123")
 
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" })
     expect(response.status).toBe(401)
@@ -260,14 +255,7 @@ describe("DELETE /api/upload/:fileId", () => {
 
   it("returns 403 when deleting a file not owned by the current user", async () => {
     mockFindOne.mockResolvedValue(null)
-
-    const handler = await getDeleteHandler()
-    const response = await handler({
-      request: new Request("http://localhost/api/upload/file-123", {
-        method: "DELETE",
-      }),
-      params: { fileId: "file-123" },
-    })
+    const response = await deleteFile("file-123")
 
     await expect(response.json()).resolves.toEqual({ error: "Forbidden" })
     expect(response.status).toBe(403)
@@ -276,14 +264,7 @@ describe("DELETE /api/upload/:fileId", () => {
 
   it("returns 404 when ImageKit reports the file is missing", async () => {
     mockDeleteFile.mockRejectedValue({ status: 404 })
-
-    const handler = await getDeleteHandler()
-    const response = await handler({
-      request: new Request("http://localhost/api/upload/missing-file", {
-        method: "DELETE",
-      }),
-      params: { fileId: "missing-file" },
-    })
+    const response = await deleteFile("missing-file")
 
     await expect(response.json()).resolves.toEqual({
       error: "File not found",

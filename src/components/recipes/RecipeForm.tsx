@@ -239,6 +239,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     withResolver: true,
   })
 
+  const clearPendingUploadState = useCallback(() => {
+    pendingUploadRef.current = null
+    setPendingUpload(null)
+  }, [])
+
   const cleanupPendingUpload = useCallback(() => {
     const upload = pendingUploadRef.current
 
@@ -246,10 +251,9 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       return
     }
 
-    pendingUploadRef.current = null
-    setPendingUpload(null)
+    clearPendingUploadState()
     void fetch(`/api/upload/${upload.fileId}`, { method: "DELETE", keepalive: true })
-  }, [])
+  }, [clearPendingUploadState])
 
   const handleDiscardChanges = useCallback(() => {
     cleanupPendingUpload()
@@ -278,16 +282,14 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
         purgeDraft()
-        pendingUploadRef.current = null
-        setPendingUpload(null)
+        clearPendingUploadState()
         isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
         const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
         await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
         purgeDraft()
-        pendingUploadRef.current = null
-        setPendingUpload(null)
+        clearPendingUploadState()
         isFormDirtyRef.current = false
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
