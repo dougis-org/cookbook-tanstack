@@ -61,7 +61,11 @@ describe("auth email hooks behavior", () => {
   it("sendResetPassword hook sends email to user with reset url", async () => {
     const { auth } = await import("@/lib/auth")
     const hook = auth.options.emailAndPassword?.sendResetPassword
-    await hook?.({ user: { email: "user@example.com" } as any, url: "https://example.com/reset" })
+    await hook?.({
+      user: { email: "user@example.com" } as any,
+      url: "https://example.com/reset",
+      token: "test-token",
+    })
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: "user@example.com" })
     )
@@ -73,7 +77,11 @@ describe("auth email hooks behavior", () => {
   it("sendVerificationEmail hook sends email to user with verification url", async () => {
     const { auth } = await import("@/lib/auth")
     const hook = auth.options.emailVerification?.sendVerificationEmail
-    await hook?.({ user: { email: "user@example.com" } as any, url: "https://example.com/verify" })
+    await hook?.({
+      user: { email: "user@example.com" } as any,
+      url: "https://example.com/verify",
+      token: "test-token",
+    })
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: "user@example.com" })
     )
