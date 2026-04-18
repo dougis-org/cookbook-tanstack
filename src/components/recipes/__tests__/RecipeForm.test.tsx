@@ -101,9 +101,13 @@ function renderWithProviders(ui: React.ReactElement) {
   )
 }
 
-async function renderBlockedWithPendingUpload() {
+function renderBlocked() {
   mockBlocker.status = "blocked"
   renderWithProviders(<RecipeForm />)
+}
+
+async function renderBlockedWithPendingUpload() {
+  renderBlocked()
   await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
 }
 
@@ -518,21 +522,18 @@ describe("RecipeForm", () => {
     })
 
     it("shows ConfirmDialog when blocker is blocked (dirty form navigation)", () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
+      renderBlocked()
       expect(screen.getByText(/you have unsaved changes/i)).toBeInTheDocument()
     })
 
     it("calls blocker.proceed when Discard Changes is clicked", () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
+      renderBlocked()
       fireEvent.click(screen.getByRole("button", { name: /discard changes/i }))
       expect(mockBlockerProceed).toHaveBeenCalled()
     })
 
     it("calls blocker.reset when Keep Editing is clicked", () => {
-      mockBlocker.status = "blocked"
-      renderWithProviders(<RecipeForm />)
+      renderBlocked()
       fireEvent.click(screen.getByRole("button", { name: /keep editing/i }))
       expect(mockBlockerReset).toHaveBeenCalled()
     })

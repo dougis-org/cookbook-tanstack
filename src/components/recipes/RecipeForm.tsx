@@ -244,6 +244,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setPendingUpload(null)
   }, [])
 
+  const afterSaveSuccess = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+    purgeDraft()
+    clearPendingUploadState()
+    isFormDirtyRef.current = false
+  }, [queryClient, purgeDraft, clearPendingUploadState])
+
   const cleanupPendingUpload = useCallback(() => {
     const upload = pendingUploadRef.current
 
@@ -280,17 +287,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     try {
       if (isEdit && initialData?.id) {
         await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
-        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-        purgeDraft()
-        clearPendingUploadState()
-        isFormDirtyRef.current = false
+        await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
         const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
-        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-        purgeDraft()
-        clearPendingUploadState()
-        isFormDirtyRef.current = false
+        await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
     } catch (error) {

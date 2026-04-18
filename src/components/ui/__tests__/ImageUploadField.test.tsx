@@ -35,6 +35,21 @@ function mockDeleteSuccess() {
   return fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }));
 }
 
+function renderWithExistingImage(extra: { onRemove?: () => void } = {}) {
+  return renderControlled({
+    initialValue: "https://ik.imagekit.io/demo/existing.jpg",
+    initialUrl: "https://ik.imagekit.io/demo/existing.jpg",
+    ...extra,
+  });
+}
+
+async function expectPreviewSrc(src: string) {
+  await waitFor(() => {
+    expect(screen.getByRole("img", { name: /recipe image preview/i }))
+      .toHaveAttribute("src", src);
+  });
+}
+
 function deferredResponse() {
   let resolve!: (value: Response) => void;
   const promise = new Promise<Response>((res) => {
@@ -110,10 +125,7 @@ describe("ImageUploadField", () => {
       }),
     );
 
-    await waitFor(() => {
-      expect(screen.getByRole("img", { name: /recipe image preview/i }))
-        .toHaveAttribute("src", "https://ik.imagekit.io/demo/recipe.jpg");
-    });
+    await expectPreviewSrc("https://ik.imagekit.io/demo/recipe.jpg");
     expect(onUpload).toHaveBeenCalledWith(
       "https://ik.imagekit.io/demo/recipe.jpg",
       "file-1",
@@ -185,11 +197,7 @@ describe("ImageUploadField", () => {
 
   it("removes an existing saved image without deleting from ImageKit", async () => {
     const onRemove = vi.fn();
-    renderControlled({
-      initialValue: "https://ik.imagekit.io/demo/existing.jpg",
-      initialUrl: "https://ik.imagekit.io/demo/existing.jpg",
-      onRemove,
-    });
+    renderWithExistingImage({ onRemove });
 
     await userEvent.click(screen.getByRole("button", { name: /remove/i }));
 
@@ -200,10 +208,7 @@ describe("ImageUploadField", () => {
 
   it("opens the file picker when Change is clicked", async () => {
     const inputClick = vi.spyOn(HTMLInputElement.prototype, "click");
-    renderControlled({
-      initialValue: "https://ik.imagekit.io/demo/existing.jpg",
-      initialUrl: "https://ik.imagekit.io/demo/existing.jpg",
-    });
+    renderWithExistingImage();
 
     await userEvent.click(screen.getByRole("button", { name: /change/i }));
 
@@ -220,10 +225,7 @@ describe("ImageUploadField", () => {
     await uploadAndWaitForPreview(makeImageFile("a.jpg"));
     await userEvent.upload(screen.getByLabelText(/change recipe image/i), makeImageFile("b.jpg"));
 
-    await waitFor(() => {
-      expect(screen.getByRole("img", { name: /recipe image preview/i }))
-        .toHaveAttribute("src", "https://ik.imagekit.io/demo/b.jpg");
-    });
+    await expectPreviewSrc("https://ik.imagekit.io/demo/b.jpg");
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/upload/file-a",
@@ -241,10 +243,7 @@ describe("ImageUploadField", () => {
     await uploadAndWaitForPreview(makeImageFile("a.jpg"));
     await userEvent.upload(screen.getByLabelText(/change recipe image/i), makeImageFile("b.jpg"));
 
-    await waitFor(() => {
-      expect(screen.getByRole("img", { name: /recipe image preview/i }))
-        .toHaveAttribute("src", "https://ik.imagekit.io/demo/b.jpg");
-    });
+    await expectPreviewSrc("https://ik.imagekit.io/demo/b.jpg");
     expect(onUpload).toHaveBeenLastCalledWith(
       "https://ik.imagekit.io/demo/b.jpg",
       "file-b",

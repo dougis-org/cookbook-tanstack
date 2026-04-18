@@ -95,12 +95,22 @@ function createUploadRequest(formData: FormData) {
   } as unknown as Request
 }
 
+async function postUpload(file: unknown) {
+  const handler = await getPostHandler()
+  return handler({ request: createUploadRequest(createFormData(file)) })
+}
+
 async function deleteFile(fileId: string) {
   const handler = await getDeleteHandler()
   return handler({
     request: new Request(`http://localhost/api/upload/${fileId}`, { method: "DELETE" }),
     params: { fileId },
   })
+}
+
+async function expectJsonResponse(response: Response, body: unknown, status: number) {
+  await expect(response.json()).resolves.toEqual(body)
+  expect(response.status).toBe(status)
 }
 
 describe("POST /api/upload", () => {
@@ -127,16 +137,12 @@ describe("POST /api/upload", () => {
       type: "image/jpeg",
     }) as unknown as File
 
-    const handler = await getPostHandler()
-    const response = await handler({
-      request: createUploadRequest(createFormData(file)),
-    })
+    const response = await postUpload(file)
 
-    await expect(response.json()).resolves.toEqual({
+    await expectJsonResponse(response, {
       url: "https://ik.imagekit.io/demo/recipe.jpg",
       fileId: "file-123",
-    })
-    expect(response.status).toBe(200)
+    }, 200)
     const uploadArgs = mockUpload.mock.calls[0]?.[0]
     expect(Buffer.isBuffer(uploadArgs.file.file)).toBe(true)
     expect(mockToFile).toHaveBeenCalledWith(expect.any(Buffer), "recipe.jpg", {
@@ -161,28 +167,16 @@ describe("POST /api/upload", () => {
 
   it("returns 401 when the request is unauthenticated", async () => {
     mockGetSession.mockResolvedValue(null)
-    const handler = await getPostHandler()
-    const response = await handler({
-      request: createUploadRequest(
-        createFormData(new NodeFile(["image-bytes"], "recipe.jpg")),
-      ),
-    })
+    const response = await postUpload(new NodeFile(["image-bytes"], "recipe.jpg"))
 
-    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" })
-    expect(response.status).toBe(401)
+    await expectJsonResponse(response, { error: "Unauthorized" }, 401)
     expect(mockUpload).not.toHaveBeenCalled()
   })
 
   it("returns 400 when the file field is missing", async () => {
-    const handler = await getPostHandler()
-    const response = await handler({
-      request: createUploadRequest(createFormData(null)),
-    })
+    const response = await postUpload(null)
 
-    await expect(response.json()).resolves.toEqual({
-      error: "No file provided",
-    })
-    expect(response.status).toBe(400)
+    await expectJsonResponse(response, { error: "No file provided" }, 400)
     expect(mockUpload).not.toHaveBeenCalled()
   })
 
@@ -191,29 +185,17 @@ describe("POST /api/upload", () => {
       type: "text/plain",
     }) as unknown as File
 
-    const handler = await getPostHandler()
-    const response = await handler({
-      request: createUploadRequest(createFormData(file)),
-    })
+    const response = await postUpload(file)
 
-    await expect(response.json()).resolves.toEqual({
-      error: "File must be a JPEG, PNG, WebP, or GIF image",
-    })
-    expect(response.status).toBe(400)
+    await expectJsonResponse(response, { error: "File must be a JPEG, PNG, WebP, or GIF image" }, 400)
     expect(mockUpload).not.toHaveBeenCalled()
   })
 
   it("returns 500 when ImageKit upload throws", async () => {
     mockUpload.mockRejectedValue(new Error("ImageKit unavailable"))
-    const handler = await getPostHandler()
-    const response = await handler({
-      request: createUploadRequest(
-        createFormData(new NodeFile(["image-bytes"], "recipe.jpg")),
-      ),
-    })
+    const response = await postUpload(new NodeFile(["image-bytes"], "recipe.jpg"))
 
-    await expect(response.json()).resolves.toEqual({ error: "Upload failed" })
-    expect(response.status).toBe(500)
+    await expectJsonResponse(response, { error: "Upload failed" }, 500)
   })
 })
 
@@ -231,8 +213,7 @@ describe("DELETE /api/upload/:fileId", () => {
   it("deletes an ImageKit file for an authenticated user", async () => {
     const response = await deleteFile("file-123")
 
-    await expect(response.json()).resolves.toEqual({ success: true })
-    expect(response.status).toBe(200)
+    await expectJsonResponse(response, { success: true }, 200)
     expect(mockFindOne).toHaveBeenCalledWith({
       fileId: "file-123",
       userId: "user-1",
@@ -248,8 +229,7 @@ describe("DELETE /api/upload/:fileId", () => {
     mockGetSession.mockResolvedValue(null)
     const response = await deleteFile("file-123")
 
-    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" })
-    expect(response.status).toBe(401)
+    await expectJsonResponse(response, { error: "Unauthorized" }, 401)
     expect(mockDeleteFile).not.toHaveBeenCalled()
   })
 
@@ -257,8 +237,7 @@ describe("DELETE /api/upload/:fileId", () => {
     mockFindOne.mockResolvedValue(null)
     const response = await deleteFile("file-123")
 
-    await expect(response.json()).resolves.toEqual({ error: "Forbidden" })
-    expect(response.status).toBe(403)
+    await expectJsonResponse(response, { error: "Forbidden" }, 403)
     expect(mockDeleteFile).not.toHaveBeenCalled()
   })
 
@@ -266,9 +245,6 @@ describe("DELETE /api/upload/:fileId", () => {
     mockDeleteFile.mockRejectedValue({ status: 404 })
     const response = await deleteFile("missing-file")
 
-    await expect(response.json()).resolves.toEqual({
-      error: "File not found",
-    })
-    expect(response.status).toBe(404)
+    await expectJsonResponse(response, { error: "File not found" }, 404)
   })
 })
