@@ -1,0 +1,72 @@
+name: Wait for AI reviews
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  checks: read
+  contents: read
+  pull-requests: read
+
+jobs:
+  wait-for-ai-reviews:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Wait until Copilot and Gemini checks are complete
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const ref = context.payload.pull_request?.head?.sha ?? context.sha
+            const expectedChecks = [/copilot/i, /gemini/i]
+
+            const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+            while (true) {
+              const { data } = await github.rest.checks.listForRef({
+                owner,
+                repo,
+                ref,
+                per_page: 100,
+              })
+
+              const checkRuns = data.check_runs ?? []
+              const checkStates = expectedChecks.map((pattern) => {
+                const matchingChecks = checkRuns.filter((check) => pattern.test(check.name))
+                const completedChecks = matchingChecks.filter((check) => check.status === 'completed')
+
+                return {
+                  pattern: pattern.toString(),
+                  matching: matchingChecks.length,
+                  completed: completedChecks.length,
+                }
+              })
+
+              const allComplete = checkStates.every(
+                (state) => state.matching > 0 && state.completed === state.matching,
+              )
+
+              core.info(`Observed ${checkRuns.length} check run(s) on ${ref}`)
+              for (const state of checkStates) {
+                core.info(
+                  `Check ${state.pattern}: ${state.completed}/${state.matching} completed`,
+                )
+              }
+
+              if (allComplete) {
+                core.info('Copilot and Gemini checks are complete.')
+                return
+              }
+
+              core.info('Copilot and Gemini checks are not complete yet. Sleeping for 20 seconds...')
+              await wait(20_000)
+            }
