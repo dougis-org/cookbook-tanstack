@@ -31,6 +31,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
     links: [
+      { rel: 'preload', as: 'style', href: appCss },
+      { rel: 'preload', as: 'style', href: printCss },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -49,7 +51,27 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // Allowlist serialized as JSON data — avoids injection risk if a theme ID ever contains quotes.
   // Migrates legacy 'light' → 'light-cool'. No user data interpolated — safe per design Decision 4.
   const validIds = JSON.stringify(THEMES.map((t) => t.id)).replace(/</g, '\\u003c')
-  const themeInitScript = `try{var ids=${validIds};var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}`
+
+  /*
+   * ─────────────────────────────────────────────────────────────────
+   * CRITICAL CSS — Theme flash prevention (injected via inline script)
+   * These values MUST stay in sync with the CSS token files.
+   *
+   * When adding a new theme OR changing an existing theme's background:
+   *   1. Update criticalCss below (hex values)
+   *   2. Update src/styles/themes/<theme>.css  (--theme-bg, --theme-fg)
+   *   3. Update src/contexts/ThemeContext.tsx   (THEMES array)
+   *   4. Update docs/theming.md                (maintenance checklist)
+   *
+   * Current theme backgrounds (Tailwind reference → hex):
+   *   dark       slate.900  #0f172a   fg: white      #ffffff
+   *   light-cool slate.100  #f1f5f9   fg: slate.900  #0f172a
+   *   light-warm amber.50   #fffbeb   fg: stone.900  #1c1917
+   *   <slot for 4th theme — add here when that change ships>
+   * ─────────────────────────────────────────────────────────────────
+   */
+  const criticalCss = `html{background:#0f172a;color:#fff}html.light-cool{background:#f1f5f9;color:#0f172a}html.light-warm{background:#fffbeb;color:#1c1917}`
+  const themeInitScript = `try{var ids=${validIds};var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}var s=document.createElement('style');s.textContent=${JSON.stringify(criticalCss)};document.head.appendChild(s);`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
