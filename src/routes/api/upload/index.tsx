@@ -1,8 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { toFile } from "@imagekit/nodejs"
 import { auth } from "@/lib/auth"
 import { imagekit } from "@/lib/imagekit"
+import { getMongoClient } from "@/db"
+import {
+  MAX_RECIPE_IMAGE_UPLOAD_SIZE_BYTES,
+  MAX_RECIPE_IMAGE_UPLOAD_SIZE_MB,
+  isAllowedRecipeImageFile,
+} from "@/lib/recipe-image-upload"
 
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024
 const UPLOAD_FOLDER = "/cookbook/recipes/"
 
 function jsonResponse(body: unknown, status = 200) {
@@ -44,15 +50,28 @@ export const Route = createFileRoute("/api/upload/")({
           return jsonResponse({ error: "No file provided" }, 400)
         }
 
-        if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-          return jsonResponse({ error: "File must be under 10 MB" }, 400)
+        if (file.size > MAX_RECIPE_IMAGE_UPLOAD_SIZE_BYTES) {
+          return jsonResponse({ error: `File must be under ${MAX_RECIPE_IMAGE_UPLOAD_SIZE_MB} MB` }, 400)
+        }
+
+        if (!isAllowedRecipeImageFile(file)) {
+          return jsonResponse({ error: "File must be a JPEG, PNG, WebP, or GIF image" }, 400)
         }
 
         try {
+          const buffer = Buffer.from(await file.arrayBuffer())
+          const uploadFile = await toFile(buffer, file.name, { type: file.type })
           const upload = await imagekit.files.upload({
-            file,
+            file: uploadFile,
             fileName: file.name,
             folder: UPLOAD_FOLDER,
+          })
+
+          await getMongoClient().db().collection("image_upload").insertOne({
+            fileId: upload.fileId,
+            userId: session.user.id,
+            url: upload.url,
+            createdAt: new Date(),
           })
 
           return jsonResponse({

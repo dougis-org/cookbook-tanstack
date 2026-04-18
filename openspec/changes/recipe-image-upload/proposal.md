@@ -21,7 +21,7 @@
   - tRPC doesn't handle `multipart/form-data` — upload must go through a separate Nitro API route.
   - The existing `recipes.update` tRPC mutation already accepts `imageUrl` via `recipeFields.partial()`;
     no tRPC changes needed.
-  - ImageKit API key must stay server-side only.
+  - ImageKit private API key must stay server-side only.
   - Orphaned uploads (uploaded but form cancelled) must be cleaned up via DELETE call on cancel.
 - Assumptions:
   - ImageKit.io free tier is acceptable (20 GB storage, 20 GB bandwidth/mo, unlimited transformations).
@@ -76,7 +76,7 @@
   - Impact: Medium — users can't upload images, but existing recipes and other features unaffected
   - Mitigation: Upload errors shown inline; recipe save still works without image
 
-- Risk: API key leaked via client bundle
+- Risk: private API key leaked via client bundle
   - Impact: High — attacker could upload/delete arbitrary files
   - Mitigation: ImageKit API key used only in Nitro server routes, never imported client-side; reviewed
     in security pass before merge

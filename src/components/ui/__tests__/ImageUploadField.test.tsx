@@ -18,6 +18,10 @@ function makeImageFile(name = "recipe.jpg", size = 1024) {
   return new File([new Uint8Array(size)], name, { type: "image/jpeg" });
 }
 
+function makeTextFile() {
+  return new File(["not image"], "recipe.txt", { type: "text/plain" });
+}
+
 function deferredResponse() {
   let resolve!: (value: Response) => void;
   const promise = new Promise<Response>((res) => {
@@ -115,6 +119,21 @@ describe("ImageUploadField", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("shows an error and skips fetch when the selected file type is unsupported", async () => {
+    renderControlled();
+
+    await userEvent.upload(
+      screen.getByLabelText(/click to upload/i),
+      makeTextFile(),
+      { applyAccept: false },
+    );
+
+    expect(
+      screen.getByText("File must be a JPEG, PNG, WebP, or GIF image"),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("shows an error without a preview when upload fails", async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({ error: "Upload failed" }, { status: 500 }),
@@ -154,6 +173,7 @@ describe("ImageUploadField", () => {
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith("/api/upload/pending-1", {
         method: "DELETE",
+        keepalive: true,
       });
     });
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
@@ -204,7 +224,107 @@ describe("ImageUploadField", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       "/api/upload/file-a",
-      { method: "DELETE" },
+      { method: "DELETE", keepalive: true },
     );
+  });
+
+  it("continues replacement upload when deleting the previous pending upload fails", async () => {
+    const onUpload = vi.fn();
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({
+          url: "https://ik.imagekit.io/demo/a.jpg",
+          fileId: "file-a",
+        }),
+      )
+      .mockRejectedValueOnce(new Error("delete failed"))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          url: "https://ik.imagekit.io/demo/b.jpg",
+          fileId: "file-b",
+        }),
+      );
+    renderControlled({ onUpload });
+
+    const input = screen.getByLabelText(/click to upload/i);
+    await userEvent.upload(input, makeImageFile("a.jpg"));
+    await screen.findByRole("img", { name: /recipe image preview/i });
+    await userEvent.upload(input, makeImageFile("b.jpg"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("img", { name: /recipe image preview/i }))
+        .toHaveAttribute("src", "https://ik.imagekit.io/demo/b.jpg");
+    });
+    expect(onUpload).toHaveBeenLastCalledWith(
+      "https://ik.imagekit.io/demo/b.jpg",
+      "file-b",
+    );
+  });
+
+  it("removes pending preview when pending delete fails", async () => {
+    const onRemove = vi.fn();
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({
+          url: "https://ik.imagekit.io/demo/pending.jpg",
+          fileId: "pending-1",
+        }),
+      )
+      .mockRejectedValueOnce(new Error("delete failed"));
+    renderControlled({ onRemove });
+
+    await userEvent.upload(
+      screen.getByLabelText(/click to upload/i),
+      makeImageFile(),
+    );
+    await screen.findByRole("img", { name: /recipe image preview/i });
+    await userEvent.click(screen.getByRole("button", { name: /remove/i }));
+
+    await waitFor(() => {
+      expect(onRemove).toHaveBeenCalled();
+    });
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("clears pending state when parent restores the saved image URL", async () => {
+    function Harness() {
+      const [value, setValue] = useState<string | null>(
+        "https://ik.imagekit.io/demo/existing.jpg",
+      );
+
+      return (
+        <>
+          <ImageUploadField
+            value={value}
+            initialUrl="https://ik.imagekit.io/demo/existing.jpg"
+            onUpload={(url) => setValue(url)}
+            onRemove={() => setValue(null)}
+          />
+          <button
+            type="button"
+            onClick={() => setValue("https://ik.imagekit.io/demo/existing.jpg")}
+          >
+            Revert
+          </button>
+        </>
+      );
+    }
+
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        url: "https://ik.imagekit.io/demo/pending.jpg",
+        fileId: "pending-1",
+      }),
+    );
+    render(<Harness />);
+
+    const input = screen.getByLabelText(/change recipe image/i);
+    await userEvent.upload(input, makeImageFile());
+    await screen.findByRole("img", { name: /recipe image preview/i });
+
+    await userEvent.click(screen.getByRole("button", { name: /revert/i }));
+    await userEvent.click(screen.getByRole("button", { name: /remove/i }));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

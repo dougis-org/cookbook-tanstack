@@ -110,7 +110,8 @@
   - Testability notes: Unit test state transitions (idle → uploading → preview); mock fetch
 
 - Requirement: Upload fires to `/api/upload`, returns `{ url, fileId }`
-  - Design element: `POST /api/upload` Nitro route using `request.formData()` + `@imagekit/nodejs` `client.files.upload(...)`
+  - Design element: `POST /api/upload` Nitro route using `request.formData()`, image type validation,
+    `Buffer.from(await file.arrayBuffer())`, and `@imagekit/nodejs` `client.files.upload(...)`
   - Acceptance criteria reference: specs/upload-api.md
   - Testability notes: Unit test route handler with mock ImageKit SDK
 

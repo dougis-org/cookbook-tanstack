@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { auth } from "@/lib/auth"
 import { imagekit } from "@/lib/imagekit"
+import { getMongoClient } from "@/db"
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -38,7 +39,18 @@ export const Route = createFileRoute("/api/upload/$fileId")({
         }
 
         try {
+          const uploadsCollection = getMongoClient().db().collection("image_upload")
+          const upload = await uploadsCollection.findOne({
+            fileId: params.fileId,
+            userId: session.user.id,
+          })
+
+          if (!upload) {
+            return jsonResponse({ error: "Forbidden" }, 403)
+          }
+
           await imagekit.files.delete(params.fileId)
+          await uploadsCollection.deleteOne({ fileId: params.fileId })
           return jsonResponse({ success: true })
         } catch (error) {
           if (isNotFoundError(error)) {

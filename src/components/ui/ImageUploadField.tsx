@@ -1,7 +1,11 @@
 import { Camera, Loader2 } from "lucide-react";
-import { useRef, useState } from "react";
-
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
+import { useEffect, useRef, useState } from "react";
+import {
+  ACCEPTED_RECIPE_IMAGE_TYPES,
+  MAX_RECIPE_IMAGE_UPLOAD_SIZE_BYTES,
+  MAX_RECIPE_IMAGE_UPLOAD_SIZE_MB,
+  isAllowedRecipeImageFile,
+} from "@/lib/recipe-image-upload";
 
 export interface ImageUploadFieldProps {
   value: string | null;
@@ -16,12 +20,12 @@ type UploadResponse = {
 };
 
 async function deleteUpload(fileId: string) {
-  await fetch(`/api/upload/${fileId}`, { method: "DELETE" });
+  await fetch(`/api/upload/${fileId}`, { method: "DELETE", keepalive: true });
 }
 
 export default function ImageUploadField({
   value,
-  initialUrl: _initialUrl = null,
+  initialUrl = null,
   onUpload,
   onRemove,
 }: ImageUploadFieldProps) {
@@ -30,9 +34,20 @@ export default function ImageUploadField({
   const [pendingFileId, setPendingFileId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    if (!value || value === initialUrl) {
+      setPendingFileId(null);
+    }
+  }, [initialUrl, value]);
+
   const uploadFile = async (file: File) => {
-    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-      setError("File must be under 10 MB");
+    if (file.size > MAX_RECIPE_IMAGE_UPLOAD_SIZE_BYTES) {
+      setError(`File must be under ${MAX_RECIPE_IMAGE_UPLOAD_SIZE_MB} MB`);
+      return;
+    }
+
+    if (!isAllowedRecipeImageFile(file)) {
+      setError("File must be a JPEG, PNG, WebP, or GIF image");
       return;
     }
 
@@ -41,7 +56,11 @@ export default function ImageUploadField({
 
     try {
       if (pendingFileId) {
-        await deleteUpload(pendingFileId);
+        try {
+          await deleteUpload(pendingFileId);
+        } catch (deleteError) {
+          console.error("Failed to delete previous pending upload:", deleteError);
+        }
       }
 
       const formData = new FormData();
@@ -89,7 +108,11 @@ export default function ImageUploadField({
     setError(null);
 
     if (fileId) {
-      await deleteUpload(fileId);
+      try {
+        await deleteUpload(fileId);
+      } catch (deleteError) {
+        console.error("Failed to delete pending upload:", deleteError);
+      }
     }
 
     onRemove();
@@ -129,7 +152,7 @@ export default function ImageUploadField({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={ACCEPTED_RECIPE_IMAGE_TYPES}
           aria-label={value ? "Change recipe image" : "Click to upload"}
           className="absolute inset-0 cursor-pointer opacity-0"
           disabled={uploading}

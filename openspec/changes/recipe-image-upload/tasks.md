@@ -27,6 +27,7 @@ IMAGE_KIT_API_KEY=
 - [x] Test: authenticated request with valid file → HTTP 200 `{ url, fileId }`
 - [x] Test: unauthenticated request → HTTP 401
 - [x] Test: missing file field → HTTP 400
+- [x] Test: unsupported file type → HTTP 400
 - [x] Test: ImageKit SDK throws → HTTP 500
 - [x] Mock `src/lib/imagekit.ts` and Better-Auth `auth.api.getSession`
 - **Verify:** `npx vitest run src/routes/api/upload/__tests__/-upload.test.ts` — all tests fail as expected
@@ -38,8 +39,12 @@ IMAGE_KIT_API_KEY=
   - `POST` handler: verify session → `request.formData()` → validate file field → upload via
     `client.files.upload(...)` → return `{ url, fileId }`
   - Enforce 10 MB limit server-side
+  - Convert uploaded `File` to `Buffer` before passing it to the ImageKit SDK
+  - Restrict uploads to JPEG, PNG, WebP, and GIF images
+  - Persist uploaded `fileId` ownership for the authenticated user
 - [x] Create `src/routes/api/upload/$fileId.tsx`:
-  - `DELETE` handler: verify session → call `client.files.delete(fileId)` → return `{ success: true }`
+  - `DELETE` handler: verify session → verify file ownership → call `client.files.delete(fileId)` →
+    return `{ success: true }`
   - Handle 404 from ImageKit → return HTTP 404
 - [x] Write tests for DELETE route in same test file
 - **Verify:** `npx vitest run src/routes/api/upload/__tests__/-upload.test.ts` — all tests pass

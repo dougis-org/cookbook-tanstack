@@ -6,8 +6,9 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED POST /api/upload — upload file to ImageKit
 
-The system SHALL accept a `multipart/form-data` POST request containing a `file` field, upload it to ImageKit.io,
-and return `{ url, fileId }`.
+The system SHALL accept a `multipart/form-data` POST request containing a JPEG, PNG, WebP, or GIF `file`
+field, upload it to ImageKit.io, persist the uploaded `fileId` ownership for the authenticated user, and
+return `{ url, fileId }`.
 
 #### Scenario: Valid authenticated upload
 
@@ -27,6 +28,13 @@ and return `{ url, fileId }`.
 - **When** `POST /api/upload` is called with empty form data (no `file` field)
 - **Then** the response is HTTP 400 with `{ error: "No file provided" }`
 
+#### Scenario: Unsupported file type
+
+- **Given** an authenticated user
+- **When** `POST /api/upload` is called with a non-image file
+- **Then** the response is HTTP 400 with `{ error: "File must be a JPEG, PNG, WebP, or GIF image" }`
+- **And** no file is uploaded to ImageKit
+
 #### Scenario: ImageKit SDK error
 
 - **Given** an authenticated user with a valid file
@@ -35,11 +43,12 @@ and return `{ url, fileId }`.
 
 ### Requirement: ADDED DELETE /api/upload/:fileId — delete file from ImageKit
 
-The system SHALL accept an authenticated DELETE request and remove the specified file from ImageKit by fileId.
+The system SHALL accept an authenticated DELETE request, verify the specified fileId belongs to the current user,
+and remove the specified file from ImageKit by fileId.
 
-#### Scenario: Valid authenticated delete
+#### Scenario: Valid authenticated owner delete
 
-- **Given** an authenticated user and an existing ImageKit fileId
+- **Given** an authenticated user and an existing ImageKit fileId owned by that user
 - **When** `DELETE /api/upload/:fileId` is called
 - **Then** the response is HTTP 200 with `{ success: true }` and the file is removed from ImageKit
 
@@ -49,9 +58,16 @@ The system SHALL accept an authenticated DELETE request and remove the specified
 - **When** `DELETE /api/upload/:fileId` is called
 - **Then** the response is HTTP 401 with `{ error: "Unauthorized" }`
 
+#### Scenario: Authenticated non-owner delete attempt
+
+- **Given** an authenticated user and a fileId owned by another user or unknown to the system
+- **When** `DELETE /api/upload/:fileId` is called
+- **Then** the response is HTTP 403 with `{ error: "Forbidden" }`
+- **And** no ImageKit deletion occurs
+
 #### Scenario: FileId not found in ImageKit
 
-- **Given** an authenticated user and a fileId that does not exist in ImageKit
+- **Given** an authenticated user and an owned fileId that does not exist in ImageKit
 - **When** `DELETE /api/upload/:fileId` is called
 - **Then** the response is HTTP 404 with `{ error: "File not found" }`
 
@@ -82,11 +98,11 @@ No requirements removed.
 - **When** the client bundle output is searched for `IMAGE_KIT_API_KEY` or the API key value
 - **Then** no match is found — the key appears only in server-side Nitro output
 
-#### Scenario: Only authenticated users can delete files
+#### Scenario: Only owners can delete files
 
-- **Given** an unauthenticated request
+- **Given** an authenticated request from a user who does not own the uploaded fileId
 - **When** `DELETE /api/upload/:fileId` is called
-- **Then** HTTP 401 is returned and no ImageKit deletion occurs
+- **Then** HTTP 403 is returned and no ImageKit deletion occurs
 
 ### Requirement: Reliability
 

@@ -280,7 +280,10 @@ describe("RecipeForm", () => {
       await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
       await userEvent.click(screen.getByRole("button", { name: /discard changes/i }))
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", { method: "DELETE" })
+      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
+        method: "DELETE",
+        keepalive: true,
+      })
       expect(mockBlockerProceed).toHaveBeenCalled()
     })
 
@@ -317,7 +320,10 @@ describe("RecipeForm", () => {
 
       await userEvent.click(screen.getByRole("button", { name: /revert/i }))
 
-      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", { method: "DELETE" })
+      expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
+        method: "DELETE",
+        keepalive: true,
+      })
       expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
         "data-value",
         "https://ik.imagekit.io/demo/existing.jpg",

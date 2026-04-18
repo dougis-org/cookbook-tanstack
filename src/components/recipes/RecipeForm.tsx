@@ -248,7 +248,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
     pendingUploadRef.current = null
     setPendingUpload(null)
-    void fetch(`/api/upload/${upload.fileId}`, { method: "DELETE" })
+    void fetch(`/api/upload/${upload.fileId}`, { method: "DELETE", keepalive: true })
   }, [])
 
   const handleDiscardChanges = useCallback(() => {
