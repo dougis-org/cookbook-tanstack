@@ -67,6 +67,6 @@ jobs:
                 return
               }
 
-              core.info('Copilot and Gemini checks are not complete yet. Sleeping for 20 seconds...')
-              await wait(20_000)
+              core.info('Copilot and Gemini checks are not complete yet. Sleeping for 60 seconds...')
+              await wait(60_000)
             }
