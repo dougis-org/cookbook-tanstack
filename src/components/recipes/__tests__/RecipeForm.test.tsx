@@ -298,6 +298,19 @@ describe("RecipeForm", () => {
       expect(mockFetch).not.toHaveBeenCalled()
     })
 
+    it("clears pending upload reference when onRemove is called", async () => {
+      mockBlocker.status = "blocked"
+      renderWithProviders(<RecipeForm />)
+
+      await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /mock remove image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /discard changes/i }))
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(mockBlockerProceed).toHaveBeenCalled()
+      expect(screen.getByTestId("image-upload-field")).toHaveAttribute("data-value", "")
+    })
+
     it("deletes pending upload before proceeding through blocker discard", async () => {
       mockBlocker.status = "blocked"
       renderWithProviders(<RecipeForm />)
