@@ -161,7 +161,7 @@ test.describe('FOUC prevention', () => {
     const appCssRequests = cssRequests.filter((u) => !u.includes('print'))
     // Deduplicate — should be exactly 1 unique URL fetched once
     const unique = [...new Set(appCssRequests)]
-    expect(appCssRequests.length).toBeLessThanOrEqual(unique.length + 1)
+    expect(appCssRequests.length).toBe(unique.length)
   })
 
   // TC-9: inline style block present in HTML source

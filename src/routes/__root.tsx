@@ -71,13 +71,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
    * ─────────────────────────────────────────────────────────────────
    */
   const criticalCss = `html{background:#0f172a;color:#fff}html.light-cool{background:#f1f5f9;color:#0f172a}html.light-warm{background:#fffbeb;color:#1c1917}`
-  const themeInitScript = `try{var ids=${validIds};var t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}var s=document.createElement('style');s.textContent=${JSON.stringify(criticalCss)};document.head.appendChild(s);`
+  const themeInitScript = `{try{const ids=${validIds};let t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <style>{criticalCss}</style>
         {import.meta.env.DEV ? (
           <script
             type="module"

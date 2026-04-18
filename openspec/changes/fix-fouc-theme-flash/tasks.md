@@ -103,10 +103,10 @@ Verification requirements (all must pass before PR or pushing updates):
 ## PR and Merge
 
 - [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `fix/fouc-theme-flash` and push to remote
-- [ ] Open PR from `fix/fouc-theme-flash` to `main` — title: `fix(theme): prevent flash of unstyled content on first load (#351)`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] Commit all changes to `fix/fouc-theme-flash` and push to remote
+- [x] Open PR from `fix/fouc-theme-flash` to `main` — title: `fix(theme): prevent flash of unstyled content on first load (#351)`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
 - [ ] **Monitor PR comments** — poll autonomously; address comments, commit fixes, validate locally, push; wait 180 seconds, repeat until no unresolved comments remain
 - [ ] **Monitor CI checks** — poll autonomously; on failure, diagnose and fix, commit, validate locally, push; wait 180 seconds, repeat until all checks pass
 - [ ] **Poll for merge** — run `gh pr view --json state` after each iteration; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user

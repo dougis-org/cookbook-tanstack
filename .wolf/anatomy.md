@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:08:07.741Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:14:23.396Z
 > Files: 528 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
@@ -750,8 +750,8 @@
 
 ## src/e2e/
 
-- `fouc-prevention.spec.ts` — Declares and (~2020 tok)
+- `fouc-prevention.spec.ts` — Declares and (~2014 tok)
 
 ## src/routes/
 
-- `__root.tsx` — Route (~1264 tok)
+- `__root.tsx` — Route (~1244 tok)

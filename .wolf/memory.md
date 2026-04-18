@@ -32,3 +32,8 @@
 | 16:07 | Edited openspec/changes/fix-fouc-theme-flash/tests.md | inline fix | ~7 |
 | 16:07 | Edited openspec/changes/fix-fouc-theme-flash/tests.md | inline fix | ~6 |
 | 16:08 | Edited openspec/changes/fix-fouc-theme-flash/tasks.md | inline fix | ~28 |
+| 16:08 | Edited openspec/changes/fix-fouc-theme-flash/tasks.md | inline fix | ~19 |
+| 16:08 | Edited openspec/changes/fix-fouc-theme-flash/tasks.md | inline fix | ~35 |
+| 16:09 | Edited openspec/changes/fix-fouc-theme-flash/tasks.md | 2→2 lines | ~35 |
+| 16:14 | Edited src/routes/__root.tsx | modified if() | ~217 |
+| 16:14 | Edited src/e2e/fouc-prevention.spec.ts | inline fix | ~16 |
