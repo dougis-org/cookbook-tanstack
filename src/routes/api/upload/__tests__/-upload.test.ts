@@ -241,11 +241,11 @@ describe("DELETE /api/upload/:fileId", () => {
     expect(mockDeleteFile).not.toHaveBeenCalled()
   })
 
-  it("returns 404 when ImageKit reports the file is missing but still cleans up DB", async () => {
+  it("returns success when ImageKit reports the file is missing but DB record exists", async () => {
     mockDeleteFile.mockRejectedValue({ status: 404 })
     const response = await deleteFile("missing-file")
 
-    await expectJsonResponse(response, { error: "File not found" }, 404)
+    await expectJsonResponse(response, { success: true }, 200)
     expect(mockDeleteOne).toHaveBeenCalledWith({
       fileId: "missing-file",
       userId: "user-1",

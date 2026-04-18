@@ -43,13 +43,10 @@ export const Route = createFileRoute("/api/upload/$fileId")({
             return jsonResponse({ error: "Forbidden" }, 403)
           }
 
-          let notFound = false
           try {
             await getImageKit().files.delete(params.fileId)
           } catch (error) {
-            if (isNotFoundError(error)) {
-              notFound = true
-            } else {
+            if (!isNotFoundError(error)) {
               throw error
             }
           }
@@ -59,9 +56,7 @@ export const Route = createFileRoute("/api/upload/$fileId")({
             userId: session.user.id,
           })
 
-          return notFound
-            ? jsonResponse({ error: "File not found" }, 404)
-            : jsonResponse({ success: true })
+          return jsonResponse({ success: true })
         } catch {
           return jsonResponse({ error: "Delete failed" }, 500)
         }
