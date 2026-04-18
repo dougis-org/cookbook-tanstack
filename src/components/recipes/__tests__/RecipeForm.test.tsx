@@ -273,6 +273,31 @@ describe("RecipeForm", () => {
       expect(mockCreateMutationFn.mock.calls[0]?.[0].imageUrl).toBeUndefined()
     })
 
+    it("clears imageUrl from update mutation payload when an existing image is removed", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={makeRecipe({
+            name: "Original",
+            imageUrl: "https://ik.imagekit.io/demo/existing.jpg",
+          })}
+        />,
+      )
+
+      await userEvent.click(screen.getByRole("button", { name: /mock remove image/i }))
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({
+          id: "test-id",
+          imageUrl: undefined,
+        }),
+      )
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
     it("deletes pending upload before proceeding through blocker discard", async () => {
       mockBlocker.status = "blocked"
       renderWithProviders(<RecipeForm />)

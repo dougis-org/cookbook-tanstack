@@ -195,6 +195,19 @@ describe("ImageUploadField", () => {
     expect(onRemove).toHaveBeenCalled();
   });
 
+  it("opens the file picker when Change is clicked", async () => {
+    const inputClick = vi.spyOn(HTMLInputElement.prototype, "click");
+    renderControlled({
+      initialValue: "https://ik.imagekit.io/demo/existing.jpg",
+      initialUrl: "https://ik.imagekit.io/demo/existing.jpg",
+    });
+
+    await userEvent.click(screen.getByRole("button", { name: /change/i }));
+
+    expect(inputClick).toHaveBeenCalled();
+    inputClick.mockRestore();
+  });
+
   it("deletes the first pending upload before replacing it", async () => {
     fetchMock
       .mockResolvedValueOnce(
