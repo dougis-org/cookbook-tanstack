@@ -54,7 +54,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
   /*
    * ─────────────────────────────────────────────────────────────────
-   * CRITICAL CSS — Theme flash prevention (injected via inline script)
+   * CRITICAL CSS — Theme flash prevention (inline <style> in <head> emitted by the root document)
    * These values MUST stay in sync with the CSS token files.
    *
    * When adding a new theme OR changing an existing theme's background:

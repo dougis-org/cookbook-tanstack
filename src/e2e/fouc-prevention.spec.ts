@@ -1,16 +1,24 @@
 import { test, expect } from '@bgotink/playwright-coverage'
+import type { Page } from '@playwright/test'
+
+async function setupThemeAndGoto(page: Page, theme: string | null) {
+  await page.addInitScript((t) => {
+    if (t === null) {
+      localStorage.removeItem('cookbook-theme')
+    } else {
+      localStorage.setItem('cookbook-theme', t)
+    }
+  }, theme)
+  await page.route(/\.css($|\?|#)/, (route) => route.abort())
+  await page.goto('/', { waitUntil: 'commit' })
+}
 
 test.describe('FOUC prevention', () => {
   // TC-1: dark theme — abort external CSS so only critical CSS supplies the background
   test('dark theme: html has dark class and correct background before hydration', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.removeItem('cookbook-theme')
-    })
-    await page.route(/\.css($|\?|#)/, (route) => route.abort())
-
-    await page.goto('/', { waitUntil: 'commit' })
+    await setupThemeAndGoto(page, null)
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toContain('dark')
@@ -52,12 +60,7 @@ test.describe('FOUC prevention', () => {
   test('light-cool theme: html has light-cool class and correct background before hydration', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light-cool')
-    })
-    await page.route(/\.css($|\?|#)/, (route) => route.abort())
-
-    await page.goto('/', { waitUntil: 'commit' })
+    await setupThemeAndGoto(page, 'light-cool')
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toContain('light-cool')
@@ -73,12 +76,7 @@ test.describe('FOUC prevention', () => {
   test('light-cool theme: legacy "light" value migrates to light-cool', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light')
-    })
-    await page.route(/\.css($|\?|#)/, (route) => route.abort())
-
-    await page.goto('/', { waitUntil: 'commit' })
+    await setupThemeAndGoto(page, 'light')
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toBe('light-cool')
@@ -93,12 +91,7 @@ test.describe('FOUC prevention', () => {
   test('light-warm theme: html has light-warm class and correct background before hydration', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light-warm')
-    })
-    await page.route(/\.css($|\?|#)/, (route) => route.abort())
-
-    await page.goto('/', { waitUntil: 'commit' })
+    await setupThemeAndGoto(page, 'light-warm')
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toContain('light-warm')
@@ -114,12 +107,7 @@ test.describe('FOUC prevention', () => {
   test('light-warm theme: unknown stored value falls back to dark', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'unknown-value')
-    })
-    await page.route(/\.css($|\?|#)/, (route) => route.abort())
-
-    await page.goto('/', { waitUntil: 'commit' })
+    await setupThemeAndGoto(page, 'unknown-value')
 
     const htmlClass = await page.evaluate(() => document.documentElement.className)
     expect(htmlClass).toBe('dark')
@@ -130,7 +118,7 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(15, 23, 42)')
   })
 
-  // TC-7: preload link for appCss appears before its matching stylesheet link
+  // TC-7: preload link for appCss (non-print) appears before its matching stylesheet link
   test('preload: <link rel="preload" as="style"> appears before matching <link rel="stylesheet"> for appCss', async ({
     page,
   }) => {
@@ -145,23 +133,27 @@ test.describe('FOUC prevention', () => {
       })),
     )
 
-    const matchingPair = links
-      .filter((link) => link.rel === 'preload' && link.as === 'style' && link.href)
-      .map((preload) => ({
-        preload,
-        stylesheet: links.find(
-          (link) =>
-            link.rel === 'stylesheet' &&
-            link.href === preload.href &&
-            link.index > preload.index,
-        ),
-      }))
-      .find((pair) => pair.stylesheet)
+    const appStylesheet = links.find(
+      (link) =>
+        link.rel === 'stylesheet' &&
+        link.href &&
+        !link.href.toLowerCase().includes('print'),
+    )
 
-    expect(matchingPair).toBeDefined()
-    expect(matchingPair?.preload.as).toBe('style')
-    expect(matchingPair?.preload.href).toBeTruthy()
-    expect(matchingPair?.preload.index).toBeLessThan(matchingPair!.stylesheet!.index)
+    expect(appStylesheet).toBeDefined()
+    expect(appStylesheet?.href).toBeTruthy()
+
+    const appPreload = links.find(
+      (link) =>
+        link.rel === 'preload' &&
+        link.as === 'style' &&
+        link.href === appStylesheet?.href,
+    )
+
+    expect(appPreload).toBeDefined()
+    expect(appPreload?.as).toBe('style')
+    expect(appPreload?.href).toBe(appStylesheet?.href)
+    expect(appPreload!.index).toBeLessThan(appStylesheet!.index)
   })
 
   // TC-8: CSS file fetched only once (preload + stylesheet share the resource)
@@ -198,6 +190,9 @@ test.describe('FOUC prevention', () => {
     expect(content).not.toBeNull()
     expect(content).toContain('background:#0f172a')
   })
+
+  // TC-10: docs/theming.md exists and contains maintenance checklist (manual check)
+  // Validated by inspecting repository contents — no automated test added in this PR.
 
   // TC-11: critical style block contains only allowed hex color values (no user data)
   test('security: inline style block contains only hex color values', async ({
