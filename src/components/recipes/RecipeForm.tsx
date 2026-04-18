@@ -24,7 +24,7 @@ const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
   ingredients: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
   instructions: z.string().optional(),
   notes: z.string().optional(),
   prepTime: z.string().optional(),
@@ -155,7 +155,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       classificationId: values.classificationId || undefined,
       sourceId: selectedSourceId || undefined,
       ingredients: values.ingredients || undefined,
-      imageUrl: values.imageUrl || undefined,
+      imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
       prepTime: toNum(values.prepTime),
@@ -374,7 +374,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 setPendingUpload({ fileId, url })
               }}
               onRemove={() => {
-                setValue("imageUrl", undefined, { shouldDirty: true })
+                setValue("imageUrl", null, { shouldDirty: true })
                 setPendingUpload(null)
               }}
             />

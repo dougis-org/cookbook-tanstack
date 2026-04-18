@@ -94,11 +94,13 @@ IMAGE_KIT_API_KEY=
   - Test: `imageUrl` included in create mutation payload after upload
   - Test: `imageUrl` included in update mutation payload after upload
   - Test: `imageUrl` absent from payload when no image uploaded
+  - Test: removing an existing image sends `imageUrl: null` in the update payload
 - **Verify:** new tests fail (expected)
 
 ### task-6: Update RecipeForm — schema, pendingUpload state, cleanup hooks
 
-- [x] Add `imageUrl: z.string().optional()` to `recipeFormSchema` in `src/components/recipes/RecipeForm.tsx`
+- [x] Add `imageUrl: z.string().nullable().optional()` to `recipeFormSchema` in
+  `src/components/recipes/RecipeForm.tsx`
 - [x] Add `pendingUpload: { fileId: string; url: string } | null` React state
 - [x] Add `pendingUploadRef` (ref tracking pendingUpload for use in async callbacks)
 - [x] Add `cleanupPendingUpload()` helper: fires `DELETE /api/upload/:fileId` if ref is set, then clears state
@@ -108,7 +110,7 @@ IMAGE_KIT_API_KEY=
   - `value={watch('imageUrl') ?? null}`
   - `initialUrl={initialData?.imageUrl ?? null}`
   - `onUpload={(url, fileId) => { setValue('imageUrl', url); setPendingUpload({ fileId, url }) }}`
-  - `onRemove={() => { setValue('imageUrl', undefined); setPendingUpload(null) }}`
+  - `onRemove={() => { setValue('imageUrl', null); setPendingUpload(null) }}`
 - [x] Add `imageUrl` to `toPayload()` mapping
 - [x] On successful save: clear `pendingUpload` state (image is now permanent)
 - **Verify:** `npx vitest run src/components/recipes/__tests__/RecipeForm.test.tsx` — all pass

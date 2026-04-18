@@ -273,7 +273,7 @@ describe("RecipeForm", () => {
       expect(mockCreateMutationFn.mock.calls[0]?.[0].imageUrl).toBeUndefined()
     })
 
-    it("clears imageUrl from update mutation payload when an existing image is removed", async () => {
+    it("sends null imageUrl in update mutation payload when an existing image is removed", async () => {
       renderWithProviders(
         <RecipeForm
           initialData={makeRecipe({
@@ -292,7 +292,7 @@ describe("RecipeForm", () => {
       expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
         expect.objectContaining({
           id: "test-id",
-          imageUrl: undefined,
+          imageUrl: null,
         }),
       )
       expect(mockFetch).not.toHaveBeenCalled()

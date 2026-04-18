@@ -31,7 +31,7 @@ function isUploadFile(value: unknown): value is File {
   )
 }
 
-export const Route = createFileRoute("/api/upload/")({
+export const Route = createFileRoute("/api/upload")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {

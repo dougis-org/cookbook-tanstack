@@ -64,17 +64,23 @@ The system SHALL include `imageUrl` in both create and update mutation payloads 
 - **When** mutation fires
 - **Then** `imageUrl` is omitted or null in payload; existing DB behavior unchanged
 
+#### Scenario: Existing recipe image removed
+
+- **Given** user edits a recipe with an existing `imageUrl`
+- **When** user removes the image and submits the form
+- **Then** the update payload includes `imageUrl: null`; the DB document has `imageUrl` cleared
+
 ## MODIFIED Requirements
 
 ### Requirement: MODIFIED RecipeFormValues zod schema
 
-The system SHALL include `imageUrl: z.string().optional()` in `recipeFormSchema`.
+The system SHALL include `imageUrl: z.string().nullable().optional()` in `recipeFormSchema`.
 
-#### Scenario: Schema validates imageUrl as optional string
+#### Scenario: Schema validates imageUrl as optional or nullable string
 
 - **Given** `recipeFormSchema` is applied
-- **When** form data includes `imageUrl: "https://..."` (or omits it)
-- **Then** validation passes in both cases
+- **When** form data includes `imageUrl: "https://..."`, `imageUrl: null`, or omits it
+- **Then** validation passes in all cases
 
 ## REMOVED Requirements
 

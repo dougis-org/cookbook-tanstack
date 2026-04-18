@@ -71,7 +71,7 @@ type DeleteHandler = (args: {
 }) => Promise<Response>
 
 async function getPostHandler() {
-  const { Route } = await import("../index")
+  const { Route } = await import("../../upload")
   const route = Route as unknown as { server: { handlers: { POST: PostHandler } } }
   return route.server.handlers.POST
 }
@@ -236,7 +236,10 @@ describe("DELETE /api/upload/:fileId", () => {
       userId: "user-1",
     })
     expect(mockDeleteFile).toHaveBeenCalledWith("file-123")
-    expect(mockDeleteOne).toHaveBeenCalledWith({ fileId: "file-123" })
+    expect(mockDeleteOne).toHaveBeenCalledWith({
+      fileId: "file-123",
+      userId: "user-1",
+    })
   })
 
   it("returns 401 when deleting without a session", async () => {

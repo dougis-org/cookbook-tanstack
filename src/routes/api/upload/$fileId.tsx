@@ -50,7 +50,10 @@ export const Route = createFileRoute("/api/upload/$fileId")({
           }
 
           await imagekit.files.delete(params.fileId)
-          await uploadsCollection.deleteOne({ fileId: params.fileId })
+          await uploadsCollection.deleteOne({
+            fileId: params.fileId,
+            userId: session.user.id,
+          })
           return jsonResponse({ success: true })
         } catch (error) {
           if (isNotFoundError(error)) {
