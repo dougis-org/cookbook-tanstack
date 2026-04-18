@@ -33,7 +33,7 @@ const recipeFields = z.object({
   cholesterol: z.number().nonnegative().optional(),
   sodium: z.number().nonnegative().optional(),
   protein: z.number().nonnegative().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().url().nullable().optional(),
   isPublic: z.boolean().default(true),
 });
 

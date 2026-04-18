@@ -9,6 +9,7 @@ import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
+import ImageUploadField from "@/components/ui/ImageUploadField"
 import { useAutoSave } from "@/hooks/useAutoSave"
 import StatusIndicator from "./StatusIndicator"
 
@@ -23,6 +24,7 @@ const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
   ingredients: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
   instructions: z.string().optional(),
   notes: z.string().optional(),
   prepTime: z.string().optional(),
@@ -79,6 +81,12 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [selectedSourceName, setSelectedSourceName] = useState<string>(
     initialData?.sourceName ?? "",
   )
+  const [pendingUpload, setPendingUpload] = useState<{
+    fileId: string
+    url: string
+  } | null>(null)
+  const pendingUploadRef = useRef(pendingUpload)
+  pendingUploadRef.current = pendingUpload
 
   const initialMealIds = useMemo(() => initialData?.meals?.map((m) => m.id) ?? [], [initialData?.meals])
   const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
@@ -96,6 +104,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     name: originalDataRef.current?.name ?? "",
     classificationId: originalDataRef.current?.classificationId ?? "",
     ingredients: originalDataRef.current?.ingredients ?? "",
+    imageUrl: originalDataRef.current?.imageUrl ?? undefined,
     instructions: originalDataRef.current?.instructions ?? "",
     notes: originalDataRef.current?.notes ?? "",
     prepTime: originalDataRef.current?.prepTime?.toString() ?? "",
@@ -121,6 +130,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     handleSubmit,
     formState: { errors, isDirty },
     reset,
+    setValue,
+    watch,
   } = form
 
   const createMutation = useMutation(trpc.recipes.create.mutationOptions())
@@ -144,6 +155,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       classificationId: values.classificationId || undefined,
       sourceId: selectedSourceId || undefined,
       ingredients: values.ingredients || undefined,
+      imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
       prepTime: toNum(values.prepTime),
@@ -227,6 +239,34 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     withResolver: true,
   })
 
+  const clearPendingUploadState = useCallback(() => {
+    pendingUploadRef.current = null
+    setPendingUpload(null)
+  }, [])
+
+  const afterSaveSuccess = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
+    purgeDraft()
+    clearPendingUploadState()
+    isFormDirtyRef.current = false
+  }, [queryClient, purgeDraft, clearPendingUploadState])
+
+  const cleanupPendingUpload = useCallback(() => {
+    const upload = pendingUploadRef.current
+
+    if (!upload) {
+      return
+    }
+
+    clearPendingUploadState()
+    void fetch(`/api/upload/${upload.fileId}`, { method: "DELETE", keepalive: true })
+  }, [clearPendingUploadState])
+
+  const handleDiscardChanges = useCallback(() => {
+    cleanupPendingUpload()
+    blocker.proceed?.()
+  }, [blocker, cleanupPendingUpload])
+
   function handleCancel() {
     if (window.history.length > 1) {
       router.history.back()
@@ -247,15 +287,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     try {
       if (isEdit && initialData?.id) {
         await updateMutation.mutateAsync({ id: initialData.id, ...payload, ...taxonomyIds })
-        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-        purgeDraft()
-        isFormDirtyRef.current = false
+        await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
         const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
-        await queryClient.invalidateQueries({ queryKey: [["recipes"]] })
-        purgeDraft()
-        isFormDirtyRef.current = false
+        await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
     } catch (error) {
@@ -264,6 +300,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   }
 
   function handleRevert() {
+    cleanupPendingUpload()
     reset(formDefaults, { keepDirty: false })
     setSelectedMealIds(initialMealIds)
     setSelectedCourseIds(initialCourseIds)
@@ -325,6 +362,25 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             {errors.name && (
               <p className="mt-1 text-sm text-[var(--theme-error)]">{errors.name.message}</p>
             )}
+          </div>
+
+          {/* Recipe Image */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
+              Recipe Image
+            </label>
+            <ImageUploadField
+              value={watch("imageUrl") ?? null}
+              initialUrl={initialData?.imageUrl ?? null}
+              onUpload={(url, fileId) => {
+                setValue("imageUrl", url, { shouldDirty: true })
+                setPendingUpload({ fileId, url })
+              }}
+              onRemove={() => {
+                setValue("imageUrl", null, { shouldDirty: true })
+                setPendingUpload(null)
+              }}
+            />
           </div>
 
           {/* Classification */}
@@ -596,7 +652,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       {blocker.status === "blocked" && (
         <ConfirmDialog
           message="You have unsaved changes. Are you sure you want to leave?"
-          onConfirm={blocker.proceed}
+          onConfirm={handleDiscardChanges}
           onCancel={blocker.reset}
         />
       )}

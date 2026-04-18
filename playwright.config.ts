@@ -4,15 +4,17 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const defaultCiWorkerCount = 2;
-const configuredCiWorkers = Number.parseInt(
-  process.env.PLAYWRIGHT_CI_WORKERS ?? `${defaultCiWorkerCount}`,
+const defaultWorkerCount = 2;
+const configuredWorkers = Number.parseInt(
+  process.env.PLAYWRIGHT_WORKERS ??
+    process.env.PLAYWRIGHT_CI_WORKERS ??
+    `${defaultWorkerCount}`,
   10,
 );
-const ciWorkers =
-  Number.isFinite(configuredCiWorkers) && configuredCiWorkers > 0
-    ? configuredCiWorkers
-    : defaultCiWorkerCount;
+const workerCount =
+  Number.isFinite(configuredWorkers) && configuredWorkers > 0
+    ? configuredWorkers
+    : defaultWorkerCount;
 const runtimeReportOutput = join(
   __dirname,
   process.env.PLAYWRIGHT_RUNTIME_REPORT ?? "playwright-report/results.json",
@@ -38,7 +40,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? ciWorkers : undefined,
+  workers: workerCount,
   reporter,
   use: {
     baseURL: "http://localhost:3000",
