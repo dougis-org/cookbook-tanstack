@@ -1,4 +1,117 @@
 {
   "version": 1,
-  "bugs": []
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-04-18T20:12:07.303Z",
+      "error_message": "Type error",
+      "file": "src/routes/__root.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T20:12:07.303Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-04-18T23:14:23.406Z",
+      "error_message": "Wrong reference: toBeLessThanOrEqual should be toBe",
+      "file": "src/e2e/fouc-prevention.spec.ts",
+      "root_cause": "Used \"toBeLessThanOrEqual\" instead of \"toBe\"",
+      "fix": "Changed toBeLessThanOrEqual → toBe",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:14:23.406Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-04-18T23:22:27.387Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/theming.md",
+      "root_cause": "Had `slate-900`",
+      "fix": "Changed to `theme(colors.slate.900)`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:22:27.387Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-04-18T23:22:31.716Z",
+      "error_message": "Incorrect value in code",
+      "file": "openspec/changes/fix-fouc-theme-flash/tasks.md",
+      "root_cause": "Had `tests/fouc-prevention.spec.ts`",
+      "fix": "Changed to `src/e2e/fouc-prevention.spec.ts`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:22:31.716Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-04-18T23:22:41.551Z",
+      "error_message": "Incorrect value in code",
+      "file": "openspec/changes/fix-fouc-theme-flash/tests.md",
+      "root_cause": "Had ` with empty localStorage and throttled network (s",
+      "fix": "Changed to ` with empty localStorage using `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-18T23:22:48.773Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-18T23:35:12.406Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/theming.md",
+      "root_cause": "Had `<style>`",
+      "fix": "Changed to `RootDocument`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:35:12.406Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-18T23:35:16.470Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/e2e/fouc-prevention.spec.ts",
+      "root_cause": "Had 'light-warm theme: unknown stored value falls back",
+      "fix": "Changed to 'unknown stored theme value falls back to dark'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-18T23:35:16.470Z"
+    }
+  ]
 }

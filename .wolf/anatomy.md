@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T14:10:03.989Z
-> Files: 520 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:35:16.460Z
+> Files: 528 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -732,3 +732,26 @@
 - `save-095744.log` (~0 tok)
 - `save-095748.log` (~0 tok)
 - `save-095751.log` (~0 tok)
+
+## docs/
+
+- `theming.md` — Theming Guide (~549 tok)
+
+## openspec/changes/fix-fouc-theme-flash/
+
+- `design.md` — Context (~2475 tok)
+- `proposal.md` — GitHub Issues (~1269 tok)
+- `tasks.md` — Tasks (~1799 tok)
+- `tests.md` — Tests (~1328 tok)
+
+## openspec/changes/fix-fouc-theme-flash/specs/fouc-prevention/
+
+- `spec.md` — ADDED Requirements (~1678 tok)
+
+## src/e2e/
+
+- `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2222 tok)
+
+## src/routes/
+
+- `__root.tsx` — Route (~1256 tok)
