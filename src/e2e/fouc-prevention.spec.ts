@@ -1,7 +1,7 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 
 test.describe('FOUC prevention', () => {
-  // TC-1: dark theme background present before CSS loads
+  // TC-1: dark theme — critical CSS applies correct background via waitUntil:'commit' (before hydration)
   test('dark theme: html has dark class and correct background before hydration', async ({
     page,
   }) => {
@@ -47,7 +47,7 @@ test.describe('FOUC prevention', () => {
     expect(htmlClass).toContain('dark')
   })
 
-  // TC-3: light-cool background present before CSS loads
+  // TC-3: light-cool — critical CSS applies correct background via waitUntil:'commit'
   test('light-cool theme: html has light-cool class and correct background before hydration', async ({
     page,
   }) => {
@@ -86,7 +86,7 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(241, 245, 249)')
   })
 
-  // TC-5: light-warm background present before CSS loads
+  // TC-5: light-warm — critical CSS applies correct background via waitUntil:'commit'
   test('light-warm theme: html has light-warm class and correct background before hydration', async ({
     page,
   }) => {
@@ -125,23 +125,38 @@ test.describe('FOUC prevention', () => {
     expect(bg).toBe('rgb(15, 23, 42)')
   })
 
-  // TC-7: preload link present before stylesheet link in HTML
-  test('preload: <link rel="preload" as="style"> present before <link rel="stylesheet"> for appCss', async ({
+  // TC-7: preload link for appCss appears before its matching stylesheet link
+  test('preload: <link rel="preload" as="style"> appears before matching <link rel="stylesheet"> for appCss', async ({
     page,
   }) => {
     await page.goto('/')
 
-    const html = await page.content()
+    const links = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('link')).map((link, index) => ({
+        index,
+        rel: link.getAttribute('rel') ?? '',
+        as: link.getAttribute('as') ?? '',
+        href: link.getAttribute('href') ?? '',
+      })),
+    )
 
-    const preloadIdx = html.indexOf('rel="preload"')
-    const stylesheetIdx = html.indexOf('rel="stylesheet"')
+    const matchingPair = links
+      .filter((link) => link.rel === 'preload' && link.as === 'style' && link.href)
+      .map((preload) => ({
+        preload,
+        stylesheet: links.find(
+          (link) =>
+            link.rel === 'stylesheet' &&
+            link.href === preload.href &&
+            link.index > preload.index,
+        ),
+      }))
+      .find((pair) => pair.stylesheet)
 
-    expect(preloadIdx).toBeGreaterThan(-1)
-    expect(preloadIdx).toBeLessThan(stylesheetIdx)
-
-    // Confirm as="style" is on the preload
-    const preloadChunk = html.slice(Math.max(0, preloadIdx - 50), preloadIdx + 200)
-    expect(preloadChunk).toContain('as="style"')
+    expect(matchingPair).toBeDefined()
+    expect(matchingPair?.preload.as).toBe('style')
+    expect(matchingPair?.preload.href).toBeTruthy()
+    expect(matchingPair?.preload.index).toBeLessThan(matchingPair!.stylesheet!.index)
   })
 
   // TC-8: CSS file fetched only once (preload + stylesheet share the resource)
@@ -157,46 +172,46 @@ test.describe('FOUC prevention', () => {
 
     await page.goto('/', { waitUntil: 'networkidle' })
 
-    // Find app CSS URL (it appears multiple times in the array if double-fetched)
     const appCssRequests = cssRequests.filter((u) => !u.includes('print'))
-    // Deduplicate — should be exactly 1 unique URL fetched once
     const unique = [...new Set(appCssRequests)]
+
+    expect(unique.length).toBeGreaterThan(0)
     expect(appCssRequests.length).toBe(unique.length)
   })
 
-  // TC-9: inline style block present in HTML source
-  test('inline style: HTML source contains dark background in inline <style> block', async ({
+  // TC-9: critical style element is present in the DOM
+  test('inline style: critical theme <style> block present in DOM with dark background', async ({
     page,
   }) => {
     await page.goto('/')
 
-    const html = await page.content()
+    const content = await page.evaluate(() => {
+      const el = document.querySelector('style[data-id="critical-theme"]')
+      return el ? el.textContent : null
+    })
 
-    expect(html).toContain('background:#0f172a')
+    expect(content).not.toBeNull()
+    expect(content).toContain('background:#0f172a')
   })
 
-  // TC-11: inline style block contains only hex colors (no user data)
+  // TC-11: critical style block contains only allowed hex color values (no user data)
   test('security: inline style block contains only hex color values', async ({
     page,
   }) => {
     await page.goto('/')
 
-    const html = await page.content()
+    const content = await page.evaluate(() => {
+      const el = document.querySelector('style[data-id="critical-theme"]')
+      return el ? el.textContent : null
+    })
 
-    // Extract content of the inline style block
-    const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/)
-    expect(styleMatch).not.toBeNull()
+    expect(content).not.toBeNull()
 
-    const styleContent = styleMatch![1]
-    // Strip valid CSS chars: selectors, properties, hex values, semicolons, braces, whitespace
-    const stripped = styleContent
-      .replace(/html[.a-z-]*/g, '')
-      .replace(/\{[^}]*\}/g, '')
-      .trim()
+    const normalized = content!.replace(/\s+/g, ' ').trim()
+    const allowedInlineCss =
+      /^(?:html(?:\.[a-z-]+)?\s*\{\s*(?:(?:background|color)\s*:\s*#[0-9a-fA-F]{3,6}\s*;?\s*)+\}\s*)+$/
 
-    // Only allowed content: empty string after stripping
-    // (no user-derived data, no encoded strings beyond approved hex values)
-    expect(stripped).toBe('')
+    expect(normalized).toMatch(allowedInlineCss)
   })
 
   // TC-12: inline CSS payload ≤ 300 bytes
@@ -205,12 +220,14 @@ test.describe('FOUC prevention', () => {
   }) => {
     await page.goto('/')
 
-    const html = await page.content()
+    const content = await page.evaluate(() => {
+      const el = document.querySelector('style[data-id="critical-theme"]')
+      return el ? el.textContent : null
+    })
 
-    const styleMatch = html.match(/<style[^>]*>([\s\S]*?)<\/style>/)
-    expect(styleMatch).not.toBeNull()
+    expect(content).not.toBeNull()
 
-    const bytes = new TextEncoder().encode(styleMatch![1]).length
+    const bytes = new TextEncoder().encode(content!).length
     expect(bytes).toBeLessThanOrEqual(300)
   })
 })

@@ -78,7 +78,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <style>{criticalCss}</style>
+        <style data-id="critical-theme">{criticalCss}</style>
         {import.meta.env.DEV ? (
           <script
             type="module"

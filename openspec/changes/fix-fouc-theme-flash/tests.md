@@ -7,13 +7,13 @@ description: Tests for fix-fouc-theme-flash — FOUC prevention via inline criti
 
 ## Overview
 
-All FOUC prevention tests are Playwright E2E tests in `tests/fouc-prevention.spec.ts`. Follow strict TDD: write the test file first (Task 3), confirm tests fail, then implement Tasks 4-6 to make them pass.
+All FOUC prevention tests are Playwright E2E tests in `src/e2e/fouc-prevention.spec.ts`. Follow strict TDD: write the test file first (Task 3), confirm tests fail, then implement Tasks 4-6 to make them pass.
 
 Unit/integration tests (`npm run test`) have no new cases — this change is pure HTML/CSS output with no business logic. The validation is entirely observable in rendered HTML and browser paint behavior.
 
 ## Testing Steps
 
-1. **Write failing tests** (Task 3): Create `tests/fouc-prevention.spec.ts` with all cases below. Run `npm run test:e2e` — tests must fail before any implementation.
+1. **Write failing tests** (Task 3): Create `src/e2e/fouc-prevention.spec.ts` with all cases below. Run `npm run test:e2e` — tests must fail before any implementation.
 2. **Implement** (Tasks 4–6): Add inline critical CSS, preload links, and docs.
 3. **Confirm passing**: Run `npm run test:e2e` — all cases must pass.
 4. **Refactor** if needed: Ensure the `criticalCss` constant is readable and the comment block is complete.
@@ -22,17 +22,17 @@ Unit/integration tests (`npm run test`) have no new cases — this change is pur
 
 ### Task 3 / FR-1 — Dark theme: background present on first paint
 
-- [x] **TC-1:** Navigate to `/` with empty localStorage and throttled network (simulate CSS not yet loaded). Assert `document.documentElement` has `background-color` matching `#0f172a` (or equivalent computed dark background) before `<link rel="stylesheet">` is applied. Assert `<html>` has class `dark`.
+- [x] **TC-1:** Navigate to `/` with empty localStorage using `waitUntil: 'commit'` (before hydration). Assert `document.documentElement` has `background-color` matching `#0f172a` (dark background from critical CSS) and `<html>` has class `dark`.
 
 - [x] **TC-2:** Navigate to `/` with localStorage blocked (clear storage before load). Assert `<html>` has class `dark` and computed background is dark.
 
   - Maps to: spec FR-1 scenarios 1 & 2; tasks.md Task 4
-  - Test file: `tests/fouc-prevention.spec.ts`
+  - Test file: `src/e2e/fouc-prevention.spec.ts`
   - Command: `npm run test:e2e -- --grep "dark theme"`
 
 ### Task 3 / FR-2 — Light-cool theme: background present on first paint
 
-- [x] **TC-3:** Set `localStorage["cookbook-theme"] = "light-cool"` before navigation. Navigate to `/`. Assert `<html>` has class `light-cool` and computed `background-color` matches `#f1f5f9`.
+- [x] **TC-3:** Set `localStorage["cookbook-theme"] = "light-cool"` before navigation. Navigate to `/` with `waitUntil: 'commit'`. Assert `<html>` has class `light-cool` and computed `background-color` matches `#f1f5f9` (from critical CSS).
 
 - [x] **TC-4:** Set `localStorage["cookbook-theme"] = "light"` (legacy value). Navigate to `/`. Assert `<html>` has class `light-cool` (migrated) and background is `#f1f5f9`.
 
@@ -41,7 +41,7 @@ Unit/integration tests (`npm run test`) have no new cases — this change is pur
 
 ### Task 3 / FR-3 — Light-warm theme: background present on first paint
 
-- [x] **TC-5:** Set `localStorage["cookbook-theme"] = "light-warm"` before navigation. Navigate to `/`. Assert `<html>` has class `light-warm` and computed `background-color` matches `#fffbeb`.
+- [x] **TC-5:** Set `localStorage["cookbook-theme"] = "light-warm"` before navigation. Navigate to `/` with `waitUntil: 'commit'`. Assert `<html>` has class `light-warm` and computed `background-color` matches `#fffbeb` (from critical CSS).
 
 - [x] **TC-6:** Set `localStorage["cookbook-theme"] = "unknown-value"`. Navigate to `/`. Assert `<html>` has class `dark` and background is `#0f172a` (fallback).
 
@@ -71,10 +71,10 @@ Unit/integration tests (`npm run test`) have no new cases — this change is pur
 
 ### Task 6 / FR-5 — docs/theming.md exists and contains checklist
 
-- [x] **TC-10:** File system check (can be a simple Node.js script or CI step): assert `docs/theming.md` exists and contains the string `Theme Maintenance Checklist`.
+- [x] **TC-10:** Manual repository check: assert `docs/theming.md` exists and contains the string `Theme Maintenance Checklist`.
 
   - Maps to: spec FR-5; tasks.md Task 6
-  - Can be verified manually or as part of a lint/CI check
+  - Validation in this change is manual by inspecting the repository contents; no dedicated automated lint/CI/script check is added in this PR.
 
 ## Non-Functional Tests
 

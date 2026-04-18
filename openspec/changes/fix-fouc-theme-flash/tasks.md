@@ -9,7 +9,7 @@
 
 ### Task 3 — Write Playwright test for FOUC (TDD first)
 
-Write E2E tests in a new file `tests/fouc-prevention.spec.ts` covering FR-1 through FR-4 before touching any application code. Tests will initially fail — that is expected.
+Write E2E tests in a new file `src/e2e/fouc-prevention.spec.ts` covering FR-1 through FR-4 before touching any application code. Tests will initially fail — that is expected.
 
 - Verify `<html>` computed background matches dark token before CSS loads (throttled network)
 - Verify `<html>` computed background for `light-cool` (set localStorage before navigation)

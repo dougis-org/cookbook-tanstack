@@ -21,9 +21,9 @@ CookBook uses a class-based dark-mode system. Theme selection is stored in `loca
 
 | Theme class | CSS file | `--theme-bg` | Hex | `--theme-fg` | Hex |
 |---|---|---|---|---|---|
-| `dark` | `dark.css` | `slate-900` | `#0f172a` | `white` | `#ffffff` |
-| `light-cool` | `light-cool.css` | `slate-100` | `#f1f5f9` | `slate-900` | `#0f172a` |
-| `light-warm` | `light-warm.css` | `amber-50` | `#fffbeb` | `stone-900` | `#1c1917` |
+| `dark` | `dark.css` | `theme(colors.slate.900)` | `#0f172a` | `theme(colors.white)` | `#ffffff` |
+| `light-cool` | `light-cool.css` | `theme(colors.slate.100)` | `#f1f5f9` | `theme(colors.slate.900)` | `#0f172a` |
+| `light-warm` | `light-warm.css` | `theme(colors.amber.50)` | `#fffbeb` | `theme(colors.stone.900)` | `#1c1917` |
 | *(4th theme)* | *(TBD)* | *(TBD)* | *(TBD)* | *(TBD)* | *(TBD)* |
 
 ## Why critical CSS exists
