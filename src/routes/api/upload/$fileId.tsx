@@ -43,17 +43,21 @@ export const Route = createFileRoute("/api/upload/$fileId")({
             return jsonResponse({ error: "Forbidden" }, 403)
           }
 
-          await getImageKit().files.delete(params.fileId)
+          try {
+            await getImageKit().files.delete(params.fileId)
+          } catch (error) {
+            if (!isNotFoundError(error)) {
+              throw error
+            }
+          }
+
           await uploadsCollection.deleteOne({
             fileId: params.fileId,
             userId: session.user.id,
           })
-          return jsonResponse({ success: true })
-        } catch (error) {
-          if (isNotFoundError(error)) {
-            return jsonResponse({ error: "File not found" }, 404)
-          }
 
+          return jsonResponse({ success: true })
+        } catch {
           return jsonResponse({ error: "Delete failed" }, 500)
         }
       },
