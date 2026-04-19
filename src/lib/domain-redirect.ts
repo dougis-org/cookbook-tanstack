@@ -18,8 +18,8 @@ export function getDomainRedirectUrl(
   const host = request.headers.get("host")
   if (!host) return null
 
-  const requestHostname = host.split(":")[0]
-  if (requestHostname === primaryHostname) return null
+  const requestHostname = host.split(":")[0].toLowerCase()
+  if (requestHostname === primaryHostname.toLowerCase()) return null
 
   const { pathname, search } = new URL(request.url)
   return `${primaryUrl.replace(/\/$/, "")}${pathname}${search}`

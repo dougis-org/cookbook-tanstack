@@ -74,6 +74,13 @@ describe("getDomainRedirectUrl", () => {
     )
   })
 
+  it("hostname comparison is case-insensitive (RFC 4343)", () => {
+    const req = new Request("http://Recipe.Dougis.Com/recipes", {
+      headers: { host: "Recipe.Dougis.Com" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
   it("correctly redirects root path with query string", () => {
     const req = new Request("http://cookbook-tanstack.fly.dev/?ref=email", {
       headers: { host: "cookbook-tanstack.fly.dev" },

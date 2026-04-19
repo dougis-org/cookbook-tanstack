@@ -143,5 +143,12 @@ describe("auth configuration", () => {
       const config = mockBetterAuth.mock.calls[0]?.[0]
       expect(config.trustedOrigins).toEqual(["https://recipe.dougis.com"])
     })
+
+    it("filters empty strings when env var is set to empty value", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS = ""
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([])
+    })
   })
 })
