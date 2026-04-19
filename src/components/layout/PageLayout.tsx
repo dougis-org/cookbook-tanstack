@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 declare global {
   interface Window {
+    /** Global queue consumed by the async Google AdSense library for slot requests. */
     adsbygoogle?: unknown[]
   }
 }
@@ -59,7 +60,7 @@ export function AdSlot({
     const adElement = adRef.current
     const script = ensureGoogleAdSenseScript()
     const requestAd = () => {
-      if (adElement.dataset.adsbygoogleStatus === 'done') {
+      if (adElement.getAttribute('data-adsbygoogle-status') === 'done') {
         return
       }
 

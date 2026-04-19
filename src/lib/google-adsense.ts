@@ -5,6 +5,10 @@ export const GOOGLE_ADSENSE_SCRIPT_SRC =
 
 export type GoogleAdSenseSlotPosition = 'top' | 'bottom'
 
+/**
+ * Google AdSense slot IDs are numeric strings issued per ad unit.
+ * Reject anything else so bogus env values do not trigger third-party requests.
+ */
 export function getValidatedGoogleAdSenseSlotId(slotId: string | undefined) {
   const trimmed = slotId?.trim()
 
