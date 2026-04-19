@@ -25,6 +25,8 @@ jobs:
           script: |
             const owner = context.repo.owner
             const repo = context.repo.repo
+            const action = context.payload.action
+            const isSynchronize = action === 'synchronize'
             const ref = context.payload.pull_request?.head?.sha ?? context.sha
             const pullNumber =
               context.payload.pull_request?.number ??
@@ -40,11 +42,13 @@ jobs:
                 label: 'Copilot',
                 checkPatterns: [/copilot/i],
                 reviewAuthors: ['copilot-pull-request-reviewer[bot]'],
+                requireCurrentHeadOnSynchronize: true,
               },
               {
                 label: 'Gemini',
                 checkPatterns: [/gemini/i],
                 reviewAuthors: ['gemini-code-assist[bot]'],
+                requireCurrentHeadOnSynchronize: false,
               },
             ]
             const pollIntervalMs = 60_000
@@ -78,27 +82,38 @@ jobs:
                   (check) =>
                     check.status === 'completed' && check.conclusion === 'success',
                 )
-                const currentReviews = reviews.filter((review) => {
+                const submittedReviews = reviews.filter((review) => {
                   const login = review.user?.login?.toLowerCase()
                   const state = review.state?.toUpperCase()
 
                   return (
                     Boolean(review.submitted_at) &&
-                    review.commit_id === ref &&
                     Boolean(login) &&
                     reviewer.reviewAuthors.includes(login) &&
                     state !== 'PENDING' &&
                     state !== 'DISMISSED'
                   )
                 })
+                const currentReviews = submittedReviews.filter(
+                  (review) => review.commit_id === ref,
+                )
+                const hasHistoricalReview = submittedReviews.length > 0
+                const requireCurrentHeadReview =
+                  !isSynchronize ||
+                  reviewer.requireCurrentHeadOnSynchronize ||
+                  !hasHistoricalReview
 
                 return {
                   label: reviewer.label,
                   matching: matchingChecks.length,
                   completedChecks: completedChecks.length,
                   reviews: currentReviews.length,
+                  historicalReviews: submittedReviews.length,
                   complete:
-                    completedChecks.length > 0 || currentReviews.length > 0,
+                    completedChecks.length > 0 ||
+                    (requireCurrentHeadReview
+                      ? currentReviews.length > 0
+                      : hasHistoricalReview),
                 }
               })
 
@@ -112,7 +127,7 @@ jobs:
               )
               for (const state of reviewStates) {
                 core.info(
-                  `${state.label}: ${state.completedChecks}/${state.matching} successful check(s), ${state.reviews} review(s), complete=${state.complete}`,
+                  `${state.label}: ${state.completedChecks}/${state.matching} successful check(s), ${state.reviews} current-head review(s), ${state.historicalReviews} total submitted review(s), complete=${state.complete}`,
                 )
               }
 

@@ -15,8 +15,26 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toContain("copilot-pull-request-reviewer[bot]");
     expect(workflow).toContain("gemini-code-assist[bot]");
     expect(workflow).toMatch(
-      /Boolean\(review\.submitted_at\)[\s\S]*review\.commit_id === ref[\s\S]*reviewer\.reviewAuthors\.includes\(login\)[\s\S]*state !== 'PENDING'[\s\S]*state !== 'DISMISSED'/,
+      /Boolean\(review\.submitted_at\)[\s\S]*reviewer\.reviewAuthors\.includes\(login\)[\s\S]*state !== 'PENDING'[\s\S]*state !== 'DISMISSED'/,
     );
-    expect(workflow).toMatch(/completedChecks\.length > 0 \|\| currentReviews\.length > 0/);
+    expect(workflow).toMatch(/const currentReviews = submittedReviews\.filter\(/);
+  });
+
+  it("only requires Gemini on synchronize events when no earlier Gemini review exists", () => {
+    const workflow = readFileSync(workflowPath, "utf8");
+
+    expect(workflow).toContain("const action = context.payload.action");
+    expect(workflow).toContain("const isSynchronize = action === 'synchronize'");
+    expect(workflow).toContain("requireCurrentHeadOnSynchronize: true");
+    expect(workflow).toContain("requireCurrentHeadOnSynchronize: false");
+    expect(workflow).toMatch(/const submittedReviews = reviews\.filter/);
+    expect(workflow).toMatch(/const currentReviews = submittedReviews\.filter\(/);
+    expect(workflow).toMatch(/const hasHistoricalReview = submittedReviews\.length > 0/);
+    expect(workflow).toMatch(
+      /const requireCurrentHeadReview =[\s\S]*!isSynchronize \|\|[\s\S]*reviewer\.requireCurrentHeadOnSynchronize \|\|[\s\S]*!hasHistoricalReview/,
+    );
+    expect(workflow).toMatch(
+      /completedChecks\.length > 0 \|\|[\s\S]*\(requireCurrentHeadReview[\s\S]*currentReviews\.length > 0[\s\S]*: hasHistoricalReview\)/,
+    );
   });
 });
