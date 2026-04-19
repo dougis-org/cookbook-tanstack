@@ -5,7 +5,7 @@ export const GOOGLE_ADSENSE_SCRIPT_SRC =
 
 export type GoogleAdSenseSlotPosition = 'top' | 'bottom'
 
-function getValidatedGoogleAdSenseSlotId(slotId: string | undefined) {
+export function getValidatedGoogleAdSenseSlotId(slotId: string | undefined) {
   const trimmed = slotId?.trim()
 
   return trimmed && /^\d+$/.test(trimmed) ? trimmed : null

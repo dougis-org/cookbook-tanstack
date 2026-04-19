@@ -34,14 +34,6 @@ function ensureGoogleAdSenseScript() {
   script.async = true
   script.crossOrigin = 'anonymous'
   script.src = GOOGLE_ADSENSE_SCRIPT_SRC
-  script.dataset.loaded = 'false'
-  script.addEventListener(
-    'load',
-    () => {
-      script.dataset.loaded = 'true'
-    },
-    { once: true },
-  )
   document.head.appendChild(script)
 
   return script
@@ -78,11 +70,11 @@ export function AdSlot({
           console.warn('Failed to request Google AdSense slot', error)
         }
 
-        // Google populates adsbygoogle asynchronously; ignore retries handled by future mounts/navigation.
+        // Ignore push errors that can happen before the AdSense library finishes initializing.
       }
     }
 
-    if (script.dataset.loaded === 'true' || Array.isArray(window.adsbygoogle)) {
+    if (Array.isArray(window.adsbygoogle)) {
       requestAd()
       return
     }
