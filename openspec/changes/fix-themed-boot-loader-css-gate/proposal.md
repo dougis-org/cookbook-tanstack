@@ -13,7 +13,7 @@
 ## Problem Space
 
 - Current behavior: `src/routes/__root.tsx` sets the HTML theme class and inlines a tiny background/color stylesheet. The app shell (`Header`, route content, `PageLayout`) remains visible while the external app stylesheet is pending, so utility-driven layout, spacing, and theme tokens can appear absent for a moment.
-- Desired behavior: Before the main app stylesheet is ready, users see a minimal themed boot loader that says "Pre Heating" with a spinner. Real application content remains hidden until the app stylesheet has loaded.
+- Desired behavior: Before the main app stylesheet is ready, users see a minimal themed boot loader that says "Pre-heating" with a spinner. Real application content remains hidden until the app stylesheet has loaded.
 - Constraints:
   - The boot loader must be styled entirely by inline critical CSS and must not depend on Tailwind, Lucide, React hydration, or external CSS.
   - The boot loader must follow the same theme resolution approach as the main site: `dark` default, stored `light-cool`, stored `light-warm`, legacy `light` migration to `light-cool`, invalid/unavailable storage fallback to `dark`.
@@ -56,7 +56,7 @@
 - The root document emits:
   - existing inline theme init script;
   - inline critical CSS for theme backgrounds, loader presentation, spinner animation, app content cloaking, and delayed status affordance;
-  - a boot loader element containing "Pre Heating" and a spinner;
+  - a boot loader element containing "Pre-heating" and a spinner;
   - a wrapped app shell that starts hidden.
 - The main app stylesheet (`src/styles.css`) reveals the app shell and hides the boot loader when it loads.
 - Root `head()` keeps preload for `appCss` only and removes preload for `printCss`.
@@ -86,7 +86,7 @@
 - Question: What delayed failure threshold should show retry messaging?
   - Needed from: implementation choice
   - Blocker for apply: no
-- Question: Should the retry text be visible only after CSS failure/delay, while "Pre Heating" is always visible?
+- Question: Should the retry text be visible only after CSS failure/delay, while "Pre-heating" is always visible?
   - Needed from: implementation choice
   - Blocker for apply: no
 

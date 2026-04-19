@@ -117,7 +117,7 @@ async function readBootTheme(page: Page) {
 
 async function expectBootLoaderVisible(page: Page) {
   await expect(page.locator('#boot-loader')).toBeVisible()
-  await expect(page.locator('#boot-loader')).toContainText('Pre Heating')
+  await expect(page.locator('#boot-loader')).toContainText('Pre-heating')
   await expect(page.locator('[data-testid="boot-spinner"]')).toBeVisible()
 }
 
@@ -251,7 +251,7 @@ test.describe('FOUC prevention', () => {
       timeout: 2_500,
     })
     await expect(page.locator('#boot-loader-status')).toContainText(
-      'Still pre heating',
+      'Still pre-heating',
     )
     await expect(page.locator('#boot-loader-retry')).toBeVisible({
       timeout: 5_000,

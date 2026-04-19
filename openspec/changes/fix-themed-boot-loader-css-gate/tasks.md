@@ -12,7 +12,7 @@
 ## Execution
 
 - [x] **RED — Expand FOUC E2E coverage first**
-  - [x] Add/modify `src/e2e/fouc-prevention.spec.ts` tests that delay the main app stylesheet and assert the "Pre Heating" loader is visible.
+  - [x] Add/modify `src/e2e/fouc-prevention.spec.ts` tests that delay the main app stylesheet and assert the "Pre-heating" loader is visible.
   - [x] Assert app shell content is present in the DOM but not visible while app CSS is delayed.
   - [x] Assert delayed CSS completion hides the loader and reveals the app shell.
   - [x] Assert app CSS failure keeps the loader visible and eventually shows retry/status feedback.
@@ -22,7 +22,7 @@
 - [x] **GREEN — Implement root boot gate**
   - [x] In `src/routes/__root.tsx`, keep the theme init script before first paint.
   - [x] Add inline critical boot CSS for `html`, `body`, boot loader layout, spinner, app shell cloaking, theme-specific colors, delayed status, and retry affordance.
-  - [x] Render a boot loader before app content with the visible text "Pre Heating" and a CSS-only spinner.
+  - [x] Render a boot loader before app content with the visible text "Pre-heating" and a CSS-only spinner.
   - [x] Wrap the application content (`Header`, route children, devtools, scripts as appropriate) in a stable app shell element such as `#app-shell`.
   - [x] Ensure the boot loader does not rely on Tailwind classes, Lucide icons, images, React state, or external CSS.
 - [x] **GREEN — Reveal app via app stylesheet**

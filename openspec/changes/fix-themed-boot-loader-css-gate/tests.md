@@ -29,7 +29,7 @@ For each task in `tasks.md`:
 
 ### RED/GREEN Task: Themed loader visible while CSS is delayed
 
-- [ ] **TC-1:** Delay the main app stylesheet request, navigate to `/`, and assert the boot loader is visible with text `Pre Heating`.
+- [ ] **TC-1:** Delay the main app stylesheet request, navigate to `/`, and assert the boot loader is visible with text `Pre-heating`.
   - Maps to: `tasks.md` RED coverage; spec FR-6 scenario "Boot loader appears while app CSS is delayed"; design Decisions 1 and 3.
   - Expected initial result before implementation: fails because no boot loader exists.
 
@@ -107,7 +107,7 @@ For each task in `tasks.md`:
 
 ## Manual Smoke Tests
 
-- [ ] Cold hard reload with throttled network and default/dark theme: shows themed `Pre Heating` loader, then structured app.
+- [ ] Cold hard reload with throttled network and default/dark theme: shows themed `Pre-heating` loader, then structured app.
 - [ ] Cold hard reload with throttled network and `light-cool`: shows matching light-cool loader, then structured app.
 - [ ] Cold hard reload with throttled network and `light-warm`: shows matching light-warm loader, then structured app.
 - [ ] Simulated failed app stylesheet: loader remains visible and retry affordance works.

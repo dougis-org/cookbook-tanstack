@@ -23,7 +23,7 @@
 
 - Show an intentional themed boot loader before the main app stylesheet is ready.
 - Hide real application content until the main app stylesheet has loaded.
-- Make the boot loader say "Pre Heating" and include a spinner.
+- Make the boot loader say "Pre-heating" and include a spinner.
 - Keep boot loader styling inline and independent from Tailwind, React hydration, icon libraries, or external assets.
 - Remove the `printCss` preload from initial navigation.
 - Preserve app CSS preload and normal print styling behavior.
@@ -60,12 +60,12 @@
 
 ### Decision 3: Boot loader is minimal and resilient
 
-- Chosen: The boot loader displays "Pre Heating", a CSS-only spinner, and delayed status/retry messaging implemented with inline CSS/JS that does not require React.
+- Chosen: The boot loader displays "Pre-heating", a CSS-only spinner, and delayed status/retry messaging implemented with inline CSS/JS that does not require React.
 - Alternatives considered:
   - Only spinner, no text.
   - Rich branded screen with icons/images.
   - No delayed failure feedback.
-- Rationale: A small explicit loader is understandable during normal lag and remains usable when stylesheet loading stalls. "Pre Heating" matches the cookbook domain without requiring assets.
+- Rationale: A small explicit loader is understandable during normal lag and remains usable when stylesheet loading stalls. "Pre-heating" matches the cookbook domain without requiring assets.
 - Trade-offs: Adds a small amount of inline CSS/JS to the root document. This is acceptable because it prevents a visible broken state.
 
 ### Decision 4: Remove print stylesheet preload
@@ -89,7 +89,7 @@
 
 ## Proposal to Design Mapping
 
-- Proposal element: Themed "Pre Heating" loading state before app CSS
+- Proposal element: Themed "Pre-heating" loading state before app CSS
   - Design decision: Decisions 1, 2, and 3
   - Validation approach: E2E tests delay/abort app CSS and assert loader visibility, text, spinner, and theme colors.
 - Proposal element: Hide real app content until app CSS loads
@@ -119,7 +119,7 @@
   - Design element: Existing theme init script plus theme-specific inline boot CSS rules.
   - Acceptance criteria reference: `specs/fouc-prevention/spec.md` FR-8.
   - Testability notes: Use `page.addInitScript()` to set localStorage values before navigation.
-- Requirement: The boot loader says "Pre Heating" and includes a spinner.
+- Requirement: The boot loader says "Pre-heating" and includes a spinner.
   - Design element: Static boot loader markup in `RootDocument`.
   - Acceptance criteria reference: `specs/fouc-prevention/spec.md` FR-9.
   - Testability notes: Assert accessible/text content and CSS animation marker while app CSS is delayed.
@@ -186,4 +186,4 @@
 ## Open Questions
 
 - Validate whether `printCss` can use `media="print"` without breaking cookbook print/PDF behavior.
-- Choose exact delayed status thresholds during implementation; suggested thresholds are roughly 2 seconds for "Still pre heating..." and 10-15 seconds for retry affordance.
+- Choose exact delayed status thresholds during implementation; suggested thresholds are roughly 2 seconds for "Still pre-heating..." and 10-15 seconds for retry affordance.

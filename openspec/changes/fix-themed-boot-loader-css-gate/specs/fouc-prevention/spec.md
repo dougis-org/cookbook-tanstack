@@ -13,7 +13,7 @@ The system SHALL show a minimal inline-styled boot loader before the main applic
 - **Given** a user navigates to any app page
 - **And** the main application stylesheet request is delayed
 - **When** the browser parses the initial HTML document
-- **Then** the user sees a themed boot loader containing the text "Pre Heating"
+- **Then** the user sees a themed boot loader containing the text "Pre-heating"
 - **And** the boot loader includes a visible CSS-only spinner
 - **And** the boot loader styling does not depend on external CSS, Tailwind utility classes, React hydration, Lucide icons, or image assets
 
