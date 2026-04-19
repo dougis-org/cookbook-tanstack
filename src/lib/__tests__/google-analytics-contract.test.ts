@@ -12,7 +12,7 @@ describe('Google Analytics integration contract', () => {
 
     expect(rootRoute).toContain('VITE_GOOGLE_ANALYTICS_ID')
     expect(rootRoute).toContain('https://www.googletagmanager.com/gtag/js?id=')
-    expect(rootRoute).toContain('/^G-[A-Z0-9-]+$/i')
+    expect(rootRoute).toContain('/^G-[A-Z0-9-]+$/')
   })
 
   it('disables the default pageview and sends SPA page metadata explicitly', () => {

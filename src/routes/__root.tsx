@@ -15,7 +15,6 @@ import printCss from '../styles/print.css?url'
 
 declare global {
   interface Window {
-    __cookbookGaInitialized?: boolean
     dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
   }
@@ -33,9 +32,28 @@ function getValidatedGoogleAnalyticsId() {
     ? import.meta.env.VITE_GOOGLE_ANALYTICS_ID?.trim()
     : undefined
 
-  return measurementId && /^G-[A-Z0-9-]+$/i.test(measurementId)
+  return measurementId && /^G-[A-Z0-9-]+$/.test(measurementId)
     ? measurementId
     : null
+}
+
+function hasInitializedGoogleAnalytics(measurementId: string) {
+  return (
+    window.dataLayer?.some((entry) => {
+      if (!entry || typeof entry !== 'object' || !('length' in entry)) {
+        return false
+      }
+
+      const [command, id, options] = Array.from(entry as ArrayLike<unknown>)
+      return (
+        command === 'config' &&
+        id === measurementId &&
+        typeof options === 'object' &&
+        options !== null &&
+        'send_page_view' in options
+      )
+    }) ?? false
+  )
 }
 
 /*
@@ -314,11 +332,10 @@ function GoogleAnalyticsPageTracker({
   })
 
   useEffect(() => {
-    if (!measurementId || window.__cookbookGaInitialized) {
+    if (!measurementId || hasInitializedGoogleAnalytics(measurementId)) {
       return
     }
 
-    window.__cookbookGaInitialized = true
     window.gtag?.('js', new Date())
     window.gtag?.('config', measurementId, { send_page_view: false })
   }, [measurementId])
