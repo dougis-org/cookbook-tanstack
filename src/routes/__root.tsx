@@ -15,6 +15,7 @@ import printCss from '../styles/print.css?url'
 
 declare global {
   interface Window {
+    __cookbookGaInitialized?: boolean
     dataLayer?: unknown[]
     gtag?: (...args: unknown[]) => void
   }
@@ -279,7 +280,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
-              <GoogleAnalyticsPageTracker />
+              <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} />
               <Header />
               {children}
               <TanStackDevtools
@@ -302,32 +303,37 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   )
 }
 
-function GoogleAnalyticsPageTracker() {
+function GoogleAnalyticsPageTracker({
+  measurementId,
+}: {
+  measurementId: string | null
+}) {
   const pagePath = useRouterState({
     select: (state) =>
       `${state.location.pathname}${state.location.searchStr}${state.location.hash}`,
   })
 
   useEffect(() => {
-    if (!googleAnalyticsId) {
+    if (!measurementId || window.__cookbookGaInitialized) {
       return
     }
 
+    window.__cookbookGaInitialized = true
     window.gtag?.('js', new Date())
-    window.gtag?.('config', googleAnalyticsId, { send_page_view: false })
-  }, [])
+    window.gtag?.('config', measurementId, { send_page_view: false })
+  }, [measurementId])
 
   useEffect(() => {
-    if (!googleAnalyticsId || typeof window.gtag !== 'function') {
+    if (!measurementId || typeof window.gtag !== 'function') {
       return
     }
 
-    window.gtag('config', googleAnalyticsId, {
+    window.gtag('config', measurementId, {
       page_path: pagePath,
       page_title: document.title,
       page_location: window.location.href,
     })
-  }, [pagePath])
+  }, [measurementId, pagePath])
 
   return null
 }
