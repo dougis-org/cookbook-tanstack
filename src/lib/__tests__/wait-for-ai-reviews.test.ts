@@ -17,7 +17,9 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toMatch(
       /Boolean\(review\.submitted_at\)[\s\S]*reviewer\.reviewAuthors\.includes\(login\)[\s\S]*state !== 'PENDING'[\s\S]*state !== 'DISMISSED'/,
     );
-    expect(workflow).toMatch(/const currentReviews = submittedReviews\.filter\(/);
+    expect(workflow).toMatch(
+      /const currentReviews = submittedReviews\.filter\([\s\S]*review\.commit_id === ref/,
+    );
   });
 
   it("only requires Gemini on synchronize events when no earlier Gemini review exists", () => {
@@ -31,10 +33,10 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toMatch(/const currentReviews = submittedReviews\.filter\(/);
     expect(workflow).toMatch(/const hasHistoricalReview = submittedReviews\.length > 0/);
     expect(workflow).toMatch(
-      /const requireCurrentHeadReview =[\s\S]*!isSynchronize \|\|[\s\S]*reviewer\.requireCurrentHeadOnSynchronize \|\|[\s\S]*!hasHistoricalReview/,
+      /const requireCurrentHeadReview =\s*\n\s*!isSynchronize \|\|\s*\n\s*reviewer\.requireCurrentHeadOnSynchronize \|\|\s*\n\s*!hasHistoricalReview/,
     );
     expect(workflow).toMatch(
-      /completedChecks\.length > 0 \|\|[\s\S]*\(requireCurrentHeadReview[\s\S]*currentReviews\.length > 0[\s\S]*: hasHistoricalReview\)/,
+      /complete:\s*\n\s*completedChecks\.length > 0 \|\|\s*\n\s*\(requireCurrentHeadReview\s*\n\s*\? currentReviews\.length > 0\s*\n\s*: hasHistoricalReview\)/,
     );
   });
 });
