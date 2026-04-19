@@ -51,6 +51,11 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:29:42.701Z"
+    },
+    "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md": {
+      "count": 1,
+      "tokens": 1672,
+      "first_read": "2026-04-19T16:04:11.698Z"
     }
   },
   "files_written": [
@@ -137,17 +142,29 @@
       "action": "edit",
       "tokens": 15,
       "at": "2026-04-19T15:30:34.553Z"
+    },
+    {
+      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "action": "edit",
+      "tokens": 266,
+      "at": "2026-04-19T16:04:21.365Z"
+    },
+    {
+      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "action": "edit",
+      "tokens": 225,
+      "at": "2026-04-19T16:04:31.528Z"
     }
   ],
   "edit_counts": {
-    "openspec/changes/revamp-home-page-experience/tasks.md": 6,
+    "openspec/changes/revamp-home-page-experience/tasks.md": 8,
     "src/test-helpers/mocks.ts": 2,
     "src/lib/__tests__/ad-policy.test.ts": 1,
     "src/lib/ad-policy.ts": 1,
     "src/routes/home.tsx": 2,
     "src/routes/index.tsx": 2
   },
-  "anatomy_hits": 1,
+  "anatomy_hits": 2,
   "anatomy_misses": 9,
   "repeated_reads_warned": 2,
   "cerebrum_warnings": 0,
