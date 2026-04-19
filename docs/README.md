@@ -19,12 +19,15 @@ These standards are referenced by:
 
 ## Database
 
-- **[Database Schema](./database.md)** — MongoDB/Mongoose schema documentation, collections, relationships, and migration notes
+- **[Database Schema](./database.md)** — MongoDB/Mongoose schema documentation,
+  collections, relationships, and migration notes
 
 ## Project Planning
 
 - **[Migration Plan](./plan/MIGRATION_PLAN.md)** — Overall migration roadmap from Laravel to TanStack Start
 - **[Milestones](./plan/milestones/)** — Detailed specifications for each development milestone (1-12)
+- **[User Tier Feature Sets](./user-tier-feature-sets.md)** — Product feature matrix
+  and limits for Home Cook, Prep Cook, Sous Chef, and Executive Chef tiers
 
 ## Tool Configuration
 
@@ -33,7 +36,9 @@ These standards are referenced by:
 
 ## How to Use This Documentation
 
-**For development tasks:** Start with [Repository Standards](./standards/README.md) for behavioral guidelines, then reference tool-specific configs in `.github/instructions/`
+**For development tasks:** Start with [Repository Standards](./standards/README.md)
+for behavioral guidelines, then reference tool-specific configs in
+`.github/instructions/`
 
 **For architecture questions:** See `CLAUDE.md` and `AGENTS.md` in the project root
 
