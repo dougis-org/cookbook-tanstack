@@ -49,7 +49,7 @@ Suggested start-of-work commands:
 - [x] Run E2E tests with `npm run test:e2e`.
 - [x] Run type checks with `npx tsc --noEmit`.
 - [x] Run build with `npm run build`.
-- [ ] Run Codacy analysis if available and required by `docs/standards/analysis-and-security.md`.
+- [x] Run Codacy analysis if available and required by `docs/standards/analysis-and-security.md`.
 - [x] Run Snyk only if new dependencies are added.
 - [x] Run markdown lint/fix on edited `.md` files if markdown files change during implementation.
 - [x] All completed tasks marked as complete.
@@ -70,7 +70,7 @@ Use the project's documented commands in `CONTRIBUTING.md` and `docs/standards/`
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from
+- [x] Run the required pre-PR self-review from
   `.github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md` before committing.
 - [ ] Commit all changes to the working branch and push to remote.
 - [ ] Open PR from working branch to `main`.
