@@ -24,19 +24,21 @@ describe("Wait for AI reviews workflow", () => {
 
   it("only requires Gemini on synchronize events when no earlier Gemini review exists", () => {
     const workflow = readFileSync(workflowPath, "utf8");
+    const submittedReviewsSection = workflow.split("const currentReviews = submittedReviews.filter(")[0];
 
     expect(workflow).toContain("const action = context.payload.action");
     expect(workflow).toContain("const isSynchronize = action === 'synchronize'");
     expect(workflow).toContain("requireCurrentHeadOnSynchronize: true");
     expect(workflow).toContain("requireCurrentHeadOnSynchronize: false");
     expect(workflow).toMatch(/const submittedReviews = reviews\.filter/);
+    expect(submittedReviewsSection).not.toContain("review.commit_id === ref");
     expect(workflow).toMatch(/const currentReviews = submittedReviews\.filter\(/);
     expect(workflow).toMatch(/const hasHistoricalReview = submittedReviews\.length > 0/);
     expect(workflow).toMatch(
-      /const requireCurrentHeadReview =\s*\n\s*!isSynchronize \|\|\s*\n\s*reviewer\.requireCurrentHeadOnSynchronize \|\|\s*\n\s*!hasHistoricalReview/,
+      /const requireCurrentHeadReview[\s\S]*!isSynchronize[\s\S]*\|\|[\s\S]*reviewer\.requireCurrentHeadOnSynchronize[\s\S]*\|\|[\s\S]*!hasHistoricalReview/,
     );
     expect(workflow).toMatch(
-      /complete:\s*\n\s*completedChecks\.length > 0 \|\|\s*\n\s*\(requireCurrentHeadReview\s*\n\s*\? currentReviews\.length > 0\s*\n\s*: hasHistoricalReview\)/,
+      /complete:[\s\S]*completedChecks\.length > 0[\s\S]*\([\s\S]*requireCurrentHeadReview[\s\S]*\? currentReviews\.length > 0[\s\S]*: hasHistoricalReview[\s\S]*\)/,
     );
   });
 });
