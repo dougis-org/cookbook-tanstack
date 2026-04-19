@@ -2,52 +2,52 @@
   "session_id": "session-2026-04-19-0815",
   "started": "2026-04-19T15:15:35.886Z",
   "files_read": {
-    "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md": {
+    "openspec/changes/revamp-home-page-experience/tasks.md": {
       "count": 3,
       "tokens": 1672,
       "first_read": "2026-04-19T15:16:13.430Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/.github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md": {
+    ".github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md": {
       "count": 1,
       "tokens": 1178,
       "first_read": "2026-04-19T15:16:22.148Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/docs/standards/analysis-and-security.md": {
+    "docs/standards/analysis-and-security.md": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:16:22.497Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/lib/ad-policy.ts": {
+    "src/lib/ad-policy.ts": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:23:12.924Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/routes/home.tsx": {
+    "src/routes/home.tsx": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:23:13.301Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/routes/index.tsx": {
+    "src/routes/index.tsx": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:23:15.632Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/test-helpers/mocks.ts": {
+    "src/test-helpers/mocks.ts": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:29:33.047Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/types/user.ts": {
+    "src/types/user.ts": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:29:35.381Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/lib/__tests__/ad-policy.test.ts": {
+    "src/lib/__tests__/ad-policy.test.ts": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:29:35.820Z"
     },
-    "/home/doug/dev2/cookbook-tanstack/src/components/layout/PageLayout.tsx": {
+    "src/components/layout/PageLayout.tsx": {
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-19T15:29:42.701Z"
@@ -55,85 +55,85 @@
   },
   "files_written": [
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 28,
       "at": "2026-04-19T15:23:23.068Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 40,
       "at": "2026-04-19T15:23:26.769Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 22,
       "at": "2026-04-19T15:23:50.942Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 13,
       "at": "2026-04-19T15:23:53.721Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 43,
       "at": "2026-04-19T15:24:06.139Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+      "file": "openspec/changes/revamp-home-page-experience/tasks.md",
       "action": "edit",
       "tokens": 19,
       "at": "2026-04-19T15:29:14.983Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/test-helpers/mocks.ts",
+      "file": "src/test-helpers/mocks.ts",
       "action": "edit",
       "tokens": 26,
       "at": "2026-04-19T15:30:04.540Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/test-helpers/mocks.ts",
+      "file": "src/test-helpers/mocks.ts",
       "action": "edit",
       "tokens": 34,
       "at": "2026-04-19T15:30:08.288Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/lib/__tests__/ad-policy.test.ts",
+      "file": "src/lib/__tests__/ad-policy.test.ts",
       "action": "edit",
       "tokens": 16,
       "at": "2026-04-19T15:30:11.239Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/lib/ad-policy.ts",
+      "file": "src/lib/ad-policy.ts",
       "action": "edit",
       "tokens": 165,
       "at": "2026-04-19T15:30:20.927Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/routes/home.tsx",
+      "file": "src/routes/home.tsx",
       "action": "edit",
       "tokens": 52,
       "at": "2026-04-19T15:30:25.684Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/routes/home.tsx",
+      "file": "src/routes/home.tsx",
       "action": "edit",
       "tokens": 11,
       "at": "2026-04-19T15:30:28.352Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/routes/index.tsx",
+      "file": "src/routes/index.tsx",
       "action": "edit",
       "tokens": 20,
       "at": "2026-04-19T15:30:31.694Z"
     },
     {
-      "file": "/home/doug/dev2/cookbook-tanstack/src/routes/index.tsx",
+      "file": "src/routes/index.tsx",
       "action": "edit",
       "tokens": 15,
       "at": "2026-04-19T15:30:34.553Z"
