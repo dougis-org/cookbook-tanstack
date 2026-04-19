@@ -15,6 +15,7 @@ function CategoriesPage() {
 
   return (
     <PageLayout
+      role="public-content"
       title="Categories"
       description="Explore recipes by category"
     >

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { Route, HomePage } from '../index'
+import { Route, HomePage } from '@/routes/index'
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (opts: any) => ({
@@ -9,11 +9,10 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => ({}),
   }),
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-  redirect: (opts: any) => {
-    const err = new Error('Redirect')
-    ;(err as any).options = opts
-    throw err
-  },
+  redirect: (opts: any) => ({
+    type: 'redirect',
+    options: opts,
+  }),
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -30,15 +29,19 @@ describe('/', () => {
 
       const mockSession = { user: { id: 'u1' } }
       
-      expect(() => {
+      // Should throw the redirect object returned by the redirect() mock
+      try {
         beforeLoad({ context: { session: mockSession } } as any)
-      }).toThrow('Redirect')
+        throw new Error('Should have thrown')
+      } catch (err: any) {
+        expect(err.type).toBe('redirect')
+        expect(err.options.to).toBe('/home')
+      }
     })
 
     it('does not redirect anonymous visitors', () => {
       const beforeLoad = Route.options.beforeLoad
       if (!beforeLoad) {
-        // This is expected to fail initially as beforeLoad is not yet implemented
         return
       }
 
@@ -50,8 +53,6 @@ describe('/', () => {
 
   describe('HomePage component', () => {
     it('does not render "Create Recipe" CTA for anonymous visitors', () => {
-      // Note: currently HomePage doesn't check auth state, it just renders both CTAs.
-      // This test will fail until we update the component.
       render(<HomePage />)
       expect(screen.queryByRole('link', { name: /create recipe/i })).not.toBeInTheDocument()
     })

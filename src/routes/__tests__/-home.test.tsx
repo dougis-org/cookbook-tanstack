@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-// We will create home.tsx next, exporting Route and HomePageComponent
-import { Route, HomePageComponent } from '../home'
+import { Route, HomePageComponent } from '@/routes/home'
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (opts: any) => ({
@@ -10,11 +9,10 @@ vi.mock('@tanstack/react-router', () => ({
     useSearch: () => ({}),
   }),
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-  redirect: (opts: any) => {
-    const err = new Error('Redirect')
-    ;(err as any).options = opts
-    throw err
-  },
+  redirect: (opts: any) => ({
+    type: 'redirect',
+    options: opts,
+  }),
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -29,9 +27,14 @@ describe('/home', () => {
         throw new Error('beforeLoad is not defined')
       }
       
-      expect(() => {
+      try {
         beforeLoad({ context: { session: null }, location: { href: '/home' } } as any)
-      }).toThrow('Redirect')
+        throw new Error('Should have thrown')
+      } catch (err: any) {
+        expect(err.type).toBe('redirect')
+        expect(err.options.to).toBe('/auth/login')
+        expect(err.options.search).toMatchObject({ reason: 'auth-required' })
+      }
     })
 
     it('allows authenticated users', () => {

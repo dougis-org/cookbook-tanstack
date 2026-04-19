@@ -18,7 +18,7 @@ export function CookbooksPage() {
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
 
   return (
-    <PageLayout title="Cookbooks" description="Your recipe collections">
+    <PageLayout role="public-content" title="Cookbooks" description="Your recipe collections">
       <div className="flex justify-between items-center mb-6">
         <span className="text-[var(--theme-fg-muted)]">
           {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
