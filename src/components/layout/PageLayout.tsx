@@ -56,7 +56,7 @@ export function AdSlot({
 }) {
   const { session } = useAuth()
   const slotId = getGoogleAdSenseSlotId(position)
-  const adRef = React.useRef<HTMLModElement | null>(null)
+  const adRef = React.useRef<HTMLElement | null>(null)
   const isEligible = import.meta.env.PROD && !!slotId && isAdEligible(role, session)
 
   React.useEffect(() => {
@@ -73,7 +73,11 @@ export function AdSlot({
 
       try {
         ;(window.adsbygoogle = window.adsbygoogle || []).push({})
-      } catch {
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('Failed to request Google AdSense slot', error)
+        }
+
         // Google populates adsbygoogle asynchronously; ignore retries handled by future mounts/navigation.
       }
     }
@@ -100,7 +104,9 @@ export function AdSlot({
       className="my-8 overflow-hidden rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 p-2"
     >
       <ins
-        ref={adRef}
+        ref={(node) => {
+          adRef.current = node
+        }}
         className="adsbygoogle block"
         data-ad-client={GOOGLE_ADSENSE_ACCOUNT}
         data-ad-format="auto"
