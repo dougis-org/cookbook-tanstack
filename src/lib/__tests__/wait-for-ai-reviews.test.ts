@@ -40,9 +40,9 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toContain("const finalPollIntervalMs = 45_000");
     expect(workflow).toContain("await wait(initialSleepMs)");
     expect(workflow).toMatch(
-      /const getNextPollIntervalMs = \(elapsedMs, completedPolls\) => \{[\s\S]*completedPolls <= followUpPollIterations[\s\S]*followUpPollIntervalMs[\s\S]*finalPollIntervalMs/,
+      /const getNextPollIntervalMs = \(elapsedMs, completedPolls\) => \{[\s\S]*completedPolls < followUpPollIterations[\s\S]*followUpPollIntervalMs[\s\S]*finalPollIntervalMs/,
     );
-    expect(workflow).not.toMatch(/completedPolls < followUpPollIterations/);
+    expect(workflow).not.toMatch(/completedPolls <= followUpPollIterations/);
     expect(workflow).toMatch(/pollCount \+= 1/);
     expect(workflow).toMatch(/const sleepMs = getNextPollIntervalMs\(elapsedMs, pollCount\)/);
   });
