@@ -8,11 +8,12 @@ vi.mock('@tanstack/react-router', () => ({
     useParams: () => ({}),
     useSearch: () => ({}),
   }),
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+  Link: ({ children, to }: { children: any; to: string }) => <a href={to}>{children}</a>,
   redirect: (opts: any) => ({
     type: 'redirect',
     options: opts,
   }),
+  useNavigate: () => vi.fn(),
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
