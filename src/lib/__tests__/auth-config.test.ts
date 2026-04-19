@@ -150,5 +150,12 @@ describe("auth configuration", () => {
       const config = mockBetterAuth.mock.calls[0]?.[0]
       expect(config.trustedOrigins).toEqual([])
     })
+
+    it("filters whitespace-only entries", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS = "   "
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([])
+    })
   })
 })

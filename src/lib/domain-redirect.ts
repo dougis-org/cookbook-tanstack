@@ -8,9 +8,12 @@ export function getDomainRedirectUrl(
 ): string | null {
   if (!primaryUrl) return null
 
+  let primaryOrigin: string
   let primaryHostname: string
   try {
-    primaryHostname = new URL(primaryUrl).hostname
+    const parsed = new URL(primaryUrl)
+    primaryOrigin = parsed.origin
+    primaryHostname = parsed.hostname
   } catch {
     return null
   }
@@ -22,5 +25,5 @@ export function getDomainRedirectUrl(
   if (requestHostname === primaryHostname.toLowerCase()) return null
 
   const { pathname, search } = new URL(request.url)
-  return `${primaryUrl.replace(/\/$/, "")}${pathname}${search}`
+  return `${primaryOrigin}${pathname}${search}`
 }

@@ -65,11 +65,20 @@ describe("getDomainRedirectUrl", () => {
     expect(result).toMatch(/^https:\/\/recipe\.dougis\.com/)
   })
 
-  it("strips trailing slash from APP_PRIMARY_URL to avoid double slash", () => {
+  it("uses URL origin so trailing slash in APP_PRIMARY_URL does not double-slash", () => {
     const req = new Request("http://cookbook-tanstack.fly.dev/recipes", {
       headers: { host: "cookbook-tanstack.fly.dev" },
     })
     expect(getDomainRedirectUrl(req, "https://recipe.dougis.com/")).toBe(
+      "https://recipe.dougis.com/recipes",
+    )
+  })
+
+  it("uses URL origin so APP_PRIMARY_URL path component is ignored", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, "https://recipe.dougis.com/app")).toBe(
       "https://recipe.dougis.com/recipes",
     )
   })

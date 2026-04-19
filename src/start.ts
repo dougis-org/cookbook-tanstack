@@ -8,8 +8,10 @@ const domainRedirectMiddleware = createMiddleware({ type: "request" }).server(
       process.env.APP_PRIMARY_URL,
     )
     if (redirectUrl) {
+      const status =
+        request.method === "GET" || request.method === "HEAD" ? 301 : 308
       return new Response(null, {
-        status: 301,
+        status,
         headers: { Location: redirectUrl },
       })
     }
