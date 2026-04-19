@@ -150,8 +150,8 @@ jobs:
                 return
               }
 
-              pollCount += 1
               const sleepMs = getNextPollIntervalMs(elapsedMs, pollCount)
               core.info(`Checks not complete yet. Sleeping for ${Math.ceil(sleepMs / 1000)} seconds...`)
               await wait(sleepMs)
+              pollCount += 1
             }
