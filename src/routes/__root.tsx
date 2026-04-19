@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router'
 import { getSession } from '@/lib/get-session'
 import type { RouterContext } from '@/types/router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
@@ -6,17 +6,35 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
 import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
+import { useEffect } from 'react'
 
 import Header from '../components/Header'
 
 import appCss from '../styles.css?url'
 import printCss from '../styles/print.css?url'
 
+declare global {
+  interface Window {
+    dataLayer?: unknown[]
+    gtag?: (...args: unknown[]) => void
+  }
+}
+
 function minifyInlineCss(css: string) {
   return css
     .replace(/\s+/g, ' ')
     .replace(/\s*([{}:;,])\s*/g, '$1')
     .trim()
+}
+
+function getGoogleAnalyticsId() {
+  const measurementId = import.meta.env.PROD
+    ? import.meta.env.VITE_GOOGLE_ANALYTICS_ID?.trim()
+    : undefined
+
+  return measurementId && /^G-[A-Z0-9-]+$/i.test(measurementId)
+    ? measurementId
+    : null
 }
 
 /*
@@ -156,6 +174,14 @@ const criticalCss = minifyInlineCss(`
   }
 `)
 
+const googleAnalyticsId = getGoogleAnalyticsId()
+const googleAnalyticsSrc = googleAnalyticsId
+  ? `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(googleAnalyticsId)}`
+  : null
+const googleAnalyticsInitScript = googleAnalyticsId
+  ? `window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};window.gtag('js',new Date());window.gtag('config',${JSON.stringify(googleAnalyticsId)},{send_page_view:false});`
+  : null
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const session = await getSession()
@@ -203,6 +229,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {googleAnalyticsSrc ? <script async src={googleAnalyticsSrc} /> : null}
+        {googleAnalyticsInitScript ? (
+          // eslint-disable-next-line react/no-danger -- static string built from validated env input
+          <script dangerouslySetInnerHTML={{ __html: googleAnalyticsInitScript }} />
+        ) : null}
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <style data-id="critical-startup">{criticalCss}</style>
@@ -248,6 +279,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
+              <GoogleAnalyticsPageTracker />
               <Header />
               {children}
               <TanStackDevtools
@@ -268,4 +300,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   )
+}
+
+function GoogleAnalyticsPageTracker() {
+  const pagePath = useRouterState({
+    select: (state) =>
+      `${state.location.pathname}${state.location.searchStr}${state.location.hash}`,
+  })
+
+  useEffect(() => {
+    if (!googleAnalyticsId || typeof window.gtag !== 'function') {
+      return
+    }
+
+    window.gtag('config', googleAnalyticsId, {
+      page_path: pagePath,
+      page_title: document.title,
+      page_location: window.location.href,
+    })
+  }, [pagePath])
+
+  return null
 }
