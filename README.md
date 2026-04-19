@@ -29,15 +29,15 @@ The application will be available at `http://localhost:3000`
 Copy `.env.example` to `.env.local` and provide the required local secrets before running database-backed or
 upload flows.
 
-Recipe image uploads require ImageKit credentials:
+Recipe image uploads and pending-upload deletion require an ImageKit private/API key. Use
+`IMAGE_KIT_API_KEY`, or `IMAGEKIT_PRIVATE_KEY` if you prefer the SDK-native env name:
 
 ```bash
 IMAGE_KIT_API_KEY=
-IMAGE_KIT_PUBLIC_KEY=
-IMAGE_KIT_URL_ENDPOINT=
+# IMAGEKIT_PRIVATE_KEY=
 ```
 
-`IMAGE_KIT_API_KEY` is server-side only and must never be exposed in client code.
+ImageKit private keys are server-side only and must never be exposed in client code.
 
 ## Contributing
 
