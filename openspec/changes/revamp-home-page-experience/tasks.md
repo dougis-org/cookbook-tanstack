@@ -2,41 +2,41 @@
 
 ## Preparation
 
-- [ ] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
-- [ ] **Step 2 — Create and publish working branch:** `git checkout -b feature/revamp-home-page-experience`
+- [x] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
+- [x] **Step 2 — Create and publish working branch:** `git checkout -b feature/revamp-home-page-experience`
   then immediately `git push -u origin feature/revamp-home-page-experience`
-- [ ] Review `openspec/changes/revamp-home-page-experience/proposal.md`,
+- [x] Review `openspec/changes/revamp-home-page-experience/proposal.md`,
   `openspec/changes/revamp-home-page-experience/design.md`, and
   `openspec/changes/revamp-home-page-experience/specs/**/*.md`.
 - [ ] Confirm GitHub issues #346 and #359 are linked in the PR description.
-- [ ] Confirm no active OpenSpec scope changes are needed before implementation starts.
+- [x] Confirm no active OpenSpec scope changes are needed before implementation starts.
 
 ## Execution
 
-- [ ] Add focused tests for `/` route behavior before implementation:
-  - [ ] anonymous visitors remain on public landing page;
-  - [ ] authenticated users redirect to `/home`;
-  - [ ] anonymous public landing page does not render create/import CTAs;
-  - [ ] public landing page does not include technology-stack marketing copy.
-- [ ] Add focused tests for `/home` before implementation:
-  - [ ] anonymous visitors are redirected through auth guard;
-  - [ ] authenticated users see workflow shortcuts;
-  - [ ] authenticated users see global discovery links or sections.
-- [ ] Add focused tests for ad eligibility before implementation:
-  - [ ] anonymous viewer on ad-enabled public role is ad-eligible;
-  - [ ] `home-cook` non-admin viewer on ad-enabled role is ad-eligible;
-  - [ ] `prep-cook`, `sous-chef`, and `executive-chef` viewers are not ad-eligible;
-  - [ ] admin viewer is not ad-eligible;
-  - [ ] auth/task/admin/account/profile/print roles are not ad-eligible.
-- [ ] Refactor or add page-role/ad-policy code in a small, typed module.
-- [ ] Update `src/routes/index.tsx` so `/` is anonymous-focused and redirects authenticated users to `/home`.
-- [ ] Add `src/routes/home.tsx` as an authenticated route using existing auth guard patterns.
-- [ ] Build `/home` with flexible sections for workflow shortcuts and global discovery, avoiding brittle
+- [x] Add focused tests for `/` route behavior before implementation:
+  - [x] anonymous visitors remain on public landing page;
+  - [x] authenticated users redirect to `/home`;
+  - [x] anonymous public landing page does not render create/import CTAs;
+  - [x] public landing page does not include technology-stack marketing copy.
+- [x] Add focused tests for `/home` before implementation:
+  - [x] anonymous visitors are redirected through auth guard;
+  - [x] authenticated users see workflow shortcuts;
+  - [x] authenticated users see global discovery links or sections.
+- [x] Add focused tests for ad eligibility before implementation:
+  - [x] anonymous viewer on ad-enabled public role is ad-eligible;
+  - [x] `home-cook` non-admin viewer on ad-enabled role is ad-eligible;
+  - [x] `prep-cook`, `sous-chef`, and `executive-chef` viewers are not ad-eligible;
+  - [x] admin viewer is not ad-eligible;
+  - [x] auth/task/admin/account/profile/print roles are not ad-eligible.
+- [x] Refactor or add page-role/ad-policy code in a small, typed module.
+- [x] Update `src/routes/index.tsx` so `/` is anonymous-focused and redirects authenticated users to `/home`.
+- [x] Add `src/routes/home.tsx` as an authenticated route using existing auth guard patterns.
+- [x] Build `/home` with flexible sections for workflow shortcuts and global discovery, avoiding brittle
   assumptions about future page design.
-- [ ] Add provider-neutral ad slot groundwork or layout hooks controlled by the shared ad policy.
-- [ ] Preserve anonymous browsing of public recipes, cookbooks, and categories.
-- [ ] Review for duplication and unnecessary complexity.
-- [ ] Confirm acceptance criteria are covered by tests and implementation.
+- [x] Add provider-neutral ad slot groundwork or layout hooks controlled by the shared ad policy.
+- [x] Preserve anonymous browsing of public recipes, cookbooks, and categories.
+- [x] Review for duplication and unnecessary complexity.
+- [x] Confirm acceptance criteria are covered by tests and implementation.
 
 Suggested start-of-work commands:
 
@@ -45,25 +45,25 @@ Suggested start-of-work commands:
 
 ## Validation
 
-- [ ] Run unit/integration tests with `npm run test`.
-- [ ] Run E2E tests with `npm run test:e2e`.
-- [ ] Run type checks with `npx tsc --noEmit`.
-- [ ] Run build with `npm run build`.
+- [x] Run unit/integration tests with `npm run test`.
+- [x] Run E2E tests with `npm run test:e2e`.
+- [x] Run type checks with `npx tsc --noEmit`.
+- [x] Run build with `npm run build`.
 - [ ] Run Codacy analysis if available and required by `docs/standards/analysis-and-security.md`.
-- [ ] Run Snyk only if new dependencies are added.
-- [ ] Run markdown lint/fix on edited `.md` files if markdown files change during implementation.
-- [ ] All completed tasks marked as complete.
-- [ ] All steps in [Remote push validation].
+- [x] Run Snyk only if new dependencies are added.
+- [x] Run markdown lint/fix on edited `.md` files if markdown files change during implementation.
+- [x] All completed tasks marked as complete.
+- [x] All steps in [Remote push validation].
 
 ## Remote push validation
 
 Verification requirements (all must pass before PR or pushing updates to a PR):
 
-- **Unit tests** — run `npm run test`; all tests must pass.
-- **Integration tests** — run any route/component integration coverage included in `npm run test`; all tests must pass.
-- **Regression / E2E tests** — run `npm run test:e2e`; all tests must pass.
-- **Build** — run `npm run build`; build must succeed with no errors.
-- **Type check** — run `npx tsc --noEmit`; type checking must succeed.
+- [x] **Unit tests** — run `npm run test`; all tests must pass.
+- [x] **Integration tests** — run any route/component integration coverage included in `npm run test`; all tests must pass.
+- [x] **Regression / E2E tests** — run `npm run test:e2e`; all tests must pass.
+- [x] **Build** — run `npm run build`; build must succeed with no errors.
+- [x] **Type check** — run `npx tsc --noEmit`; type checking must succeed.
 - If **ANY** of the above fail, iterate and address the failure before pushing.
 
 Use the project's documented commands in `CONTRIBUTING.md` and `docs/standards/`.

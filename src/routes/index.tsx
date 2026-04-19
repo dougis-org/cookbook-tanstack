@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChefHat, BookOpen, Search, Plus } from 'lucide-react'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
+import { ChefHat, BookOpen, Search } from 'lucide-react'
 import PageLayout from '@/components/layout/PageLayout'
 
-export const Route = createFileRoute('/')({ component: HomePage })
+export const Route = createFileRoute('/')({
+  beforeLoad: ({ context }) => {
+    if (context.session) {
+      throw redirect({ to: '/home' })
+    }
+  },
+  component: HomePage,
+})
 
-function HomePage() {
+export function HomePage() {
   const features = [
     {
       icon: <BookOpen className="w-12 h-12 text-[var(--theme-accent)]" />,
@@ -27,17 +34,10 @@ function HomePage() {
         'Find recipes quickly with advanced search and filtering options by ingredients, time, and more.',
       link: '/recipes',
     },
-    {
-      icon: <Plus className="w-12 h-12 text-[var(--theme-accent)]" />,
-      title: 'Create Recipes',
-      description:
-        'Add your own recipes to the collection. Share your culinary creations with detailed instructions.',
-      link: '/recipes/new',
-    },
   ]
 
   return (
-    <PageLayout>
+    <PageLayout role="public-marketing">
       <section className="relative py-20 px-6 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
         <div className="relative max-w-5xl mx-auto">
@@ -53,8 +53,7 @@ function HomePage() {
             Your Personal Recipe Management System
           </p>
           <p className="text-lg text-[var(--theme-fg-subtle)] max-w-3xl mx-auto mb-8">
-            Discover, create, and organize your favorite recipes. Built with TanStack Start
-            for a modern, full-stack experience.
+            Discover, create, and organize your favorite recipes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -62,12 +61,6 @@ function HomePage() {
               className="px-8 py-3 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg"
             >
               Browse Recipes
-            </Link>
-            <Link
-              to="/recipes/new"
-              className="px-8 py-3 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors"
-            >
-              Create Recipe
             </Link>
           </div>
         </div>
