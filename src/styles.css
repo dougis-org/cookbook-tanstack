@@ -5,6 +5,14 @@
 @import "./styles/themes/light-cool.css";
 @import "./styles/themes/light-warm.css";
 
+#boot-loader {
+  display: none;
+}
+
+#app-shell {
+  visibility: visible;
+}
+
 /* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.
    All dark: usages have been replaced by CSS token cascade as of the standardize-theme-tokens refactor.
    This directive is retained so future dark: utilities work correctly without additional config. */

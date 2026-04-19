@@ -12,7 +12,7 @@ export function getImageKit(): ImageKit {
         "ImageKit env vars not set. Ensure IMAGE_KIT_API_KEY, IMAGE_KIT_PUBLIC_KEY, and IMAGE_KIT_URL_ENDPOINT are configured.",
       );
     }
-    _imagekit = new ImageKit({ privateKey, publicKey, urlEndpoint });
+    _imagekit = new ImageKit({ privateKey });
   }
   return _imagekit;
 }

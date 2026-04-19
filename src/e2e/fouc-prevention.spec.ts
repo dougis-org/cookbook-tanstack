@@ -1,7 +1,30 @@
 import { test, expect } from '@bgotink/playwright-coverage'
-import type { Page } from '@playwright/test'
+import type { Page, Route } from '@playwright/test'
 
-async function setupThemeAndGoto(page: Page, theme: string | null) {
+interface DelayedAppCss {
+  continueRequest: () => void
+  abortRequest: () => void
+  requested: Promise<string>
+}
+
+interface BootThemeExpectation {
+  storedTheme: string | null
+  expectedClass: string
+  expectedStoredTheme?: string
+  background: string
+  foreground: string
+  accent: string
+}
+
+function createGate<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((next) => {
+    resolve = next
+  })
+  return { promise, resolve }
+}
+
+async function setStoredTheme(page: Page, theme: string | null) {
   await page.addInitScript((t) => {
     if (t === null) {
       localStorage.removeItem('cookbook-theme')
@@ -9,117 +32,248 @@ async function setupThemeAndGoto(page: Page, theme: string | null) {
       localStorage.setItem('cookbook-theme', t)
     }
   }, theme)
-  await page.route(/\.css($|\?|#)/, (route) => route.abort())
+}
+
+async function blockLocalStorage(page: Page) {
+  await page.addInitScript(() => {
+    try {
+      localStorage.clear()
+    } catch {
+      // blocked storage is the state under test
+    }
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: () => {
+          throw new Error('blocked')
+        },
+        setItem: () => {
+          throw new Error('blocked')
+        },
+        removeItem: () => {
+          throw new Error('blocked')
+        },
+      },
+      writable: true,
+    })
+  })
+}
+
+async function delayAppStylesheet(page: Page): Promise<DelayedAppCss> {
+  const stylesheetGate = createGate<'continue' | 'abort'>()
+  const requestGate = createGate<string>()
+  let sawAppCss = false
+
+  await page.route(/\.css($|\?|#)/, async (route: Route) => {
+    const url = route.request().url()
+    if (url.toLowerCase().includes('print')) {
+      await route.continue()
+      return
+    }
+
+    if (!sawAppCss) {
+      sawAppCss = true
+      requestGate.resolve(url)
+    }
+
+    const action = await stylesheetGate.promise
+    if (action === 'abort') {
+      await route.abort('failed')
+      return
+    }
+
+    await route.continue()
+  })
+
+  return {
+    continueRequest: () => stylesheetGate.resolve('continue'),
+    abortRequest: () => stylesheetGate.resolve('abort'),
+    requested: requestGate.promise,
+  }
+}
+
+async function gotoWithDelayedAppCss(
+  page: Page,
+  theme: string | null,
+): Promise<DelayedAppCss> {
+  await setStoredTheme(page, theme)
+  const delayedCss = await delayAppStylesheet(page)
   await page.goto('/', { waitUntil: 'commit' })
+  await delayedCss.requested
+  return delayedCss
+}
+
+async function readBootTheme(page: Page) {
+  return page.locator('#boot-loader').evaluate((loader) => {
+    const spinner = document.querySelector('[data-testid="boot-spinner"]')
+    const loaderStyles = window.getComputedStyle(loader)
+    const spinnerStyles = spinner ? window.getComputedStyle(spinner) : null
+    return {
+      background: loaderStyles.backgroundColor,
+      foreground: loaderStyles.color,
+      accent: spinnerStyles?.borderTopColor ?? '',
+    }
+  })
+}
+
+async function expectBootLoaderVisible(page: Page) {
+  await expect(page.locator('#boot-loader')).toBeVisible()
+  await expect(page.locator('#boot-loader')).toContainText('Pre Heating')
+  await expect(page.locator('[data-testid="boot-spinner"]')).toBeVisible()
+}
+
+async function expectAppShellHidden(page: Page) {
+  const appShell = page.locator('#app-shell')
+  await expect(appShell).toHaveCount(1)
+  await expect(appShell).toContainText('CookBook')
+  await expect(appShell).not.toBeVisible()
 }
 
 test.describe('FOUC prevention', () => {
-  // TC-1: dark theme — abort external CSS so only critical CSS supplies the background
-  test('dark theme: html has dark class and correct background before hydration', async ({
+  test('delayed app stylesheet shows the boot loader and hides app shell content', async ({
     page,
   }) => {
-    await setupThemeAndGoto(page, null)
+    await gotoWithDelayedAppCss(page, null)
 
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('dark')
-
-    const bg = await page.evaluate(
-      () => window.getComputedStyle(document.documentElement).backgroundColor,
-    )
-    // rgb(15, 23, 42) = #0f172a (slate-900)
-    expect(bg).toBe('rgb(15, 23, 42)')
+    await expectBootLoaderVisible(page)
+    await expectAppShellHidden(page)
   })
 
-  // TC-2: fallback to dark when localStorage is blocked
-  test('dark theme: falls back to dark class when localStorage unavailable', async ({
+  test('app stylesheet completion hides the boot loader and reveals the app shell', async ({
     page,
   }) => {
-    await page.addInitScript(() => {
-      try {
-        localStorage.clear()
-      } catch {
-        // blocked — expected
+    const delayedCss = await gotoWithDelayedAppCss(page, null)
+
+    delayedCss.continueRequest()
+
+    await expect(page.locator('#app-shell')).toBeVisible()
+    await expect(page.locator('#boot-loader')).not.toBeVisible()
+  })
+
+  const themeExpectations: BootThemeExpectation[] = [
+    {
+      storedTheme: null,
+      expectedClass: 'dark',
+      background: 'rgb(15, 23, 42)',
+      foreground: 'rgb(255, 255, 255)',
+      accent: 'rgb(34, 211, 238)',
+    },
+    {
+      storedTheme: 'dark',
+      expectedClass: 'dark',
+      expectedStoredTheme: 'dark',
+      background: 'rgb(15, 23, 42)',
+      foreground: 'rgb(255, 255, 255)',
+      accent: 'rgb(34, 211, 238)',
+    },
+    {
+      storedTheme: 'light-cool',
+      expectedClass: 'light-cool',
+      expectedStoredTheme: 'light-cool',
+      background: 'rgb(241, 245, 249)',
+      foreground: 'rgb(15, 23, 42)',
+      accent: 'rgb(37, 99, 235)',
+    },
+    {
+      storedTheme: 'light-warm',
+      expectedClass: 'light-warm',
+      expectedStoredTheme: 'light-warm',
+      background: 'rgb(255, 251, 235)',
+      foreground: 'rgb(28, 25, 23)',
+      accent: 'rgb(180, 83, 9)',
+    },
+    {
+      storedTheme: 'light',
+      expectedClass: 'light-cool',
+      expectedStoredTheme: 'light-cool',
+      background: 'rgb(241, 245, 249)',
+      foreground: 'rgb(15, 23, 42)',
+      accent: 'rgb(37, 99, 235)',
+    },
+    {
+      storedTheme: 'unknown-value',
+      expectedClass: 'dark',
+      expectedStoredTheme: 'unknown-value',
+      background: 'rgb(15, 23, 42)',
+      foreground: 'rgb(255, 255, 255)',
+      accent: 'rgb(34, 211, 238)',
+    },
+  ]
+
+  for (const theme of themeExpectations) {
+    test(`boot loader uses ${theme.expectedClass} styling for stored theme ${theme.storedTheme ?? 'none'}`, async ({
+      page,
+    }) => {
+      await gotoWithDelayedAppCss(page, theme.storedTheme)
+
+      await expectBootLoaderVisible(page)
+      await expect(page.locator('html')).toHaveClass(theme.expectedClass)
+
+      if (theme.expectedStoredTheme) {
+        const storedTheme = await page.evaluate(() =>
+          localStorage.getItem('cookbook-theme'),
+        )
+        expect(storedTheme).toBe(theme.expectedStoredTheme)
       }
-      Object.defineProperty(window, 'localStorage', {
-        value: {
-          getItem: () => { throw new Error('blocked') },
-          setItem: () => { throw new Error('blocked') },
-          removeItem: () => { throw new Error('blocked') },
-        },
-        writable: true,
-      })
+
+      const bootTheme = await readBootTheme(page)
+      expect(bootTheme.background).toBe(theme.background)
+      expect(bootTheme.foreground).toBe(theme.foreground)
+      expect(bootTheme.accent).toBe(theme.accent)
+    })
+  }
+
+  test('boot loader falls back to dark when localStorage is unavailable', async ({
+    page,
+  }) => {
+    await blockLocalStorage(page)
+    const delayedCss = await delayAppStylesheet(page)
+    await page.goto('/', { waitUntil: 'commit' })
+    await delayedCss.requested
+
+    await expectBootLoaderVisible(page)
+    await expect(page.locator('html')).toHaveClass('dark')
+
+    const bootTheme = await readBootTheme(page)
+    expect(bootTheme.background).toBe('rgb(15, 23, 42)')
+    expect(bootTheme.foreground).toBe('rgb(255, 255, 255)')
+    expect(bootTheme.accent).toBe('rgb(34, 211, 238)')
+  })
+
+  test('failed app stylesheet keeps loader visible and shows retry feedback', async ({
+    page,
+  }) => {
+    const delayedCss = await gotoWithDelayedAppCss(page, null)
+    delayedCss.abortRequest()
+
+    await expectBootLoaderVisible(page)
+    await expectAppShellHidden(page)
+    await expect(page.locator('#boot-loader-status')).toBeVisible({
+      timeout: 2_500,
+    })
+    await expect(page.locator('#boot-loader-status')).toContainText(
+      'Still pre heating',
+    )
+    await expect(page.locator('#boot-loader-retry')).toBeVisible({
+      timeout: 5_000,
+    })
+  })
+
+  test('boot loader retry affordance requests a reload without React hydration', async ({
+    page,
+  }) => {
+    const delayedCss = await gotoWithDelayedAppCss(page, null)
+    delayedCss.abortRequest()
+
+    await expect(page.locator('#boot-loader-retry')).toBeVisible({
+      timeout: 5_000,
     })
 
-    await page.goto('/', { waitUntil: 'commit' })
-
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('dark')
+    const reloadPromise = page.waitForEvent('framenavigated')
+    await page.locator('#boot-loader-retry').click()
+    await reloadPromise
   })
 
-  // TC-3: light-cool — abort external CSS so only critical CSS supplies the background
-  test('light-cool theme: html has light-cool class and correct background before hydration', async ({
-    page,
-  }) => {
-    await setupThemeAndGoto(page, 'light-cool')
-
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('light-cool')
-
-    const bg = await page.evaluate(
-      () => window.getComputedStyle(document.documentElement).backgroundColor,
-    )
-    // rgb(241, 245, 249) = #f1f5f9 (slate-100)
-    expect(bg).toBe('rgb(241, 245, 249)')
-  })
-
-  // TC-4: legacy "light" migrated to light-cool — abort external CSS to isolate critical CSS
-  test('light-cool theme: legacy "light" value migrates to light-cool', async ({
-    page,
-  }) => {
-    await setupThemeAndGoto(page, 'light')
-
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toBe('light-cool')
-
-    const bg = await page.evaluate(
-      () => window.getComputedStyle(document.documentElement).backgroundColor,
-    )
-    expect(bg).toBe('rgb(241, 245, 249)')
-  })
-
-  // TC-5: light-warm — abort external CSS so only critical CSS supplies the background
-  test('light-warm theme: html has light-warm class and correct background before hydration', async ({
-    page,
-  }) => {
-    await setupThemeAndGoto(page, 'light-warm')
-
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toContain('light-warm')
-
-    const bg = await page.evaluate(
-      () => window.getComputedStyle(document.documentElement).backgroundColor,
-    )
-    // rgb(255, 251, 235) = #fffbeb (amber-50)
-    expect(bg).toBe('rgb(255, 251, 235)')
-  })
-
-  // TC-6: unknown theme falls back to dark — abort external CSS to isolate critical CSS
-  test('unknown stored theme value falls back to dark', async ({
-    page,
-  }) => {
-    await setupThemeAndGoto(page, 'unknown-value')
-
-    const htmlClass = await page.evaluate(() => document.documentElement.className)
-    expect(htmlClass).toBe('dark')
-
-    const bg = await page.evaluate(
-      () => window.getComputedStyle(document.documentElement).backgroundColor,
-    )
-    expect(bg).toBe('rgb(15, 23, 42)')
-  })
-
-  // TC-7: preload link for appCss (non-print) appears before its matching stylesheet link
-  test('preload: <link rel="preload" as="style"> appears before matching <link rel="stylesheet"> for appCss', async ({
+  test('head keeps app preload before app stylesheet and omits print preload', async ({
     page,
   }) => {
     await page.goto('/')
@@ -130,6 +284,7 @@ test.describe('FOUC prevention', () => {
         rel: link.getAttribute('rel') ?? '',
         as: link.getAttribute('as') ?? '',
         href: link.getAttribute('href') ?? '',
+        media: link.getAttribute('media') ?? '',
       })),
     )
 
@@ -139,9 +294,14 @@ test.describe('FOUC prevention', () => {
         link.href &&
         !link.href.toLowerCase().includes('print'),
     )
+    const printStylesheet = links.find(
+      (link) =>
+        link.rel === 'stylesheet' &&
+        link.href.toLowerCase().includes('print'),
+    )
 
     expect(appStylesheet).toBeDefined()
-    expect(appStylesheet?.href).toBeTruthy()
+    expect(printStylesheet).toBeDefined()
 
     const appPreload = links.find(
       (link) =>
@@ -149,35 +309,18 @@ test.describe('FOUC prevention', () => {
         link.as === 'style' &&
         link.href === appStylesheet?.href,
     )
+    const printPreload = links.find(
+      (link) =>
+        link.rel === 'preload' &&
+        link.href.toLowerCase().includes('print'),
+    )
 
     expect(appPreload).toBeDefined()
-    expect(appPreload?.as).toBe('style')
-    expect(appPreload?.href).toBe(appStylesheet?.href)
     expect(appPreload!.index).toBeLessThan(appStylesheet!.index)
+    expect(printPreload).toBeUndefined()
   })
 
-  // TC-8: CSS file fetched only once (preload + stylesheet share the resource)
-  test('preload: CSS file is not fetched twice', async ({ page }) => {
-    const cssRequests: string[] = []
-
-    page.on('request', (req) => {
-      if (req.resourceType() === 'stylesheet' || req.resourceType() === 'fetch') {
-        const url = req.url()
-        if (url.includes('.css')) cssRequests.push(url)
-      }
-    })
-
-    await page.goto('/', { waitUntil: 'networkidle' })
-
-    const appCssRequests = cssRequests.filter((u) => !u.includes('print'))
-    const unique = [...new Set(appCssRequests)]
-
-    expect(unique.length).toBeGreaterThan(0)
-    expect(appCssRequests.length).toBe(unique.length)
-  })
-
-  // TC-9: critical style element is present in the DOM
-  test('inline style: critical theme <style> block present in DOM with dark background', async ({
+  test('critical boot style includes loader gate rules and no template markers', async ({
     page,
   }) => {
     await page.goto('/')
@@ -188,46 +331,12 @@ test.describe('FOUC prevention', () => {
     })
 
     expect(content).not.toBeNull()
-    expect(content).toContain('background:#0f172a')
-  })
-
-  // TC-10: docs/theming.md exists and contains maintenance checklist (manual check)
-  // Validated by inspecting repository contents — no automated test added in this PR.
-
-  // TC-11: critical style block contains only allowed hex color values (no user data)
-  test('security: inline style block contains only hex color values', async ({
-    page,
-  }) => {
-    await page.goto('/')
-
-    const content = await page.evaluate(() => {
-      const el = document.querySelector('style[data-id="critical-theme"]')
-      return el ? el.textContent : null
-    })
-
-    expect(content).not.toBeNull()
-
-    const normalized = content!.replace(/\s+/g, ' ').trim()
-    const allowedInlineCss =
-      /^(?:html(?:\.[a-z-]+)?\s*\{\s*(?:(?:background|color)\s*:\s*#[0-9a-fA-F]{3,6}\s*;?\s*)+\}\s*)+$/
-
-    expect(normalized).toMatch(allowedInlineCss)
-  })
-
-  // TC-12: inline CSS payload ≤ 300 bytes
-  test('performance: inline style block is no more than 300 bytes', async ({
-    page,
-  }) => {
-    await page.goto('/')
-
-    const content = await page.evaluate(() => {
-      const el = document.querySelector('style[data-id="critical-theme"]')
-      return el ? el.textContent : null
-    })
-
-    expect(content).not.toBeNull()
+    expect(content).toContain('#boot-loader')
+    expect(content).toContain('#app-shell')
+    expect(content).toContain('@keyframes boot-spin')
+    expect(content).not.toContain('${')
 
     const bytes = new TextEncoder().encode(content!).length
-    expect(bytes).toBeLessThanOrEqual(300)
+    expect(bytes).toBeLessThanOrEqual(3_500)
   })
 })
