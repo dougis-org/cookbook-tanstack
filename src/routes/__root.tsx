@@ -26,7 +26,7 @@ function minifyInlineCss(css: string) {
  *
  * When adding a new theme OR changing an existing theme's background:
  *   1. Update criticalCss below (hex/rgb values)
- *   2. Update src/styles/themes/<theme>.css  (--theme-bg, --theme-fg)
+ *   2. Update src/styles/themes/<theme>.css  (--theme-bg, --theme-fg, --theme-accent)
  *   3. Update src/contexts/ThemeContext.tsx   (THEMES array)
  *   4. Update docs/theming.md                (maintenance checklist)
  *
@@ -183,6 +183,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         rel: 'stylesheet',
         href: printCss,
+        // print.css also wraps rules in @media print; link media keeps it off the render-blocking path.
         media: 'print',
       },
     ],
@@ -223,7 +224,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           id="boot-loader"
           role="status"
           aria-live="polite"
-          suppressHydrationWarning
         >
           <div className="boot-loader__inner">
             <div

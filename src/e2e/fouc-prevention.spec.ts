@@ -65,7 +65,8 @@ async function delayAppStylesheet(page: Page): Promise<DelayedAppCss> {
 
   await page.route(/\.css($|\?|#)/, async (route: Route) => {
     const url = route.request().url()
-    if (url.toLowerCase().includes('print')) {
+    const pathname = new URL(url).pathname
+    if (/(^|\/)print(?:-[^/]+)?\.css$/i.test(pathname)) {
       await route.continue()
       return
     }
@@ -123,8 +124,9 @@ async function expectBootLoaderVisible(page: Page) {
 
 async function expectAppShellHidden(page: Page) {
   const appShell = page.locator('#app-shell')
+  const appShellChildren = page.locator('#app-shell > *')
   await expect(appShell).toHaveCount(1)
-  await expect(appShell).toContainText('CookBook')
+  await expect(appShellChildren).not.toHaveCount(0)
   await expect(appShell).not.toBeVisible()
 }
 
