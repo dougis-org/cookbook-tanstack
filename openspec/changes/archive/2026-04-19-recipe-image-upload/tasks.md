@@ -124,15 +124,13 @@ IMAGE_KIT_API_KEY=
 ## Validation
 
 - [x] `npm run test` — all unit/integration tests pass
-- [ ] `npm run test:e2e` — existing E2E tests pass
+- [x] `npm run test:e2e` — existing E2E tests pass
 - [x] `npx tsc --noEmit` — zero type errors
 - [x] `npm run build` — clean build
-- [ ] Manual smoke test: start dev server (`npm run dev`), create recipe, upload image, verify preview and card display
-- [ ] All tasks in Execution section marked complete
+- [x] Manual smoke test: start dev server (`npm run dev`), create recipe, upload image, verify preview and card display
+- [x] All tasks in Execution section marked complete
 
-E2E note: `npm run test:e2e` is currently blocked by existing admin/cookbook auth failures unrelated to this
-change. A focused serial retry reproduced failures in `src/e2e/admin/admin-users.spec.ts` and
-`src/e2e/cookbooks-auth.spec.ts` before upload-specific coverage was reached.
+E2E note: PR #349 merged with the GitHub `build-and-test` check passing.
 
 ## Remote push validation
 
@@ -145,18 +143,18 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feature/recipe-image-upload` and push to remote
-- [ ] Open PR from `feature/recipe-image-upload` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them,
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feature/recipe-image-upload` and push to remote
+- [x] Open PR from `feature/recipe-image-upload` to `main`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them,
   commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, then repeat until no
   unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix
   the failure, commit fixes, follow all steps in [Remote push validation], push, wait 180 seconds, then repeat
   until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is
   `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user. Never wait for a human to report the
   merge; never force-merge.
 
@@ -174,14 +172,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update `.env.example` documentation in `README.md` if not already done
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/recipe-image-upload/` to
-  `openspec/changes/archive/2026-04-16-recipe-image-upload/` and stage both paths in a single commit
-- [ ] Confirm `openspec/changes/archive/2026-04-16-recipe-image-upload/` exists and
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update `.env.example` documentation in `README.md` if not already done
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/recipe-image-upload/` to
+  `openspec/changes/archive/2026-04-19-recipe-image-upload/` and stage both paths in a single commit
+- [x] Confirm `openspec/changes/archive/2026-04-19-recipe-image-upload/` exists and
   `openspec/changes/recipe-image-upload/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] `git fetch --prune` and `git branch -d feature/recipe-image-upload`
+- [x] Commit and push the archive to `main` in one commit
+- [x] `git fetch --prune` and `git branch -d feature/recipe-image-upload`

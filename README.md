@@ -1,6 +1,7 @@
 # CookBook - Recipe Management Application
 
-A TanStack Start migration of the Laravel recipe application. This is a full-stack recipe management system built with TanStack Start, React, and Tailwind CSS.
+A TanStack Start migration of the Laravel recipe application. This is a full-stack recipe management system
+built with TanStack Start, React, and Tailwind CSS.
 
 ## Project Structure
 
@@ -23,14 +24,31 @@ npm run dev
 
 The application will be available at `http://localhost:3000`
 
+## Environment Configuration
+
+Copy `.env.example` to `.env.local` and provide the required local secrets before running database-backed or
+upload flows.
+
+Recipe image uploads require ImageKit credentials:
+
+```bash
+IMAGE_KIT_API_KEY=
+IMAGE_KIT_PUBLIC_KEY=
+IMAGE_KIT_URL_ENDPOINT=
+```
+
+`IMAGE_KIT_API_KEY` is server-side only and must never be exposed in client code.
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
 - Quick start guide
 - Development workflow
 - Repository standards and conventions
 
-For comprehensive guidelines on code quality, testing, analysis, and CI/CD, see [docs/standards/](./docs/standards/).
+For comprehensive guidelines on code quality, testing, analysis, and CI/CD, see
+[docs/standards/](./docs/standards/).
 
 ## Building For Production
 
@@ -51,6 +69,7 @@ npm run test
 ## Project Status
 
 This application is a full-stack recipe management system featuring:
+
 - **Backend API**: Integrated tRPC API layer for type-safe data fetching and mutations.
 - **Database**: MongoDB integration with Mongoose for robust data modeling and persistence.
 - **Authentication**: Secure user authentication powered by Better Auth.
