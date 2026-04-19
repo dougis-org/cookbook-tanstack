@@ -39,10 +39,10 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toContain("const action = context.payload.action");
     expect(workflow).toContain("const isSynchronize = action === 'synchronize'");
     expect(workflow).toMatch(
-      /label:\s*['"]Copilot['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*false/,
+      /label:\s*['"]Copilot['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*true/,
     );
     expect(workflow).toMatch(
-      /label:\s*['"]Gemini['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*true/,
+      /label:\s*['"]Gemini['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*false/,
     );
     expect(workflow).toMatch(/const submittedReviews = reviews\.filter/);
     expect(submittedReviewsSection).not.toContain("review.commit_id === ref");
