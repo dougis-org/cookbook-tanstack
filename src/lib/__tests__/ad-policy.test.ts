@@ -1,0 +1,71 @@
+import { describe, it, expect } from 'vitest'
+import { isAdEligible, PageRole } from '../ad-policy'
+
+describe('isAdEligible', () => {
+  const rolesWithAds: PageRole[] = ['public-marketing', 'public-content']
+  const rolesWithoutAds: PageRole[] = ['authenticated-home', 'authenticated-task', 'auth', 'admin', 'account', 'print']
+
+  describe('Anonymous viewers', () => {
+    it('returns true on ad-enabled public roles', () => {
+      rolesWithAds.forEach(role => {
+        expect(isAdEligible(role, null)).toBe(true)
+      })
+    })
+
+    it('returns false on restricted roles', () => {
+      rolesWithoutAds.forEach(role => {
+        expect(isAdEligible(role, null)).toBe(false)
+      })
+    })
+  })
+
+  describe('home-cook non-admin users', () => {
+    const freeUser = { user: { tier: 'home-cook', isAdmin: false } }
+    
+    it('returns true on ad-enabled roles', () => {
+      rolesWithAds.forEach(role => {
+        expect(isAdEligible(role, freeUser as any)).toBe(true)
+      })
+    })
+
+    it('returns false on restricted roles', () => {
+      rolesWithoutAds.forEach(role => {
+        expect(isAdEligible(role, freeUser as any)).toBe(false)
+      })
+    })
+  })
+
+  describe('Paid tiers', () => {
+    const paidTiers = ['prep-cook', 'sous-chef', 'executive-chef']
+    
+    it('returns false even on public roles', () => {
+      paidTiers.forEach(tier => {
+        const paidUser = { user: { tier, isAdmin: false } }
+        rolesWithAds.forEach(role => {
+          expect(isAdEligible(role, paidUser as any)).toBe(false)
+        })
+      })
+    })
+  })
+
+  describe('Admin users', () => {
+    it('returns false even on free tier', () => {
+      const adminUser = { user: { tier: 'home-cook', isAdmin: true } }
+      rolesWithAds.forEach(role => {
+        expect(isAdEligible(role, adminUser as any)).toBe(false)
+      })
+    })
+  })
+
+  describe('Missing or unknown tiers', () => {
+    it('treats missing tier as home-cook (free/ad-supported)', () => {
+      const unknownUser = { user: { tier: undefined, isAdmin: false } }
+      expect(isAdEligible('public-content', unknownUser as any)).toBe(true)
+    })
+
+    it('treats unknown tier string as home-cook', () => {
+      const unknownUser = { user: { tier: 'garbage', isAdmin: false } }
+      expect(isAdEligible('public-content', unknownUser as any)).toBe(true)
+    })
+  })
+})
