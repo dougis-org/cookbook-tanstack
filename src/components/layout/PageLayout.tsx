@@ -1,6 +1,18 @@
 import React from 'react'
 import { isAdEligible, PageRole } from '@/lib/ad-policy'
+import {
+  GOOGLE_ADSENSE_ACCOUNT,
+  GOOGLE_ADSENSE_SCRIPT_SRC,
+  getGoogleAdSenseSlotId,
+  type GoogleAdSenseSlotPosition,
+} from '@/lib/google-adsense'
 import { useAuth } from '@/hooks/useAuth'
+
+declare global {
+  interface Window {
+    adsbygoogle?: unknown[]
+  }
+}
 
 interface PageLayoutProps {
   children: React.ReactNode
@@ -9,30 +21,101 @@ interface PageLayoutProps {
   role?: PageRole
 }
 
-export function AdSlot({ role, position }: { role: PageRole; position: string }) {
+function ensureGoogleAdSenseScript() {
+  const existingScript = document.querySelector<HTMLScriptElement>(
+    `script[src="${GOOGLE_ADSENSE_SCRIPT_SRC}"]`,
+  )
+
+  if (existingScript) {
+    return existingScript
+  }
+
+  const script = document.createElement('script')
+  script.async = true
+  script.crossOrigin = 'anonymous'
+  script.src = GOOGLE_ADSENSE_SCRIPT_SRC
+  script.dataset.loaded = 'false'
+  script.addEventListener(
+    'load',
+    () => {
+      script.dataset.loaded = 'true'
+    },
+    { once: true },
+  )
+  document.head.appendChild(script)
+
+  return script
+}
+
+export function AdSlot({
+  role,
+  position,
+}: {
+  role: PageRole
+  position: GoogleAdSenseSlotPosition
+}) {
   const { session } = useAuth()
-  
-  if (!role || !isAdEligible(role, session)) {
+  const slotId = getGoogleAdSenseSlotId(position)
+  const adRef = React.useRef<HTMLModElement | null>(null)
+  const isEligible = import.meta.env.PROD && !!slotId && isAdEligible(role, session)
+
+  React.useEffect(() => {
+    if (!isEligible || !slotId || !adRef.current) {
+      return
+    }
+
+    const adElement = adRef.current
+    const script = ensureGoogleAdSenseScript()
+    const requestAd = () => {
+      if (adElement.dataset.adsbygoogleStatus === 'done') {
+        return
+      }
+
+      try {
+        ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+      } catch {
+        // Google populates adsbygoogle asynchronously; ignore retries handled by future mounts/navigation.
+      }
+    }
+
+    if (script.dataset.loaded === 'true' || Array.isArray(window.adsbygoogle)) {
+      requestAd()
+      return
+    }
+
+    script.addEventListener('load', requestAd, { once: true })
+
+    return () => {
+      script.removeEventListener('load', requestAd)
+    }
+  }, [isEligible, slotId])
+
+  if (!role || !isEligible || !slotId) {
     return null
   }
 
   return (
-    <div 
+    <div
       data-testid={`ad-slot-${position}`}
-      className="my-8 p-4 border-2 border-dashed border-[var(--theme-border)] rounded-lg text-center bg-[var(--theme-surface)]"
+      className="my-8 overflow-hidden rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 p-2"
     >
-      <p className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-fg-muted)]">
-        Advertisement Groundwork ({position})
-      </p>
+      <ins
+        ref={adRef}
+        className="adsbygoogle block"
+        data-ad-client={GOOGLE_ADSENSE_ACCOUNT}
+        data-ad-format="auto"
+        data-ad-slot={slotId}
+        data-full-width-responsive="true"
+      />
     </div>
   )
 }
 
-export default function PageLayout({ 
-  children, 
-  title, 
+export default function PageLayout({
+  children,
+  title,
   description,
-  role = 'authenticated-task'
+  role = 'authenticated-task',
 }: PageLayoutProps) {
   return (
     <div className="min-h-screen bg-[var(--theme-bg)]">
@@ -47,11 +130,11 @@ export default function PageLayout({
             )}
           </div>
         )}
-        
+
         <AdSlot role={role} position="top" />
-        
+
         {children}
-        
+
         <AdSlot role={role} position="bottom" />
       </div>
     </div>

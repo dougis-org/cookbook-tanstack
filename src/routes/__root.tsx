@@ -6,6 +6,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
 import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
+import { GOOGLE_ADSENSE_ACCOUNT } from '@/lib/google-adsense'
 import { useEffect } from 'react'
 
 import Header from '../components/Header'
@@ -232,6 +233,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
       {
         title: 'CookBook - Recipe Management',
+      },
+      {
+        name: 'google-adsense-account',
+        content: GOOGLE_ADSENSE_ACCOUNT,
       },
     ],
     links: [
