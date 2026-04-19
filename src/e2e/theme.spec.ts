@@ -126,7 +126,7 @@ test.describe('Theme system', () => {
     expect(storedTheme).toBe('light-cool')
   })
 
-  // T4a: open sidebar, open dropdown — assert all 3 theme options visible
+  // T4a: open sidebar, open dropdown — assert all 4 theme options visible
   test('T4a: theme dropdown shows all registered theme options', async ({
     page,
   }) => {
@@ -135,13 +135,59 @@ test.describe('Theme system', () => {
     await page.getByLabel('Open menu').click()
     await page.getByTestId('theme-dropdown-trigger').click()
 
-    await expect(page.getByRole('option', { name: 'Dark' })).toBeVisible()
+    await expect(page.getByRole('option', { name: 'Dark (blues)' })).toBeVisible()
+    await expect(page.getByRole('option', { name: 'Dark (greens)' })).toBeVisible()
     await expect(
       page.getByRole('option', { name: 'Light (cool)' }),
     ).toBeVisible()
     await expect(
       page.getByRole('option', { name: 'Light (warm)' }),
     ).toBeVisible()
+  })
+
+  // T5: dark-greens theme: applies correct class and background
+  test('T5: dark-greens theme applies class and correct background', async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(page, '/')
+
+    await selectThemeViaDropdown(page, 'Dark (greens)', { commit: true })
+
+    await expect(page.locator('html')).toHaveClass(/dark-greens/)
+
+    const bg = await page.evaluate(
+      () => window.getComputedStyle(document.documentElement).backgroundColor,
+    )
+    // rgb(16, 60, 72) = #103c48 (Selenized Dark)
+    expect(bg).toBe('rgb(16, 60, 72)')
+
+    const storedTheme = await page.evaluate(() =>
+      localStorage.getItem('cookbook-theme'),
+    )
+    expect(storedTheme).toBe('dark-greens')
+  })
+
+  // T6: dark-greens persists across page reload
+  test('T6: dark-greens theme persists across page reload', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('cookbook-theme', 'dark-greens')
+    })
+
+    await gotoAndWaitForHydration(page, '/')
+
+    await expect(page.locator('html')).toHaveClass(/dark-greens/)
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.locator('html')).toHaveClass(/dark-greens/)
+
+    await page.getByLabel('Open menu').click()
+    await expect(page.getByTestId('theme-dropdown-trigger')).toContainText('Dark (greens)')
+    await page.getByTestId('theme-dropdown-trigger').click()
+    await expect(page.getByRole('option', { name: 'Dark (greens)' })).toHaveAttribute('aria-selected', 'true')
   })
 
   // T4b: select light-warm — assert html class changes before OK pressed
