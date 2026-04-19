@@ -43,7 +43,7 @@ jobs:
               const checkRuns = data.check_runs ?? []
               const checkStates = expectedChecks.map((pattern) => {
                 const matchingChecks = checkRuns.filter((check) => pattern.test(check.name))
-                const completedChecks = matchingChecks.filter((check) => check.status === 'completed')
+                 const completedChecks = matchingChecks.filter((check) => check.status === 'completed' && check.conclusion === 'success')
 
                 return {
                   pattern: pattern.toString(),
