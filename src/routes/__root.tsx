@@ -298,7 +298,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
-              <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} />
+              {googleAnalyticsId ? <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} /> : null}
               <Header />
               {children}
               <TanStackDevtools
