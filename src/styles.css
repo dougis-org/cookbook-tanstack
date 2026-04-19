@@ -10,7 +10,7 @@
 }
 
 #app-shell {
-  visibility: visible;
+  display: block;
 }
 
 /* Keep dark: utilities class-driven (html.dark) instead of media-query-driven.

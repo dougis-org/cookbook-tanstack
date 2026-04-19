@@ -60,7 +60,7 @@ const criticalCss = minifyInlineCss(`
   }
 
   #app-shell {
-    visibility: hidden;
+    display: none;
   }
 
   #boot-loader {
