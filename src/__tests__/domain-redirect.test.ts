@@ -1,0 +1,85 @@
+import { describe, it, expect } from "vitest"
+import { getDomainRedirectUrl } from "@/lib/domain-redirect"
+
+describe("getDomainRedirectUrl", () => {
+  const PRIMARY_URL = "https://recipe.dougis.com"
+
+  it("returns redirect URL when Host differs from primary", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes/123", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBe(
+      "https://recipe.dougis.com/recipes/123",
+    )
+  })
+
+  it("preserves query string on redirect", () => {
+    const req = new Request(
+      "http://cookbook-tanstack.fly.dev/search?q=pasta&page=2",
+      { headers: { host: "cookbook-tanstack.fly.dev" } },
+    )
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBe(
+      "https://recipe.dougis.com/search?q=pasta&page=2",
+    )
+  })
+
+  it("returns null when Host matches primary (pass through)", () => {
+    const req = new Request("https://recipe.dougis.com/recipes/123", {
+      headers: { host: "recipe.dougis.com" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
+  it("returns null when no Host header (internal request pass through)", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes/123")
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
+  it("returns null when APP_PRIMARY_URL is undefined (local dev pass through)", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes/123", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, undefined)).toBeNull()
+  })
+
+  it("returns null when APP_PRIMARY_URL is empty string", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes/123", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, "")).toBeNull()
+  })
+
+  it("returns null when APP_PRIMARY_URL is malformed (no crash)", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes/123", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(() => getDomainRedirectUrl(req, "not-a-url")).not.toThrow()
+    expect(getDomainRedirectUrl(req, "not-a-url")).toBeNull()
+  })
+
+  it("redirect Location uses APP_PRIMARY_URL scheme (not request scheme)", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    const result = getDomainRedirectUrl(req, PRIMARY_URL)
+    expect(result).toMatch(/^https:\/\/recipe\.dougis\.com/)
+  })
+
+  it("strips trailing slash from APP_PRIMARY_URL to avoid double slash", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, "https://recipe.dougis.com/")).toBe(
+      "https://recipe.dougis.com/recipes",
+    )
+  })
+
+  it("correctly redirects root path with query string", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/?ref=email", {
+      headers: { host: "cookbook-tanstack.fly.dev" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBe(
+      "https://recipe.dougis.com/?ref=email",
+    )
+  })
+})

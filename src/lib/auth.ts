@@ -6,6 +6,9 @@ import { getMongoClient } from "@/db";
 import { sendEmail } from "@/lib/mail";
 
 export const auth = betterAuth({
+  trustedOrigins:
+    process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",").map((s) => s.trim()) ??
+    [],
   // Workaround for nested MongoDB dependency versions (mongoose has its own mongodb package).
   // Cast through unknown to avoid incompatible driver type declarations while retaining runtime behavior.
   database: mongodbAdapter(
