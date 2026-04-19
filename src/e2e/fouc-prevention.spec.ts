@@ -256,7 +256,7 @@ test.describe('FOUC prevention', () => {
       'Still pre-heating',
     )
     await expect(page.locator('#boot-loader-retry')).toBeVisible({
-      timeout: 5_000,
+      timeout: 11_000,
     })
   })
 
@@ -267,7 +267,7 @@ test.describe('FOUC prevention', () => {
     delayedCss.abortRequest()
 
     await expect(page.locator('#boot-loader-retry')).toBeVisible({
-      timeout: 5_000,
+      timeout: 11_000,
     })
 
     const reloadPromise = page.waitForEvent('framenavigated')
@@ -304,6 +304,7 @@ test.describe('FOUC prevention', () => {
 
     expect(appStylesheet).toBeDefined()
     expect(printStylesheet).toBeDefined()
+    expect(printStylesheet!.media).toBe('print')
 
     const appPreload = links.find(
       (link) =>
@@ -328,7 +329,7 @@ test.describe('FOUC prevention', () => {
     await page.goto('/')
 
     const content = await page.evaluate(() => {
-      const el = document.querySelector('style[data-id="critical-theme"]')
+      const el = document.querySelector('style[data-id="critical-startup"]')
       return el ? el.textContent : null
     })
 

@@ -198,14 +198,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const validIds = JSON.stringify(THEMES.map((t) => t.id)).replace(/</g, '\\u003c')
 
   const themeInitScript = `{try{const ids=${validIds};let t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}}`
-  const bootLoaderScript = `{(function(){function init(){var b=document.getElementById("boot-loader");var r=document.getElementById("boot-loader-retry");if(!b||!r){return;}setTimeout(function(){b.setAttribute("data-status","slow");},1200);setTimeout(function(){b.setAttribute("data-status","failed");},3200);r.addEventListener("click",function(){window.location.reload();});}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init,{once:true});}else{init();}})()}`
+  const bootLoaderScript = `{(function(){function init(){var b=document.getElementById("boot-loader");var r=document.getElementById("boot-loader-retry");var s=document.getElementById("app-shell");var l=document.querySelector('link[rel="stylesheet"][href="${appCss}"]');var settled=false;var slowTimer;var failureTimer;function clearTimers(){if(slowTimer){clearTimeout(slowTimer);}if(failureTimer){clearTimeout(failureTimer);}}function isShellHidden(){if(!s){return true;}var styles=window.getComputedStyle(s);return styles.display==="none"||styles.visibility==="hidden"||styles.opacity==="0";}function markLoaded(){if(settled){return;}settled=true;clearTimers();}function markFailed(){if(settled||!b){return;}settled=true;clearTimers();b.setAttribute("data-status","failed");}if(!b||!r){return;}r.addEventListener("click",function(){window.location.reload();});if(!isShellHidden()){return;}slowTimer=window.setTimeout(function(){if(!settled){b.setAttribute("data-status","slow");}},1200);failureTimer=window.setTimeout(function(){if(!settled&&isShellHidden()){markFailed();}},10000);if(l){l.addEventListener("load",markLoaded,{once:true});l.addEventListener("error",markFailed,{once:true});}}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init,{once:true});}else{init();}})()}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <style data-id="critical-theme">{criticalCss}</style>
+        <style data-id="critical-startup">{criticalCss}</style>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: bootLoaderScript }} />
         {import.meta.env.DEV ? (
@@ -220,11 +220,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <div
-          id="boot-loader"
-          role="status"
-          aria-live="polite"
-        >
+        <div id="boot-loader">
           <div className="boot-loader__inner">
             <div
               className="boot-loader__spinner"
@@ -232,7 +228,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               aria-hidden="true"
             />
             <div className="boot-loader__title">Pre-heating</div>
-            <div id="boot-loader-status" className="boot-loader__status">
+            <div
+              id="boot-loader-status"
+              className="boot-loader__status"
+              role="status"
+              aria-live="polite"
+            >
               Still pre-heating. This is taking longer than expected.
             </div>
             <button

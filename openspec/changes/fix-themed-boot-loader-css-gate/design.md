@@ -50,7 +50,7 @@
 
 ### Decision 2: Inline themed boot loader uses hardcoded critical theme values
 
-- Chosen: `criticalCss` in `src/routes/__root.tsx` includes rules for `html`, `body`, `#boot-loader`, `#boot-loader-mark`, spinner animation, delayed status text, retry button, and `#app-shell`. Theme-specific rules mirror the active theme backgrounds, foregrounds, and accents.
+- Chosen: `criticalCss` in `src/routes/__root.tsx` includes rules for `html`, `body`, `#boot-loader`, `.boot-loader__spinner`, `#boot-loader-status`, `#boot-loader-retry`, spinner animation, delayed status text, retry button, and `#app-shell`. Theme-specific rules mirror the active theme backgrounds, foregrounds, and accents.
 - Alternatives considered:
   - Use CSS variables from theme files.
   - Render a neutral loader independent of theme.
