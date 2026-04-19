@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isAdEligible, PageRole } from '../ad-policy'
+import { isAdEligible, PageRole } from '@/lib/ad-policy'
 
 describe('isAdEligible', () => {
   const rolesWithAds: PageRole[] = ['public-marketing', 'public-content']

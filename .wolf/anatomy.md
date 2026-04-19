@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T15:29:14.971Z
-> Files: 532 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T15:30:34.542Z
+> Files: 537 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -757,11 +757,22 @@
 
 - `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2222 tok)
 
+## src/lib/
+
+- `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+
 ## src/lib/__tests__/
 
+- `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
 ## src/routes/
 
 - `__root.tsx` — Route (~1256 tok)
+- `home.tsx` — Route (~840 tok)
+- `index.tsx` — Route (~1077 tok)
+
+## src/test-helpers/
+
+- `mocks.ts` — Creates a mock Drizzle database that supports all query chain patterns. (~899 tok)

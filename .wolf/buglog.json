@@ -130,6 +130,86 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-19T14:20:04.269Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-04-19T15:30:04.541Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/test-helpers/mocks.ts",
+      "root_cause": "Had \"vitest\"",
+      "fix": "Changed to 'react'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:30:04.541Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-04-19T15:30:11.240Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/lib/__tests__/ad-policy.test.ts",
+      "root_cause": "Had '../ad-policy'",
+      "fix": "Changed to '@/lib/ad-policy'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:30:11.240Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-04-19T15:30:20.928Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/lib/ad-policy.ts",
+      "root_cause": "15 lines replaced/restructured",
+      "fix": "Rewrote 30→17 lines (15 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:30:20.928Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-04-19T15:30:25.685Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/home.tsx",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 7→4 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:30:25.685Z"
+    },
+    {
+      "id": "bug-013",
+      "timestamp": "2026-04-19T15:30:31.695Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/routes/index.tsx",
+      "root_cause": "Had \"relative py-20 px-6 text-center overflow-hidden\"",
+      "fix": "Changed to \"relative py-20 text-center overflow-hidden\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T15:30:34.554Z"
     }
   ]
 }
