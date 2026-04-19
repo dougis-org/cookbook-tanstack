@@ -27,7 +27,7 @@ function minifyInlineCss(css: string) {
     .trim()
 }
 
-function getGoogleAnalyticsId() {
+function getValidatedGoogleAnalyticsId() {
   const measurementId = import.meta.env.PROD
     ? import.meta.env.VITE_GOOGLE_ANALYTICS_ID?.trim()
     : undefined
@@ -174,12 +174,12 @@ const criticalCss = minifyInlineCss(`
   }
 `)
 
-const googleAnalyticsId = getGoogleAnalyticsId()
+const googleAnalyticsId = getValidatedGoogleAnalyticsId()
 const googleAnalyticsSrc = googleAnalyticsId
   ? `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(googleAnalyticsId)}`
   : null
-const googleAnalyticsInitScript = googleAnalyticsId
-  ? `window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};window.gtag('js',new Date());window.gtag('config',${JSON.stringify(googleAnalyticsId)},{send_page_view:false});`
+const googleAnalyticsBootstrapScript = googleAnalyticsId
+  ? 'window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};'
   : null
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -230,9 +230,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         {googleAnalyticsSrc ? <script async src={googleAnalyticsSrc} /> : null}
-        {googleAnalyticsInitScript ? (
-          // eslint-disable-next-line react/no-danger -- static string built from validated env input
-          <script dangerouslySetInnerHTML={{ __html: googleAnalyticsInitScript }} />
+        {googleAnalyticsBootstrapScript ? (
+          // eslint-disable-next-line react/no-danger -- static GA bootstrap, no dynamic interpolation
+          <script dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }} />
         ) : null}
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
@@ -307,6 +307,15 @@ function GoogleAnalyticsPageTracker() {
     select: (state) =>
       `${state.location.pathname}${state.location.searchStr}${state.location.hash}`,
   })
+
+  useEffect(() => {
+    if (!googleAnalyticsId) {
+      return
+    }
+
+    window.gtag?.('js', new Date())
+    window.gtag?.('config', googleAnalyticsId, { send_page_view: false })
+  }, [])
 
   useEffect(() => {
     if (!googleAnalyticsId || typeof window.gtag !== 'function') {

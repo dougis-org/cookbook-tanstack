@@ -12,13 +12,14 @@ describe('Google Analytics integration contract', () => {
 
     expect(rootRoute).toContain('VITE_GOOGLE_ANALYTICS_ID')
     expect(rootRoute).toContain('https://www.googletagmanager.com/gtag/js?id=')
-    expect(rootRoute).toMatch(/\^G-\[A-Z0-9-\]\+\$/)
+    expect(rootRoute).toContain('/^G-[A-Z0-9-]+$/i')
   })
 
   it('disables the default pageview and sends SPA page metadata explicitly', () => {
     const rootRoute = readFileSync(rootRoutePath, 'utf8')
 
-    expect(rootRoute).toContain('send_page_view:false')
+    expect(rootRoute).toContain('window.dataLayer=window.dataLayer||[]')
+    expect(rootRoute).toContain('send_page_view: false')
     expect(rootRoute).toContain('page_path: pagePath')
     expect(rootRoute).toContain('page_title: document.title')
     expect(rootRoute).toContain('page_location: window.location.href')
