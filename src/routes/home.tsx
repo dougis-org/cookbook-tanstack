@@ -31,11 +31,8 @@ const DISCOVERY = [
 
 export function HomePageComponent() {
   return (
-    <PageLayout role="authenticated-home">
-      <div className="max-w-7xl mx-auto py-12 px-6">
-        <h1 className="text-4xl font-bold text-[var(--theme-fg)] mb-8">Welcome Home</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+    <PageLayout role="authenticated-home" title="Welcome Home">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <section>
             <h2 className="text-2xl font-semibold text-[var(--theme-fg)] mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 gap-4">
@@ -75,7 +72,6 @@ export function HomePageComponent() {
             </div>
           </section>
         </div>
-      </div>
     </PageLayout>
   )
 }

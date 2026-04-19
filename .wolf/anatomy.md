@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-18T23:35:16.460Z
-> Files: 528 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T16:04:31.515Z
+> Files: 537 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -312,11 +312,6 @@
 - `opsx-archive.prompt.md` — Archive Complete (~1233 tok)
 - `opsx-explore.prompt.md` — The Stance (~1521 tok)
 - `opsx-propose.prompt.md` (~1084 tok)
-
-## src/lib/__tests__/
-
-- `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
-- `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
 ## .kiro/skills/openspec-apply-change/
 
@@ -754,10 +749,30 @@
 
 - `spec.md` — ADDED Requirements (~1678 tok)
 
+## openspec/changes/revamp-home-page-experience/
+
+- `tasks.md` — Tasks (~1672 tok)
+
 ## src/e2e/
 
 - `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2222 tok)
 
+## src/lib/
+
+- `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+
+## src/lib/__tests__/
+
+- `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
+- `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
+- `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
+
 ## src/routes/
 
 - `__root.tsx` — Route (~1256 tok)
+- `home.tsx` — Route (~840 tok)
+- `index.tsx` — Route (~1077 tok)
+
+## src/test-helpers/
+
+- `mocks.ts` — Creates a mock Drizzle database that supports all query chain patterns. (~899 tok)

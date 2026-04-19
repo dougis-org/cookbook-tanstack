@@ -1,3 +1,4 @@
+import React from 'react'
 import { vi } from "vitest"
 import type { Mock } from "vitest"
 
@@ -76,14 +77,8 @@ export function createRouterMock() {
       useParams: () => ({}),
       useSearch: () => ({}),
     }),
-    Link: ({ children, to }: { children: any; to: string }) => {
-      // Handle Link component in tests
-      const React = (globalThis as any).React
-      if (React) {
-        return React.createElement('a', { href: to }, children)
-      }
-      return null
-    },
+    Link: ({ children, to }: { children: any; to: string }) =>
+      React.createElement('a', { href: to }, children),
     redirect: (opts: any) => ({
       type: 'redirect',
       options: opts,

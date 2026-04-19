@@ -73,3 +73,24 @@
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
+
+## Session: 2026-04-19 08:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:23 | Edited openspec/changes/revamp-home-page-experience/tasks.md | inline fix | ~26 |
+| 08:23 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 2→2 lines | ~37 |
+| 08:23 | Edited openspec/changes/revamp-home-page-experience/tasks.md | inline fix | ~20 |
+| 08:23 | Edited openspec/changes/revamp-home-page-experience/tasks.md | inline fix | ~12 |
+| 08:24 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 2→2 lines | ~40 |
+| 08:29 | Edited openspec/changes/revamp-home-page-experience/tasks.md | inline fix | ~18 |
+| 08:30 | Edited src/test-helpers/mocks.ts | added 1 import(s) | ~26 |
+| 08:30 | Edited src/test-helpers/mocks.ts | reduced (-6 lines) | ~34 |
+| 08:30 | Edited src/lib/__tests__/ad-policy.test.ts | "../ad-policy" → "@/lib/ad-policy" | ~16 |
+| 08:30 | Edited src/lib/ad-policy.ts | modified isAdEligible() | ~165 |
+| 08:30 | Edited src/routes/home.tsx | modified HomePageComponent() | ~52 |
+| 08:30 | Edited src/routes/home.tsx | 5→4 lines | ~11 |
+| 08:30 | Edited src/routes/index.tsx | "relative py-20 px-6 text-" → "relative py-20 text-cente" | ~20 |
+| 08:30 | Edited src/routes/index.tsx | "py-16 px-6 max-w-7xl mx-a" → "py-8 max-w-5xl mx-auto" | ~15 |
+| 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 12→12 lines | ~248 |
+| 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 9→9 lines | ~210 |

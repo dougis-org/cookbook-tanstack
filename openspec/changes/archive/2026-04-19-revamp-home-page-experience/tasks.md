@@ -8,7 +8,7 @@
 - [x] Review `openspec/changes/revamp-home-page-experience/proposal.md`,
   `openspec/changes/revamp-home-page-experience/design.md`, and
   `openspec/changes/revamp-home-page-experience/specs/**/*.md`.
-- [ ] Confirm GitHub issues #346 and #359 are linked in the PR description.
+- [x] Confirm GitHub issues #346 and #359 are linked in the PR description.
 - [x] Confirm no active OpenSpec scope changes are needed before implementation starts.
 
 ## Execution
@@ -49,7 +49,7 @@ Suggested start-of-work commands:
 - [x] Run E2E tests with `npm run test:e2e`.
 - [x] Run type checks with `npx tsc --noEmit`.
 - [x] Run build with `npm run build`.
-- [ ] Run Codacy analysis if available and required by `docs/standards/analysis-and-security.md`.
+- [x] Run Codacy analysis if available and required by `docs/standards/analysis-and-security.md`.
 - [x] Run Snyk only if new dependencies are added.
 - [x] Run markdown lint/fix on edited `.md` files if markdown files change during implementation.
 - [x] All completed tasks marked as complete.
@@ -70,19 +70,19 @@ Use the project's documented commands in `CONTRIBUTING.md` and `docs/standards/`
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from
+- [x] Run the required pre-PR self-review from
   `.github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md` before committing.
-- [ ] Commit all changes to the working branch and push to remote.
-- [ ] Open PR from working branch to `main`.
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them,
+- [x] Commit all changes to the working branch and push to remote.
+- [x] Open PR from working branch to `main`.
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them,
   commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait
   180 seconds then repeat until no unresolved comments remain.
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix
   the failure, commit fixes, follow all steps in [Remote push validation], then push to the same working
   branch; wait 180 seconds then repeat until all checks pass.
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is
   `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user. Never wait for a human to report
   the merge; never force-merge.
 
@@ -103,17 +103,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`.
-- [ ] Verify the merged changes appear on the default branch.
-- [ ] Mark all remaining tasks as complete (`- [x]`).
-- [ ] Update repository documentation impacted by the change.
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec).
-- [ ] Archive the change: move `openspec/changes/revamp-home-page-experience/` to
+- [x] `git checkout main` and `git pull --ff-only`.
+- [x] Verify the merged changes appear on the default branch.
+- [x] Mark all remaining tasks as complete (`- [x]`).
+- [x] Update repository documentation impacted by the change.
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec).
+- [x] Archive the change: move `openspec/changes/revamp-home-page-experience/` to
   `openspec/changes/archive/YYYY-MM-DD-revamp-home-page-experience/` and stage both the new location and
   the deletion of the old location in a single commit. Do not commit the copy and delete separately.
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-revamp-home-page-experience/` exists and
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-revamp-home-page-experience/` exists and
   `openspec/changes/revamp-home-page-experience/` is gone.
-- [ ] Commit and push the archive to the default branch in one commit.
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feature/revamp-home-page-experience`.
+- [x] Commit and push the archive to the default branch in one commit.
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feature/revamp-home-page-experience`.
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feature/revamp-home-page-experience`.
