@@ -8,7 +8,7 @@
 - [x] Review `openspec/changes/revamp-home-page-experience/proposal.md`,
   `openspec/changes/revamp-home-page-experience/design.md`, and
   `openspec/changes/revamp-home-page-experience/specs/**/*.md`.
-- [ ] Confirm GitHub issues #346 and #359 are linked in the PR description.
+- [x] Confirm GitHub issues #346 and #359 are linked in the PR description.
 - [x] Confirm no active OpenSpec scope changes are needed before implementation starts.
 
 ## Execution
@@ -72,10 +72,10 @@ Use the project's documented commands in `CONTRIBUTING.md` and `docs/standards/`
 
 - [x] Run the required pre-PR self-review from
   `.github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md` before committing.
-- [ ] Commit all changes to the working branch and push to remote.
-- [ ] Open PR from working branch to `main`.
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
+- [x] Commit all changes to the working branch and push to remote.
+- [x] Open PR from working branch to `main`.
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments.
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
 - [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them,
   commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait
   180 seconds then repeat until no unresolved comments remain.
