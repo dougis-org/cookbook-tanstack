@@ -24,19 +24,26 @@ describe("Wait for AI reviews workflow", () => {
 
   it("only requires Gemini on synchronize events when no earlier Gemini review exists", () => {
     const workflow = readFileSync(workflowPath, "utf8");
-    const submittedReviewsSection =
-      workflow.match(
-        /const submittedReviews = reviews\.filter\([\s\S]*?(?=const currentReviews = submittedReviews\.filter\()/,
-      )?.[0] ?? "";
-    const currentReviewsSection =
-      workflow.match(
-        /const currentReviews = submittedReviews\.filter\([\s\S]*?(?=const hasHistoricalReview = submittedReviews\.length > 0)/,
-      )?.[0] ?? "";
+    const submittedReviewsSectionMatch = workflow.match(
+      /const submittedReviews = reviews\.filter\([\s\S]*?(?=const currentReviews = submittedReviews\.filter\()/,
+    );
+    const currentReviewsSectionMatch = workflow.match(
+      /const currentReviews = submittedReviews\.filter\([\s\S]*?(?=const hasHistoricalReview = submittedReviews\.length > 0)/,
+    );
 
+    expect(submittedReviewsSectionMatch).not.toBeNull();
+    expect(currentReviewsSectionMatch).not.toBeNull();
+
+    const submittedReviewsSection = submittedReviewsSectionMatch![0];
+    const currentReviewsSection = currentReviewsSectionMatch![0];
     expect(workflow).toContain("const action = context.payload.action");
     expect(workflow).toContain("const isSynchronize = action === 'synchronize'");
-    expect(workflow).toContain("requireCurrentHeadOnSynchronize: true");
-    expect(workflow).toContain("requireCurrentHeadOnSynchronize: false");
+    expect(workflow).toMatch(
+      /label:\s*['"]Copilot['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*false/,
+    );
+    expect(workflow).toMatch(
+      /label:\s*['"]Gemini['"][\s\S]*?requireCurrentHeadOnSynchronize:\s*true/,
+    );
     expect(workflow).toMatch(/const submittedReviews = reviews\.filter/);
     expect(submittedReviewsSection).not.toContain("review.commit_id === ref");
     expect(currentReviewsSection).toContain("review.commit_id === ref");
