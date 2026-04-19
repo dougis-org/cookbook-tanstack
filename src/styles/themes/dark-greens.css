@@ -1,0 +1,39 @@
+html.dark-greens, [data-theme="dark-greens"] {
+  --theme-bg: #103c48;
+  --theme-surface: #184956;
+  --theme-surface-raised: #1e555e;
+  --theme-surface-hover: #2d5b69;
+  --theme-border: #2d5b69;
+  --theme-border-muted: #184956;
+  --theme-fg: #adbcbc;
+  --theme-fg-muted: #72898f;
+  --theme-fg-subtle: #486868;
+  --theme-accent: #75b938;
+  --theme-accent-hover: #8fd44a;
+  --theme-accent-emphasis: #5e9429;
+  --theme-shadow-sm: 0 0 0 0 transparent;
+  --theme-shadow-md: 0 0 0 0 transparent;
+  --theme-overlay: rgb(0 0 0 / 0.6);
+
+  /* Subtle accent token overrides for dark-greens surfaces */
+  --theme-accent-subtle-base: #75b938;
+  --theme-accent-subtle-text: #8fd44a;
+
+  /* Status token overrides — semantic colours kept consistent with other dark themes */
+  --theme-error-base: theme(colors.red.400);
+  --theme-error: theme(colors.red.400);
+  --theme-success-base: theme(colors.green.400);
+  --theme-success: theme(colors.green.400);
+  --theme-warning-base: theme(colors.amber.400);
+  --theme-warning: theme(colors.amber.400);
+
+  /* Badge token overrides — Selenized named palette colours */
+  --theme-badge-meal-base: #dbb32d;
+  --theme-badge-meal-text: #c9a028;
+  --theme-badge-course-base: #af88eb;
+  --theme-badge-course-text: #9e77da;
+  --theme-badge-prep-base: #ed8649;
+  --theme-badge-prep-text: #db7438;
+  --theme-badge-classification-base: #41c7b9;
+  --theme-badge-classification-text: #30b6a8;
+}

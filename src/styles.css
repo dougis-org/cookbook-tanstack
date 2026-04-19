@@ -2,6 +2,7 @@
 /* base.css MUST precede theme files — :root defaults have lower specificity than html.dark etc. */
 @import "./styles/base.css";
 @import "./styles/themes/dark.css";
+@import "./styles/themes/dark-greens.css";
 @import "./styles/themes/light-cool.css";
 @import "./styles/themes/light-warm.css";
 

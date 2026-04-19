@@ -31,10 +31,10 @@ function minifyInlineCss(css: string) {
  *   4. Update docs/theming.md                (maintenance checklist)
  *
  * Current boot theme values (Tailwind reference -> hex):
- *   dark       bg slate.900 #0f172a   fg white     #ffffff   accent cyan.400  #22d3ee
- *   light-cool bg slate.100 #f1f5f9   fg slate.900 #0f172a   accent blue.600  #2563eb
- *   light-warm bg amber.50  #fffbeb   fg stone.900 #1c1917   accent amber.700 #b45309
- *   <slot for 4th theme — add here when that change ships>
+ *   dark        bg slate.900 #0f172a   fg white     #ffffff   accent cyan.400  #22d3ee
+ *   dark-greens bg selenized #103c48   fg #adbcbc             accent #75b938
+ *   light-cool  bg slate.100 #f1f5f9   fg slate.900 #0f172a   accent blue.600  #2563eb
+ *   light-warm  bg amber.50  #fffbeb   fg stone.900 #1c1917   accent amber.700 #b45309
  * ─────────────────────────────────────────────────────────────────
  */
 const criticalCss = minifyInlineCss(`
@@ -46,6 +46,11 @@ const criticalCss = minifyInlineCss(`
   html.light-cool {
     background: #f1f5f9;
     color: #0f172a;
+  }
+
+  html.dark-greens {
+    background: #103c48;
+    color: #adbcbc;
   }
 
   html.light-warm {
@@ -73,6 +78,11 @@ const criticalCss = minifyInlineCss(`
     background: #0f172a;
     color: #fff;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  html.dark-greens #boot-loader {
+    background: #103c48;
+    color: #adbcbc;
   }
 
   html.light-cool #boot-loader {
@@ -106,6 +116,11 @@ const criticalCss = minifyInlineCss(`
     border-top-color: #22d3ee;
     border-radius: 9999px;
     animation: boot-spin .8s linear infinite;
+  }
+
+  html.dark-greens .boot-loader__spinner {
+    border-color: rgb(173 188 188 / .18);
+    border-top-color: #75b938;
   }
 
   html.light-cool .boot-loader__spinner {

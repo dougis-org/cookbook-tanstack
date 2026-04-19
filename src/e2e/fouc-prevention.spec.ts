@@ -192,6 +192,14 @@ test.describe('FOUC prevention', () => {
       accent: 'rgb(37, 99, 235)',
     },
     {
+      storedTheme: 'dark-greens',
+      expectedClass: 'dark-greens',
+      expectedStoredTheme: 'dark-greens',
+      background: 'rgb(16, 60, 72)',
+      foreground: 'rgb(173, 188, 188)',
+      accent: 'rgb(117, 185, 56)',
+    },
+    {
       storedTheme: 'unknown-value',
       expectedClass: 'dark',
       expectedStoredTheme: 'unknown-value',
@@ -321,6 +329,23 @@ test.describe('FOUC prevention', () => {
     expect(appPreload).toBeDefined()
     expect(appPreload!.index).toBeLessThan(appStylesheet!.index)
     expect(printPreload).toBeUndefined()
+  })
+
+  test('critical startup style contains dark-greens theme rule', async ({
+    page,
+  }) => {
+    await page.goto('/')
+
+    const content = await page.evaluate(() => {
+      const el = document.querySelector('style[data-id="critical-startup"]')
+      return el ? el.textContent : null
+    })
+
+    expect(content).not.toBeNull()
+    expect(content).toContain('html.dark-greens')
+    expect(content).toContain('#103c48')
+    expect(content).toContain('#adbcbc')
+    expect(content).toContain('#75b938')
   })
 
   test('critical boot style includes loader gate rules and no template markers', async ({
