@@ -4,15 +4,16 @@ let _imagekit: ImageKit | undefined;
 
 export function getImageKit(): ImageKit {
   if (!_imagekit) {
-    const privateKey = process.env.IMAGE_KIT_API_KEY;
-    const publicKey = process.env.IMAGE_KIT_PUBLIC_KEY;
-    const urlEndpoint = process.env.IMAGE_KIT_URL_ENDPOINT;
-    if (!privateKey || !publicKey || !urlEndpoint) {
+    const privateKey =
+      process.env.IMAGE_KIT_API_KEY ?? process.env.IMAGEKIT_PRIVATE_KEY;
+
+    if (!privateKey) {
       throw new Error(
-        "ImageKit env vars not set. Ensure IMAGE_KIT_API_KEY, IMAGE_KIT_PUBLIC_KEY, and IMAGE_KIT_URL_ENDPOINT are configured.",
+        "ImageKit env vars not set. Ensure IMAGE_KIT_API_KEY or IMAGEKIT_PRIVATE_KEY is configured.",
       );
     }
-    _imagekit = new ImageKit({ privateKey, publicKey, urlEndpoint });
+
+    _imagekit = new ImageKit({ privateKey });
   }
   return _imagekit;
 }
