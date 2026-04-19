@@ -8,28 +8,28 @@ export const Route = createFileRoute('/home')({
   component: HomePageComponent,
 })
 
+const SHORTCUTS = [
+  {
+    title: 'Create Recipe',
+    description: 'Add a new recipe to your collection',
+    to: '/recipes/new',
+    icon: <Plus className="w-6 h-6" />,
+  },
+  {
+    title: 'Import Recipe',
+    description: 'Import from a URL',
+    to: '/recipes/import',
+    icon: <Plus className="w-6 h-6" />,
+  },
+]
+
+const DISCOVERY = [
+  { title: 'All Recipes', to: '/recipes', icon: <BookOpen className="w-6 h-6" /> },
+  { title: 'Cookbooks', to: '/cookbooks', icon: <Layers className="w-6 h-6" /> },
+  { title: 'Categories', to: '/categories', icon: <Settings className="w-6 h-6" /> },
+]
+
 export function HomePageComponent() {
-  const shortcuts = [
-    {
-      title: 'Create Recipe',
-      description: 'Add a new recipe to your collection',
-      to: '/recipes/new',
-      icon: <Plus className="w-6 h-6" />,
-    },
-    {
-      title: 'Import Recipe',
-      description: 'Import from a URL',
-      to: '/recipes/import',
-      icon: <Plus className="w-6 h-6" />,
-    },
-  ]
-
-  const discovery = [
-    { title: 'All Recipes', to: '/recipes', icon: <BookOpen className="w-6 h-6" /> },
-    { title: 'Cookbooks', to: '/cookbooks', icon: <Layers className="w-6 h-6" /> },
-    { title: 'Categories', to: '/categories', icon: <Settings className="w-6 h-6" /> },
-  ]
-
   return (
     <PageLayout role="authenticated-home">
       <div className="max-w-7xl mx-auto py-12 px-6">
@@ -39,7 +39,7 @@ export function HomePageComponent() {
           <section>
             <h2 className="text-2xl font-semibold text-[var(--theme-fg)] mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 gap-4">
-              {shortcuts.map((s) => (
+              {SHORTCUTS.map((s) => (
                 <Link
                   key={s.to}
                   to={s.to}
@@ -60,7 +60,7 @@ export function HomePageComponent() {
           <section>
             <h2 className="text-2xl font-semibold text-[var(--theme-fg)] mb-4">Discovery</h2>
             <div className="grid grid-cols-1 gap-4">
-              {discovery.map((d) => (
+              {DISCOVERY.map((d) => (
                 <Link
                   key={d.to}
                   to={d.to}

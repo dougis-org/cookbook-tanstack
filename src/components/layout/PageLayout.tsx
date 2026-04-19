@@ -32,13 +32,13 @@ export default function PageLayout({
   children, 
   title, 
   description,
-  role = 'public-content'
+  role = 'authenticated-task'
 }: PageLayoutProps) {
   return (
     <div className="min-h-screen bg-[var(--theme-bg)]">
       <div className="container mx-auto px-4 py-8">
         {(title || description) && (
-          <div className="mb-8">
+          <div className="mb-8" data-testid="page-title-section">
             {title && (
               <h1 className="text-4xl font-bold text-[var(--theme-fg)] mb-2">{title}</h1>
             )}

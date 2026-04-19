@@ -161,7 +161,7 @@ function RecipesPage() {
   const paginationBtnClass = 'p-2 rounded-lg bg-[var(--theme-surface)] border border-[var(--theme-border)] text-[var(--theme-fg)] disabled:opacity-30 hover:bg-[var(--theme-surface-hover)] transition-colors'
 
   return (
-    <PageLayout title="Recipes" description="Browse and discover delicious recipes">
+    <PageLayout role="public-content" title="Recipes" description="Browse and discover delicious recipes">
       {/* Sort + Page-size bar */}
       <div className="print:hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3 flex-wrap">
