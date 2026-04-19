@@ -61,6 +61,14 @@
 | 16:35 | Edited docs/theming.md | 3→3 lines | ~155 |
 | 16:35 | Edited src/e2e/fouc-prevention.spec.ts | 2→2 lines | ~44 |
 
+## Session: 2026-04-19 14:20
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:21 | Investigated failed AI review wait run and PR #360 review signals | .github/workflows/wait-for-ai-reviews.yml | confirmed check-run-only logic missed bot reviews | ~2200 |
+| 14:23 | Edited wait-for-ai-reviews workflow and added regression test | .github/workflows/wait-for-ai-reviews.yml, src/lib/__tests__/wait-for-ai-reviews.test.ts | review-based detection added | ~1700 |
+| 14:24 | Validated targeted workflow test and production build | src/lib/__tests__/wait-for-ai-reviews.test.ts | targeted test passed; build passed | ~800 |
+
 ## Session: 2026-04-18 16:36
 
 | Time | Action | File(s) | Outcome | ~Tokens |
