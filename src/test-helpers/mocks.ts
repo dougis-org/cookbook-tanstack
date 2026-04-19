@@ -64,3 +64,30 @@ export function createMockDb(result: unknown[] = []): MockDb {
 
   return db as MockDb
 }
+
+/**
+ * Creates a standard mock for @tanstack/react-router.
+ * Returns an object suitable for vi.mock('@tanstack/react-router', () => (...))
+ */
+export function createRouterMock() {
+  return {
+    createFileRoute: () => (opts: any) => ({
+      options: opts,
+      useParams: () => ({}),
+      useSearch: () => ({}),
+    }),
+    Link: ({ children, to }: { children: any; to: string }) => {
+      // Handle Link component in tests
+      const React = (globalThis as any).React
+      if (React) {
+        return React.createElement('a', { href: to }, children)
+      }
+      return null
+    },
+    redirect: (opts: any) => ({
+      type: 'redirect',
+      options: opts,
+    }),
+    useNavigate: () => vi.fn(),
+  }
+}
