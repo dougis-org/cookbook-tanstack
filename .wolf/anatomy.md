@@ -304,6 +304,7 @@
 - `deploy.yml` — CI: Deploy to Fly.io (~187 tok)
 - `resolve-outdated-comments.yml` — CI: Resolve outdated PR comments (~1810 tok)
 - `sync-openspec-shared.yml` — CI: Sync openspec-shared submodule (~812 tok)
+- `wait-for-ai-reviews.yml` — CI: Waits for Copilot/Gemini review completion via check-runs or PR reviews (~1280 tok)
 
 ## .kiro/prompts/
 
@@ -311,6 +312,11 @@
 - `opsx-archive.prompt.md` — Archive Complete (~1233 tok)
 - `opsx-explore.prompt.md` — The Stance (~1521 tok)
 - `opsx-propose.prompt.md` (~1084 tok)
+
+## src/lib/__tests__/
+
+- `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
+- `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
 ## .kiro/skills/openspec-apply-change/
 

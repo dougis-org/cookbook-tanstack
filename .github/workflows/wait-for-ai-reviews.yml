@@ -11,6 +11,7 @@ concurrency:
 
 permissions:
   checks: read
+  pull-requests: read
 
 jobs:
   wait-for-ai-reviews:
@@ -18,14 +19,34 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 11
     steps:
-      - name: Wait until Copilot and Gemini checks are complete
+      - name: Wait until Copilot and Gemini reviews are complete
         uses: actions/github-script@v8
         with:
           script: |
             const owner = context.repo.owner
             const repo = context.repo.repo
             const ref = context.payload.pull_request?.head?.sha ?? context.sha
-            const expectedChecks = [/copilot/i, /gemini/i]
+            const pullNumber =
+              context.payload.pull_request?.number ??
+              (
+                await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                  owner,
+                  repo,
+                  commit_sha: ref,
+                })
+              ).data.find((pullRequest) => pullRequest.state === 'open')?.number
+            const reviewers = [
+              {
+                label: 'Copilot',
+                checkPatterns: [/copilot/i],
+                reviewAuthors: ['copilot-pull-request-reviewer[bot]'],
+              },
+              {
+                label: 'Gemini',
+                checkPatterns: [/gemini/i],
+                reviewAuthors: ['gemini-code-assist[bot]'],
+              },
+            ]
             const pollIntervalMs = 60_000
             const maxWaitMs = 10 * 60_000
             const startTime = Date.now()
@@ -39,32 +60,64 @@ jobs:
                 ref,
                 per_page: 100,
               })
+              const reviews = pullNumber
+                ? await github.paginate(github.rest.pulls.listReviews, {
+                    owner,
+                    repo,
+                    pull_number: pullNumber,
+                    per_page: 100,
+                  })
+                : []
 
               const checkRuns = data.check_runs ?? []
-              const checkStates = expectedChecks.map((pattern) => {
-                const matchingChecks = checkRuns.filter((check) => pattern.test(check.name))
-                 const completedChecks = matchingChecks.filter((check) => check.status === 'completed' && check.conclusion === 'success')
+              const reviewStates = reviewers.map((reviewer) => {
+                const matchingChecks = checkRuns.filter((check) =>
+                  reviewer.checkPatterns.some((pattern) => pattern.test(check.name)),
+                )
+                const completedChecks = matchingChecks.filter(
+                  (check) =>
+                    check.status === 'completed' && check.conclusion === 'success',
+                )
+                const currentReviews = reviews.filter((review) => {
+                  const login = review.user?.login?.toLowerCase()
+                  const state = review.state?.toUpperCase()
+
+                  return (
+                    Boolean(review.submitted_at) &&
+                    review.commit_id === ref &&
+                    Boolean(login) &&
+                    reviewer.reviewAuthors.includes(login) &&
+                    state !== 'PENDING' &&
+                    state !== 'DISMISSED'
+                  )
+                })
 
                 return {
-                  pattern: pattern.toString(),
+                  label: reviewer.label,
                   matching: matchingChecks.length,
-                  completed: completedChecks.length,
+                  completedChecks: completedChecks.length,
+                  reviews: currentReviews.length,
+                  complete:
+                    completedChecks.length > 0 || currentReviews.length > 0,
                 }
               })
 
-              const allComplete = checkStates.every(
-                (state) => state.matching > 0 && state.completed === state.matching,
-              )
+              const allComplete = reviewStates.every((state) => state.complete)
 
               core.info(`Observed ${checkRuns.length} check run(s) on ${ref}`)
-              for (const state of checkStates) {
+              core.info(
+                pullNumber
+                  ? `Observed ${reviews.length} review record(s) on PR #${pullNumber}`
+                  : 'No associated pull request found for review polling; relying on check runs only.',
+              )
+              for (const state of reviewStates) {
                 core.info(
-                  `Check ${state.pattern}: ${state.completed}/${state.matching} completed`,
+                  `${state.label}: ${state.completedChecks}/${state.matching} successful check(s), ${state.reviews} review(s), complete=${state.complete}`,
                 )
               }
 
               if (allComplete) {
-                core.info('Copilot and Gemini checks are complete.')
+                core.info('Copilot and Gemini reviews are complete.')
                 return
               }
 

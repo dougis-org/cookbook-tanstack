@@ -112,6 +112,24 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-18T23:35:16.470Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-04-19T14:20:04.269Z",
+      "error_message": "Wait for AI reviews did not recognize completed Copilot and Gemini reviews on PR #360",
+      "file": ".github/workflows/wait-for-ai-reviews.yml",
+      "root_cause": "The workflow only polled check-run names containing Copilot/Gemini, but the real completion signal on this repo was submitted PR reviews from the bot accounts for the head commit.",
+      "fix": "Added PR review polling keyed to the current head SHA, kept check-run success as a fallback, and added a regression test for the workflow contract.",
+      "tags": [
+        "ci",
+        "github-actions",
+        "pull-request-review",
+        "copilot",
+        "gemini"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:20:04.269Z"
     }
   ]
 }
