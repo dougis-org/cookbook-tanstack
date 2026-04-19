@@ -27,13 +27,13 @@ html.dark-greens, [data-theme="dark-greens"] {
   --theme-warning-base: theme(colors.amber.400);
   --theme-warning: theme(colors.amber.400);
 
-  /* Badge token overrides — Selenized named palette colours */
+  /* Badge token overrides — base sets hue; text is lighter for contrast on tinted dark bg */
   --theme-badge-meal-base: #dbb32d;
-  --theme-badge-meal-text: #c9a028;
+  --theme-badge-meal-text: #f0cc66;
   --theme-badge-course-base: #af88eb;
-  --theme-badge-course-text: #9e77da;
+  --theme-badge-course-text: #c9a8f5;
   --theme-badge-prep-base: #ed8649;
-  --theme-badge-prep-text: #db7438;
+  --theme-badge-prep-text: #f5a878;
   --theme-badge-classification-base: #41c7b9;
-  --theme-badge-classification-text: #30b6a8;
+  --theme-badge-classification-text: #6fd8cd;
 }
