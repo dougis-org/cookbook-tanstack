@@ -96,13 +96,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 ## PR and Merge
 
 - [x] Run required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/dark-greens-theme` and push to remote
-- [ ] Open PR from `feat/dark-greens-theme` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow remote push validation, push; wait 180 seconds; repeat until no unresolved comments
-- [ ] **Monitor CI checks** — poll autonomously; on failure, diagnose and fix, commit, validate locally, push; wait 180 seconds; repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never force-merge
+- [x] Commit all changes to `feat/dark-greens-theme` and push to remote
+- [x] Open PR from `feat/dark-greens-theme` to `main`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow remote push validation, push; wait 180 seconds; repeat until no unresolved comments
+- [x] **Monitor CI checks** — poll autonomously; on failure, diagnose and fix, commit, validate locally, push; wait 180 seconds; repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never force-merge
 
 Ownership metadata:
 
@@ -118,12 +118,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete
-- [ ] Update `docs/theming.md` if any implementation details changed from design
-- [ ] Sync approved spec deltas into `openspec/specs/`
-- [ ] Archive the change: move `openspec/changes/dark-greens-theme/` to `openspec/changes/archive/YYYY-MM-DD-dark-greens-theme/` — stage both copy and deletion in a single commit
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-dark-greens-theme/` exists and `openspec/changes/dark-greens-theme/` is gone
-- [ ] Commit and push archive to `main` in one commit
-- [ ] Prune merged branch: `git fetch --prune` and `git branch -d feat/dark-greens-theme`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks as complete
+- [x] Update `docs/theming.md` if any implementation details changed from design
+- [x] Sync approved spec deltas into `openspec/specs/`
+- [x] Archive the change: move `openspec/changes/dark-greens-theme/` to `openspec/changes/archive/YYYY-MM-DD-dark-greens-theme/` — stage both copy and deletion in a single commit
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-dark-greens-theme/` exists and `openspec/changes/dark-greens-theme/` is gone
+- [x] Commit and push archive to `main` in one commit
+- [x] Prune merged branch: `git fetch --prune` and `git branch -d feat/dark-greens-theme`
