@@ -37,7 +37,7 @@
 ## Validation
 
 - [x] Run unit/integration tests: `npm run test` — 944 passing
-- [ ] Run E2E tests: `npm run test:e2e`
+- [x] Run E2E tests: `npm run test:e2e`
 - [x] Run type check: `npx tsc --noEmit` — clean
 - [x] Run build: `npm run build` — succeeded
 - [x] Confirm redirect middleware unit tests all pass
@@ -62,9 +62,9 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Open PR from `feat/domain-redirect-and-trusted-origins` to `main` — https://github.com/dougis-org/cookbook-tanstack/pull/382
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [x] Enable auto-merge: `gh pr merge https://github.com/dougis-org/cookbook-tanstack/pull/382 --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address, commit, validate locally, push; wait 180s; repeat until no unresolved comments
-- [ ] **Monitor CI checks** — poll autonomously; diagnose failures, fix, commit, validate locally, push; wait 180s; repeat until all pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never wait for a human; never force-merge
+- [x] **Monitor PR comments** — poll autonomously; address, commit, validate locally, push; wait 180s; repeat until no unresolved comments
+- [x] **Monitor CI checks** — poll autonomously; diagnose failures, fix, commit, validate locally, push; wait 180s; repeat until all pass
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user — never wait for a human; never force-merge
 
 Ownership metadata:
 
@@ -88,12 +88,12 @@ Then verify: `curl -I https://cookbook-tanstack.fly.dev/recipes` should return `
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update `.env.example` if any env var names changed during implementation
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/domain-redirect-and-trusted-origins/` to `openspec/changes/archive/YYYY-MM-DD-domain-redirect-and-trusted-origins/` **in a single commit** that stages both the new location and the deletion of the old location
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-domain-redirect-and-trusted-origins/` exists and `openspec/changes/domain-redirect-and-trusted-origins/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] `git fetch --prune` and `git branch -d feat/domain-redirect-and-trusted-origins`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update `.env.example` if any env var names changed during implementation
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/domain-redirect-and-trusted-origins/` to `openspec/changes/archive/YYYY-MM-DD-domain-redirect-and-trusted-origins/` **in a single commit** that stages both the new location and the deletion of the old location
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-domain-redirect-and-trusted-origins/` exists and `openspec/changes/domain-redirect-and-trusted-origins/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] `git fetch --prune` and `git branch -d feat/domain-redirect-and-trusted-origins`
