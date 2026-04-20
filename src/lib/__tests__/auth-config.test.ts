@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mockBetterAuth = vi.fn((config) => ({
   __config: config,
@@ -102,5 +102,60 @@ describe("auth configuration", () => {
     expect(config.emailAndPassword).toBeDefined()
     expect(config.session).toBeDefined()
     expect(config.plugins).toBeDefined()
+  })
+
+  describe("trustedOrigins", () => {
+    afterEach(() => {
+      delete process.env.BETTER_AUTH_TRUSTED_ORIGINS
+    })
+
+    it("populates trustedOrigins from BETTER_AUTH_TRUSTED_ORIGINS env var", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS =
+        "https://recipe.dougis.com,https://cookbook-tanstack.fly.dev"
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([
+        "https://recipe.dougis.com",
+        "https://cookbook-tanstack.fly.dev",
+      ])
+    })
+
+    it("defaults to empty array when BETTER_AUTH_TRUSTED_ORIGINS is not set", async () => {
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([])
+    })
+
+    it("trims whitespace from each entry", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS =
+        "https://recipe.dougis.com , https://cookbook-tanstack.fly.dev"
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([
+        "https://recipe.dougis.com",
+        "https://cookbook-tanstack.fly.dev",
+      ])
+    })
+
+    it("handles single entry without splitting incorrectly", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS = "https://recipe.dougis.com"
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual(["https://recipe.dougis.com"])
+    })
+
+    it("filters empty strings when env var is set to empty value", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS = ""
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([])
+    })
+
+    it("filters whitespace-only entries", async () => {
+      process.env.BETTER_AUTH_TRUSTED_ORIGINS = "   "
+      await import("@/lib/auth")
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      expect(config.trustedOrigins).toEqual([])
+    })
   })
 })
