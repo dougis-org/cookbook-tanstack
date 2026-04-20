@@ -21,9 +21,20 @@ export function getDomainRedirectUrl(
   const host = request.headers.get("host")
   if (!host) return null
 
-  const requestHostname = host.split(":")[0].toLowerCase()
+  let requestHostname: string
+  try {
+    requestHostname = new URL(`http://${host}`).hostname.toLowerCase()
+  } catch {
+    return null
+  }
   if (requestHostname === primaryHostname.toLowerCase()) return null
 
-  const { pathname, search } = new URL(request.url)
+  let pathname: string
+  let search: string
+  try {
+    ;({ pathname, search } = new URL(request.url))
+  } catch {
+    return null
+  }
   return `${primaryOrigin}${pathname}${search}`
 }

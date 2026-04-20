@@ -4,13 +4,13 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED Domain redirect middleware
 
-The system SHALL redirect any HTTP request whose `Host` header does not match the hostname of `APP_PRIMARY_URL` to the equivalent URL under `APP_PRIMARY_URL` with a 301 status, preserving path and query string.
+The system SHALL redirect any HTTP request whose `Host` header does not match the hostname of `APP_PRIMARY_URL` to the equivalent URL under `APP_PRIMARY_URL`, preserving path and query string. GET and HEAD requests receive a 301 (permanent redirect); all other methods receive a 308 (permanent redirect, method-preserving) to avoid inadvertently converting POST auth flows to GET.
 
 #### Scenario: Request to old domain redirects with path preserved
 
 - **Given** `APP_PRIMARY_URL` is `https://recipe.dougis.com`
 - **When** a request arrives with `Host: cookbook-tanstack.fly.dev` and path `/recipes/123?q=foo`
-- **Then** the response has status `301` and `Location: https://recipe.dougis.com/recipes/123?q=foo`
+- **Then** the response has status `301` (GET) or `308` (non-GET/HEAD) and `Location: https://recipe.dougis.com/recipes/123?q=foo`
 
 #### Scenario: Request to primary domain passes through unchanged
 
@@ -81,4 +81,4 @@ _None._
 
 - **Given** `APP_PRIMARY_URL` is malformed (e.g., not a valid URL)
 - **When** the middleware attempts to parse it
-- **Then** the error is caught, logged, and `next()` is called — request is not dropped
+- **Then** the error is caught and `next()` is called — request is not dropped and no error is thrown

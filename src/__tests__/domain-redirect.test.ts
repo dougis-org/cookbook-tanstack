@@ -98,4 +98,19 @@ describe("getDomainRedirectUrl", () => {
       "https://recipe.dougis.com/?ref=email",
     )
   })
+
+  it("returns null for IPv6 loopback host (pass through)", () => {
+    const req = new Request("http://[::1]:3000/recipes", {
+      headers: { host: "[::1]:3000" },
+    })
+    expect(() => getDomainRedirectUrl(req, PRIMARY_URL)).not.toThrow()
+  })
+
+  it("returns null when Host header is malformed (no crash)", () => {
+    const req = new Request("http://cookbook-tanstack.fly.dev/recipes", {
+      headers: { host: "not a valid host!!!" },
+    })
+    expect(() => getDomainRedirectUrl(req, PRIMARY_URL)).not.toThrow()
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
 })
