@@ -90,6 +90,43 @@ describe("RegisterForm", () => {
     })
   })
 
+  it("replaces the form with a check-email message after successful registration", async () => {
+    mockSignUpEmail.mockImplementation((_data: unknown, callbacks: { onSuccess: () => void }) => {
+      callbacks.onSuccess()
+      return Promise.resolve({})
+    })
+
+    render(<RegisterForm />)
+    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/check your/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/test@example\.com/i)).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /create account/i })).not.toBeInTheDocument()
+  })
+
+  it("does not navigate after successful registration", async () => {
+    mockSignUpEmail.mockImplementation((_data: unknown, callbacks: { onSuccess: () => void }) => {
+      callbacks.onSuccess()
+      return Promise.resolve({})
+    })
+
+    render(<RegisterForm />)
+    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
+    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/check your/i)).toBeInTheDocument()
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
   it("shows server error messages", async () => {
     mockAuthError(mockSignUpEmail, "User already exists")
     render(<RegisterForm />)
@@ -100,6 +137,8 @@ describe("RegisterForm", () => {
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("User already exists")
     })
+    expect(screen.getByRole("button", { name: /create account/i })).toBeInTheDocument()
+    expect(screen.queryByText(/check your/i)).not.toBeInTheDocument()
   })
 
   it("has a link to the login page", () => {

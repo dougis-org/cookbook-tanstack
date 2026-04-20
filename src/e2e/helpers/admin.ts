@@ -24,15 +24,23 @@ export async function registerAndLoginAsAdmin(page: Page) {
     await client.close()
   }
 
-  // Re-login to refresh session cookie so it carries isAdmin: true
+  // Clear the signup session before re-login so the refreshed session cookie
+  // carries isAdmin: true and is the only auth cookie sent by the browser.
+  await page.context().clearCookies()
+
   const origin = process.env.BETTER_AUTH_URL
     ? new URL(process.env.BETTER_AUTH_URL).origin
     : new URL(page.url()).origin
 
-  await page.request.post('/api/auth/sign-in/email', {
+  const response = await page.request.post('/api/auth/sign-in/email', {
     data: { email: creds.email, password: creds.password },
     headers: { Origin: origin },
   })
+
+  if (!response.ok()) {
+    const body = await response.text()
+    throw new Error(`Admin re-login failed: ${response.status()} ${body}`)
+  }
 
   await gotoAndWaitForHydration(page, '/')
 

@@ -6,8 +6,10 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
 import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
+import { AuthProvider } from '@/hooks/useAuth'
 
 import Header from '../components/Header'
+import VerificationBanner from '@/components/auth/VerificationBanner'
 
 import appCss from '../styles.css?url'
 import printCss from '../styles/print.css?url'
@@ -248,8 +250,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
-              <Header />
-              {children}
+              <AuthProvider>
+                <Header />
+                <VerificationBanner />
+                {children}
+              </AuthProvider>
               <TanStackDevtools
                 config={{
                   position: 'bottom-right',
