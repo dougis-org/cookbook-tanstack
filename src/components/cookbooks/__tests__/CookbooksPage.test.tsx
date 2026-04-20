@@ -1,13 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: unknown) => opts,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
-  Outlet: () => null,
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,

@@ -66,23 +66,41 @@ export function createMockDb(result: unknown[] = []): MockDb {
   return db as MockDb
 }
 
+export interface RouterMockOptions {
+  params?: Record<string, string>
+  search?: Record<string, unknown>
+  extras?: Record<string, unknown>
+}
+
 /**
  * Creates a standard mock for @tanstack/react-router.
  * Returns an object suitable for vi.mock('@tanstack/react-router', () => (...))
  */
-export function createRouterMock() {
+export function createRouterMock(opts?: RouterMockOptions) {
+  const params = opts?.params ?? {}
+  const search = opts?.search ?? {}
+  const extras = opts?.extras ?? {}
   return {
-    createFileRoute: () => (opts: any) => ({
-      options: opts,
-      useParams: () => ({}),
-      useSearch: () => ({}),
+    createFileRoute: () => (routeOpts: Record<string, unknown>) => ({
+      options: routeOpts,
+      useParams: () => params,
+      useSearch: () => search,
     }),
-    Link: ({ children, to }: { children: any; to: string }) =>
-      React.createElement('a', { href: to }, children),
-    redirect: (opts: any) => ({
+    Link: ({ children, to, params: linkParams }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
+      const href = linkParams ? to.replace(/\$(\w+)/g, (_, k) => linkParams[k] ?? '') : to
+      return React.createElement('a', { href }, children)
+    },
+    redirect: (redirectOpts: Record<string, unknown>) => ({
       type: 'redirect',
-      options: opts,
+      options: redirectOpts,
     }),
     useNavigate: () => vi.fn(),
+    ...extras,
+  }
+}
+
+export function createRouterMockForHooks(useRouteContextFn: () => unknown) {
+  return {
+    getRouteApi: () => ({ useRouteContext: useRouteContextFn }),
   }
 }

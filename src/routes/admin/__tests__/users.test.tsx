@@ -3,10 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: Record<string, unknown>) => opts,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 const mockUseQuery = vi.fn()
 const mockUseMutation = vi.fn()
