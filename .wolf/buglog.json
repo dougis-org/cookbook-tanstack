@@ -210,6 +210,24 @@
       "related_bugs": [],
       "occurrences": 2,
       "last_seen": "2026-04-19T15:30:34.554Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-04-20T20:01:32.796174Z",
+      "error_message": "AdSense contract and public home tests failed after the adConfig refactor",
+      "file": "src/lib/__tests__/google-adsense-contract.test.ts",
+      "root_cause": "Tests still asserted placeholder/dev slot rendering and the old `slotId` variable name even though AdSense rendering is production-only and PageLayout now uses `adConfig`.",
+      "fix": "Updated the AdSense contract test to assert stable slot markup, and changed public home unit/E2E tests to expect no ad slots outside production.",
+      "tags": [
+        "adsense",
+        "tests",
+        "contract",
+        "playwright",
+        "vitest"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T20:01:32.796174Z"
     }
   ]
 }

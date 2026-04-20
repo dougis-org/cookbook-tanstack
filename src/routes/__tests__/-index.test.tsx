@@ -71,10 +71,10 @@ describe('/', () => {
       expect(browseLink).toHaveAttribute('href', '/recipes')
     })
 
-    it('renders ad slots when anonymous', () => {
+    it('does not render AdSense slots outside production for anonymous visitors', () => {
       render(<HomePage />)
-      expect(screen.getByTestId('ad-slot-top')).toBeInTheDocument()
-      expect(screen.getByTestId('ad-slot-bottom')).toBeInTheDocument()
+      expect(screen.queryByTestId('ad-slot-top')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('ad-slot-bottom')).not.toBeInTheDocument()
     })
   })
 })

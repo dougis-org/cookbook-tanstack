@@ -18,14 +18,14 @@ describe('Google AdSense integration contract', () => {
     expect(rootRoute).toContain('GOOGLE_ADSENSE_ACCOUNT')
   })
 
-  it('loads Adsense slot markup from the shared page layout and keeps eligibility centralized', () => {
+  it('loads AdSense slot markup from the shared page layout and keeps eligibility centralized', () => {
     const adsenseLib = readFileSync(adsenseLibPath, 'utf8')
     const pageLayout = readFileSync(pageLayoutPath, 'utf8')
 
     expect(adsenseLib).toContain('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
     expect(pageLayout).toContain('isAdEligible(role, session)')
     expect(pageLayout).toContain('data-ad-client={GOOGLE_ADSENSE_ACCOUNT}')
-    expect(pageLayout).toContain('data-ad-slot={slotId}')
+    expect(pageLayout).toContain('data-ad-slot={')
   })
 
   it('documents the manual AdSense slot configuration requirements', () => {
