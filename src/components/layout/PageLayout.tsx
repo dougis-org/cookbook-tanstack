@@ -48,12 +48,19 @@ export function AdSlot({
   position: GoogleAdSenseSlotPosition
 }) {
   const { session } = useAuth()
-  const slotId = getGoogleAdSenseSlotId(position)
   const adRef = React.useRef<HTMLElement | null>(null)
-  const isEligible = import.meta.env.PROD && !!slotId && isAdEligible(role, session)
+  const adConfig = React.useMemo(() => {
+    const slotId = getGoogleAdSenseSlotId(position)
+
+    if (!import.meta.env.PROD || !slotId || !isAdEligible(role, session)) {
+      return null
+    }
+
+    return { slotId }
+  }, [position, role, session])
 
   React.useEffect(() => {
-    if (!isEligible || !slotId || !adRef.current) {
+    if (!adConfig || !adRef.current) {
       return
     }
 
@@ -85,9 +92,9 @@ export function AdSlot({
     return () => {
       script.removeEventListener('load', requestAd)
     }
-  }, [isEligible, slotId])
+  }, [adConfig])
 
-  if (!role || !isEligible || !slotId) {
+  if (!adConfig) {
     return null
   }
 
@@ -103,7 +110,7 @@ export function AdSlot({
         className="adsbygoogle block"
         data-ad-client={GOOGLE_ADSENSE_ACCOUNT}
         data-ad-format="auto"
-        data-ad-slot={slotId}
+        data-ad-slot={adConfig.slotId}
         data-full-width-responsive="true"
       />
     </div>
