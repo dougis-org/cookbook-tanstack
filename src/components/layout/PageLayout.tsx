@@ -23,12 +23,8 @@ interface PageLayoutProps {
 }
 
 function ensureGoogleAdSenseScript() {
-  const existingScript = document.querySelector<HTMLScriptElement>(
-    `script[src="${GOOGLE_ADSENSE_SCRIPT_SRC}"]`,
-  )
-
-  if (existingScript) {
-    return existingScript
+  if (document.querySelector(`script[src="${GOOGLE_ADSENSE_SCRIPT_SRC}"]`)) {
+    return
   }
 
   const script = document.createElement('script')
@@ -36,8 +32,6 @@ function ensureGoogleAdSenseScript() {
   script.crossOrigin = 'anonymous'
   script.src = GOOGLE_ADSENSE_SCRIPT_SRC
   document.head.appendChild(script)
-
-  return script
 }
 
 export function AdSlot({
@@ -48,7 +42,7 @@ export function AdSlot({
   position: GoogleAdSenseSlotPosition
 }) {
   const { session } = useAuth()
-  const adRef = React.useRef<HTMLElement | null>(null)
+  const adRef = React.useRef<HTMLModElement | null>(null)
   const adConfig = React.useMemo(() => {
     const slotId = getGoogleAdSenseSlotId(position)
 
@@ -65,32 +59,19 @@ export function AdSlot({
     }
 
     const adElement = adRef.current
-    const script = ensureGoogleAdSenseScript()
-    const requestAd = () => {
-      if (adElement.getAttribute('data-adsbygoogle-status') === 'done') {
-        return
-      }
 
-      try {
-        ;(window.adsbygoogle = window.adsbygoogle || []).push({})
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          console.warn('Failed to request Google AdSense slot', error)
-        }
-
-        // Ignore push errors that can happen before the AdSense library finishes initializing.
-      }
-    }
-
-    if (Array.isArray(window.adsbygoogle)) {
-      requestAd()
+    if (adElement.getAttribute('data-adsbygoogle-status') === 'done') {
       return
     }
 
-    script.addEventListener('load', requestAd, { once: true })
+    ensureGoogleAdSenseScript()
 
-    return () => {
-      script.removeEventListener('load', requestAd)
+    try {
+      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.warn('Failed to request Google AdSense slot', error)
+      }
     }
   }, [adConfig])
 
@@ -104,9 +85,7 @@ export function AdSlot({
       className="my-8 overflow-hidden rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 p-2"
     >
       <ins
-        ref={(node) => {
-          adRef.current = node
-        }}
+        ref={adRef}
         className="adsbygoogle block"
         data-ad-client={GOOGLE_ADSENSE_ACCOUNT}
         data-ad-format="auto"
