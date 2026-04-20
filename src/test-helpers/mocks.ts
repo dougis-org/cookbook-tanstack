@@ -86,8 +86,8 @@ export function createRouterMock(opts?: RouterMockOptions) {
       useParams: () => params,
       useSearch: () => search,
     }),
-    Link: ({ children, to, params: linkParams }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
-      const href = linkParams ? to.replace(/\$(\w+)/g, (_, k) => linkParams[k] ?? '') : to
+    Link: ({ children, to, params: linkParams }: { children: React.ReactNode; to?: string; params?: Record<string, string> }) => {
+      const href = linkParams && to ? to.replace(/\$(\w+)/g, (_, k) => linkParams[k] ?? '') : to
       return React.createElement('a', { href }, children)
     },
     redirect: (redirectOpts: Record<string, unknown>) => ({
