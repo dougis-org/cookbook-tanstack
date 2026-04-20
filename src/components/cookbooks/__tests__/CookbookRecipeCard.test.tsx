@@ -9,17 +9,10 @@ import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/Coo
 
 // ─── Router mock ─────────────────────────────────────────────────────────────
 
-vi.mock('@tanstack/react-router', () => ({
-  Link: ({
-    children,
-    to,
-    params,
-  }: {
-    children: React.ReactNode
-    to: string
-    params?: Record<string, string>
-  }) => <a href={to.replace('$recipeId', params?.recipeId ?? '')}>{children}</a>,
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 // ─── DnD mocks ───────────────────────────────────────────────────────────────
 

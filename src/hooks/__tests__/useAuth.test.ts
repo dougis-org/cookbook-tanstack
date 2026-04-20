@@ -2,13 +2,12 @@ import { renderHook } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
 const mockUseSession = vi.fn()
-const mockUseRouteContext = vi.fn()
+const mockUseRouteContext = vi.hoisted(() => vi.fn())
 
-vi.mock('@tanstack/react-router', () => ({
-  getRouteApi: () => ({
-    useRouteContext: () => mockUseRouteContext(),
-  }),
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMockForHooks } = await import('@/test-helpers/mocks')
+  return createRouterMockForHooks(() => mockUseRouteContext())
+})
 
 vi.mock('@/lib/auth-client', () => ({
   useSession: () => mockUseSession(),
