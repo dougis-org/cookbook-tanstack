@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRouteWithContext, useRouterState } from '@tanstack/react-router'
 import { getSession } from '@/lib/get-session'
 import type { RouterContext } from '@/types/router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
@@ -7,6 +7,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
 import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
 import { AuthProvider } from '@/hooks/useAuth'
+import { useEffect } from 'react'
 
 import Header from '../components/Header'
 import VerificationBanner from '@/components/auth/VerificationBanner'
@@ -14,11 +15,47 @@ import VerificationBanner from '@/components/auth/VerificationBanner'
 import appCss from '../styles.css?url'
 import printCss from '../styles/print.css?url'
 
+declare global {
+  interface Window {
+    dataLayer?: unknown[]
+    gtag?: (...args: unknown[]) => void
+  }
+}
+
 function minifyInlineCss(css: string) {
   return css
     .replace(/\s+/g, ' ')
     .replace(/\s*([{}:;,])\s*/g, '$1')
     .trim()
+}
+
+function getValidatedGoogleAnalyticsId() {
+  const measurementId = import.meta.env.PROD
+    ? import.meta.env.VITE_GOOGLE_ANALYTICS_ID?.trim()
+    : undefined
+
+  return measurementId && /^G-[A-Z0-9-]+$/.test(measurementId)
+    ? measurementId
+    : null
+}
+
+function hasInitializedGoogleAnalytics(measurementId: string) {
+  return (
+    window.dataLayer?.some((entry) => {
+      if (!entry || typeof entry !== 'object' || !('length' in entry)) {
+        return false
+      }
+
+      const [command, id, options] = Array.from(entry as ArrayLike<unknown>)
+      return (
+        command === 'config' &&
+        id === measurementId &&
+        typeof options === 'object' &&
+        options !== null &&
+        'send_page_view' in options
+      )
+    }) ?? false
+  )
 }
 
 /*
@@ -33,10 +70,10 @@ function minifyInlineCss(css: string) {
  *   4. Update docs/theming.md                (maintenance checklist)
  *
  * Current boot theme values (Tailwind reference -> hex):
- *   dark       bg slate.900 #0f172a   fg white     #ffffff   accent cyan.400  #22d3ee
- *   light-cool bg slate.100 #f1f5f9   fg slate.900 #0f172a   accent blue.600  #2563eb
- *   light-warm bg amber.50  #fffbeb   fg stone.900 #1c1917   accent amber.700 #b45309
- *   <slot for 4th theme — add here when that change ships>
+ *   dark        bg slate.900 #0f172a   fg white     #ffffff   accent cyan.400  #22d3ee
+ *   dark-greens bg selenized #103c48   fg #adbcbc             accent #75b938
+ *   light-cool  bg slate.100 #f1f5f9   fg slate.900 #0f172a   accent blue.600  #2563eb
+ *   light-warm  bg amber.50  #fffbeb   fg stone.900 #1c1917   accent amber.700 #b45309
  * ─────────────────────────────────────────────────────────────────
  */
 const criticalCss = minifyInlineCss(`
@@ -48,6 +85,11 @@ const criticalCss = minifyInlineCss(`
   html.light-cool {
     background: #f1f5f9;
     color: #0f172a;
+  }
+
+  html.dark-greens {
+    background: #103c48;
+    color: #adbcbc;
   }
 
   html.light-warm {
@@ -75,6 +117,11 @@ const criticalCss = minifyInlineCss(`
     background: #0f172a;
     color: #fff;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  html.dark-greens #boot-loader {
+    background: #103c48;
+    color: #adbcbc;
   }
 
   html.light-cool #boot-loader {
@@ -108,6 +155,11 @@ const criticalCss = minifyInlineCss(`
     border-top-color: #22d3ee;
     border-radius: 9999px;
     animation: boot-spin .8s linear infinite;
+  }
+
+  html.dark-greens .boot-loader__spinner {
+    border-color: rgb(173 188 188 / .18);
+    border-top-color: #75b938;
   }
 
   html.light-cool .boot-loader__spinner {
@@ -158,6 +210,14 @@ const criticalCss = minifyInlineCss(`
   }
 `)
 
+const googleAnalyticsId = getValidatedGoogleAnalyticsId()
+const googleAnalyticsSrc = googleAnalyticsId
+  ? `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(googleAnalyticsId)}`
+  : null
+const googleAnalyticsBootstrapScript = googleAnalyticsId
+  ? 'window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};'
+  : null
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const session = await getSession()
@@ -205,6 +265,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        {googleAnalyticsSrc ? <script async src={googleAnalyticsSrc} /> : null}
+        {googleAnalyticsBootstrapScript ? (
+          // eslint-disable-next-line react/no-danger -- static GA bootstrap, no dynamic interpolation
+          <script dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }} />
+        ) : null}
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <style data-id="critical-startup">{criticalCss}</style>
@@ -250,6 +315,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
+              {googleAnalyticsId ? <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} /> : null}
               <AuthProvider>
                 <Header />
                 <VerificationBanner />
@@ -273,4 +339,38 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   )
+}
+
+function GoogleAnalyticsPageTracker({
+  measurementId,
+}: {
+  measurementId: string | null
+}) {
+  const pagePath = useRouterState({
+    select: (state) =>
+      `${state.location.pathname}${state.location.searchStr}${state.location.hash}`,
+  })
+
+  useEffect(() => {
+    if (!measurementId || hasInitializedGoogleAnalytics(measurementId)) {
+      return
+    }
+
+    window.gtag?.('js', new Date())
+    window.gtag?.('config', measurementId, { send_page_view: false })
+  }, [measurementId])
+
+  useEffect(() => {
+    if (!measurementId || typeof window.gtag !== 'function') {
+      return
+    }
+
+    window.gtag('config', measurementId, {
+      page_path: pagePath,
+      page_title: document.title,
+      page_location: window.location.href,
+    })
+  }, [measurementId, pagePath])
+
+  return null
 }

@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
 export const THEMES = [
-  { id: 'dark', label: 'Dark' },
+  { id: 'dark', label: 'Dark (blues)' },
+  { id: 'dark-greens', label: 'Dark (greens)' },
   { id: 'light-cool', label: 'Light (cool)' },
   { id: 'light-warm', label: 'Light (warm)' },
 ] as const

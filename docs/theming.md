@@ -48,12 +48,12 @@ first paint via an inline script in `src/routes/__root.tsx`.
 - `--theme-fg`: `theme(colors.stone.900)`, `#1c1917`
 - `--theme-accent`: `theme(colors.amber.700)`, `#b45309`
 
-### Fourth Theme Slot
+### `dark-greens`
 
-- CSS file: TBD
-- `--theme-bg`: TBD
-- `--theme-fg`: TBD
-- `--theme-accent`: TBD
+- CSS file: `dark-greens.css`
+- `--theme-bg`: `#103c48` (Selenized Dark background)
+- `--theme-fg`: `#adbcbc`
+- `--theme-accent`: `#75b938` (Selenized green)
 
 ## Why critical CSS exists
 

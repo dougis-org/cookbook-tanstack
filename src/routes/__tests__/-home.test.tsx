@@ -1,20 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { Route, HomePageComponent } from '@/routes/home'
-
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: any) => ({
-    options: opts,
-    useParams: () => ({}),
-    useSearch: () => ({}),
-  }),
-  Link: ({ children, to }: { children: any; to: string }) => <a href={to}>{children}</a>,
-  redirect: (opts: any) => ({
-    type: 'redirect',
-    options: opts,
-  }),
-  useNavigate: () => vi.fn(),
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ isLoggedIn: true, session: { user: { id: 'u1' } } }),

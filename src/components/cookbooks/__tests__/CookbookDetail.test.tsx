@@ -9,14 +9,10 @@ import { ChapterHeader, AddRecipeModal } from '@/routes/cookbooks.$cookbookId'
 
 // ─── Router mocks ────────────────────────────────────────────────────────────
 
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: Record<string, unknown>) => ({
-    ...opts,
-    useParams: () => ({ cookbookId: 'cb-1' }),
-  }),
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-  useNavigate: () => vi.fn(),
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock({ params: { cookbookId: 'cb-1' } })
+})
 
 // ─── DnD mocks ───────────────────────────────────────────────────────────────
 

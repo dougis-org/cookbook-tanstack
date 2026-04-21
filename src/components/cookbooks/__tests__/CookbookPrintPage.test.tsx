@@ -1,14 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('@tanstack/react-router', () => ({
-  createFileRoute: () => (opts: Record<string, unknown>) => ({
-    ...opts,
-    useParams: () => ({ cookbookId: 'cb1' }),
-    useSearch: () => ({ displayonly: '1' }),
-  }),
-  Link: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock({ params: { cookbookId: 'cb1' }, search: { displayonly: '1' } })
+})
 
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))

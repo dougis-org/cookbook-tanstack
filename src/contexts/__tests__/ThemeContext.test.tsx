@@ -45,6 +45,19 @@ describe('ThemeContext', () => {
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
+  it('THEMES has four entries with correct labels', () => {
+    expect(THEMES.length).toBe(4)
+    const ids = THEMES.map((t) => t.id)
+    expect(ids).toContain('dark')
+    expect(ids).toContain('dark-greens')
+    expect(ids).toContain('light-cool')
+    expect(ids).toContain('light-warm')
+    expect(THEMES.find((t) => t.id === 'dark')?.label).toBe('Dark (blues)')
+    expect(THEMES.find((t) => t.id === 'dark-greens')?.label).toBe('Dark (greens)')
+    expect(THEMES.find((t) => t.id === 'light-cool')?.label).toBe('Light (cool)')
+    expect(THEMES.find((t) => t.id === 'light-warm')?.label).toBe('Light (warm)')
+  })
+
   it('THEMES contains light-cool and not light', () => {
     const ids = THEMES.map((t) => t.id)
     expect(ids).toContain('light-cool')
@@ -70,6 +83,20 @@ describe('ThemeContext', () => {
     await act(async () => {})
     expect(screen.getByTestId('theme').textContent).toBe('light-cool')
     expect(document.documentElement.className).toBe('light-cool')
+  })
+
+  it('setTheme("dark-greens") sets className and localStorage', async () => {
+    render(
+      <ThemeProvider>
+        <TestConsumer />
+      </ThemeProvider>,
+    )
+    await act(async () => {})
+    act(() => {
+      screen.getByText('Dark (greens)').click()
+    })
+    expect(document.documentElement.className).toBe('dark-greens')
+    expect(localStorage.getItem('cookbook-theme')).toBe('dark-greens')
   })
 
   it('setTheme("light-cool") writes to localStorage', () => {

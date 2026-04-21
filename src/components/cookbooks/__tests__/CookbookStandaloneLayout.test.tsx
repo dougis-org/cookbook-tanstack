@@ -4,12 +4,10 @@ import userEvent from "@testing-library/user-event"
 import printCss from "@/styles/print.css?raw"
 import { CookbookStandalonePage, CookbookTocList, CookbookPageChrome, RecipePageRow, CookbookPageHeader, CookbookAlphaIndex } from "@/components/cookbooks/CookbookStandaloneLayout"
 
-vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, params }: { children: React.ReactNode; to: string; params?: Record<string, string> }) => {
-    const href = params ? to.replace(/\$(\w+)/g, (_, k) => params[k] ?? '') : to
-    return <a href={href}>{children}</a>
-  },
-}))
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 describe("CookbookStandalonePage", () => {
   it("renders children inside the container", () => {
