@@ -1,20 +1,20 @@
 import { describe, it, expect } from 'vitest'
-import { isAdEligible, PageRole } from '@/lib/ad-policy'
+import { isPageAdEligible, PageRole } from '@/lib/ad-policy'
 
-describe('isAdEligible', () => {
+describe('isPageAdEligible', () => {
   const rolesWithAds: PageRole[] = ['public-marketing', 'public-content']
   const rolesWithoutAds: PageRole[] = ['authenticated-home', 'authenticated-task', 'auth', 'admin', 'account', 'print']
 
   describe('Anonymous viewers', () => {
     it('returns true on ad-enabled public roles', () => {
       rolesWithAds.forEach(role => {
-        expect(isAdEligible(role, null)).toBe(true)
+        expect(isPageAdEligible(role, null)).toBe(true)
       })
     })
 
     it('returns false on restricted roles', () => {
       rolesWithoutAds.forEach(role => {
-        expect(isAdEligible(role, null)).toBe(false)
+        expect(isPageAdEligible(role, null)).toBe(false)
       })
     })
   })
@@ -24,13 +24,13 @@ describe('isAdEligible', () => {
     
     it('returns true on ad-enabled roles', () => {
       rolesWithAds.forEach(role => {
-        expect(isAdEligible(role, freeUser as any)).toBe(true)
+        expect(isPageAdEligible(role, freeUser as any)).toBe(true)
       })
     })
 
     it('returns false on restricted roles', () => {
       rolesWithoutAds.forEach(role => {
-        expect(isAdEligible(role, freeUser as any)).toBe(false)
+        expect(isPageAdEligible(role, freeUser as any)).toBe(false)
       })
     })
   })
@@ -42,7 +42,7 @@ describe('isAdEligible', () => {
       paidTiers.forEach(tier => {
         const paidUser = { user: { tier, isAdmin: false } }
         rolesWithAds.forEach(role => {
-          expect(isAdEligible(role, paidUser as any)).toBe(false)
+          expect(isPageAdEligible(role, paidUser as any)).toBe(false)
         })
       })
     })
@@ -52,7 +52,7 @@ describe('isAdEligible', () => {
     it('returns false even on free tier', () => {
       const adminUser = { user: { tier: 'home-cook', isAdmin: true } }
       rolesWithAds.forEach(role => {
-        expect(isAdEligible(role, adminUser as any)).toBe(false)
+        expect(isPageAdEligible(role, adminUser as any)).toBe(false)
       })
     })
   })
@@ -60,12 +60,12 @@ describe('isAdEligible', () => {
   describe('Missing or unknown tiers', () => {
     it('treats missing tier as home-cook (free/ad-supported)', () => {
       const unknownUser = { user: { tier: undefined, isAdmin: false } }
-      expect(isAdEligible('public-content', unknownUser as any)).toBe(true)
+      expect(isPageAdEligible('public-content', unknownUser as any)).toBe(true)
     })
 
     it('treats unknown tier string as home-cook', () => {
       const unknownUser = { user: { tier: 'garbage', isAdmin: false } }
-      expect(isAdEligible('public-content', unknownUser as any)).toBe(true)
+      expect(isPageAdEligible('public-content', unknownUser as any)).toBe(true)
     })
   })
 })

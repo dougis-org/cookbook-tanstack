@@ -23,7 +23,7 @@ describe('Google AdSense integration contract', () => {
     const pageLayout = readFileSync(pageLayoutPath, 'utf8')
 
     expect(adsenseLib).toContain('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js')
-    expect(pageLayout).toContain('isAdEligible(role, session)')
+    expect(pageLayout).toContain('isPageAdEligible(role, session)')
     expect(pageLayout).toContain('data-ad-client={GOOGLE_ADSENSE_ACCOUNT}')
     expect(pageLayout).toContain('data-ad-slot={')
   })

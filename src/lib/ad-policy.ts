@@ -1,4 +1,5 @@
-import { hasAtLeastTier, TierUser } from '@/types/user'
+import { TierUser } from '@/types/user'
+import { EntitlementTier, TIER_LIMITS, showUserAds } from '@/lib/tier-entitlements'
 
 export type PageRole =
   | 'public-marketing'
@@ -16,9 +17,11 @@ export interface AdEligibleSession {
 
 const AD_ENABLED_ROLES: PageRole[] = ['public-marketing', 'public-content']
 
-export function isAdEligible(role: PageRole, session: AdEligibleSession | null): boolean {
+export function isPageAdEligible(role: PageRole, session: AdEligibleSession | null): boolean {
   if (!AD_ENABLED_ROLES.includes(role)) return false
-  if (!session) return true
+  if (!session) return showUserAds('anonymous')
   if (session.user.isAdmin) return false
-  return !hasAtLeastTier(session.user, 'prep-cook')
+  const raw = session.user.tier ?? 'home-cook'
+  const tier: EntitlementTier = raw in TIER_LIMITS ? (raw as EntitlementTier) : 'home-cook'
+  return showUserAds(tier)
 }
