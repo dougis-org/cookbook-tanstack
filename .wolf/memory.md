@@ -94,3 +94,5 @@
 | 08:30 | Edited src/routes/index.tsx | "py-16 px-6 max-w-7xl mx-a" → "py-8 max-w-5xl mx-auto" | ~15 |
 | 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 12→12 lines | ~248 |
 | 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 9→9 lines | ~210 |
+
+| 20:01 | Fixed stale AdSense test expectations after adConfig refactor; validated targeted build/Vitest/E2E paths | src/lib/__tests__/google-adsense-contract.test.ts, src/routes/__tests__/-index.test.tsx, src/e2e/home-page-revamp.spec.ts | tests aligned with production-only AdSense gating | ~220 |
