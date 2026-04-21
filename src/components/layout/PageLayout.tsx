@@ -1,5 +1,5 @@
 import React from 'react'
-import { isAdEligible, PageRole } from '@/lib/ad-policy'
+import { isPageAdEligible, PageRole } from '@/lib/ad-policy'
 import {
   GOOGLE_ADSENSE_ACCOUNT,
   GOOGLE_ADSENSE_SCRIPT_SRC,
@@ -47,7 +47,7 @@ export function AdSlot({
   const adConfig = React.useMemo(() => {
     const slotId = getGoogleAdSenseSlotId(position)
 
-    if (!import.meta.env.PROD || !slotId || !isAdEligible(role, session)) {
+    if (!import.meta.env.PROD || !slotId || !isPageAdEligible(role, session)) {
       return null
     }
 
