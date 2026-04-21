@@ -68,14 +68,14 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/tier-entitlements` and push to remote
-- [ ] Open PR from `feat/tier-entitlements` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address each comment, commit fixes, follow remote push validation steps, push; wait 180 seconds then repeat
-- [ ] **Monitor CI checks** — poll autonomously; fix failures, commit, follow remote push validation steps, push; wait 180 seconds then repeat
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report; never force-merge
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feat/tier-entitlements` and push to remote
+- [x] Open PR from `feat/tier-entitlements` to `main`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address each comment, commit fixes, follow remote push validation steps, push; wait 180 seconds then repeat
+- [x] **Monitor CI checks** — poll autonomously; fix failures, commit, follow remote push validation steps, push; wait 180 seconds then repeat
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — never wait for a human to report; never force-merge
 
 Ownership metadata:
 
@@ -91,12 +91,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`
-- [ ] Mark all remaining tasks complete (`- [x]`)
-- [ ] No documentation updates required (feature matrix doc unchanged)
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/tier-entitlements/` to `openspec/changes/archive/YYYY-MM-DD-tier-entitlements/` **in a single commit** — stage both the new location and the deletion of the old location together
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-tier-entitlements/` exists and `openspec/changes/tier-entitlements/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/tier-entitlements`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`
+- [x] Mark all remaining tasks complete (`- [x]`)
+- [x] No documentation updates required (feature matrix doc unchanged)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/tier-entitlements/` to `openspec/changes/archive/YYYY-MM-DD-tier-entitlements/` **in a single commit** — stage both the new location and the deletion of the old location together
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-tier-entitlements/` exists and `openspec/changes/tier-entitlements/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/tier-entitlements`
