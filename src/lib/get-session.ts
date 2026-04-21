@@ -3,5 +3,8 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { auth } from '@/lib/auth'
 
 export const getSession = createServerFn().handler(async () => {
-  return auth.api.getSession({ headers: getRequestHeaders() })
+  return auth.api.getSession({
+    headers: getRequestHeaders(),
+    query: { disableCookieCache: true },
+  })
 })

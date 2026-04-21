@@ -6,10 +6,12 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/trpc'
 import { ThemeProvider, THEMES } from '@/contexts/ThemeContext'
+import { AuthProvider } from '@/hooks/useAuth'
 import { GOOGLE_ADSENSE_ACCOUNT } from '@/lib/google-adsense'
 import { useEffect } from 'react'
 
 import Header from '../components/Header'
+import VerificationBanner from '@/components/auth/VerificationBanner'
 
 import appCss from '../styles.css?url'
 import printCss from '../styles/print.css?url'
@@ -319,8 +321,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <QueryClientProvider client={getQueryClient()}>
             <ThemeProvider>
               {googleAnalyticsId ? <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} /> : null}
-              <Header />
-              {children}
+              <AuthProvider>
+                <Header />
+                <VerificationBanner />
+                {children}
+              </AuthProvider>
               <TanStackDevtools
                 config={{
                   position: 'bottom-right',

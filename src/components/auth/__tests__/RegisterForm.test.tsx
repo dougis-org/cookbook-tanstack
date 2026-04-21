@@ -1,20 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { mockAuthError } from "@/lib/__tests__/test-helpers"
+import { createRouterMock } from "@/test-helpers/mocks"
+import { mockAuthClient, mockSignUpEmail, setupAuthCallbacks } from "@/test-helpers/auth"
+import RegisterForm from "@/components/auth/RegisterForm"
 
 const mockNavigate = vi.fn()
-const mockSignUpEmail = vi.fn()
+const validRegistration = {
+  name: "Test User",
+  username: "testuser",
+  email: "test@example.com",
+  password: "password123",
+}
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+  ...createRouterMock(),
   useNavigate: () => mockNavigate,
 }))
 
 vi.mock("@/lib/auth-client", () => ({
-  authClient: { signUp: { email: (...args: unknown[]) => mockSignUpEmail(...args) } },
+  authClient: mockAuthClient,
 }))
 
-import RegisterForm from "@/components/auth/RegisterForm"
+function fillRegistrationForm(fields: Partial<typeof validRegistration> = {}) {
+  const values = { ...validRegistration, ...fields }
+
+  if (values.name) {
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: values.name } })
+  }
+  fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: values.username } })
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: values.email } })
+  fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: values.password } })
+}
+
+function submitRegistration() {
+  fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+}
 
 describe("RegisterForm", () => {
   beforeEach(() => {
@@ -44,10 +64,8 @@ describe("RegisterForm", () => {
 
   it("validates email format", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "invalid" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ email: "invalid" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Please enter a valid email")).toBeInTheDocument()
     })
@@ -55,10 +73,8 @@ describe("RegisterForm", () => {
 
   it("validates password length", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "short" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ password: "short" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument()
     })
@@ -66,10 +82,8 @@ describe("RegisterForm", () => {
 
   it("validates username length", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "ab" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ username: "ab" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Username must be at least 3 characters")).toBeInTheDocument()
     })
@@ -77,11 +91,8 @@ describe("RegisterForm", () => {
 
   it("calls signUp on valid submission", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Test User" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm()
+    submitRegistration()
     await waitFor(() => {
       expect(mockSignUpEmail).toHaveBeenCalledWith(
         { email: "test@example.com", password: "password123", name: "Test User", username: "testuser", displayUsername: "testuser" },
@@ -90,16 +101,58 @@ describe("RegisterForm", () => {
     })
   })
 
-  it("shows server error messages", async () => {
-    mockAuthError(mockSignUpEmail, "User already exists")
+  it("replaces the form with a check-email message after successful registration", async () => {
+    setupAuthCallbacks(mockSignUpEmail, 'success')
+
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
+
+    await waitFor(() => {
+      expect(screen.getByText(/check your/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/test@example\.com/i)).toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: /create account/i })).not.toBeInTheDocument()
+  })
+
+  it("does not navigate after successful registration", async () => {
+    setupAuthCallbacks(mockSignUpEmail, 'success')
+
+    render(<RegisterForm />)
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
+
+    await waitFor(() => {
+      expect(screen.getByText(/check your/i)).toBeInTheDocument()
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
+
+  it("shows server error messages", async () => {
+    setupAuthCallbacks(mockSignUpEmail, 'error', "User already exists")
+
+    render(<RegisterForm />)
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("User already exists")
     })
+    expect(screen.getByRole("button", { name: /create account/i })).toBeInTheDocument()
+    expect(screen.queryByText(/check your/i)).not.toBeInTheDocument()
+  })
+
+  it("clears loading state when registration throws", async () => {
+    mockSignUpEmail.mockRejectedValue(new Error("Network error"))
+
+    render(<RegisterForm />)
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
+
+    expect(screen.getByRole("button", { name: /creating account/i })).toBeDisabled()
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Network error")
+    })
+    expect(screen.getByRole("button", { name: /create account/i })).not.toBeDisabled()
   })
 
   it("has a link to the login page", () => {

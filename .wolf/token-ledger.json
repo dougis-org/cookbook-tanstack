@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 79692,
-    "total_reads": 45,
-    "total_writes": 122,
-    "total_sessions": 4,
-    "anatomy_hits": 23,
-    "anatomy_misses": 22,
-    "repeated_reads_blocked": 7,
-    "estimated_savings_vs_bare_cli": 13574
+    "total_tokens_estimated": 89953,
+    "total_reads": 59,
+    "total_writes": 141,
+    "total_sessions": 5,
+    "anatomy_hits": 25,
+    "anatomy_misses": 34,
+    "repeated_reads_blocked": 10,
+    "estimated_savings_vs_bare_cli": 17318
   },
   "sessions": [
     {
@@ -991,6 +991,202 @@
         "writes_count": 35,
         "repeated_reads_blocked": 2,
         "anatomy_lookups": 6
+      }
+    },
+    {
+      "id": "session-2026-04-19-0815",
+      "started": "2026-04-19T15:15:35.886Z",
+      "ended": "2026-04-19T18:22:33.496Z",
+      "reads": [
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 1672,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": ".github/openspec-shared/.codex/skills/openspec-apply-change/SKILL.md",
+          "tokens_estimated": 1178,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "docs/standards/analysis-and-security.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/lib/ad-policy.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/routes/home.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/routes/index.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/test-helpers/mocks.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/types/user.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/lib/__tests__/ad-policy.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "src/components/layout/PageLayout.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 1672,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/fix-themed-boot-loader-css-gate/specs/fouc-prevention/spec.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/specs/fouc-prevention/spec.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/fix-themed-boot-loader-css-gate/tasks.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 28,
+          "action": "edit"
+        },
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 22,
+          "action": "edit"
+        },
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 13,
+          "action": "edit"
+        },
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 43,
+          "action": "edit"
+        },
+        {
+          "file": "openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 19,
+          "action": "edit"
+        },
+        {
+          "file": "src/test-helpers/mocks.ts",
+          "tokens_estimated": 26,
+          "action": "edit"
+        },
+        {
+          "file": "src/test-helpers/mocks.ts",
+          "tokens_estimated": 34,
+          "action": "edit"
+        },
+        {
+          "file": "src/lib/__tests__/ad-policy.test.ts",
+          "tokens_estimated": 16,
+          "action": "edit"
+        },
+        {
+          "file": "src/lib/ad-policy.ts",
+          "tokens_estimated": 165,
+          "action": "edit"
+        },
+        {
+          "file": "src/routes/home.tsx",
+          "tokens_estimated": 52,
+          "action": "edit"
+        },
+        {
+          "file": "src/routes/home.tsx",
+          "tokens_estimated": 11,
+          "action": "edit"
+        },
+        {
+          "file": "src/routes/index.tsx",
+          "tokens_estimated": 20,
+          "action": "edit"
+        },
+        {
+          "file": "src/routes/index.tsx",
+          "tokens_estimated": 15,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 266,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/revamp-home-page-experience/tasks.md",
+          "tokens_estimated": 225,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/specs/fouc-prevention/spec.md",
+          "tokens_estimated": 4164,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/fix-themed-boot-loader-css-gate/tasks.md",
+          "tokens_estimated": 306,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/fix-themed-boot-loader-css-gate/tasks.md",
+          "tokens_estimated": 274,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 4522,
+        "output_tokens_estimated": 5739,
+        "reads_count": 14,
+        "writes_count": 19,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 2
       }
     }
   ],

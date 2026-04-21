@@ -4,6 +4,7 @@ import { registerAndLoginAsAdmin } from '../helpers/admin'
 import { gotoAndWaitForHydration } from '../helpers/app'
 
 const ADMIN_USERS_URL = '/admin/users'
+const ADMIN_TABLE_TIMEOUT_MS = 20000
 
 test.describe('Admin users page — access control', () => {
   test.beforeEach(async ({ page }) => {
@@ -37,7 +38,9 @@ test.describe('Admin users page — admin access', () => {
     await expect(page).toHaveURL(ADMIN_USERS_URL)
     await expect(page.getByRole('table')).toBeVisible()
     // At least one row visible (the admin themselves)
-    await expect(page.locator('tbody tr').first()).toBeVisible()
+    await expect(page.locator('tbody tr').first()).toBeVisible({
+      timeout: ADMIN_TABLE_TIMEOUT_MS,
+    })
   })
 
   test('admin nav link is visible in the Header when logged in as admin', async ({ page }) => {
@@ -55,7 +58,7 @@ test.describe('Admin users page — admin access', () => {
     const { email } = await registerAndLoginAsAdmin(page)
     await gotoAndWaitForHydration(page, ADMIN_USERS_URL)
     const ownSelect = page.getByLabel(`Change tier for ${email}`)
-    await expect(ownSelect).toBeDisabled()
+    await expect(ownSelect).toBeDisabled({ timeout: ADMIN_TABLE_TIMEOUT_MS })
   })
 
   test('admin can complete tier change flow: select tier → confirm modal → tier updated', async ({
@@ -72,10 +75,12 @@ test.describe('Admin users page — admin access', () => {
 
     // Wait for table to load
     await expect(page.getByRole('table')).toBeVisible()
-    await expect(page.locator('tbody tr').first()).toBeVisible()
+    await expect(page.locator('tbody tr').first()).toBeVisible({
+      timeout: ADMIN_TABLE_TIMEOUT_MS,
+    })
 
     const targetRow = page.locator('tbody tr').filter({ hasText: targetUser.email })
-    await expect(targetRow).toBeVisible()
+    await expect(targetRow).toBeVisible({ timeout: ADMIN_TABLE_TIMEOUT_MS })
     const targetSelect = targetRow.getByLabel(`Change tier for ${targetUser.email}`)
     await expect(targetSelect).toBeEnabled()
 

@@ -5,6 +5,7 @@ import { validatePassword } from "@/lib/validation"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
+import type { AuthErrorContext } from "@/components/auth/types"
 
 interface ResetPasswordFormProps {
   token: string
@@ -30,7 +31,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       { newPassword: password, token },
       {
         onSuccess: () => navigate({ to: "/auth/login" }),
-        onError: (ctx) => setError(ctx.error.message || "Failed to reset password"),
+        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Failed to reset password"),
       },
     )
 

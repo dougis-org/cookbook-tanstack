@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T16:04:31.515Z
-> Files: 537 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T18:21:27.723Z
+> Files: 539 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
@@ -749,9 +749,17 @@
 
 - `spec.md` — ADDED Requirements (~1678 tok)
 
+## openspec/changes/fix-themed-boot-loader-css-gate/
+
+- `tasks.md` — Tasks (~2018 tok)
+
 ## openspec/changes/revamp-home-page-experience/
 
 - `tasks.md` — Tasks (~1672 tok)
+
+## openspec/specs/fouc-prevention/
+
+- `spec.md` — ADDED Requirements (~3643 tok)
 
 ## src/e2e/
 

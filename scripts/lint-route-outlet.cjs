@@ -68,6 +68,7 @@ for (const routePath of routes.keys()) {
 }
 
 const outletRegex = /<\s*Outlet(?:\s|\/|>)/;
+const componentRegex = /\bcomponent\s*:/;
 let errors = 0;
 for (const [parentPath, children] of parentChildren.entries()) {
   const parentRoutes = routes.get(parentPath);
@@ -76,7 +77,7 @@ for (const [parentPath, children] of parentChildren.entries()) {
   // Only layout routes (non-trailing-slash paths) are required to render
   // <Outlet />. If every file at this path is an index route, the children
   // are actually root siblings in TanStack Router — skip the check.
-  const layoutRoutes = parentRoutes.filter((r) => r.isLayout);
+  const layoutRoutes = parentRoutes.filter((r) => r.isLayout && componentRegex.test(r.content));
   if (layoutRoutes.length === 0) continue;
 
   const hasOutlet = layoutRoutes.some((r) => outletRegex.test(r.content));

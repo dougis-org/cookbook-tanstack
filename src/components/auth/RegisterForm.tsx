@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { authClient } from "@/lib/auth-client"
 import { validateEmail, validatePassword, validateUsername } from "@/lib/validation"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
+import type { AuthErrorContext } from "@/components/auth/types"
 
 interface FieldErrors {
   username?: string
@@ -13,7 +14,6 @@ interface FieldErrors {
 }
 
 export default function RegisterForm() {
-  const navigate = useNavigate()
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
@@ -21,6 +21,7 @@ export default function RegisterForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -36,15 +37,39 @@ export default function RegisterForm() {
     setError("")
     setIsLoading(true)
 
-    await authClient.signUp.email(
-      { email, password, name: name || username, username, displayUsername: username },
-      {
-        onSuccess: () => navigate({ to: "/" }),
-        onError: (ctx) => setError(ctx.error.message || "Registration failed"),
-      },
-    )
+    try {
+      await authClient.signUp.email(
+        { email, password, name: name || username, username, displayUsername: username },
+        {
+          onSuccess: () => setIsSubmitted(true),
+          onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Registration failed"),
+        },
+      )
+    } catch (signUpError) {
+      setError(
+        signUpError instanceof Error && signUpError.message
+          ? signUpError.message
+          : "Registration failed",
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-    setIsLoading(false)
+  if (isSubmitted) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-[var(--theme-fg)]">Check your email</h2>
+          <p className="text-[var(--theme-fg-muted)]">
+            We&apos;ve sent a verification link to <span className="font-medium text-[var(--theme-fg)]">{email}</span>.
+          </p>
+        </div>
+        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors text-sm">
+          Back to sign in
+        </Link>
+      </div>
+    )
   }
 
   return (

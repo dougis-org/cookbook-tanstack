@@ -6,6 +6,7 @@ import { REDIRECT_REASON_MESSAGES, type RedirectReason } from "@/lib/auth-guard"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
+import type { AuthErrorContext } from "@/components/auth/types"
 
 interface FieldErrors {
   email?: string
@@ -47,7 +48,7 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
       { email, password, rememberMe },
       {
         onSuccess: () => navigate({ to: isSafeRedirectPath(from) ? from : "/" }),
-        onError: (ctx) => setError(ctx.error.message || "Invalid credentials"),
+        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Invalid credentials"),
       },
     )
 
