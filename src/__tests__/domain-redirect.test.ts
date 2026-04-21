@@ -99,11 +99,31 @@ describe("getDomainRedirectUrl", () => {
     )
   })
 
+  it("returns null for IPv4 host — health check pass through", () => {
+    const req = new Request("http://1.2.3.4/", { headers: { host: "1.2.3.4" } })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
+  it("returns null for IPv4 host with port — health check pass through", () => {
+    const req = new Request("http://127.0.0.1:3000/", {
+      headers: { host: "127.0.0.1:3000" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
   it("returns null for IPv6 loopback host (pass through)", () => {
     const req = new Request("http://[::1]:3000/recipes", {
       headers: { host: "[::1]:3000" },
     })
     expect(() => getDomainRedirectUrl(req, PRIMARY_URL)).not.toThrow()
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
+  })
+
+  it("returns null for bracketed IPv6 fly internal host — health check pass through", () => {
+    const req = new Request("http://[fdaa:1e:bb7b:a7b:652:ebdb:c00e:2]:3000/", {
+      headers: { host: "[fdaa:1e:bb7b:a7b:652:ebdb:c00e:2]:3000" },
+    })
+    expect(getDomainRedirectUrl(req, PRIMARY_URL)).toBeNull()
   })
 
   it("returns null when Host header is malformed (no crash)", () => {
