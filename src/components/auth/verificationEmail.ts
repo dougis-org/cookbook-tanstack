@@ -6,17 +6,23 @@ type AuthErrorResult = {
   } | null
 }
 
+const fallbackMessage = "Unable to send verification email"
+
+function nonEmptyMessage(message: unknown) {
+  return typeof message === "string" && message.trim().length > 0 ? message : undefined
+}
+
 export function getVerificationEmailErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message) return error.message
+  if (error instanceof Error) return nonEmptyMessage(error.message) ?? fallbackMessage
   if (
     typeof error === "object" &&
     error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
+    "message" in error
   ) {
-    return error.message
+    const message = nonEmptyMessage(error.message)
+    if (message) return message
   }
-  return "Unable to send verification email"
+  return fallbackMessage
 }
 
 export async function requestVerificationEmail(email: string) {
@@ -27,6 +33,6 @@ export async function requestVerificationEmail(email: string) {
 
   const possibleError = (result as AuthErrorResult | undefined)?.error
   if (possibleError) {
-    throw new Error(possibleError.message || "Unable to send verification email")
+    throw new Error(nonEmptyMessage(possibleError.message) ?? fallbackMessage)
   }
 }

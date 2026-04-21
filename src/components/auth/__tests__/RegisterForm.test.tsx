@@ -141,6 +141,20 @@ describe("RegisterForm", () => {
     expect(screen.queryByText(/check your/i)).not.toBeInTheDocument()
   })
 
+  it("clears loading state when registration throws", async () => {
+    mockSignUpEmail.mockRejectedValue(new Error("Network error"))
+
+    render(<RegisterForm />)
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
+
+    expect(screen.getByRole("button", { name: /creating account/i })).toBeDisabled()
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent("Network error")
+    })
+    expect(screen.getByRole("button", { name: /create account/i })).not.toBeDisabled()
+  })
+
   it("has a link to the login page", () => {
     render(<RegisterForm />)
     expect(screen.getByText("Sign in")).toHaveAttribute("href", "/auth/login")

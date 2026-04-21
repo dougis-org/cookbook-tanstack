@@ -36,6 +36,14 @@ describe("verificationEmail helpers", () => {
     )
   })
 
+  it("throws fallback text when BetterAuth returns a blank error message", async () => {
+    mockSendVerificationEmail.mockResolvedValue({ error: { message: "   " } })
+
+    await expect(requestVerificationEmail("cook@example.com")).rejects.toThrow(
+      "Unable to send verification email",
+    )
+  })
+
   it("extracts Error instances and plain message objects", () => {
     expect(getVerificationEmailErrorMessage(new Error("Network error"))).toBe("Network error")
     expect(getVerificationEmailErrorMessage({ message: "Rate limited" })).toBe("Rate limited")
@@ -43,6 +51,9 @@ describe("verificationEmail helpers", () => {
 
   it("falls back for non-standard error shapes", () => {
     expect(getVerificationEmailErrorMessage({ error: { message: "Nested" } })).toBe(
+      "Unable to send verification email",
+    )
+    expect(getVerificationEmailErrorMessage({ message: "" })).toBe(
       "Unable to send verification email",
     )
     expect(getVerificationEmailErrorMessage("failed")).toBe("Unable to send verification email")

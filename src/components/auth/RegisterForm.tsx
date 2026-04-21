@@ -37,15 +37,23 @@ export default function RegisterForm() {
     setError("")
     setIsLoading(true)
 
-    await authClient.signUp.email(
-      { email, password, name: name || username, username, displayUsername: username },
-      {
-        onSuccess: () => setIsSubmitted(true),
-        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Registration failed"),
-      },
-    )
-
-    setIsLoading(false)
+    try {
+      await authClient.signUp.email(
+        { email, password, name: name || username, username, displayUsername: username },
+        {
+          onSuccess: () => setIsSubmitted(true),
+          onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Registration failed"),
+        },
+      )
+    } catch (signUpError) {
+      setError(
+        signUpError instanceof Error && signUpError.message
+          ? signUpError.message
+          : "Registration failed",
+      )
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isSubmitted) {
