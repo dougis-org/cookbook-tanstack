@@ -78,11 +78,19 @@ export async function makeAnonCaller() {
   return appRouter.createCaller({ session: null, user: null });
 }
 
-export async function makeAuthCaller(userId: string, email = "test@test.com") {
+export async function makeAuthCaller(
+  userId: string,
+  opts: { email?: string; tier?: string; isAdmin?: boolean } = {},
+) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
     session: { id: "s1" } as never,
-    user: { id: userId, email } as never,
+    user: {
+      id: userId,
+      email: opts.email ?? "test@test.com",
+      tier: opts.tier,
+      isAdmin: opts.isAdmin ?? false,
+    } as never,
   });
 }
 
@@ -101,6 +109,6 @@ export async function withSeededUser<TReturn>(
   ) => Promise<TReturn>,
 ): Promise<TReturn> {
   const user = await seedUserWithBetterAuth();
-  const caller = await makeAuthCaller(user.id, user.email);
+  const caller = await makeAuthCaller(user.id, { email: user.email });
   return fn(user, caller);
 }

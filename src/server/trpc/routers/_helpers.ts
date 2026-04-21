@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../init";
-import { Recipe } from "@/db/models";
+import { Recipe, Cookbook } from "@/db/models";
+import { getRecipeLimit, getCookbookLimit } from "@/lib/tier-entitlements";
+import type { EntitlementTier } from "@/lib/tier-entitlements";
 
 /** Validates a MongoDB ObjectId: a 24-character hexadecimal string. */
 export const objectId = z
@@ -39,6 +41,43 @@ export async function verifyOwnership<T extends { userId: unknown }>(
     });
   }
   return existing;
+}
+
+/**
+ * Enforces tier-based content creation limits.
+ * Admins bypass all limits. Missing tier defaults to 'home-cook'.
+ *
+ * Note: Recipe countDocuments has soft-delete middleware that auto-injects
+ * { deleted: { $ne: true } } — deleted docs are already excluded.
+ * hiddenByTier docs are explicitly excluded here so they don't block creates.
+ */
+export async function enforceContentLimit(
+  userId: string,
+  tier: string | undefined,
+  isAdmin: boolean,
+  resource: "recipes" | "cookbooks",
+): Promise<void> {
+  if (isAdmin) return;
+
+  const effectiveTier = (tier ?? "home-cook") as EntitlementTier;
+  const limit =
+    resource === "recipes"
+      ? getRecipeLimit(effectiveTier)
+      : getCookbookLimit(effectiveTier);
+
+  const Model = resource === "recipes" ? Recipe : Cookbook;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const count = await (Model as any).countDocuments({
+    userId,
+    hiddenByTier: { $ne: true },
+  });
+
+  if (count >= limit) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: `${resource === "recipes" ? "Recipe" : "Cookbook"} limit reached for your plan`,
+    });
+  }
 }
 
 /**

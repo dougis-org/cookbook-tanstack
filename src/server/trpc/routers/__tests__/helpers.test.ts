@@ -1,5 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
+import { withCleanDb } from "@/test-helpers/with-clean-db"
+import { Recipe, Cookbook } from "@/db/models"
+import { seedUserWithBetterAuth } from "./test-helpers"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -42,5 +45,119 @@ describe("verifyOwnership", () => {
     const { verifyOwnership } = await import("../_helpers")
     const record = { userId: { toString: () => "u1" }, name: "My Recipe" }
     expect(await verifyOwnership(vi.fn().mockResolvedValue(record), "u1", "Recipe")).toBe(record)
+  })
+})
+
+// ─── enforceContentLimit ────────────────────────────────────────────────────
+
+describe("enforceContentLimit — recipes", () => {
+  it("throws FORBIDDEN when home-cook user is at the 10-recipe limit", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+      }
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "recipes"),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+    })
+  })
+
+  it("resolves when home-cook user is under the 10-recipe limit", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      for (let i = 0; i < 9; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+      }
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "recipes"),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  it("resolves when isAdmin is true regardless of count", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+      }
+      await expect(
+        enforceContentLimit(user.id, "home-cook", true, "recipes"),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  it("excludes hiddenByTier docs from the count — 10 total with 1 hidden resolves", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      for (let i = 0; i < 9; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+      }
+      await Recipe.collection.insertOne({
+        name: "Hidden Recipe",
+        userId: user.id,
+        isPublic: true,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "recipes"),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  it("defaults missing tier to home-cook and throws FORBIDDEN at 10 recipes", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+      }
+      await expect(
+        enforceContentLimit(user.id, undefined, false, "recipes"),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+    })
+  })
+})
+
+describe("enforceContentLimit — cookbooks", () => {
+  it("throws FORBIDDEN when home-cook user is at the 1-cookbook limit", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      await new Cookbook({ name: "My Cookbook", userId: user.id, isPublic: true }).save()
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+    })
+  })
+
+  it("resolves when home-cook user has 0 cookbooks", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  it("resolves when isAdmin is true regardless of cookbook count", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      await new Cookbook({ name: "My Cookbook", userId: user.id, isPublic: true }).save()
+      await expect(
+        enforceContentLimit(user.id, "home-cook", true, "cookbooks"),
+      ).resolves.toBeUndefined()
+    })
   })
 })

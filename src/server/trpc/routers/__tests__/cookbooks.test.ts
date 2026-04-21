@@ -791,3 +791,76 @@ describe("cookbooks.addRecipe (chapter-aware)", () => {
     });
   });
 });
+
+// ─── cookbooks.create — tier content limit enforcement ───────────────────────
+
+describe("cookbooks.create — tier limit enforcement", () => {
+  it("throws FORBIDDEN when home-cook user already has 1 cookbook (at limit)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook" });
+      await expect(caller.cookbooks.create({ name: "Second Cookbook" })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+    });
+  });
+
+  it("succeeds when home-cook user has 0 cookbooks (under limit)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook" });
+      const result = await caller.cookbooks.create({ name: "First Cookbook" });
+      expect(result).toMatchObject({ name: "First Cookbook" });
+    });
+  });
+
+  it("admin user bypasses the cookbook limit", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook", isAdmin: true });
+      const result = await caller.cookbooks.create({ name: "Admin Extra" });
+      expect(result).toMatchObject({ name: "Admin Extra" });
+    });
+  });
+
+  it("hiddenByTier cookbook excluded from count — 1 hidden allows create", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Cookbook({
+        name: "Hidden Cookbook",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+      }).save();
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook" });
+      const result = await caller.cookbooks.create({ name: "Active First" });
+      expect(result).toMatchObject({ name: "Active First" });
+    });
+  });
+
+  it("create response includes hiddenByTier: false", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook" });
+      const result = await caller.cookbooks.create({ name: "New Cookbook" });
+      expect(result.hiddenByTier).toBe(false);
+    });
+  });
+});
+
+// ─── cookbooks.list — hiddenByTier in response ───────────────────────────────
+
+describe("cookbooks.list — hiddenByTier in response", () => {
+  it("list items include hiddenByTier: false by default", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results).toHaveLength(1);
+      expect(results[0].hiddenByTier).toBe(false);
+    });
+  });
+});

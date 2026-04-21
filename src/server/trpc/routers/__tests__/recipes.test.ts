@@ -12,7 +12,7 @@ import {
   RecipeLike,
   Cookbook,
 } from "@/db/models";
-import { seedUserWithBetterAuth } from "./test-helpers";
+import { seedUserWithBetterAuth, makeAuthCaller } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
@@ -30,14 +30,6 @@ const seedUser = seedUserWithBetterAuth;
 async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({ session: null, user: null });
-}
-
-async function makeAuthCaller(userId: string) {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({
-    session: { id: "s1" } as never,
-    user: { id: userId } as never,
-  });
 }
 
 // ─── recipes.list — visibility filtering ─────────────────────────────────────
@@ -1630,6 +1622,94 @@ describe("recipes.list cursor / nextCursor", () => {
 
       expect(result.page).toBe(2);
       expect(result.items).toHaveLength(5);
+    });
+  });
+});
+
+// ─── recipes.create — tier content limit enforcement ─────────────────────────
+
+describe("recipes.create — tier limit enforcement", () => {
+  it("throws FORBIDDEN when home-cook user has 10 recipes (at limit)", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save();
+      }
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      await expect(caller.recipes.create({ name: "One Too Many" })).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+    });
+  });
+
+  it("succeeds when home-cook user has 9 recipes (under limit)", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      for (let i = 0; i < 9; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save();
+      }
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      const result = await caller.recipes.create({ name: "The Tenth" });
+      expect(result).toMatchObject({ name: "The Tenth" });
+    });
+  });
+
+  it("admin user bypasses the limit", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save();
+      }
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook", isAdmin: true });
+      const result = await caller.recipes.create({ name: "Admin Extra" });
+      expect(result).toMatchObject({ name: "Admin Extra" });
+    });
+  });
+
+  it("hiddenByTier recipe excluded from count — 10 total with 1 hidden succeeds", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      for (let i = 0; i < 9; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save();
+      }
+      await Recipe.collection.insertOne({
+        name: "Hidden",
+        userId: user.id,
+        isPublic: true,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      const result = await caller.recipes.create({ name: "Active Tenth" });
+      expect(result).toMatchObject({ name: "Active Tenth" });
+    });
+  });
+
+  it("create response includes hiddenByTier: false", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      const result = await caller.recipes.create({ name: "New Recipe" });
+      expect(result.hiddenByTier).toBe(false);
+    });
+  });
+});
+
+// ─── recipes.list / byId — hiddenByTier in response ──────────────────────────
+
+describe("recipes.list — hiddenByTier in response", () => {
+  it("list items include hiddenByTier: false by default", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      await new Recipe({ name: "My Recipe", userId: user.id, isPublic: true }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: user.id });
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].hiddenByTier).toBe(false);
     });
   });
 });

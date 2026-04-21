@@ -21,6 +21,7 @@ export interface IRecipe extends Document {
   imageUrl?: string;
   isPublic: boolean;
   deleted?: boolean;
+  hiddenByTier?: boolean;
   mealIds: Types.ObjectId[];
   courseIds: Types.ObjectId[];
   preparationIds: Types.ObjectId[];
@@ -50,6 +51,7 @@ const recipeSchema = new Schema<IRecipe>(
     imageUrl: { type: String },
     isPublic: { type: Boolean, default: true },
     deleted: { type: Boolean, default: false },
+    hiddenByTier: { type: Boolean, default: false },
     mealIds: [{ type: Schema.Types.ObjectId, ref: "Meal" }],
     courseIds: [{ type: Schema.Types.ObjectId, ref: "Course" }],
     preparationIds: [{ type: Schema.Types.ObjectId, ref: "Preparation" }],
