@@ -43,13 +43,16 @@ describe('PageLayout', () => {
 })
 
 describe('AdSlot', () => {
+  let originalProdValue: unknown
+
   beforeEach(() => {
+    originalProdValue = (import.meta.env as Record<string, unknown>).PROD
     ;(import.meta.env as Record<string, unknown>).PROD = true
     window.adsbygoogle = []
   })
 
   afterEach(() => {
-    ;(import.meta.env as Record<string, unknown>).PROD = false
+    ;(import.meta.env as Record<string, unknown>).PROD = originalProdValue
     delete window.adsbygoogle
     document.querySelectorAll('script[src*="adsbygoogle"]').forEach((s) => s.remove())
   })
@@ -106,13 +109,17 @@ describe('AdSlot', () => {
   it('skips push when data-adsbygoogle-status is done', async () => {
     const pushSpy = vi.fn()
     window.adsbygoogle = { push: pushSpy } as unknown as typeof window.adsbygoogle
+    let rerender!: (ui: React.ReactElement) => void
     await act(async () => {
-      const { container } = render(<AdSlot role="public-marketing" position="top" />)
-      const ins = container.querySelector('ins')
+      const result = render(<AdSlot role="public-marketing" position="top" />)
+      rerender = result.rerender
+      const ins = result.container.querySelector('ins')
       ins?.setAttribute('data-adsbygoogle-status', 'done')
     })
-    // Re-render to trigger effect with done status
-    const pushCallsAfterMount = pushSpy.mock.calls.length
-    expect(pushCallsAfterMount).toBeLessThanOrEqual(1)
+    const callsAfterMount = pushSpy.mock.calls.length
+    await act(async () => {
+      rerender(<AdSlot role="public-marketing" position="top" />)
+    })
+    expect(pushSpy).toHaveBeenCalledTimes(callsAfterMount)
   })
 })

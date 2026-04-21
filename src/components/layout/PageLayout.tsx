@@ -55,7 +55,12 @@ export function AdSlot({
   }, [position, role, session])
 
   React.useEffect(() => {
-    if (!adConfig || !adRef.current || adPushedRef.current) {
+    if (!adConfig) {
+      adPushedRef.current = false
+      return
+    }
+
+    if (!adRef.current || adPushedRef.current) {
       return
     }
 
@@ -65,11 +70,11 @@ export function AdSlot({
       return
     }
 
-    adPushedRef.current = true
     ensureGoogleAdSenseScript()
 
     try {
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+      adPushedRef.current = true
     } catch (error) {
       if (import.meta.env.DEV) {
         console.warn('Failed to request Google AdSense slot', error)
