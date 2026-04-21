@@ -40,7 +40,7 @@ export default function RegisterForm() {
       { email, password, name: name || username, username, displayUsername: username },
       {
         onSuccess: () => setIsSubmitted(true),
-        onError: (ctx) => setError(ctx.error.message || "Registration failed"),
+        onError: (ctx: any) => setError(ctx.error.message || "Registration failed"),
       },
     )
 

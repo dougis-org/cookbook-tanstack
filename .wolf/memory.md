@@ -94,3 +94,12 @@
 | 08:30 | Edited src/routes/index.tsx | "py-16 px-6 max-w-7xl mx-a" → "py-8 max-w-5xl mx-auto" | ~15 |
 | 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 12→12 lines | ~248 |
 | 09:04 | Edited openspec/changes/revamp-home-page-experience/tasks.md | 9→9 lines | ~210 |
+| 11:21 | Created openspec/specs/fouc-prevention/spec.md | — | ~3886 |
+| 11:21 | Edited openspec/changes/fix-themed-boot-loader-css-gate/tasks.md | 7→7 lines | ~286 |
+| 11:21 | Edited openspec/changes/fix-themed-boot-loader-css-gate/tasks.md | 9→9 lines | ~256 |
+| 11:22 | Session end: 19 writes across 7 files (tasks.md, mocks.ts, ad-policy.test.ts, ad-policy.ts, home.tsx) | 14 reads | ~10261 tok |
+
+## Session: 2026-04-19 11:26
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

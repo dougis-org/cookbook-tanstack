@@ -47,7 +47,7 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
       { email, password, rememberMe },
       {
         onSuccess: () => navigate({ to: isSafeRedirectPath(from) ? from : "/" }),
-        onError: (ctx) => setError(ctx.error.message || "Invalid credentials"),
+        onError: (ctx: any) => setError(ctx.error.message || "Invalid credentials"),
       },
     )
 

@@ -30,7 +30,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       { newPassword: password, token },
       {
         onSuccess: () => navigate({ to: "/auth/login" }),
-        onError: (ctx) => setError(ctx.error.message || "Failed to reset password"),
+        onError: (ctx: any) => setError(ctx.error.message || "Failed to reset password"),
       },
     )
 
