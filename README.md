@@ -39,6 +39,23 @@ IMAGE_KIT_API_KEY=
 
 ImageKit private keys are server-side only and must never be exposed in client code.
 
+Google AdSense is wired into the shared page layout for public marketing/content pages only. The client library is
+not loaded for paid tiers (`prep-cook`, `sous-chef`, `executive-chef`), admins, or non-ad page roles.
+
+To finish production AdSense setup:
+
+1. Keep the checked-in `public/ads.txt` file deployed at `/ads.txt`.
+2. Use the built-in `google-adsense-account` meta tag for `ca-pub-3814997299935267`.
+3. Create your top/bottom display ad units in Google AdSense and add their numeric slot IDs to `.env.local` or
+   your production environment:
+
+```bash
+VITE_GOOGLE_ADSENSE_TOP_SLOT_ID=
+VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID=
+```
+
+AdSense slots render only in production builds so local development stays free of third-party ad requests.
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for:

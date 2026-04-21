@@ -16,9 +16,9 @@ test.describe('Home Page Revamp', () => {
     // Should see Browse Recipes
     await expect(page.getByRole('link', { name: 'Browse Recipes' })).toBeVisible()
     
-    // Should see ad slots (placeholders)
-    await expect(page.getByTestId('ad-slot-top')).toBeVisible()
-    await expect(page.getByTestId('ad-slot-bottom')).toBeVisible()
+    // AdSense surfaces stay suppressed in non-production environments
+    await expect(page.getByTestId('ad-slot-top')).toHaveCount(0)
+    await expect(page.getByTestId('ad-slot-bottom')).toHaveCount(0)
   })
 
   test('anonymous visitor navigating to /home is redirected to login', async ({ page }) => {
