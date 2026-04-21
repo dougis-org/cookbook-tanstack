@@ -4,6 +4,8 @@ import {
   loggedOutAuth,
   mockAuthClient,
   mockSendVerificationEmail,
+  expectVerificationEmailRequest,
+  holdVerificationEmailRequest,
   unverifiedAuth,
   verifiedAuth,
 } from "@/test-helpers/auth"
@@ -76,26 +78,18 @@ describe("VerificationBanner", () => {
     fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
 
     await waitFor(() => {
-      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
-        email: "cook@example.com",
-        callbackURL: "/auth/verify-email",
-      })
+      expectVerificationEmailRequest()
     })
   })
 
   it("shows loading feedback while resend is pending", async () => {
-    let resolveResend: (value: unknown) => void = () => {}
-    mockSendVerificationEmail.mockImplementation(
-      () => new Promise((resolve) => {
-        resolveResend = resolve
-      }),
-    )
+    const resolveResend = holdVerificationEmailRequest()
 
     render(<VerificationBanner />)
     fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
 
     expect(screen.getByRole("button", { name: /sending/i })).toBeDisabled()
-    resolveResend({})
+    resolveResend()
 
     await waitFor(() => {
       expect(screen.getByText(/verification email sent/i)).toBeInTheDocument()

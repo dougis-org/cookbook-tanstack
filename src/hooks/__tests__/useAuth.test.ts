@@ -21,15 +21,24 @@ function authProviderWrapper({ children }: { children: ReactNode }) {
   return createElement(AuthProvider, null, children)
 }
 
+function renderUseAuth() {
+  return renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+}
+
+function setServerSession(session: unknown) {
+  mockUseRouteContext.mockReturnValue({ session })
+}
+
+function setClientSession(data: unknown, isPending = false) {
+  mockUseSession.mockReturnValue({ data, isPending })
+}
+
 describe('useAuth', () => {
   it('returns isLoggedIn: true and userId when authenticated', () => {
-    mockUseRouteContext.mockReturnValue({ session: null })
-    mockUseSession.mockReturnValue({
-      data: { user: { id: 'user-1', name: 'Test User' } },
-      isPending: false,
-    })
+    setServerSession(null)
+    setClientSession({ user: { id: 'user-1', name: 'Test User' } })
 
-    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+    const { result } = renderUseAuth()
 
     expect(result.current.isLoggedIn).toBe(true)
     expect(result.current.userId).toBe('user-1')
@@ -38,13 +47,10 @@ describe('useAuth', () => {
   })
 
   it('returns isLoggedIn: false and userId: null when unauthenticated', () => {
-    mockUseRouteContext.mockReturnValue({ session: null })
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    })
+    setServerSession(null)
+    setClientSession(null)
 
-    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+    const { result } = renderUseAuth()
 
     expect(result.current.isLoggedIn).toBe(false)
     expect(result.current.userId).toBe(null)
@@ -53,13 +59,10 @@ describe('useAuth', () => {
   })
 
   it('returns isPending: true when session is loading', () => {
-    mockUseRouteContext.mockReturnValue({ session: null })
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: true,
-    })
+    setServerSession(null)
+    setClientSession(null, true)
 
-    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+    const { result } = renderUseAuth()
 
     expect(result.current.isPending).toBe(true)
     expect(result.current.isLoggedIn).toBe(false)
@@ -67,15 +70,10 @@ describe('useAuth', () => {
   })
 
   it('falls back to the server session while the client session is still loading', () => {
-    mockUseRouteContext.mockReturnValue({
-      session: { user: { id: 'user-1', name: 'Server User' } },
-    })
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: true,
-    })
+    setServerSession({ user: { id: 'user-1', name: 'Server User' } })
+    setClientSession(null, true)
 
-    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+    const { result } = renderUseAuth()
 
     expect(result.current.session).toEqual({
       user: { id: 'user-1', name: 'Server User' },
@@ -86,15 +84,10 @@ describe('useAuth', () => {
   })
 
   it('prefers the resolved client null session over the server session fallback', () => {
-    mockUseRouteContext.mockReturnValue({
-      session: { user: { id: 'user-1', name: 'Server User' } },
-    })
-    mockUseSession.mockReturnValue({
-      data: null,
-      isPending: false,
-    })
+    setServerSession({ user: { id: 'user-1', name: 'Server User' } })
+    setClientSession(null)
 
-    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
+    const { result } = renderUseAuth()
 
     expect(result.current.session).toBe(null)
     expect(result.current.isLoggedIn).toBe(false)

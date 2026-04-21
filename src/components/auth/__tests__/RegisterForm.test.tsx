@@ -5,6 +5,12 @@ import { mockAuthClient, mockSignUpEmail, setupAuthCallbacks } from "@/test-help
 import RegisterForm from "@/components/auth/RegisterForm"
 
 const mockNavigate = vi.fn()
+const validRegistration = {
+  name: "Test User",
+  username: "testuser",
+  email: "test@example.com",
+  password: "password123",
+}
 
 vi.mock("@tanstack/react-router", () => ({
   ...createRouterMock(),
@@ -14,6 +20,21 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/lib/auth-client", () => ({
   authClient: mockAuthClient,
 }))
+
+function fillRegistrationForm(fields: Partial<typeof validRegistration> = {}) {
+  const values = { ...validRegistration, ...fields }
+
+  if (values.name) {
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: values.name } })
+  }
+  fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: values.username } })
+  fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: values.email } })
+  fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: values.password } })
+}
+
+function submitRegistration() {
+  fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+}
 
 describe("RegisterForm", () => {
   beforeEach(() => {
@@ -43,10 +64,8 @@ describe("RegisterForm", () => {
 
   it("validates email format", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "invalid" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ email: "invalid" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Please enter a valid email")).toBeInTheDocument()
     })
@@ -54,10 +73,8 @@ describe("RegisterForm", () => {
 
   it("validates password length", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "short" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ password: "short" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Password must be at least 8 characters")).toBeInTheDocument()
     })
@@ -65,10 +82,8 @@ describe("RegisterForm", () => {
 
   it("validates username length", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "ab" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ username: "ab" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByText("Username must be at least 3 characters")).toBeInTheDocument()
     })
@@ -76,11 +91,8 @@ describe("RegisterForm", () => {
 
   it("calls signUp on valid submission", async () => {
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Test User" } })
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm()
+    submitRegistration()
     await waitFor(() => {
       expect(mockSignUpEmail).toHaveBeenCalledWith(
         { email: "test@example.com", password: "password123", name: "Test User", username: "testuser", displayUsername: "testuser" },
@@ -93,10 +105,8 @@ describe("RegisterForm", () => {
     setupAuthCallbacks(mockSignUpEmail, 'success')
 
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
 
     await waitFor(() => {
       expect(screen.getByText(/check your/i)).toBeInTheDocument()
@@ -109,10 +119,8 @@ describe("RegisterForm", () => {
     setupAuthCallbacks(mockSignUpEmail, 'success')
 
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
 
     await waitFor(() => {
       expect(screen.getByText(/check your/i)).toBeInTheDocument()
@@ -124,10 +132,8 @@ describe("RegisterForm", () => {
     setupAuthCallbacks(mockSignUpEmail, 'error', "User already exists")
 
     render(<RegisterForm />)
-    fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
-    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })
-    fireEvent.change(screen.getByLabelText(/^Password/), { target: { value: "password123" } })
-    fireEvent.click(screen.getByRole("button", { name: /create account/i }))
+    fillRegistrationForm({ name: "" })
+    submitRegistration()
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent("User already exists")
     })

@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { mockAuthClient, mockSendVerificationEmail, unverifiedAuth, verifiedAuth } from "@/test-helpers/auth"
+import {
+  expectVerificationEmailRequest,
+  holdVerificationEmailRequest,
+  mockAuthClient,
+  mockSendVerificationEmail,
+  unverifiedAuth,
+  verifiedAuth,
+} from "@/test-helpers/auth"
 
 const mockUseAuth = vi.fn()
 
@@ -64,26 +71,18 @@ describe("VerifyEmailPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
 
     await waitFor(() => {
-      expect(mockSendVerificationEmail).toHaveBeenCalledWith({
-        email: "cook@example.com",
-        callbackURL: "/auth/verify-email",
-      })
+      expectVerificationEmailRequest()
     })
   })
 
   it("shows resend loading and success feedback", async () => {
-    let resolveResend: (value: unknown) => void = () => {}
-    mockSendVerificationEmail.mockImplementation(
-      () => new Promise((resolve) => {
-        resolveResend = resolve
-      }),
-    )
+    const resolveResend = holdVerificationEmailRequest()
 
     render(<VerifyEmailPage />)
     fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
 
     expect(screen.getByRole("button", { name: /sending/i })).toBeDisabled()
-    resolveResend({})
+    resolveResend()
 
     await waitFor(() => {
       expect(screen.getByText(/verification email sent/i)).toBeInTheDocument()

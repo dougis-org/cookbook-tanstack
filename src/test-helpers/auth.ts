@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { expect, vi } from "vitest"
 
 export const TEST_USER = {
   id: "user-1",
@@ -64,4 +64,23 @@ export function setupAuthCallbacks(mockFn: ReturnType<typeof vi.fn>, type: "succ
     }
     return Promise.resolve(value ?? {})
   })
+}
+
+export function expectVerificationEmailRequest() {
+  expect(mockSendVerificationEmail).toHaveBeenCalledWith({
+    email: TEST_USER.email,
+    callbackURL: "/auth/verify-email",
+  })
+}
+
+export function holdVerificationEmailRequest() {
+  let resolveRequest: (value: unknown) => void = () => {}
+
+  mockSendVerificationEmail.mockImplementation(
+    () => new Promise((resolve) => {
+      resolveRequest = resolve
+    }),
+  )
+
+  return () => resolveRequest({})
 }

@@ -5,7 +5,6 @@ import { validateEmail } from "@/lib/validation"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
-import type { AuthErrorContext } from "@/components/auth/types"
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("")
@@ -27,7 +26,8 @@ export default function ForgotPasswordForm() {
       { email, redirectTo: "/auth/reset-password" },
       {
         onSuccess: () => setIsSubmitted(true),
-        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Something went wrong"),
+        onError: (ctx: { error: { message?: string } }) =>
+          setError(ctx.error.message || "Something went wrong"),
       },
     )
 
