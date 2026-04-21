@@ -5,15 +5,10 @@ import { validatePassword } from "@/lib/validation"
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
+import type { AuthErrorContext } from "@/components/auth/types"
 
 interface ResetPasswordFormProps {
   token: string
-}
-
-type AuthErrorContext = {
-  error: {
-    message?: string
-  }
 }
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {

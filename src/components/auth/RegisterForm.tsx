@@ -5,17 +5,12 @@ import { validateEmail, validatePassword, validateUsername } from "@/lib/validat
 import FormInput from "@/components/ui/FormInput"
 import FormError from "@/components/ui/FormError"
 import FormSubmitButton from "@/components/ui/FormSubmitButton"
+import type { AuthErrorContext } from "@/components/auth/types"
 
 interface FieldErrors {
   username?: string
   email?: string
   password?: string
-}
-
-type AuthErrorContext = {
-  error: {
-    message?: string
-  }
 }
 
 export default function RegisterForm() {
