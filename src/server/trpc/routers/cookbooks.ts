@@ -12,6 +12,8 @@ import "@/db/models/course";
 import "@/db/models/preparation";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { canCreatePrivate } from "@/lib/tier-entitlements";
+
 function pluckIds(arr: unknown): string[] {
   if (!Array.isArray(arr)) return [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -297,11 +299,16 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      let isPublic = input.isPublic;
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as any)) {
+        isPublic = true;
+      }
+
       const cookbook = await new Cookbook({
         userId: ctx.user.id,
         name: input.name,
         description: input.description ?? null,
-        isPublic: input.isPublic,
+        isPublic,
         imageUrl: input.imageUrl ?? null,
         recipes: [],
         chapters: [],
@@ -332,6 +339,17 @@ export const cookbooksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.id, ctx.user.id);
+
+      if (
+        input.isPublic === false &&
+        !ctx.user.isAdmin &&
+        !canCreatePrivate(ctx.user.tier as any)
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Your current tier does not support private cookbooks.",
+        });
+      }
 
       const { id, ...data } = input;
       const updated = await Cookbook.findByIdAndUpdate(

@@ -4,6 +4,7 @@
  * Uses the Mongoose connection to ensure we're on the same database as tests.
  */
 import mongoose, { Types } from "mongoose";
+import { type UserTier } from "@/types/user";
 
 let seedCounter = 0;
 
@@ -78,12 +79,21 @@ export async function makeAnonCaller() {
   return appRouter.createCaller({ session: null, user: null });
 }
 
-export async function makeAuthCaller(userId: string, email = "test@test.com") {
+export async function makeAuthCaller(
+  userId: string,
+  email = "test@test.com",
+  tier: UserTier = "home-cook",
+  isAdmin = false,
+) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
     session: { id: "s1" } as never,
-    user: { id: userId, email } as never,
+    user: { id: userId, email, tier, isAdmin } as never,
   });
+}
+
+export async function makeTieredCaller(tier: UserTier, isAdmin = false) {
+  return makeAuthCaller(new Types.ObjectId().toHexString(), "test@test.com", tier, isAdmin);
 }
 
 export async function withSeededUser<TReturn>(

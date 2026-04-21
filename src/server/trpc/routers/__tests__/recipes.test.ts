@@ -12,7 +12,12 @@ import {
   RecipeLike,
   Cookbook,
 } from "@/db/models";
-import { seedUserWithBetterAuth } from "./test-helpers";
+import {
+  seedUserWithBetterAuth,
+  makeAnonCaller,
+  makeAuthCaller,
+  makeTieredCaller,
+} from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
@@ -26,19 +31,6 @@ function uid() {
 }
 
 const seedUser = seedUserWithBetterAuth;
-
-async function makeAnonCaller() {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null });
-}
-
-async function makeAuthCaller(userId: string) {
-  const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({
-    session: { id: "s1" } as never,
-    user: { id: userId } as never,
-  });
-}
 
 // ─── recipes.list — visibility filtering ─────────────────────────────────────
 
@@ -1630,6 +1622,122 @@ describe("recipes.list cursor / nextCursor", () => {
 
       expect(result.page).toBe(2);
       expect(result.items).toHaveLength(5);
+    });
+  });
+});
+
+// ─── visibility enforcement (tier-based) ─────────────────────────
+
+describe("visibility enforcement", () => {
+  describe("create", () => {
+    it("Home Cook creates private recipe -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("home-cook");
+        const result = await caller.recipes.create({
+          name: "Home Cook Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(true);
+      });
+    });
+
+    it("Sous Chef creates private recipe -> remains private", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("sous-chef");
+        const result = await caller.recipes.create({
+          name: "Sous Chef Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(false);
+      });
+    });
+
+    it("Admin with Home Cook tier creates private recipe -> remains private", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("home-cook", true);
+        const result = await caller.recipes.create({
+          name: "Admin Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(false);
+      });
+    });
+  });
+
+  describe("import", () => {
+    it("Prep Cook imports private recipe -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("prep-cook");
+        const result = await caller.recipes.import({
+          name: "Prep Cook Import",
+          isPublic: false,
+          _version: "1",
+        });
+        const saved = await Recipe.findById(result.id).lean();
+        expect(saved?.isPublic).toBe(true);
+      });
+    });
+  });
+
+  describe("update", () => {
+    it("Home Cook updates recipe to private -> rejected with FORBIDDEN", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({
+          name: "Public Recipe",
+          userId: user.id,
+          isPublic: true,
+        }).save();
+
+        const caller = await makeAuthCaller(user.id, "test@test.com", "home-cook");
+        await expect(
+          caller.recipes.update({
+            id: recipe.id,
+            isPublic: false,
+          }),
+        ).rejects.toThrow(/support private recipes/i);
+
+        const persisted = await Recipe.findById(recipe.id).lean();
+        expect(persisted?.isPublic).toBe(true);
+      });
+    });
+
+    it("Executive Chef updates recipe to private -> allowed", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({
+          name: "Public Recipe",
+          userId: user.id,
+          isPublic: true,
+        }).save();
+
+        const caller = await makeAuthCaller(user.id, "test@test.com", "executive-chef");
+        const result = await caller.recipes.update({
+          id: recipe.id,
+          isPublic: false,
+        });
+
+        expect(result?.isPublic).toBe(false);
+      });
+    });
+
+    it("Admin updates recipe to private -> allowed", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({
+          name: "Public Recipe",
+          userId: user.id,
+          isPublic: true,
+        }).save();
+
+        const caller = await makeAuthCaller(user.id, "test@test.com", "home-cook", true);
+        const result = await caller.recipes.update({
+          id: recipe.id,
+          isPublic: false,
+        });
+
+        expect(result?.isPublic).toBe(false);
+      });
     });
   });
 });
