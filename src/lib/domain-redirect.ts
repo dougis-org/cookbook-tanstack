@@ -27,6 +27,10 @@ export function getDomainRedirectUrl(
   } catch {
     return null
   }
+  // IP-addressed Host headers come from health checks / internal traffic — pass through
+  if (/^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/.test(requestHostname)) return null
+  if (requestHostname.startsWith("[")) return null // IPv6: WHATWG URL keeps brackets in .hostname
+
   if (requestHostname === primaryHostname.toLowerCase()) return null
 
   let pathname: string

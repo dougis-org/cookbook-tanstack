@@ -25,6 +25,9 @@ primary_region = "sjc"
     path = "/"
     timeout = "5s"
 
+    [http_service.checks.headers]
+      Host = "recipe.dougis.com"
+
 [[vm]]
   memory = "512mb"
   cpu_kind = "shared"
