@@ -94,11 +94,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Open PR from working branch to `main`
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --squash`
-- [ ] **Monitor PR comments** — poll for new comments autonomously; address, commit, validate, push; wait
+- [x] **Monitor PR comments** — poll for new comments autonomously; address, commit, validate, push; wait
   180 seconds; repeat
-- [ ] **Monitor CI checks** — poll for check status autonomously; fix failures, commit, validate, push; wait
+- [x] **Monitor CI checks** — poll for check status autonomously; fix failures, commit, validate, push; wait
   180 seconds; repeat
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED`
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `MERGED`
   proceed to Post-Merge; if `CLOSED` exit and notify user
 
 Ownership metadata:
@@ -115,15 +115,15 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (CONTRIBUTING.md if needed)
-- [ ] Sync approved spec deltas into `openspec/specs/email-verification-ui/`
-- [ ] Archive the change: move `openspec/changes/email-verification-ui/` to
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (CONTRIBUTING.md if needed)
+- [x] Sync approved spec deltas into `openspec/specs/email-verification-ui/`
+- [x] Archive the change: move `openspec/changes/email-verification-ui/` to
   `openspec/changes/archive/2026-04-18-email-verification-ui/` **and stage both the new location and
   the deletion of the old location in a single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-18-email-verification-ui/` exists and
+- [x] Confirm `openspec/changes/archive/2026-04-18-email-verification-ui/` exists and
   `openspec/changes/email-verification-ui/` is gone
-- [ ] Commit and push the archive to the default branch in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/email-verification-ui`
+- [x] Commit and push the archive to the default branch in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/email-verification-ui`
