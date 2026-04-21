@@ -10,6 +10,12 @@ interface ResetPasswordFormProps {
   token: string
 }
 
+type AuthErrorContext = {
+  error: {
+    message?: string
+  }
+}
+
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const navigate = useNavigate()
   const [password, setPassword] = useState("")
@@ -30,7 +36,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       { newPassword: password, token },
       {
         onSuccess: () => navigate({ to: "/auth/login" }),
-        onError: (ctx: any) => setError(ctx.error.message || "Failed to reset password"),
+        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Failed to reset password"),
       },
     )
 

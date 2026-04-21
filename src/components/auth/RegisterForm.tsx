@@ -12,6 +12,12 @@ interface FieldErrors {
   password?: string
 }
 
+type AuthErrorContext = {
+  error: {
+    message?: string
+  }
+}
+
 export default function RegisterForm() {
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
@@ -40,7 +46,7 @@ export default function RegisterForm() {
       { email, password, name: name || username, username, displayUsername: username },
       {
         onSuccess: () => setIsSubmitted(true),
-        onError: (ctx: any) => setError(ctx.error.message || "Registration failed"),
+        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Registration failed"),
       },
     )
 

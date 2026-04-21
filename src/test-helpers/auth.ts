@@ -52,16 +52,16 @@ export const mockAuthClient = {
   resetPassword: mockResetPassword,
 }
 
-export function setupAuthCallbacks(mockFn: ReturnType<typeof vi.fn>, type: 'success' | 'error', value?: unknown) {
+export function setupAuthCallbacks(mockFn: ReturnType<typeof vi.fn>, type: "success" | "error", value?: unknown) {
   mockFn.mockImplementation((_data: unknown, callbacks: {
     onSuccess?: (value: unknown) => void
     onError?: (ctx: { error: { message: unknown } }) => void
   }) => {
-    if (type === 'success') {
-      callbacks.onSuccess?.(value || {})
+    if (type === "success") {
+      callbacks.onSuccess?.(value ?? {})
     } else {
-      callbacks.onError?.({ error: { message: value || "Error" } })
+      callbacks.onError?.({ error: { message: value ?? "Error" } })
     }
-    return Promise.resolve(value || {})
+    return Promise.resolve(value ?? {})
   })
 }

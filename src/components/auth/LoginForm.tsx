@@ -12,6 +12,12 @@ interface FieldErrors {
   password?: string
 }
 
+type AuthErrorContext = {
+  error: {
+    message?: string
+  }
+}
+
 interface LoginFormProps {
   reason?: RedirectReason
   from?: string
@@ -47,7 +53,7 @@ export default function LoginForm({ reason, from }: LoginFormProps) {
       { email, password, rememberMe },
       {
         onSuccess: () => navigate({ to: isSafeRedirectPath(from) ? from : "/" }),
-        onError: (ctx: any) => setError(ctx.error.message || "Invalid credentials"),
+        onError: (ctx: AuthErrorContext) => setError(ctx.error.message || "Invalid credentials"),
       },
     )
 
