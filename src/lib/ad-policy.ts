@@ -22,6 +22,6 @@ export function isPageAdEligible(role: PageRole, session: AdEligibleSession | nu
   if (!session) return showUserAds('anonymous')
   if (session.user.isAdmin) return false
   const raw = session.user.tier ?? 'home-cook'
-  const tier: EntitlementTier = raw in TIER_LIMITS ? (raw as EntitlementTier) : 'home-cook'
+  const tier: EntitlementTier = Object.hasOwn(TIER_LIMITS, raw) ? (raw as EntitlementTier) : 'home-cook'
   return showUserAds(tier)
 }

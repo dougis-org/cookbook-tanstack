@@ -67,5 +67,10 @@ describe('isPageAdEligible', () => {
       const unknownUser = { user: { tier: 'garbage', isAdmin: false } }
       expect(isPageAdEligible('public-content', unknownUser as any)).toBe(true)
     })
+
+    it('treats prototype key (e.g. toString) as home-cook, not a valid tier', () => {
+      const protoKeyUser = { user: { tier: 'toString', isAdmin: false } }
+      expect(isPageAdEligible('public-content', protoKeyUser as any)).toBe(true)
+    })
   })
 })

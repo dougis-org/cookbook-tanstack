@@ -1,5 +1,5 @@
 // Source of truth for all tier limit values: docs/user-tier-feature-sets.md
-import { UserTier, hasAtLeastTier } from '@/types/user'
+import { hasAtLeastTier, type UserTier } from '@/types/user'
 
 export type EntitlementTier = UserTier | 'anonymous'
 
