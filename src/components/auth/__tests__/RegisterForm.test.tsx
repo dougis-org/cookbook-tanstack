@@ -1,20 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { mockAuthError } from "@/lib/__tests__/test-helpers"
+import { createRouterMock } from "@/test-helpers/mocks"
+import { mockAuthClient, mockSignUpEmail, setupAuthCallbacks } from "@/test-helpers/auth"
+import RegisterForm from "@/components/auth/RegisterForm"
 
 const mockNavigate = vi.fn()
-const mockSignUpEmail = vi.fn()
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
+  ...createRouterMock(),
   useNavigate: () => mockNavigate,
 }))
 
 vi.mock("@/lib/auth-client", () => ({
-  authClient: { signUp: { email: (...args: unknown[]) => mockSignUpEmail(...args) } },
+  authClient: mockAuthClient,
 }))
-
-import RegisterForm from "@/components/auth/RegisterForm"
 
 describe("RegisterForm", () => {
   beforeEach(() => {
@@ -91,10 +90,7 @@ describe("RegisterForm", () => {
   })
 
   it("replaces the form with a check-email message after successful registration", async () => {
-    mockSignUpEmail.mockImplementation((_data: unknown, callbacks: { onSuccess: () => void }) => {
-      callbacks.onSuccess()
-      return Promise.resolve({})
-    })
+    setupAuthCallbacks(mockSignUpEmail, 'success')
 
     render(<RegisterForm />)
     fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
@@ -110,10 +106,7 @@ describe("RegisterForm", () => {
   })
 
   it("does not navigate after successful registration", async () => {
-    mockSignUpEmail.mockImplementation((_data: unknown, callbacks: { onSuccess: () => void }) => {
-      callbacks.onSuccess()
-      return Promise.resolve({})
-    })
+    setupAuthCallbacks(mockSignUpEmail, 'success')
 
     render(<RegisterForm />)
     fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
@@ -128,7 +121,8 @@ describe("RegisterForm", () => {
   })
 
   it("shows server error messages", async () => {
-    mockAuthError(mockSignUpEmail, "User already exists")
+    setupAuthCallbacks(mockSignUpEmail, 'error', "User already exists")
+
     render(<RegisterForm />)
     fireEvent.change(screen.getByLabelText(/^Username/), { target: { value: "testuser" } })
     fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "test@example.com" } })

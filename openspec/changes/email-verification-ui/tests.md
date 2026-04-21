@@ -64,6 +64,8 @@ File: `src/routes/auth/__tests__/-verify-email.test.tsx`
 - [x] Renders default "verify your email" + resend when `emailVerified: false` + no `?error` param
 - [x] Resend button in error state calls `authClient.sendVerificationEmail`
 - [x] Resend loading/success/error states behave identically to banner resend tests
+- [x] Verified session state takes precedence over a stale `?error` param
+- [x] Shared verification email helper throws BetterAuth response error messages and fallback messages
 
 Spec ref: ADDED — Email verification landing page; ADDED — Resend from landing page
 

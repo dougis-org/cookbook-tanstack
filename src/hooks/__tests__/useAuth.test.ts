@@ -1,3 +1,5 @@
+import { createElement } from 'react'
+import type { ReactNode } from 'react'
 import { renderHook } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
@@ -13,7 +15,11 @@ vi.mock('@/lib/auth-client', () => ({
   useSession: () => mockUseSession(),
 }))
 
-import { useAuth } from '../useAuth'
+import { AuthProvider, useAuth } from '../useAuth'
+
+function authProviderWrapper({ children }: { children: ReactNode }) {
+  return createElement(AuthProvider, null, children)
+}
 
 describe('useAuth', () => {
   it('returns isLoggedIn: true and userId when authenticated', () => {
@@ -23,7 +29,7 @@ describe('useAuth', () => {
       isPending: false,
     })
 
-    const { result } = renderHook(() => useAuth())
+    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
 
     expect(result.current.isLoggedIn).toBe(true)
     expect(result.current.userId).toBe('user-1')
@@ -38,7 +44,7 @@ describe('useAuth', () => {
       isPending: false,
     })
 
-    const { result } = renderHook(() => useAuth())
+    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
 
     expect(result.current.isLoggedIn).toBe(false)
     expect(result.current.userId).toBe(null)
@@ -53,7 +59,7 @@ describe('useAuth', () => {
       isPending: true,
     })
 
-    const { result } = renderHook(() => useAuth())
+    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
 
     expect(result.current.isPending).toBe(true)
     expect(result.current.isLoggedIn).toBe(false)
@@ -69,7 +75,7 @@ describe('useAuth', () => {
       isPending: true,
     })
 
-    const { result } = renderHook(() => useAuth())
+    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
 
     expect(result.current.session).toEqual({
       user: { id: 'user-1', name: 'Server User' },
@@ -88,7 +94,7 @@ describe('useAuth', () => {
       isPending: false,
     })
 
-    const { result } = renderHook(() => useAuth())
+    const { result } = renderHook(() => useAuth(), { wrapper: authProviderWrapper })
 
     expect(result.current.session).toBe(null)
     expect(result.current.isLoggedIn).toBe(false)

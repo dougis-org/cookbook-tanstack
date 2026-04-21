@@ -1,37 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { mockAuthClient, mockSendVerificationEmail, unverifiedAuth, verifiedAuth } from "@/test-helpers/auth"
 
 const mockUseAuth = vi.fn()
-const mockSendVerificationEmail = vi.fn()
 
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
-}))
+vi.mock("@tanstack/react-router", async () => {
+  const { createRouterMock } = await import("@/test-helpers/mocks")
+  return createRouterMock()
+})
 
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => mockUseAuth(),
 }))
 
 vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    sendVerificationEmail: (...args: unknown[]) => mockSendVerificationEmail(...args),
-  },
+  authClient: mockAuthClient,
 }))
 
 import VerifyEmailPage from "@/components/auth/VerifyEmailPage"
-
-const unverifiedAuth = {
-  session: {
-    user: {
-      id: "user-1",
-      email: "cook@example.com",
-      emailVerified: false,
-    },
-  },
-  isPending: false,
-  isLoggedIn: true,
-  userId: "user-1",
-}
 
 describe("VerifyEmailPage", () => {
   beforeEach(() => {
@@ -41,15 +27,21 @@ describe("VerifyEmailPage", () => {
   })
 
   it("renders success state when the session email is verified", () => {
-    mockUseAuth.mockReturnValue({
-      ...unverifiedAuth,
-      session: { user: { ...unverifiedAuth.session.user, emailVerified: true } },
-    })
+    mockUseAuth.mockReturnValue(verifiedAuth)
 
     render(<VerifyEmailPage />)
 
     expect(screen.getByText(/email verified/i)).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /continue to app/i })).toHaveAttribute("href", "/")
+  })
+
+  it("renders success state when verified even if an error param is present", () => {
+    mockUseAuth.mockReturnValue(verifiedAuth)
+
+    render(<VerifyEmailPage error="INVALID_TOKEN" />)
+
+    expect(screen.getByText(/email verified/i)).toBeInTheDocument()
+    expect(screen.queryByText(/verification link is invalid or has expired/i)).not.toBeInTheDocument()
   })
 
   it("renders error state when an error param is present", () => {

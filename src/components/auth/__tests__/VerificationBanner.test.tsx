@@ -1,44 +1,40 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import {
+  loggedOutAuth,
+  mockAuthClient,
+  mockSendVerificationEmail,
+  unverifiedAuth,
+  verifiedAuth,
+} from "@/test-helpers/auth"
 
 const mockUseAuth = vi.fn()
-const mockSendVerificationEmail = vi.fn()
-let mockPathname = "/"
+const mockPathname = vi.hoisted(() => ({ value: "/" }))
 
-vi.mock("@tanstack/react-router", () => ({
-  useRouterState: ({ select }: { select: (state: { location: { pathname: string } }) => unknown }) =>
-    select({ location: { pathname: mockPathname } }),
-}))
+vi.mock("@tanstack/react-router", async () => {
+  const { createRouterMock } = await import("@/test-helpers/mocks")
+  return createRouterMock({
+    extras: {
+      useRouterState: ({ select }: { select: (state: { location: { pathname: string } }) => unknown }) =>
+        select({ location: { pathname: mockPathname.value } }),
+    },
+  })
+})
 
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => mockUseAuth(),
 }))
 
 vi.mock("@/lib/auth-client", () => ({
-  authClient: {
-    sendVerificationEmail: (...args: unknown[]) => mockSendVerificationEmail(...args),
-  },
+  authClient: mockAuthClient,
 }))
 
 import VerificationBanner from "@/components/auth/VerificationBanner"
 
-const unverifiedAuth = {
-  session: {
-    user: {
-      id: "user-1",
-      email: "cook@example.com",
-      emailVerified: false,
-    },
-  },
-  isPending: false,
-  isLoggedIn: true,
-  userId: "user-1",
-}
-
 describe("VerificationBanner", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockPathname = "/"
+    mockPathname.value = "/"
     mockSendVerificationEmail.mockResolvedValue({})
     mockUseAuth.mockReturnValue(unverifiedAuth)
   })
@@ -51,10 +47,7 @@ describe("VerificationBanner", () => {
   })
 
   it("does not render when the user is verified", () => {
-    mockUseAuth.mockReturnValue({
-      ...unverifiedAuth,
-      session: { user: { ...unverifiedAuth.session.user, emailVerified: true } },
-    })
+    mockUseAuth.mockReturnValue(verifiedAuth)
 
     render(<VerificationBanner />)
 
@@ -62,7 +55,7 @@ describe("VerificationBanner", () => {
   })
 
   it("does not render when there is no session", () => {
-    mockUseAuth.mockReturnValue({ session: null, isPending: false, isLoggedIn: false, userId: null })
+    mockUseAuth.mockReturnValue(loggedOutAuth)
 
     render(<VerificationBanner />)
 
@@ -70,7 +63,7 @@ describe("VerificationBanner", () => {
   })
 
   it("does not render on auth routes", () => {
-    mockPathname = "/auth/login"
+    mockPathname.value = "/auth/login"
 
     render(<VerificationBanner />)
 

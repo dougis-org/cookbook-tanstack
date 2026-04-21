@@ -95,6 +95,8 @@ export function createRouterMock(opts?: RouterMockOptions) {
       options: redirectOpts,
     }),
     useNavigate: () => vi.fn(),
+    useRouterState: ({ select }: { select: (state: { location: { pathname: string } }) => unknown }) =>
+      select({ location: { pathname: opts?.extras?.pathname as string ?? "/" } }),
     ...extras,
   }
 }

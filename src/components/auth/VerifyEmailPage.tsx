@@ -33,20 +33,6 @@ export default function VerifyEmailPage({ error }: VerifyEmailPageProps) {
     }
   }
 
-  if (hasError) {
-    return (
-      <VerificationState
-        icon={<AlertTriangle className="mx-auto size-10 text-[var(--theme-error)]" aria-hidden="true" />}
-        title="Verification link is invalid or has expired"
-        description="Request a new verification email and use the latest link in your inbox."
-        email={email}
-        resendStatus={resendStatus}
-        resendError={resendError}
-        onResend={handleResend}
-      />
-    )
-  }
-
   if (isVerified) {
     return (
       <div className="text-center space-y-4">
@@ -62,6 +48,20 @@ export default function VerifyEmailPage({ error }: VerifyEmailPageProps) {
           Continue to app
         </Link>
       </div>
+    )
+  }
+
+  if (hasError) {
+    return (
+      <VerificationState
+        icon={<AlertTriangle className="mx-auto size-10 text-[var(--theme-error)]" aria-hidden="true" />}
+        title="Verification link is invalid or has expired"
+        description="Request a new verification email and use the latest link in your inbox."
+        email={email}
+        resendStatus={resendStatus}
+        resendError={resendError}
+        onResend={handleResend}
+      />
     )
   }
 
