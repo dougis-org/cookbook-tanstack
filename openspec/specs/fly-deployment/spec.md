@@ -15,6 +15,10 @@ The project SHALL contain a `fly.toml` at the repository root that configures th
 - **WHEN** Fly.io evaluates the deployed VM
 - **THEN** it performs an HTTP GET to `/` on port 3000 and expects a 2xx or 3xx response
 
+#### Scenario: health check sends explicit Host header
+- **WHEN** the Fly.io health check executes
+- **THEN** it sends `Host: recipe.dougis.com` so the request exercises the real domain path and does not trigger domain-redirect logic based on an IP-addressed host
+
 ---
 
 ### Requirement: Dockerfile produces a deployable production image
