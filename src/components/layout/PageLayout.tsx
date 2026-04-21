@@ -43,6 +43,7 @@ export function AdSlot({
 }) {
   const { session } = useAuth()
   const adRef = React.useRef<HTMLModElement | null>(null)
+  const adPushedRef = React.useRef(false)
   const adConfig = React.useMemo(() => {
     const slotId = getGoogleAdSenseSlotId(position)
 
@@ -54,7 +55,7 @@ export function AdSlot({
   }, [position, role, session])
 
   React.useEffect(() => {
-    if (!adConfig || !adRef.current) {
+    if (!adConfig || !adRef.current || adPushedRef.current) {
       return
     }
 
@@ -64,6 +65,7 @@ export function AdSlot({
       return
     }
 
+    adPushedRef.current = true
     ensureGoogleAdSenseScript()
 
     try {
