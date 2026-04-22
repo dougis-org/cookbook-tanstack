@@ -4,6 +4,7 @@
  * Uses the Mongoose connection to ensure we're on the same database as tests.
  */
 import mongoose, { Types } from "mongoose";
+import { type UserTier } from "@/types/user";
 
 let seedCounter = 0;
 
@@ -92,6 +93,10 @@ export async function makeAuthCaller(
       isAdmin: opts.isAdmin ?? false,
     } as never,
   });
+}
+
+export async function makeTieredCaller(tier: UserTier, isAdmin = false) {
+  return makeAuthCaller(new Types.ObjectId().toHexString(), { tier, isAdmin });
 }
 
 export async function withSeededUser<TReturn>(
