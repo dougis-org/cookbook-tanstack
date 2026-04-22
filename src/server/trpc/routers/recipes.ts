@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
@@ -164,6 +164,7 @@ export const recipesRouter = router({
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
+        hiddenByTier: (r.hiddenByTier ?? false) as boolean,
         marked: likedIds ? likedIds.has(r._id.toString()) : false,
       }));
 
@@ -218,6 +219,7 @@ export const recipesRouter = router({
         protein: (r.protein ?? null) as number | null,
         imageUrl: (r.imageUrl ?? null) as string | null,
         isPublic: r.isPublic as boolean,
+        hiddenByTier: (r.hiddenByTier ?? false) as boolean,
         marked,
         createdAt: r.createdAt as Date,
         updatedAt: r.updatedAt as Date,
@@ -245,6 +247,7 @@ export const recipesRouter = router({
   create: protectedProcedure
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
       const { mealIds, courseIds, preparationIds, ...fields } = input;
 
       let isPublic = fields.isPublic;

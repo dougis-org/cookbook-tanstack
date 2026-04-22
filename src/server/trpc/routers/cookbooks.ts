@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
 // Side-effect imports register models needed for Recipe.populate() chains
 import "@/db/models/classification";
@@ -151,6 +151,7 @@ export const cookbooksRouter = router({
       description: (cb.description ?? null) as string | null,
       isPublic: cb.isPublic as boolean,
       imageUrl: (cb.imageUrl ?? null) as string | null,
+      hiddenByTier: (cb.hiddenByTier ?? false) as boolean,
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
       chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
       userId: cb.userId?.toString() as string,
@@ -206,6 +207,7 @@ export const cookbooksRouter = router({
       return {
         ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
+        hiddenByTier: (cb.hiddenByTier ?? false) as boolean,
         userId: cb.userId?.toString() as string,
         createdAt: cb.createdAt as Date,
         updatedAt: cb.updatedAt as Date,
@@ -298,6 +300,7 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "cookbooks");
       let isPublic = input.isPublic;
       if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
         isPublic = true;

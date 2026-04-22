@@ -1,5 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
+import { registerAndLoginWithTier } from "./helpers/admin";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import {
   addRecipeToCookbook,
@@ -207,7 +208,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
 test("unauthenticated user sees not-found state for a private cookbook print route", async ({
   page,
 }) => {
-  await registerAndLogin(page);
+  await registerAndLoginWithTier(page, "sous-chef");
   const cookbookName = getUniqueCookbookName("PrivatePrint");
   const { cookbookId } = await createCookbook(page, cookbookName, {
     isPublic: false,

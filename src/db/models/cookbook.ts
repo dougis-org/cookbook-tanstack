@@ -18,6 +18,7 @@ export interface ICookbook extends Document {
   description?: string;
   isPublic: boolean;
   imageUrl?: string;
+  hiddenByTier?: boolean;
   recipes: ICookbookRecipeEntry[];
   chapters: ICookbookChapter[];
   createdAt: Date;
@@ -31,6 +32,7 @@ const cookbookSchema = new Schema<ICookbook>(
     description: { type: String },
     isPublic: { type: Boolean, default: true },
     imageUrl: { type: String },
+    hiddenByTier: { type: Boolean, default: false },
     recipes: [
       {
         recipeId: {

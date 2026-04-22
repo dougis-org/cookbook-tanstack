@@ -81,19 +81,22 @@ export async function makeAnonCaller() {
 
 export async function makeAuthCaller(
   userId: string,
-  email = "test@test.com",
-  tier: UserTier = "home-cook",
-  isAdmin = false,
+  opts: { email?: string; tier?: string; isAdmin?: boolean } = {},
 ) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
     session: { id: "s1" } as never,
-    user: { id: userId, email, tier, isAdmin } as any,
+    user: {
+      id: userId,
+      email: opts.email ?? "test@test.com",
+      tier: opts.tier,
+      isAdmin: opts.isAdmin ?? false,
+    } as never,
   });
 }
 
 export async function makeTieredCaller(tier: UserTier, isAdmin = false) {
-  return makeAuthCaller(new Types.ObjectId().toHexString(), "test@test.com", tier, isAdmin);
+  return makeAuthCaller(new Types.ObjectId().toHexString(), { tier, isAdmin });
 }
 
 export async function withSeededUser<TReturn>(
@@ -111,6 +114,6 @@ export async function withSeededUser<TReturn>(
   ) => Promise<TReturn>,
 ): Promise<TReturn> {
   const user = await seedUserWithBetterAuth();
-  const caller = await makeAuthCaller(user.id, user.email);
+  const caller = await makeAuthCaller(user.id, { email: user.email });
   return fn(user, caller);
 }
