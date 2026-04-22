@@ -864,3 +864,18 @@ describe("cookbooks.list — hiddenByTier in response", () => {
     });
   });
 });
+
+// ─── cookbooks.byId — hiddenByTier in response ───────────────────────────────
+
+describe("cookbooks.byId — hiddenByTier in response", () => {
+  it("byId response includes hiddenByTier: false by default", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      expect(result).not.toBeNull();
+      expect(result!.hiddenByTier).toBe(false);
+    });
+  });
+});

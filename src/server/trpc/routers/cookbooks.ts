@@ -206,6 +206,7 @@ export const cookbooksRouter = router({
       return {
         ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
+        hiddenByTier: (cb.hiddenByTier ?? false) as boolean,
         userId: cb.userId?.toString() as string,
         createdAt: cb.createdAt as Date,
         updatedAt: cb.updatedAt as Date,

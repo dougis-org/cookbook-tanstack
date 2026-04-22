@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../init";
 import { Recipe, Cookbook } from "@/db/models";
-import { getRecipeLimit, getCookbookLimit } from "@/lib/tier-entitlements";
+import { getRecipeLimit, getCookbookLimit, TIER_LIMITS } from "@/lib/tier-entitlements";
 import type { EntitlementTier } from "@/lib/tier-entitlements";
 
 /** Validates a MongoDB ObjectId: a 24-character hexadecimal string. */
@@ -59,7 +59,10 @@ export async function enforceContentLimit(
 ): Promise<void> {
   if (isAdmin) return;
 
-  const effectiveTier = (tier ?? "home-cook") as EntitlementTier;
+  // Default missing or unrecognised tier to 'home-cook' (most restrictive authenticated tier).
+  const effectiveTier = (tier != null && Object.prototype.hasOwnProperty.call(TIER_LIMITS, tier)
+    ? tier
+    : "home-cook") as EntitlementTier;
   const limit =
     resource === "recipes"
       ? getRecipeLimit(effectiveTier)
