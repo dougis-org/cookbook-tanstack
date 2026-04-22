@@ -1641,6 +1641,17 @@ describe("visibility enforcement", () => {
       });
     });
 
+    it("Prep Cook creates private recipe -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("prep-cook");
+        const result = await caller.recipes.create({
+          name: "Prep Cook Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(true);
+      });
+    });
+
     it("Sous Chef creates private recipe -> remains private", async () => {
       await withCleanDb(async () => {
         const caller = await makeTieredCaller("sous-chef");

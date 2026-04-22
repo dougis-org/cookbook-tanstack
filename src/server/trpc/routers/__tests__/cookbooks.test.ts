@@ -813,6 +813,17 @@ describe("visibility enforcement", () => {
       });
     });
 
+    it("Prep Cook creates private cookbook -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("prep-cook");
+        const result = await caller.cookbooks.create({
+          name: "Prep Cook Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(true);
+      });
+    });
+
     it("Sous Chef creates private cookbook -> remains private", async () => {
       await withCleanDb(async () => {
         const caller = await makeTieredCaller("sous-chef");
@@ -841,6 +852,25 @@ describe("visibility enforcement", () => {
 
         const persisted = await Cookbook.findById(cb.id).lean();
         expect(persisted?.isPublic).toBe(true);
+      });
+    });
+
+    it("Sous Chef updates cookbook to private -> allowed", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const cb = await seedCookbook(user.id, { isPublic: true });
+
+        const caller = await makeAuthCaller(
+          user.id,
+          "test@test.com",
+          "sous-chef",
+        );
+        const result = await caller.cookbooks.update({
+          id: cb.id,
+          isPublic: false,
+        });
+
+        expect(result?.isPublic).toBe(false);
       });
     });
 

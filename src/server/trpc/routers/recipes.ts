@@ -11,10 +11,9 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 import { importedRecipeSchema } from "@/lib/validation";
+import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
-import { canCreatePrivate } from "@/lib/tier-entitlements";
-
 function escapeRegex(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -249,7 +248,7 @@ export const recipesRouter = router({
       const { mealIds, courseIds, preparationIds, ...fields } = input;
 
       let isPublic = fields.isPublic;
-      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as any)) {
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
         isPublic = true;
       }
 
@@ -288,7 +287,7 @@ export const recipesRouter = router({
       if (
         input.isPublic === false &&
         !ctx.user.isAdmin &&
-        !canCreatePrivate(ctx.user.tier as any)
+        !canCreatePrivate(ctx.user.tier as EntitlementTier)
       ) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -396,7 +395,7 @@ export const recipesRouter = router({
       }
 
       let isPublic = input.isPublic ?? true;
-      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as any)) {
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
         isPublic = true;
       }
 

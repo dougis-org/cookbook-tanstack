@@ -88,7 +88,7 @@ export async function makeAuthCaller(
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
     session: { id: "s1" } as never,
-    user: { id: userId, email, tier, isAdmin } as never,
+    user: { id: userId, email, tier, isAdmin } as any,
   });
 }
 

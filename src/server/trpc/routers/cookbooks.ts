@@ -10,10 +10,9 @@ import "@/db/models/source";
 import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
+import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { canCreatePrivate } from "@/lib/tier-entitlements";
-
 function pluckIds(arr: unknown): string[] {
   if (!Array.isArray(arr)) return [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,7 +299,7 @@ export const cookbooksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       let isPublic = input.isPublic;
-      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as any)) {
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
         isPublic = true;
       }
 
@@ -343,7 +342,7 @@ export const cookbooksRouter = router({
       if (
         input.isPublic === false &&
         !ctx.user.isAdmin &&
-        !canCreatePrivate(ctx.user.tier as any)
+        !canCreatePrivate(ctx.user.tier as EntitlementTier)
       ) {
         throw new TRPCError({
           code: "FORBIDDEN",
