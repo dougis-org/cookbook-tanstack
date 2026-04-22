@@ -1674,7 +1674,7 @@ describe("recipes.create — tier limit enforcement", () => {
       }
       await Recipe.collection.insertOne({
         name: "Hidden",
-        userId: user.id,
+        userId: new Types.ObjectId(user.id),
         isPublic: true,
         hiddenByTier: true,
         mealIds: [],

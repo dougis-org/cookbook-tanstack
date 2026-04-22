@@ -163,6 +163,7 @@ export const recipesRouter = router({
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
+        hiddenByTier: (r.hiddenByTier ?? false) as boolean,
         marked: likedIds ? likedIds.has(r._id.toString()) : false,
       }));
 

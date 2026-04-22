@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest"
+import mongoose from "mongoose"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
 import { Recipe, Cookbook } from "@/db/models"
 import { seedUserWithBetterAuth } from "./test-helpers"
@@ -99,7 +100,7 @@ describe("enforceContentLimit — recipes", () => {
       }
       await Recipe.collection.insertOne({
         name: "Hidden Recipe",
-        userId: user.id,
+        userId: new mongoose.Types.ObjectId(user.id),
         isPublic: true,
         hiddenByTier: true,
         mealIds: [],
@@ -157,6 +158,25 @@ describe("enforceContentLimit — cookbooks", () => {
       await new Cookbook({ name: "My Cookbook", userId: user.id, isPublic: true }).save()
       await expect(
         enforceContentLimit(user.id, "home-cook", true, "cookbooks"),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  it("excludes hiddenByTier cookbooks from the count — 1 total with 1 hidden resolves", async () => {
+    await withCleanDb(async () => {
+      const { enforceContentLimit } = await import("../_helpers")
+      const user = await seedUserWithBetterAuth()
+      await Cookbook.collection.insertOne({
+        name: "Hidden Cookbook",
+        userId: new mongoose.Types.ObjectId(user.id),
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      await expect(
+        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
       ).resolves.toBeUndefined()
     })
   })
