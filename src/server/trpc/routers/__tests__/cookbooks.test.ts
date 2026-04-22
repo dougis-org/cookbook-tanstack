@@ -7,6 +7,7 @@ import {
   uid,
   makeAnonCaller,
   makeAuthCaller,
+  makeTieredCaller,
 } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
@@ -352,7 +353,7 @@ describe("cookbooks.create", () => {
     [{ name: "My Recipes" }, { name: "My Recipes", isPublic: true }],
     [
       { name: "Private Eats", isPublic: false },
-      { name: "Private Eats", isPublic: false },
+      { name: "Private Eats", isPublic: false, _tier: "sous-chef" as const },
     ],
     [
       { name: "With Desc", description: "A description" },
@@ -363,9 +364,14 @@ describe("cookbooks.create", () => {
     async (input, expected) => {
       await withCleanDb(async () => {
         const user = await seedUser();
-        const caller = await makeAuthCaller(user.id);
+        const { _tier, ...exp } = expected as any;
+        const caller = await makeAuthCaller(
+          user.id,
+          "test@test.com",
+          _tier ?? "home-cook",
+        );
         expect(await caller.cookbooks.create(input)).toMatchObject({
-          ...expected,
+          ...exp,
           userId: user.id,
         });
       });
@@ -788,6 +794,99 @@ describe("cookbooks.addRecipe (chapter-aware)", () => {
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id });
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes[0].chapterId).toBeNull();
+    });
+  });
+});
+
+// ─── visibility enforcement (tier-based) ─────────────────────────
+
+describe("visibility enforcement", () => {
+  describe("create", () => {
+    it("Home Cook creates private cookbook -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("home-cook");
+        const result = await caller.cookbooks.create({
+          name: "Home Cook Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(true);
+      });
+    });
+
+    it("Prep Cook creates private cookbook -> coerced to public", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("prep-cook");
+        const result = await caller.cookbooks.create({
+          name: "Prep Cook Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(true);
+      });
+    });
+
+    it("Sous Chef creates private cookbook -> remains private", async () => {
+      await withCleanDb(async () => {
+        const caller = await makeTieredCaller("sous-chef");
+        const result = await caller.cookbooks.create({
+          name: "Sous Chef Private",
+          isPublic: false,
+        });
+        expect(result.isPublic).toBe(false);
+      });
+    });
+  });
+
+  describe("update", () => {
+    it("Prep Cook updates cookbook to private -> rejected with FORBIDDEN", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const cb = await seedCookbook(user.id, { isPublic: true });
+
+        const caller = await makeAuthCaller(user.id, "test@test.com", "prep-cook");
+        await expect(
+          caller.cookbooks.update({
+            id: cb.id,
+            isPublic: false,
+          }),
+        ).rejects.toThrow(/support private cookbooks/i);
+
+        const persisted = await Cookbook.findById(cb.id).lean();
+        expect(persisted?.isPublic).toBe(true);
+      });
+    });
+
+    it("Sous Chef updates cookbook to private -> allowed", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const cb = await seedCookbook(user.id, { isPublic: true });
+
+        const caller = await makeAuthCaller(
+          user.id,
+          "test@test.com",
+          "sous-chef",
+        );
+        const result = await caller.cookbooks.update({
+          id: cb.id,
+          isPublic: false,
+        });
+
+        expect(result?.isPublic).toBe(false);
+      });
+    });
+
+    it("Admin updates cookbook to private -> allowed", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const cb = await seedCookbook(user.id, { isPublic: true });
+
+        const caller = await makeAuthCaller(user.id, "test@test.com", "home-cook", true);
+        const result = await caller.cookbooks.update({
+          id: cb.id,
+          isPublic: false,
+        });
+
+        expect(result?.isPublic).toBe(false);
+      });
     });
   });
 });

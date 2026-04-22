@@ -11,6 +11,7 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 import { importedRecipeSchema } from "@/lib/validation";
+import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -245,8 +246,15 @@ export const recipesRouter = router({
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       const { mealIds, courseIds, preparationIds, ...fields } = input;
+
+      let isPublic = fields.isPublic;
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
+        isPublic = true;
+      }
+
       const recipe = await new Recipe({
         ...fields,
+        isPublic,
         userId: ctx.user.id,
         mealIds: mealIds ?? [],
         courseIds: courseIds ?? [],
@@ -275,6 +283,17 @@ export const recipesRouter = router({
         ctx.user.id,
         "Recipe",
       );
+
+      if (
+        input.isPublic === false &&
+        !ctx.user.isAdmin &&
+        !canCreatePrivate(ctx.user.tier as EntitlementTier)
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Your current tier does not support private recipes.",
+        });
+      }
 
       const { id, mealIds, courseIds, preparationIds, ...data } = input;
 
@@ -375,6 +394,11 @@ export const recipesRouter = router({
         });
       }
 
+      let isPublic = input.isPublic ?? true;
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
+        isPublic = true;
+      }
+
       const recipe = await new Recipe({
         name: input.name,
         userId: ctx.user.id,
@@ -394,7 +418,7 @@ export const recipesRouter = router({
         sodium: input.sodium ?? undefined,
         protein: input.protein ?? undefined,
         imageUrl: input.imageUrl ?? undefined,
-        isPublic: input.isPublic ?? true,
+        isPublic,
         mealIds: input.mealIds ?? [],
         courseIds: input.courseIds ?? [],
         preparationIds: input.preparationIds ?? [],
