@@ -5,6 +5,7 @@ import { gotoAndWaitForHydration } from "./helpers/app";
 import {
   addRecipeToCookbook,
   createCookbook,
+  getCookbookIsPublic,
   getUniqueCookbookName,
 } from "./helpers/cookbooks";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
@@ -210,9 +211,15 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
 }) => {
   await registerAndLoginWithTier(page, "sous-chef");
   const cookbookName = getUniqueCookbookName("PrivatePrint");
-  const { cookbookId } = await createCookbook(page, cookbookName, {
-    isPublic: false,
-  });
+  const { cookbookId, cookbookName: privateCookbookName } =
+    await createCookbook(page, cookbookName, {
+      isPublic: false,
+    });
+  await expect
+    .poll(() => getCookbookIsPublic(cookbookId), {
+      message: "private print-route fixture should persist as private",
+    })
+    .toBe(false);
 
   await page.context().clearCookies();
   await gotoAndWaitForHydration(
@@ -220,4 +227,5 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
     `/cookbooks/${cookbookId}/print?displayonly=1`,
   );
   await expect(page.getByText("Cookbook not found")).toBeVisible();
+  await expect(page.getByText(privateCookbookName)).not.toBeVisible();
 });
