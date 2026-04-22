@@ -23,11 +23,10 @@ export function showUserAds(tier: EntitlementTier): boolean {
   return tier === 'anonymous' || tier === 'home-cook'
 }
 
-// 'anonymous' is not in TIER_RANK; hasAtLeastTier treats unknown strings as 'home-cook' (rank 0), so returns false correctly.
-export function canCreatePrivate(tier: EntitlementTier): boolean {
+export function canCreatePrivate(tier: string | null | undefined): boolean {
   return hasAtLeastTier({ tier }, 'sous-chef')
 }
 
-export function canImport(tier: EntitlementTier): boolean {
+export function canImport(tier: string | null | undefined): boolean {
   return hasAtLeastTier({ tier }, 'sous-chef')
 }
