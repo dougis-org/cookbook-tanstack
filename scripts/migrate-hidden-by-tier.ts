@@ -23,23 +23,20 @@ if (!uri) {
 
 const client = new MongoClient(uri)
 
+async function backfill(db: ReturnType<typeof client.db>, collection: string) {
+  const result = await db.collection(collection).updateMany(
+    { hiddenByTier: { $exists: false } },
+    { $set: { hiddenByTier: false } },
+  )
+  console.log(`${collection}: ${result.modifiedCount} document(s) updated with hiddenByTier=false`)
+}
+
 async function migrate() {
   try {
     await client.connect()
     const db = client.db()
-
-    const recipesResult = await db.collection("recipes").updateMany(
-      { hiddenByTier: { $exists: false } },
-      { $set: { hiddenByTier: false } },
-    )
-    console.log(`Recipes: ${recipesResult.modifiedCount} document(s) updated with hiddenByTier=false`)
-
-    const cookbooksResult = await db.collection("cookbooks").updateMany(
-      { hiddenByTier: { $exists: false } },
-      { $set: { hiddenByTier: false } },
-    )
-    console.log(`Cookbooks: ${cookbooksResult.modifiedCount} document(s) updated with hiddenByTier=false`)
-
+    await backfill(db, "recipes")
+    await backfill(db, "cookbooks")
     console.log("Migration complete.")
   } finally {
     await client.close()

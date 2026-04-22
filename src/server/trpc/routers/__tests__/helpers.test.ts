@@ -51,56 +51,52 @@ describe("verifyOwnership", () => {
 
 // ─── enforceContentLimit ────────────────────────────────────────────────────
 
+type ECL = (userId: string, tier: string | undefined, isAdmin: boolean, resource: "recipes" | "cookbooks") => Promise<void>
+
+async function withECLCtx(cb: (ecl: ECL, userId: string) => Promise<void>) {
+  await withCleanDb(async () => {
+    const { enforceContentLimit } = await import("../_helpers")
+    const user = await seedUserWithBetterAuth()
+    await cb(enforceContentLimit, user.id)
+  })
+}
+
 describe("enforceContentLimit — recipes", () => {
   it("throws FORBIDDEN when home-cook user is at the 10-recipe limit", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 10; i++) {
-        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+        await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "recipes"),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+      await expect(ecl(userId, "home-cook", false, "recipes")).rejects.toMatchObject({ code: "FORBIDDEN" })
     })
   })
 
   it("resolves when home-cook user is under the 10-recipe limit", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 9; i++) {
-        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+        await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "recipes"),
-      ).resolves.toBeUndefined()
+      await expect(ecl(userId, "home-cook", false, "recipes")).resolves.toBeUndefined()
     })
   })
 
   it("resolves when isAdmin is true regardless of count", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 10; i++) {
-        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+        await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(
-        enforceContentLimit(user.id, "home-cook", true, "recipes"),
-      ).resolves.toBeUndefined()
+      await expect(ecl(userId, "home-cook", true, "recipes")).resolves.toBeUndefined()
     })
   })
 
   it("excludes hiddenByTier docs from the count — 10 total with 1 hidden resolves", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 9; i++) {
-        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+        await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
       await Recipe.collection.insertOne({
         name: "Hidden Recipe",
-        userId: new mongoose.Types.ObjectId(user.id),
+        userId: new mongoose.Types.ObjectId(userId),
         isPublic: true,
         hiddenByTier: true,
         mealIds: [],
@@ -109,75 +105,53 @@ describe("enforceContentLimit — recipes", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       })
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "recipes"),
-      ).resolves.toBeUndefined()
+      await expect(ecl(userId, "home-cook", false, "recipes")).resolves.toBeUndefined()
     })
   })
 
   it("defaults missing tier to home-cook and throws FORBIDDEN at 10 recipes", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 10; i++) {
-        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save()
+        await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(
-        enforceContentLimit(user.id, undefined, false, "recipes"),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+      await expect(ecl(userId, undefined, false, "recipes")).rejects.toMatchObject({ code: "FORBIDDEN" })
     })
   })
 })
 
 describe("enforceContentLimit — cookbooks", () => {
   it("throws FORBIDDEN when home-cook user is at the 1-cookbook limit", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
-      await new Cookbook({ name: "My Cookbook", userId: user.id, isPublic: true }).save()
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" })
+    await withECLCtx(async (ecl, userId) => {
+      await new Cookbook({ name: "My Cookbook", userId, isPublic: true }).save()
+      await expect(ecl(userId, "home-cook", false, "cookbooks")).rejects.toMatchObject({ code: "FORBIDDEN" })
     })
   })
 
   it("resolves when home-cook user has 0 cookbooks", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
-      ).resolves.toBeUndefined()
+    await withECLCtx(async (ecl, userId) => {
+      await expect(ecl(userId, "home-cook", false, "cookbooks")).resolves.toBeUndefined()
     })
   })
 
   it("resolves when isAdmin is true regardless of cookbook count", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
-      await new Cookbook({ name: "My Cookbook", userId: user.id, isPublic: true }).save()
-      await expect(
-        enforceContentLimit(user.id, "home-cook", true, "cookbooks"),
-      ).resolves.toBeUndefined()
+    await withECLCtx(async (ecl, userId) => {
+      await new Cookbook({ name: "My Cookbook", userId, isPublic: true }).save()
+      await expect(ecl(userId, "home-cook", true, "cookbooks")).resolves.toBeUndefined()
     })
   })
 
   it("excludes hiddenByTier cookbooks from the count — 1 total with 1 hidden resolves", async () => {
-    await withCleanDb(async () => {
-      const { enforceContentLimit } = await import("../_helpers")
-      const user = await seedUserWithBetterAuth()
+    await withECLCtx(async (ecl, userId) => {
       await Cookbook.collection.insertOne({
         name: "Hidden Cookbook",
-        userId: new mongoose.Types.ObjectId(user.id),
+        userId: new mongoose.Types.ObjectId(userId),
         isPublic: true,
         hiddenByTier: true,
         recipes: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       })
-      await expect(
-        enforceContentLimit(user.id, "home-cook", false, "cookbooks"),
-      ).resolves.toBeUndefined()
+      await expect(ecl(userId, "home-cook", false, "cookbooks")).resolves.toBeUndefined()
     })
   })
 })

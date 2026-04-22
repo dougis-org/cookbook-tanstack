@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import mongoose from "mongoose";
 import { publicProcedure, router } from "../init";
 import { Recipe, Cookbook } from "@/db/models";
 import { getRecipeLimit, getCookbookLimit, TIER_LIMITS } from "@/lib/tier-entitlements";
@@ -68,9 +69,9 @@ export async function enforceContentLimit(
       ? getRecipeLimit(effectiveTier)
       : getCookbookLimit(effectiveTier);
 
-  const Model = resource === "recipes" ? Recipe : Cookbook;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const count = await (Model as any).countDocuments({
+  const Model = (resource === "recipes" ? Recipe : Cookbook) as unknown as mongoose.Model<any>;
+  const count = await Model.countDocuments({
     userId,
     hiddenByTier: { $ne: true },
   });
