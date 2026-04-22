@@ -393,7 +393,6 @@ export const recipesRouter = router({
           message: "Recipe import requires Sous Chef or higher.",
         });
       }
-      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
 
       const parsedDate = input.dateAdded
         ? new Date(input.dateAdded)
@@ -404,6 +403,8 @@ export const recipesRouter = router({
           message: "Invalid dateAdded value",
         });
       }
+
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
 
       let isPublic = input.isPublic ?? true;
       if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {

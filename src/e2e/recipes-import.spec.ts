@@ -1,12 +1,12 @@
 import { test, expect } from "@bgotink/playwright-coverage";
-import { registerAndLogin } from "./helpers/auth";
+import { registerAndLoginWithTier } from "./helpers/admin";
 import { gotoAndWaitForHydration } from "./helpers/app";
 
 test.describe("Recipe Import", () => {
   test("imports a JSON recipe and redirects to detail page", async ({
     page,
   }) => {
-    await registerAndLogin(page);
+    await registerAndLoginWithTier(page, "sous-chef");
 
     await gotoAndWaitForHydration(page, "/import");
 
