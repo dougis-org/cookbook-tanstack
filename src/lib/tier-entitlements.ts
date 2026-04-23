@@ -31,6 +31,22 @@ export function canImport(tier: string | null | undefined): boolean {
   return hasAtLeastTier({ tier }, 'sous-chef')
 }
 
+export const TIER_ORDER: EntitlementTier[] = [
+  'anonymous',
+  'home-cook',
+  'prep-cook',
+  'sous-chef',
+  'executive-chef',
+]
+
+export const TIER_DISPLAY_NAMES: Record<EntitlementTier, string> = {
+  anonymous: 'Anonymous',
+  'home-cook': 'Home Cook',
+  'prep-cook': 'Prep Cook',
+  'sous-chef': 'Sous Chef',
+  'executive-chef': 'Executive Chef',
+}
+
 export const TIER_DESCRIPTIONS: Record<EntitlementTier, string> = {
   anonymous: 'Browse public recipes without an account.',
   'home-cook': 'Start your collection with up to 10 recipes and 1 cookbook.',

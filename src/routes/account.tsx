@@ -9,6 +9,8 @@ import { trpc } from "@/lib/trpc"
 import {
   TIER_LIMITS,
   TIER_DESCRIPTIONS,
+  TIER_ORDER,
+  TIER_DISPLAY_NAMES,
   type EntitlementTier,
 } from "@/lib/tier-entitlements"
 
@@ -22,20 +24,7 @@ export const Route = createFileRoute("/account")({
   }),
 })
 
-const TIER_ORDER: EntitlementTier[] = [
-  "home-cook",
-  "prep-cook",
-  "sous-chef",
-  "executive-chef",
-]
-
-const TIER_DISPLAY_NAMES: Record<EntitlementTier, string> = {
-  anonymous: "Anonymous",
-  "home-cook": "Home Cook",
-  "prep-cook": "Prep Cook",
-  "sous-chef": "Sous Chef",
-  "executive-chef": "Executive Chef",
-}
+const USER_TIER_ORDER = TIER_ORDER.filter((t) => t !== "anonymous") as Exclude<EntitlementTier, "anonymous">[]
 
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0
@@ -60,13 +49,14 @@ export function AccountPage() {
   const description = TIER_DESCRIPTIONS[tier]
   const displayName = TIER_DISPLAY_NAMES[tier]
 
-  const nextTierIndex = TIER_ORDER.indexOf(tier) + 1
+  const nextTierIndex = USER_TIER_ORDER.indexOf(tier as Exclude<EntitlementTier, "anonymous">) + 1
   const nextTier: EntitlementTier | null =
-    nextTierIndex < TIER_ORDER.length ? TIER_ORDER[nextTierIndex] : null
+    nextTierIndex < USER_TIER_ORDER.length ? USER_TIER_ORDER[nextTierIndex] : null
 
-  const { data: usage, isLoading, isError } = useQuery(
-    trpc.usage.getOwned.queryOptions(),
-  )
+  const { data: usage, isLoading, isError } = useQuery({
+    ...trpc.usage.getOwned.queryOptions(),
+    enabled: !!session,
+  })
 
   return (
     <PageLayout>

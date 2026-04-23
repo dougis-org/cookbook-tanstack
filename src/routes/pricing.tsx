@@ -1,32 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import PageLayout, { AdSlot } from "@/components/layout/PageLayout"
+import PageLayout from "@/components/layout/PageLayout"
 import { useAuth } from "@/hooks/useAuth"
 import {
   TIER_LIMITS,
   TIER_DESCRIPTIONS,
+  TIER_ORDER,
+  TIER_DISPLAY_NAMES,
   type EntitlementTier,
   canCreatePrivate,
   canImport,
 } from "@/lib/tier-entitlements"
-import { isPageAdEligible } from "@/lib/ad-policy"
 
 export const Route = createFileRoute("/pricing")({ component: PricingPage })
-
-const TIER_ORDER: EntitlementTier[] = [
-  "anonymous",
-  "home-cook",
-  "prep-cook",
-  "sous-chef",
-  "executive-chef",
-]
-
-const TIER_DISPLAY_NAMES: Record<EntitlementTier, string> = {
-  anonymous: "Anonymous",
-  "home-cook": "Home Cook",
-  "prep-cook": "Prep Cook",
-  "sous-chef": "Sous Chef",
-  "executive-chef": "Executive Chef",
-}
 
 interface TierCardProps {
   tier: EntitlementTier
@@ -109,13 +94,11 @@ function TierCard({ tier, isCurrent, isAnon }: TierCardProps) {
 
 export function PricingPage() {
   const { session } = useAuth()
-  const currentTier = (session?.user?.tier as EntitlementTier | undefined) ?? undefined
-  const showAds = isPageAdEligible("public-marketing", session ? { user: session.user } : null)
+  const currentTier = (session?.user?.tier as EntitlementTier | undefined) ?? "anonymous"
 
   return (
-    <PageLayout title="Pricing" description="Compare plans and find the right fit.">
-      {showAds && <AdSlot role="public-marketing" position="top" />}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5 my-8">
+    <PageLayout role="public-marketing" title="Pricing" description="Compare plans and find the right fit.">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 my-8">
         {TIER_ORDER.map((tier) => (
           <TierCard
             key={tier}
@@ -125,7 +108,6 @@ export function PricingPage() {
           />
         ))}
       </div>
-      {showAds && <AdSlot role="public-marketing" position="bottom" />}
     </PageLayout>
   )
 }
