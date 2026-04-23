@@ -107,10 +107,10 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Run required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
 - [x] Commit all changes to `feat/tier-pricing-page` and push to remote
 - [x] Open PR from `feat/tier-pricing-page` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
-- [ ] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow remote push validation steps, push, wait 180s, repeat until no unresolved comments
-- [ ] **Monitor CI checks** — poll autonomously; diagnose failures, fix, commit, follow remote push validation steps, push, wait 180s, repeat until all checks pass
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] **Monitor PR comments** — poll autonomously; address comments, commit fixes, follow remote push validation steps, push, wait 180s, repeat until no unresolved comments
+- [x] **Monitor CI checks** — poll autonomously; diagnose failures, fix, commit, follow remote push validation steps, push, wait 180s, repeat until all checks pass
 - [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify user; **never force-merge**
 
 Ownership metadata:
