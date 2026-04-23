@@ -1467,7 +1467,7 @@ describe("recipes.import", () => {
   it("creates a new recipe for the authenticated user", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id);
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
 
       const result = await caller.recipes.import({
         name: "Imported Dish",
@@ -1489,7 +1489,7 @@ describe("recipes.import", () => {
   it("fails validation for invalid payload", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id);
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
 
       await expect(
         caller.recipes.import({
@@ -1503,7 +1503,7 @@ describe("recipes.import", () => {
   it("fails validation for invalid dateAdded", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id);
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
 
       await expect(
         caller.recipes.import({
@@ -1512,6 +1512,69 @@ describe("recipes.import", () => {
           _version: "1",
         }),
       ).rejects.toThrow();
+    });
+  });
+});
+
+// ─── recipes.import — tier gate and count limit ───────────────────────────────
+
+describe("recipes.import — tier gate and count limit", () => {
+  it("home-cook is blocked by tier gate", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      await expect(
+        caller.recipes.import({ name: "Blocked Import", _version: "1" }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+
+  it("prep-cook is blocked by tier gate", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "prep-cook" });
+      await expect(
+        caller.recipes.import({ name: "Blocked Import", _version: "1" }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+
+  it("sous-chef under limit is allowed", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const result = await caller.recipes.import({ name: "Allowed Import", _version: "1" });
+      expect(result).toMatchObject({ name: "Allowed Import" });
+    });
+  });
+
+  it("sous-chef at limit (500 recipes) is blocked by count gate", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const userId = new Types.ObjectId(user.id);
+      await Recipe.insertMany(
+        Array.from({ length: 500 }, (_, i) => ({
+          name: `Recipe ${i}`,
+          userId,
+          isPublic: true,
+          mealIds: [],
+          courseIds: [],
+          preparationIds: [],
+        })),
+      );
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      await expect(
+        caller.recipes.import({ name: "One Over Limit", _version: "1" }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+
+  it("admin with home-cook tier bypasses both gates", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "home-cook", isAdmin: true });
+      const result = await caller.recipes.import({ name: "Admin Import", _version: "1" });
+      expect(result).toMatchObject({ name: "Admin Import" });
     });
   });
 });
@@ -1659,17 +1722,6 @@ describe("visibility enforcement", () => {
         const caller = await makeTieredCaller("home-cook", true);
         const result = await caller.recipes.create({ name: "Admin Private", isPublic: false });
         expect(result.isPublic).toBe(false);
-      });
-    });
-  });
-
-  describe("import", () => {
-    it("Prep Cook imports private recipe -> coerced to public", async () => {
-      await withCleanDb(async () => {
-        const caller = await makeTieredCaller("prep-cook");
-        const result = await caller.recipes.import({ name: "Prep Cook Import", isPublic: false, _version: "1" });
-        const saved = await Recipe.findById(result.id).lean();
-        expect(saved?.isPublic).toBe(true);
       });
     });
   });

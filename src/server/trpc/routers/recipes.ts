@@ -11,7 +11,7 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 import { importedRecipeSchema } from "@/lib/validation";
-import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
+import { canCreatePrivate, canImport } from "@/lib/tier-entitlements";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -251,7 +251,7 @@ export const recipesRouter = router({
       const { mealIds, courseIds, preparationIds, ...fields } = input;
 
       let isPublic = fields.isPublic;
-      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier)) {
         isPublic = true;
       }
 
@@ -290,7 +290,7 @@ export const recipesRouter = router({
       if (
         input.isPublic === false &&
         !ctx.user.isAdmin &&
-        !canCreatePrivate(ctx.user.tier as EntitlementTier)
+        !canCreatePrivate(ctx.user.tier)
       ) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -387,6 +387,13 @@ export const recipesRouter = router({
   import: protectedProcedure
     .input(importedRecipeSchema)
     .mutation(async ({ ctx, input }) => {
+      if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Recipe import requires Sous Chef or higher.",
+        });
+      }
+
       const parsedDate = input.dateAdded
         ? new Date(input.dateAdded)
         : new Date();
@@ -397,8 +404,10 @@ export const recipesRouter = router({
         });
       }
 
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
+
       let isPublic = input.isPublic ?? true;
-      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier as EntitlementTier)) {
+      if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier)) {
         isPublic = true;
       }
 
