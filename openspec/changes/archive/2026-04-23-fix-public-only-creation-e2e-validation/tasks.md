@@ -68,13 +68,13 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Commit all changes to the working branch and push to remote.
-- [ ] Open PR from `fix/public-only-creation-e2e-validation` to `main`.
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments.
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait 180 seconds and repeat until no unresolved comments remain.
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait 180 seconds and repeat until all checks pass.
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED`, proceed to Post-Merge; if `CLOSED`, exit and notify the user. Never force-merge.
+- [x] Commit all changes to the working branch and push to remote.
+- [x] Open PR from `fix/public-only-creation-e2e-validation` to `main`.
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments.
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait 180 seconds and repeat until no unresolved comments remain.
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation], then push to the same working branch; wait 180 seconds and repeat until all checks pass.
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED`, proceed to Post-Merge; if `CLOSED`, exit and notify the user. Never force-merge.
 
 Ownership metadata:
 
@@ -90,14 +90,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`.
-- [ ] Verify the merged changes appear on the default branch.
-- [ ] Mark all remaining tasks as complete (`- [x]`).
-- [ ] Update repository documentation impacted by the change.
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec).
-- [ ] Archive the change: move `openspec/changes/fix-public-only-creation-e2e-validation/` to `openspec/changes/archive/YYYY-MM-DD-fix-public-only-creation-e2e-validation/` and stage both the new location and the deletion of the old location in a single commit.
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-fix-public-only-creation-e2e-validation/` exists and `openspec/changes/fix-public-only-creation-e2e-validation/` is gone.
-- [ ] Commit and push the archive to the default branch in one commit.
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d fix/public-only-creation-e2e-validation`.
+- [x] `git checkout main` and `git pull --ff-only`.
+- [x] Verify the merged changes appear on the default branch.
+- [x] Mark all remaining tasks as complete (`- [x]`).
+- [x] Update repository documentation impacted by the change.
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec).
+- [x] Archive the change: move `openspec/changes/fix-public-only-creation-e2e-validation/` to `openspec/changes/archive/YYYY-MM-DD-fix-public-only-creation-e2e-validation/` and stage both the new location and the deletion of the old location in a single commit.
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-fix-public-only-creation-e2e-validation/` exists and `openspec/changes/fix-public-only-creation-e2e-validation/` is gone.
+- [x] Commit and push the archive to the default branch in one commit.
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d fix/public-only-creation-e2e-validation`.
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d fix/public-only-creation-e2e-validation`.
