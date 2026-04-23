@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import {
   TIER_LIMITS,
+  TIER_DESCRIPTIONS,
   getRecipeLimit,
   getCookbookLimit,
   showUserAds,
   canCreatePrivate,
   canImport,
+  type EntitlementTier,
 } from '@/lib/tier-entitlements'
 
 describe('TIER_LIMITS', () => {
@@ -71,6 +73,23 @@ describe('canCreatePrivate', () => {
     ['executive-chef', true],
   ] as const)('%s → %s', (tier, expected) => {
     expect(canCreatePrivate(tier)).toBe(expected)
+  })
+})
+
+describe('TIER_DESCRIPTIONS', () => {
+  const tiers: EntitlementTier[] = ['anonymous', 'home-cook', 'prep-cook', 'sous-chef', 'executive-chef']
+
+  it('covers all EntitlementTier keys', () => {
+    for (const tier of tiers) {
+      expect(TIER_DESCRIPTIONS).toHaveProperty(tier)
+    }
+  })
+
+  it('each description is a non-empty string', () => {
+    for (const tier of tiers) {
+      expect(typeof TIER_DESCRIPTIONS[tier]).toBe('string')
+      expect(TIER_DESCRIPTIONS[tier].length).toBeGreaterThan(0)
+    }
   })
 })
 
