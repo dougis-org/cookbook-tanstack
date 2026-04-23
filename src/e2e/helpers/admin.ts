@@ -1,17 +1,12 @@
-import { MongoClient } from 'mongodb'
 import type { Page } from '@playwright/test'
 import { registerAndLogin } from './auth'
 import { gotoAndWaitForHydration } from './app'
+import { withMongoDb } from './db'
 
 async function patchUserAndRelogin(page: Page, email: string, password: string, patch: Record<string, unknown>) {
-  const mongoUri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/cookbook'
-  const client = new MongoClient(mongoUri)
-  try {
-    await client.connect()
-    await client.db().collection('user').updateOne({ email }, { $set: patch })
-  } finally {
-    await client.close()
-  }
+  await withMongoDb(async (db) => {
+    await db.collection('user').updateOne({ email }, { $set: patch })
+  })
 
   await page.context().clearCookies()
 

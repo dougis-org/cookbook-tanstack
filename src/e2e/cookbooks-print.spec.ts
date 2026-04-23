@@ -1,4 +1,5 @@
 import { test, expect } from "@bgotink/playwright-coverage";
+import { ObjectId, type Db } from "mongodb";
 import { registerAndLogin } from "./helpers/auth";
 import { registerAndLoginWithTier } from "./helpers/admin";
 import { gotoAndWaitForHydration } from "./helpers/app";
@@ -7,6 +8,7 @@ import {
   createCookbook,
   getUniqueCookbookName,
 } from "./helpers/cookbooks";
+import { withMongoDb } from "./helpers/db";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
 // ─── Shared setup: public cookbook with two recipes ───────────────────────────
@@ -204,15 +206,36 @@ test.describe("Cookbook Print Route — public cookbook", () => {
 
 // ─── Private cookbook ─────────────────────────────────────────────────────────
 
+async function expectCookbookIsPrivate(db: Db, cookbookId: string) {
+  await expect
+    .poll(
+      async () => {
+        const doc = await db
+          .collection<{ isPublic?: boolean }>("cookbooks")
+          .findOne(
+            { _id: new ObjectId(cookbookId) },
+            { projection: { isPublic: 1 } },
+          );
+        return doc ? (doc.isPublic ?? "missing") : "missing";
+      },
+      {
+        message: "private print-route fixture should persist as private",
+      },
+    )
+    .toBe(false);
+}
+
 // 4.2
 test("unauthenticated user sees not-found state for a private cookbook print route", async ({
   page,
 }) => {
   await registerAndLoginWithTier(page, "sous-chef");
   const cookbookName = getUniqueCookbookName("PrivatePrint");
-  const { cookbookId } = await createCookbook(page, cookbookName, {
-    isPublic: false,
-  });
+  const { cookbookId, cookbookName: privateCookbookName } =
+    await createCookbook(page, cookbookName, {
+      isPublic: false,
+    });
+  await withMongoDb((db) => expectCookbookIsPrivate(db, cookbookId));
 
   await page.context().clearCookies();
   await gotoAndWaitForHydration(
@@ -220,4 +243,5 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
     `/cookbooks/${cookbookId}/print?displayonly=1`,
   );
   await expect(page.getByText("Cookbook not found")).toBeVisible();
+  await expect(page.getByText(privateCookbookName)).not.toBeVisible();
 });
