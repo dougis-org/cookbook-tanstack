@@ -94,7 +94,10 @@ function TierCard({ tier, isCurrent, isAnon }: TierCardProps) {
 
 export function PricingPage() {
   const { session } = useAuth()
-  const currentTier = (session?.user?.tier as EntitlementTier | undefined) ?? "anonymous"
+  const rawTier = session?.user?.tier as EntitlementTier | undefined
+  const currentTier: EntitlementTier = session
+    ? (rawTier && Object.hasOwn(TIER_LIMITS, rawTier) ? rawTier : "home-cook")
+    : "anonymous"
 
   return (
     <PageLayout role="public-marketing" title="Pricing" description="Compare plans and find the right fit.">

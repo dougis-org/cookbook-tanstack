@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { User } from "lucide-react"
 import type { RedirectReason } from "@/lib/auth-guard"
-import { REDIRECT_REASON_MESSAGES } from "@/lib/auth-guard"
+import { REDIRECT_REASON_MESSAGES, requireAuth } from "@/lib/auth-guard"
 import PageLayout from "@/components/layout/PageLayout"
 import { useAuth } from "@/hooks/useAuth"
 import { trpc } from "@/lib/trpc"
@@ -15,6 +15,7 @@ import {
 } from "@/lib/tier-entitlements"
 
 export const Route = createFileRoute("/account")({
+  beforeLoad: requireAuth(),
   component: AccountPage,
   validateSearch: (search: Record<string, unknown>): { reason?: RedirectReason } => ({
     reason:

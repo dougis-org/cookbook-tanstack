@@ -30,7 +30,7 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
-import { AccountPage } from '@/routes/account'
+import { AccountPage, Route } from '@/routes/account'
 
 function tierSession(tier: string) {
   return { session: { user: { id: 'u1', tier, isAdmin: false } }, isLoggedIn: true }
@@ -39,6 +39,30 @@ function tierSession(tier: string) {
 function usageData(recipeCount: number, cookbookCount: number) {
   return { data: { recipeCount, cookbookCount }, isLoading: false, isError: false }
 }
+
+describe('/account — beforeLoad', () => {
+  it('redirects unauthenticated visitors to /auth/login', () => {
+    const beforeLoad = Route.options.beforeLoad
+    if (!beforeLoad) throw new Error('beforeLoad not defined')
+    try {
+      beforeLoad({ context: { session: null }, location: { href: '/account' } } as never)
+      throw new Error('Should have thrown')
+    } catch (err: unknown) {
+      const e = err as { type?: string; options?: { to?: string; search?: { reason?: string } } }
+      expect(e.type).toBe('redirect')
+      expect(e.options?.to).toBe('/auth/login')
+      expect(e.options?.search).toMatchObject({ reason: 'auth-required' })
+    }
+  })
+
+  it('allows authenticated users', () => {
+    const beforeLoad = Route.options.beforeLoad
+    if (!beforeLoad) return
+    expect(() => {
+      beforeLoad({ context: { session: { user: { id: 'u1' } } }, location: { href: '/account' } } as never)
+    }).not.toThrow()
+  })
+})
 
 describe('/account — tier section', () => {
   beforeEach(() => {

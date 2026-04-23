@@ -89,6 +89,13 @@ describe('/pricing', () => {
       mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
       expect(() => render(<PricingPage />)).not.toThrow()
     })
+
+    it('highlights home-cook card for authenticated user with missing tier', () => {
+      mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
+      render(<PricingPage />)
+      expect(screen.getByTestId('tier-card-home-cook')).toHaveAttribute('data-current', 'true')
+      expect(screen.getByTestId('tier-card-anonymous')).not.toHaveAttribute('data-current', 'true')
+    })
   })
 
   describe('ad slots', () => {
