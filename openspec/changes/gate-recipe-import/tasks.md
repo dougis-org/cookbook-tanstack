@@ -12,7 +12,7 @@
 - [x] In `src/server/trpc/routers/recipes.ts`, import `canImport` from `@/lib/tier-entitlements` (already imported file — add to existing import)
 - [x] At the top of the `import` mutation handler, before any other logic, add:
   ```typescript
-  if (!ctx.user.isAdmin && !canImport(ctx.user.tier as EntitlementTier)) {
+  if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Recipe import requires Sous Chef or higher.",
