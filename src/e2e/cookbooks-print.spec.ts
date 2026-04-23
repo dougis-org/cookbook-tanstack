@@ -1,13 +1,14 @@
 import { test, expect } from "@bgotink/playwright-coverage";
+import { ObjectId, type Db } from "mongodb";
 import { registerAndLogin } from "./helpers/auth";
 import { registerAndLoginWithTier } from "./helpers/admin";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import {
   addRecipeToCookbook,
   createCookbook,
-  getCookbookIsPublic,
   getUniqueCookbookName,
 } from "./helpers/cookbooks";
+import { withMongoDb } from "./helpers/db";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
 // ─── Shared setup: public cookbook with two recipes ───────────────────────────
@@ -205,6 +206,25 @@ test.describe("Cookbook Print Route — public cookbook", () => {
 
 // ─── Private cookbook ─────────────────────────────────────────────────────────
 
+async function expectCookbookIsPrivate(db: Db, cookbookId: string) {
+  await expect
+    .poll(
+      async () => {
+        const doc = await db
+          .collection<{ isPublic?: boolean }>("cookbooks")
+          .findOne(
+            { _id: new ObjectId(cookbookId) },
+            { projection: { isPublic: 1 } },
+          );
+        return doc ? doc.isPublic === true : "missing";
+      },
+      {
+        message: "private print-route fixture should persist as private",
+      },
+    )
+    .toBe(false);
+}
+
 // 4.2
 test("unauthenticated user sees not-found state for a private cookbook print route", async ({
   page,
@@ -215,11 +235,7 @@ test("unauthenticated user sees not-found state for a private cookbook print rou
     await createCookbook(page, cookbookName, {
       isPublic: false,
     });
-  await expect
-    .poll(() => getCookbookIsPublic(cookbookId), {
-      message: "private print-route fixture should persist as private",
-    })
-    .toBe(false);
+  await withMongoDb((db) => expectCookbookIsPrivate(db, cookbookId));
 
   await page.context().clearCookies();
   await gotoAndWaitForHydration(

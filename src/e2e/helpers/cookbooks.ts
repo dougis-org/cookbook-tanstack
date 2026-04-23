@@ -1,5 +1,4 @@
 import type { Page } from "@playwright/test";
-import { MongoClient, ObjectId } from "mongodb";
 import { gotoAndWaitForHydration } from "./app";
 import { getUniqueRecipeName, submitRecipeForm } from "./recipes";
 import { getUniqueSuffix } from "./utils";
@@ -53,28 +52,6 @@ export async function createCookbook(
     cookbookUrl: page.url(),
     cookbookName,
   };
-}
-
-export async function getCookbookIsPublic(cookbookId: string) {
-  const mongoUri =
-    process.env.MONGODB_URI ?? "mongodb://localhost:27017/cookbook";
-  const client = new MongoClient(mongoUri);
-  try {
-    await client.connect();
-    const doc = await client
-      .db()
-      .collection<{ isPublic?: boolean }>("cookbooks")
-      .findOne(
-        { _id: new ObjectId(cookbookId) },
-        { projection: { isPublic: 1 } },
-      );
-    if (!doc) {
-      throw new Error(`Cookbook "${cookbookId}" was not found.`);
-    }
-    return doc.isPublic === true;
-  } finally {
-    await client.close();
-  }
 }
 
 export async function addRecipeToCookbook(page: Page, recipeName: string) {
