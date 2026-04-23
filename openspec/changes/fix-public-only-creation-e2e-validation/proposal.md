@@ -6,13 +6,13 @@
 
 ## Why
 
-- Problem statement: PR #396 enforced public-only creation for restricted tiers, but an existing E2E fixture still tries to create a private cookbook through the UI as a default `home-cook` user. The server now correctly coerces that creation to public, so the private print-route access-control test no longer sets up the state it claims to test.
+- Problem statement: PR #396 enforced public-only creation for restricted tiers, and its failing CI run exposed that the private cookbook print-route E2E fixture needed explicit validation that its setup still creates a genuinely private cookbook. The original failure mode was a lower-tier fixture path being coerced to public; after syncing `main`, the test already used `sous-chef`, so this follow-up hardens the test by verifying the persisted cookbook remains private before asserting anonymous access is denied.
 - Why now: The merged PR's final `build-and-test` workflow failed in `cookbooks-print.spec.ts`, and the failure was plausibly caused by this fixture mismatch rather than unrelated infrastructure.
 - Business/user impact: CI must accurately verify that private cookbook print routes remain inaccessible to anonymous users while preserving the intended tier enforcement for public-only users.
 
 ## Problem Space
 
-- Current behavior: `src/e2e/cookbooks-print.spec.ts` registers a default user, uses the UI helper to create a cookbook with `isPublic: false`, clears cookies, then expects anonymous access to show `Cookbook not found`. Default users are `home-cook`, and `cookbooks.create` now coerces `isPublic` to `true` for that tier.
+- Current behavior: `src/e2e/cookbooks-print.spec.ts` creates a private cookbook fixture, clears cookies, then expects anonymous access to show `Cookbook not found`, but before this follow-up it did not verify that the persisted cookbook used by that assertion was actually private under current tier rules.
 - Desired behavior: The private cookbook print-route E2E test creates a genuinely private cookbook using setup that is valid under current tier rules, then verifies anonymous access sees the not-found state.
 - Constraints: Keep the production public-only creation enforcement unchanged. Preserve the E2E's intent: print-route access control for private cookbooks, not cookbook creation entitlement behavior.
 - Assumptions: The failing E2E should not be removed because anonymous access control for private print routes remains a real requirement.
