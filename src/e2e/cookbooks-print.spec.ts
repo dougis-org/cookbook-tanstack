@@ -216,7 +216,7 @@ async function expectCookbookIsPrivate(db: Db, cookbookId: string) {
             { _id: new ObjectId(cookbookId) },
             { projection: { isPublic: 1 } },
           );
-        return doc ? doc.isPublic === true : "missing";
+        return doc ? (doc.isPublic ?? "missing") : "missing";
       },
       {
         message: "private print-route fixture should persist as private",
