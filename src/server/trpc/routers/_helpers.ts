@@ -44,6 +44,23 @@ export async function verifyOwnership<T extends { userId: unknown }>(
   return existing;
 }
 
+/** Shared predicate for counting non-hidden user-owned documents. */
+function userContentFilter(userId: string) {
+  return { userId, hiddenByTier: { $ne: true } }
+}
+
+/**
+ * Returns the number of non-hidden recipes and cookbooks owned by a user.
+ * Used by both `enforceContentLimit` and `usage.getOwned` to ensure count parity.
+ */
+export async function countUserContent(userId: string): Promise<{ recipeCount: number; cookbookCount: number }> {
+  const [recipeCount, cookbookCount] = await Promise.all([
+    Recipe.countDocuments(userContentFilter(userId)),
+    Cookbook.countDocuments(userContentFilter(userId)),
+  ])
+  return { recipeCount, cookbookCount }
+}
+
 /**
  * Enforces tier-based content creation limits.
  * Admins bypass all limits. Missing tier defaults to 'home-cook'.
@@ -71,10 +88,7 @@ export async function enforceContentLimit(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Model = (resource === "recipes" ? Recipe : Cookbook) as unknown as mongoose.Model<any>;
-  const count = await Model.countDocuments({
-    userId,
-    hiddenByTier: { $ne: true },
-  });
+  const count = await Model.countDocuments(userContentFilter(userId));
 
   if (count >= limit) {
     throw new TRPCError({
