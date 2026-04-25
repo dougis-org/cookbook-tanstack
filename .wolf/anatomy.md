@@ -1,7 +1,12 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-19T18:21:27.723Z
-> Files: 539 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-24T21:43:19.724Z
+> Files: 562 tracked | Anatomy hits: 0 | Misses: 0
+
+## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
+
+- `feedback_resolve_pr_threads.md` (~251 tok)
+- `MEMORY.md` — Project Memory (~225 tok)
 
 ## ./
 
@@ -738,6 +743,28 @@
 
 - `theming.md` — Theming Guide (~549 tok)
 
+## openspec/changes/archive/2026-04-24-build-tier-pricing-page/
+
+- `tasks.md` — Tasks (~1936 tok)
+
+## openspec/changes/build-tier-pricing-page/
+
+- `design.md` — Context (~2913 tok)
+- `proposal.md` — GitHub Issues (~1357 tok)
+- `tasks.md` — Tasks (~1936 tok)
+- `tests.md` — Tests (~1126 tok)
+
+## openspec/changes/build-tier-pricing-page/specs/
+
+- `account-tier-section.md` — Spec: Account Page Tier Section (~880 tok)
+- `pricing-page.md` — Spec: /pricing Route (~1505 tok)
+- `upgrade-stub.md` — Spec: /upgrade Stub Route (~377 tok)
+- `usage-router.md` — Spec: usage tRPC Router (~821 tok)
+
+## openspec/changes/enforce-tier-content-limits/
+
+- `tasks.md` — Tasks (~2134 tok)
+
 ## openspec/changes/fix-fouc-theme-flash/
 
 - `design.md` — Context (~2475 tok)
@@ -768,18 +795,41 @@
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+- `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
+- `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
 ## src/routes/
 
 - `__root.tsx` — Route (~1256 tok)
+- `account.tsx` — Route (~1481 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
+- `pricing.tsx` — Route (~1018 tok)
+- `upgrade.tsx` — Route (~257 tok)
+
+## src/routes/__tests__/
+
+- `-account.test.tsx` — mockUseAuth (~1643 tok)
+- `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+
+## src/server/trpc/
+
+- `router.ts` — Exports appRouter, AppRouter (~258 tok)
+
+## src/server/trpc/routers/
+
+- `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
+- `usage.ts` — Exports usageRouter (~70 tok)
+
+## src/server/trpc/routers/__tests__/
+
+- `usage.test.ts` — Declares user (~853 tok)
 
 ## src/test-helpers/
 

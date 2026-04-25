@@ -228,6 +228,150 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-20T20:01:32.796174Z"
+    },
+    {
+      "id": "bug-015",
+      "timestamp": "2026-04-23T18:03:47.759Z",
+      "error_message": "Type error",
+      "file": "src/lib/__tests__/tier-entitlements.test.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T18:03:47.759Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-04-23T18:04:10.142Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/server/trpc/routers/_helpers.ts",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 39→53 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T18:04:10.142Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-04-23T18:07:00.985Z",
+      "error_message": "Type error",
+      "file": "src/routes/__tests__/-pricing.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T18:07:00.985Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-04-23T18:09:15.923Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/routes/__tests__/-pricing.test.tsx",
+      "root_cause": "Had '/auth/sign-up'",
+      "fix": "Changed to '/auth/register'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T18:09:15.923Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-04-23T18:59:42.194Z",
+      "error_message": "Type error",
+      "file": "src/routes/account.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation | Also: const nextTierIndex = USER_TIER_ORDER.indexOf(tier as Exclud; nextTierIndex < USER_TIER_ORDER.length ? USER_TIER_ORDER[nex",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-23T18:59:48.360Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-04-23T18:59:59.804Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/__tests__/-pricing.test.tsx",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 7→3 lines (4 removed) | Also: const cards = screen.getAllByTestId(/^tier-card-/); cards.forEach((card) => {",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-23T19:00:25.916Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-04-23T19:00:14.569Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/routes/__tests__/-pricing.test.tsx",
+      "root_cause": "Had 'non-anonymous cards link to /auth/sign-up for ano",
+      "fix": "Changed to 'non-anonymous cards link to /auth/register for an",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T19:00:14.569Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-04-23T23:37:23.305Z",
+      "error_message": "Wrong operator: ?? should be &&",
+      "file": "src/routes/pricing.tsx",
+      "root_cause": "Used \"??\" instead of \"&&\"",
+      "fix": "Changed operator ?? → &&",
+      "tags": [
+        "auto-detected",
+        "operator-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T23:37:23.305Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-04-23T23:37:48.133Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/routes/__tests__/-account.test.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-23T23:37:48.133Z"
     }
   ]
 }

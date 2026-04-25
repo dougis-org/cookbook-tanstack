@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 89953,
-    "total_reads": 59,
-    "total_writes": 141,
-    "total_sessions": 7,
-    "anatomy_hits": 25,
-    "anatomy_misses": 34,
+    "total_tokens_estimated": 128516,
+    "total_reads": 92,
+    "total_writes": 190,
+    "total_sessions": 12,
+    "anatomy_hits": 36,
+    "anatomy_misses": 56,
     "repeated_reads_blocked": 10,
-    "estimated_savings_vs_bare_cli": 17318
+    "estimated_savings_vs_bare_cli": 19518
   },
   "sessions": [
     {
@@ -1187,6 +1187,533 @@
         "writes_count": 19,
         "repeated_reads_blocked": 3,
         "anatomy_lookups": 2
+      }
+    },
+    {
+      "id": "session-2026-04-23-0727",
+      "started": "2026-04-23T14:27:36.529Z",
+      "ended": "2026-04-23T15:32:32.925Z",
+      "reads": [],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/proposal.md",
+          "tokens_estimated": 1551,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/design.md",
+          "tokens_estimated": 3329,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/pricing-page.md",
+          "tokens_estimated": 1720,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/usage-router.md",
+          "tokens_estimated": 939,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/account-tier-section.md",
+          "tokens_estimated": 1006,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/upgrade-stub.md",
+          "tokens_estimated": 430,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 2214,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tests.md",
+          "tokens_estimated": 1287,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 12476,
+        "reads_count": 0,
+        "writes_count": 8,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-23-1043",
+      "started": "2026-04-23T17:43:21.101Z",
+      "ended": "2026-04-23T17:46:53.805Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/enforce-tier-content-limits/tasks.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/enforce-tier-content-limits/tasks.md",
+          "tokens_estimated": 254,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/enforce-tier-content-limits/tasks.md",
+          "tokens_estimated": 262,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 516,
+        "reads_count": 1,
+        "writes_count": 2,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-23-1058",
+      "started": "2026-04-23T17:58:02.620Z",
+      "ended": "2026-04-23T23:25:33.191Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/proposal.md",
+          "tokens_estimated": 1357,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/design.md",
+          "tokens_estimated": 2913,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 1938,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tests.md",
+          "tokens_estimated": 1126,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/pricing-page.md",
+          "tokens_estimated": 1505,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/usage-router.md",
+          "tokens_estimated": 821,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/account-tier-section.md",
+          "tokens_estimated": 880,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/specs/upgrade-stub.md",
+          "tokens_estimated": 377,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/tier-entitlements.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/_helpers.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/root.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/account.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/ad-policy.ts",
+          "tokens_estimated": 213,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/router.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/__tests__/helpers.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/__tests__/test-helpers.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/users.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/init.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/__tests__/users.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/components/layout/PageLayout.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-index.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-home.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/test-helpers/mocks.ts",
+          "tokens_estimated": 899,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/trpc.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/hooks/useAuth.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/cookbooks.$cookbookId_.print.test.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/__tests__/tier-entitlements.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/types/user.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/cookbooks.$cookbookId_.print.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/.agent/skills/openspec-apply-change/SKILL.md",
+          "tokens_estimated": 1178,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/tier-entitlements.ts",
+          "tokens_estimated": 173,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/__tests__/tier-entitlements.test.ts",
+          "tokens_estimated": 67,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/__tests__/tier-entitlements.test.ts",
+          "tokens_estimated": 156,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/_helpers.ts",
+          "tokens_estimated": 567,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/__tests__/usage.test.ts",
+          "tokens_estimated": 853,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/routers/usage.ts",
+          "tokens_estimated": 70,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/server/trpc/router.ts",
+          "tokens_estimated": 129,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/upgrade.tsx",
+          "tokens_estimated": 257,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 1717,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/pricing.tsx",
+          "tokens_estimated": 1142,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 239,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-account.test.tsx",
+          "tokens_estimated": 1373,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/account.tsx",
+          "tokens_estimated": 1494,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/pricing.tsx",
+          "tokens_estimated": 73,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 32,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 69,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 85,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 153,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 213,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 99,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 351,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 317,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 86,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/lib/tier-entitlements.ts",
+          "tokens_estimated": 120,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/pricing.tsx",
+          "tokens_estimated": 983,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/account.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/account.tsx",
+          "tokens_estimated": 32,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/account.tsx",
+          "tokens_estimated": 102,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 281,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 24,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 71,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/routes/__tests__/-pricing.test.tsx",
+          "tokens_estimated": 63,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 186,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 13207,
+        "output_tokens_estimated": 11740,
+        "reads_count": 30,
+        "writes_count": 36,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 11
+      }
+    },
+    {
+      "id": "session-2026-04-24-1822",
+      "started": "2026-04-24T01:22:08.943Z",
+      "ended": "2026-04-24T17:54:54.648Z",
+      "reads": [
+        {
+          "file": "/home/doug/.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/MEMORY.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/feedback_resolve_pr_threads.md",
+          "tokens_estimated": 271,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/MEMORY.md",
+          "tokens_estimated": 92,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 363,
+        "reads_count": 1,
+        "writes_count": 2,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
+      }
+    },
+    {
+      "id": "session-2026-04-24-1056",
+      "started": "2026-04-24T17:56:54.022Z",
+      "ended": "2026-04-24T21:43:48.005Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/archive/2026-04-24-build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/archive/2026-04-24-build-tier-pricing-page/tasks.md",
+          "tokens_estimated": 261,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 261,
+        "reads_count": 1,
+        "writes_count": 1,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 0
       }
     }
   ],
