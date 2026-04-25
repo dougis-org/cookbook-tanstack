@@ -44,3 +44,4 @@ src/e2e/e2e-coverage/lcov.info
 
 .remember/
 .claude/scheduled_tasks.lock
+.tokensave

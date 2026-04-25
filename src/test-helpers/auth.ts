@@ -39,6 +39,7 @@ export const loggedOutAuth = {
 export const mockSendVerificationEmail = vi.fn().mockResolvedValue({})
 export const mockSignUpEmail = vi.fn().mockResolvedValue({})
 export const mockSignInEmail = vi.fn().mockResolvedValue({})
+export const mockRequestPasswordReset = vi.fn().mockResolvedValue({})
 export const mockResetPassword = vi.fn().mockResolvedValue({})
 
 export const mockAuthClient = {
@@ -49,6 +50,7 @@ export const mockAuthClient = {
   signIn: {
     email: mockSignInEmail,
   },
+  requestPasswordReset: mockRequestPasswordReset,
   resetPassword: mockResetPassword,
 }
 
