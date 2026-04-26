@@ -17,7 +17,7 @@ function getTransporter() {
         token: MAILTRAP_API_TOKEN,
         sandbox: process.env.MAILTRAP_USE_SANDBOX === "true",
         testInboxId: process.env.MAILTRAP_INBOX_ID
-          ? parseInt(process.env.MAILTRAP_INBOX_ID)
+          ? parseInt(process.env.MAILTRAP_INBOX_ID, 10)
           : undefined,
       }),
     );
