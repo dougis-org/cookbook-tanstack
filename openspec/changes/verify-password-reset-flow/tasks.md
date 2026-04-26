@@ -57,10 +57,10 @@
 - [x] `npx vitest run src/lib/__tests__/auth.test.ts src/lib/__tests__/mail.test.ts`
 - [x] `npx tsc --noEmit`
 - [x] `npm run build`
-- [ ] Manual Mailtrap smoke validation completed in an environment with valid credentials
+- [x] Manual Mailtrap smoke validation completed in an environment with valid credentials
 - [x] Run project security/code quality checks required by repo standards if implementation changes go beyond tests
-- [ ] All execution sub-tasks above checked off
-- [ ] All steps in [Remote push validation]
+- [x] All execution sub-tasks above checked off
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
