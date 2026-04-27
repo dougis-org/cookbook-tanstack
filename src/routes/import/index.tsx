@@ -10,7 +10,6 @@ import { importedRecipeSchema, type ImportedRecipeInput } from '@/lib/validation
 import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { trpc } from '@/lib/trpc'
 import { getTierWallReason } from '@/lib/trpc-error'
-import { useTierWallState } from '@/hooks/useTierWallState'
 
 export const Route = createFileRoute('/import/')({
   component: ImportPage,
@@ -21,21 +20,25 @@ function ImportPage() {
   const navigate = useNavigate()
   const [fieldErrors, setFieldErrors] = useState<string[]>([])
   const [parsedRecipe, setParsedRecipe] = useState<ImportedRecipeInput | null>(null)
-  const { serverError, tierWallReason, clearErrors, handleServerError, handleTierWallError } = useTierWallState()
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   const importMutation = useMutation(
     trpc.recipes.import.mutationOptions({
       onSuccess: (result) => {
         setParsedRecipe(null)
-        clearErrors()
+        setServerError(null)
+        setTierWallReason(null)
         navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
       onError: (error) => {
         const tierWall = getTierWallReason(error)
         if (tierWall) {
-          handleTierWallError(tierWall)
+          setTierWallReason(tierWall)
+          setServerError(null)
         } else {
-          handleServerError(error.message)
+          setServerError(error.message)
+          setTierWallReason(null)
         }
       },
     }),
@@ -43,7 +46,8 @@ function ImportPage() {
 
   async function handleSelectedFile(file: File) {
     setFieldErrors([])
-    clearErrors()
+    setServerError(null)
+    setTierWallReason(null)
 
     try {
       const content = await file.text()
@@ -69,12 +73,14 @@ function ImportPage() {
 
   function handleCancel() {
     setParsedRecipe(null)
-    clearErrors()
+    setServerError(null)
+    setTierWallReason(null)
   }
 
   function handleConfirm() {
     if (!parsedRecipe) return
-    clearErrors()
+    setServerError(null)
+    setTierWallReason(null)
     importMutation.mutate(parsedRecipe)
   }
 
@@ -110,7 +116,7 @@ function ImportPage() {
       />
 
       {tierWallReason && (
-        <TierWall reason={tierWallReason} display="modal" onDismiss={clearErrors} />
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
       )}
     </PageLayout>
   )

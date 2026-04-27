@@ -3,7 +3,6 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
-import { useTierWallState } from '@/hooks/useTierWallState'
 import { trpc } from '@/lib/trpc'
 import { getTierWallReason } from '@/lib/trpc-error'
 import PageLayout from '@/components/layout/PageLayout'
@@ -91,7 +90,8 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
-  const { serverError: error, tierWallReason, clearErrors, handleServerError, handleTierWallError } = useTierWallState()
+  const [error, setError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   const createMutation = useMutation(
     trpc.cookbooks.create.mutationOptions({
@@ -102,9 +102,11 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
       onError: (err) => {
         const tierWall = getTierWallReason(err)
         if (tierWall) {
-          handleTierWallError(tierWall)
+          setTierWallReason(tierWall)
+          setError(null)
         } else {
-          handleServerError(err.message)
+          setError(err.message)
+          setTierWallReason(null)
         }
       },
     }),
@@ -113,7 +115,8 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
-    clearErrors()
+    setError(null)
+    setTierWallReason(null)
     createMutation.mutate({ name: name.trim(), description: description.trim() || undefined, isPublic })
   }
 
@@ -156,7 +159,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
       </form>
 
       {tierWallReason && (
-        <TierWall reason={tierWallReason} display="modal" onDismiss={clearErrors} />
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
       )}
     </div>
   )
