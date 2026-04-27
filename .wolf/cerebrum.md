@@ -6,6 +6,8 @@
 
 ## User Preferences
 
+- Use built-in Read/Edit/Write tools for all file inspection and editing — do not use Bash with sed/cat/grep for file reads that could be done with the dedicated tools.
+
 <!-- How the user likes things done. Code style, tools, patterns, communication. -->
 
 ## Key Learnings

@@ -62,28 +62,6 @@ The system SHALL make the GitHub issue relationship explicit when this verificat
 - **Then** it includes `Closes #341`
 - **And** the PR description explains that the feature already existed and this change adds verification and closure evidence
 
-## MODIFIED Requirements
-
-### Requirement: MODIFIED Password Reset Delivery Confidence
-
-The system SHALL treat password reset as incomplete until automated UI verification and manual Mailtrap smoke validation both exist.
-
-#### Scenario: Manual Mailtrap smoke test is recorded
-
-- **Given** valid Mailtrap credentials are available in the environment
-- **When** a reviewer or implementer requests a password reset through the UI
-- **Then** the reset email is observed in Mailtrap
-- **And** the reset link opens the app with a tokenized `/auth/reset-password` URL
-- **And** completing the form updates the password successfully
-
-## REMOVED Requirements
-
-### Requirement: REMOVED Password Reset Requires New Architecture
-
-Reason for removal:
-
-- The current repo already contains Better Auth and Mailtrap password reset wiring, so this change does not require a fresh architecture build-out.
-
 ## Traceability
 
 - Proposal element -> Requirement:
