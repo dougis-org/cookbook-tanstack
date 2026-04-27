@@ -21,11 +21,14 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
 
   useEffect(() => {
     if (display !== 'modal') return
-    const prev = document.activeElement as HTMLElement
+    const prev = document.activeElement as HTMLElement | null
     ref.current?.focus()
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onDismiss?.() }
     document.addEventListener('keydown', handleKey)
-    return () => { document.removeEventListener('keydown', handleKey); prev.focus() }
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      if (prev instanceof HTMLElement && typeof prev.focus === 'function') prev.focus()
+    }
   }, [display, onDismiss])
 
   if (display === 'inline') {

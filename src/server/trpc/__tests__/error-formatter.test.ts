@@ -48,9 +48,9 @@ describe("extractAppError", () => {
     expect(extractAppError({ type: "tier-wall", reason: "unknown-reason" })).toBeNull()
   })
 
-  it("returns null for ownership type (not forwarded via appError)", async () => {
+  it("promotes ownership type to AppErrorCause", async () => {
     const { extractAppError } = await import("@/server/trpc/init")
-    // ownership is a valid AppErrorCause type but we test it is handled
+    // ownership is a valid AppErrorCause type and should be forwarded as-is
     const cause = { type: "ownership" as const }
     expect(extractAppError(cause)).toEqual({ type: "ownership" })
   })
