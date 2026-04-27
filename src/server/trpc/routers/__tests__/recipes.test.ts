@@ -1525,7 +1525,7 @@ describe("recipes.import — tier gate and count limit", () => {
       const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
       await expect(
         caller.recipes.import({ name: "Blocked Import", _version: "1" }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
     });
   });
 
@@ -1535,7 +1535,7 @@ describe("recipes.import — tier gate and count limit", () => {
       const caller = await makeAuthCaller(user.id, { tier: "prep-cook" });
       await expect(
         caller.recipes.import({ name: "Blocked Import", _version: "1" }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
     });
   });
 
@@ -1565,7 +1565,7 @@ describe("recipes.import — tier gate and count limit", () => {
       const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
       await expect(
         caller.recipes.import({ name: "One Over Limit", _version: "1" }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
     });
   });
 
@@ -1727,12 +1727,12 @@ describe("visibility enforcement", () => {
   });
 
   describe("update", () => {
-    it("Home Cook updates recipe to private -> rejected with FORBIDDEN", async () => {
+    it("Home Cook updates recipe to private -> rejected with PAYMENT_REQUIRED", async () => {
       await withCleanDb(async () => {
         const user = await seedUser();
         const recipe = await new Recipe({ name: "Public Recipe", userId: user.id, isPublic: true }).save();
         const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
-        await expect(caller.recipes.update({ id: recipe.id, isPublic: false })).rejects.toThrow(/support private recipes/i);
+        await expect(caller.recipes.update({ id: recipe.id, isPublic: false })).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
         const persisted = await Recipe.findById(recipe.id).lean();
         expect(persisted?.isPublic).toBe(true);
       });
@@ -1763,7 +1763,7 @@ describe("visibility enforcement", () => {
 // ─── recipes.create — tier content limit enforcement ─────────────────────────
 
 describe("recipes.create — tier limit enforcement", () => {
-  it("throws FORBIDDEN when home-cook user has 10 recipes (at limit)", async () => {
+  it("throws PAYMENT_REQUIRED when home-cook user has 10 recipes (at limit)", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
       for (let i = 0; i < 10; i++) {
@@ -1771,7 +1771,7 @@ describe("recipes.create — tier limit enforcement", () => {
       }
       const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
       await expect(caller.recipes.create({ name: "One Too Many" })).rejects.toMatchObject({
-        code: "FORBIDDEN",
+        code: "PAYMENT_REQUIRED",
       });
     });
   });

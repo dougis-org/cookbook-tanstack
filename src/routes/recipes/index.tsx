@@ -5,8 +5,10 @@ import { Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X
 import { z } from 'zod'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeCard from '@/components/recipes/RecipeCard'
+import TierWall from '@/components/ui/TierWall'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
 import { FilterDropdowns } from '@/components/recipes/filters/FilterDropdowns'
 
@@ -44,7 +46,7 @@ function ActiveBadge({ label, onRemove }: { label: string; onRemove: () => void 
   )
 }
 
-function RecipesPage() {
+export function RecipesPage() {
   const navigate = useNavigate({ from: '/recipes/' })
   const {
     search = '',
@@ -62,6 +64,13 @@ function RecipesPage() {
   } = Route.useSearch()
 
   const { isLoggedIn, userId } = useAuth()
+  const { recipeLimit, canImport } = useTierEntitlements()
+
+  const { data: myCountData } = useQuery(
+    trpc.recipes.list.queryOptions({ userId: userId || undefined, pageSize: 1 }),
+  )
+  const myRecipeCount = myCountData?.total ?? 0
+  const atRecipeLimit = isLoggedIn && myRecipeCount >= recipeLimit
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
@@ -194,20 +203,37 @@ function RecipesPage() {
 
           {isLoggedIn && (
             <>
-              <Link
-                to="/import"
-                className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Import Recipe
-              </Link>
-              <Link
-                to="/recipes/new"
-                className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                New Recipe
-              </Link>
+              {canImport ? (
+                <Link
+                  to="/import"
+                  className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Import Recipe
+                </Link>
+              ) : null}
+              <div className="flex flex-col gap-1">
+                {atRecipeLimit ? (
+                  <>
+                    <button
+                      disabled
+                      className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] opacity-50 cursor-not-allowed text-white font-semibold rounded-lg text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      New Recipe
+                    </button>
+                    <TierWall reason="count-limit" display="inline" />
+                  </>
+                ) : (
+                  <Link
+                    to="/recipes/new"
+                    className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Recipe
+                  </Link>
+                )}
+              </div>
             </>
           )}
         </div>

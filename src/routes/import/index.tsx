@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query'
 import PageLayout from '@/components/layout/PageLayout'
 import ImportDropzone from '@/components/recipes/ImportDropzone'
 import ImportPreviewModal from '@/components/recipes/ImportPreviewModal'
+import TierWall from '@/components/ui/TierWall'
 import { importedRecipeSchema, type ImportedRecipeInput } from '@/lib/validation'
 import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { trpc } from '@/lib/trpc'
@@ -19,6 +20,7 @@ function ImportPage() {
   const [fieldErrors, setFieldErrors] = useState<string[]>([])
   const [parsedRecipe, setParsedRecipe] = useState<ImportedRecipeInput | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   const importMutation = useMutation(
     trpc.recipes.import.mutationOptions({
@@ -28,7 +30,12 @@ function ImportPage() {
         navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
       onError: (error) => {
-        setServerError(error.message)
+        const appError = (error as { data?: { appError?: { type?: string; reason?: string } | null } })?.data?.appError
+        if (appError?.type === 'tier-wall') {
+          setTierWallReason(appError.reason as 'count-limit' | 'private-content' | 'import')
+        } else {
+          setServerError(error.message)
+        }
       },
     }),
   )
@@ -99,6 +106,10 @@ function ImportPage() {
         onCancel={handleCancel}
         onConfirm={handleConfirm}
       />
+
+      {tierWallReason && (
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
+      )}
     </PageLayout>
   )
 }

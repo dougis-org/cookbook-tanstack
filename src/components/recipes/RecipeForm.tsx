@@ -11,6 +11,8 @@ import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
 import ImageUploadField from "@/components/ui/ImageUploadField"
 import { useAutoSave } from "@/hooks/useAutoSave"
+import { useTierEntitlements } from "@/hooks/useTierEntitlements"
+import TierWall from "@/components/ui/TierWall"
 import StatusIndicator from "./StatusIndicator"
 
 function sortedEqual(a: string[], b: string[]): boolean {
@@ -65,6 +67,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const isEdit = !!initialData
+  const { canCreatePrivate } = useTierEntitlements()
 
   const [selectedMealIds, setSelectedMealIds] = useState<string[]>(
     initialData?.meals?.map((m) => m.id) ?? [],
@@ -141,6 +144,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const autoSaveMutation = useMutation({ ...trpc.recipes.update.mutationOptions(), networkMode: 'always' })
   const isPending = createMutation.isPending || updateMutation.isPending
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   function toNum(v: string | undefined): number | undefined {
     if (v == null) return undefined
@@ -295,7 +299,12 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Failed to save recipe. Please try again.")
+      const appError = (error as { data?: { appError?: { type?: string; reason?: string } | null } })?.data?.appError
+      if (appError?.type === 'tier-wall') {
+        setTierWallReason(appError.reason as 'count-limit' | 'private-content' | 'import')
+      } else {
+        setSubmitError(error instanceof Error ? error.message : "Failed to save recipe. Please try again.")
+      }
     }
   }
 
@@ -512,17 +521,19 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
 
           {/* Public toggle */}
-          <div className="flex items-center gap-3">
-            <input
-              id="isPublic"
-              type="checkbox"
-              {...register("isPublic")}
-              className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
-            />
-            <label htmlFor="isPublic" className="text-sm font-medium text-[var(--theme-fg-muted)]">
-              Public recipe (visible to everyone)
-            </label>
-          </div>
+          {canCreatePrivate && (
+            <div className="flex items-center gap-3">
+              <input
+                id="isPublic"
+                type="checkbox"
+                {...register("isPublic")}
+                className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+              />
+              <label htmlFor="isPublic" className="text-sm font-medium text-[var(--theme-fg-muted)]">
+                Public recipe (visible to everyone)
+              </label>
+            </div>
+          )}
 
           {/* Ingredients */}
           <div>
@@ -655,6 +666,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           onConfirm={handleDiscardChanges}
           onCancel={blocker.reset}
         />
+      )}
+
+      {tierWallReason && (
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
       )}
     </div>
   )

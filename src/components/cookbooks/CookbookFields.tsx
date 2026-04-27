@@ -11,6 +11,7 @@ interface CookbookFieldsProps {
   onNameChange: (v: string) => void
   onDescriptionChange: (v: string) => void
   onIsPublicChange: (v: boolean) => void
+  canSetPrivate?: boolean
 }
 
 export default function CookbookFields({
@@ -21,6 +22,7 @@ export default function CookbookFields({
   onNameChange,
   onDescriptionChange,
   onIsPublicChange,
+  canSetPrivate = true,
 }: CookbookFieldsProps) {
   const nameId = `${checkboxId}-name`
   const descId = `${checkboxId}-desc`
@@ -53,18 +55,20 @@ export default function CookbookFields({
           className={inputClass}
         />
       </div>
-      <div className="flex items-center gap-2">
-        <input
-          id={checkboxId}
-          type="checkbox"
-          checked={isPublic}
-          onChange={(e) => onIsPublicChange(e.target.checked)}
-          className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-raised)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
-        />
-        <label htmlFor={checkboxId} className="text-sm text-[var(--theme-fg-muted)]">
-          Public (visible to everyone)
-        </label>
-      </div>
+      {canSetPrivate && (
+        <div className="flex items-center gap-2">
+          <input
+            id={checkboxId}
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => onIsPublicChange(e.target.checked)}
+            className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-raised)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+          />
+          <label htmlFor={checkboxId} className="text-sm text-[var(--theme-fg-muted)]">
+            Public (visible to everyone)
+          </label>
+        </div>
+      )}
     </>
   )
 }

@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
+import TierWall from '@/components/ui/TierWall'
 import { Plus, X } from 'lucide-react'
 
 export const Route = createFileRoute('/cookbooks/')({
@@ -15,7 +17,9 @@ export const Route = createFileRoute('/cookbooks/')({
 export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
   const { isLoggedIn, userId } = useAuth()
+  const { cookbookLimit } = useTierEntitlements()
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
+  const atCookbookLimit = isLoggedIn && cookbooks.length >= cookbookLimit
 
   return (
     <PageLayout role="public-content" title="Cookbooks" description="Your recipe collections">
@@ -24,13 +28,17 @@ export function CookbooksPage() {
           {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
         </span>
         {isLoggedIn && (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Cookbook
-          </button>
+          <div>
+            <button
+              onClick={() => !atCookbookLimit && setShowCreate(true)}
+              disabled={atCookbookLimit}
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              New Cookbook
+            </button>
+            {atCookbookLimit && <TierWall reason="count-limit" display="inline" />}
+          </div>
         )}
       </div>
 
@@ -74,10 +82,12 @@ export function CookbooksPage() {
 
 function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
+  const { canCreatePrivate } = useTierEntitlements()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   const createMutation = useMutation(
     trpc.cookbooks.create.mutationOptions({
@@ -85,7 +95,14 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
         queryClient.invalidateQueries({ queryKey: [['cookbooks']] })
         onClose()
       },
-      onError: (err) => setError(err.message),
+      onError: (err) => {
+        const appError = (err as { data?: { appError?: { type?: string; reason?: string } | null } })?.data?.appError
+        if (appError?.type === 'tier-wall') {
+          setTierWallReason(appError.reason as 'count-limit' | 'private-content' | 'import')
+        } else {
+          setError(err.message)
+        }
+      },
     }),
   )
 
@@ -113,6 +130,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
           onNameChange={setName}
           onDescriptionChange={setDescription}
           onIsPublicChange={setIsPublic}
+          canSetPrivate={canCreatePrivate}
         />
         {error && <p className="text-[var(--theme-error)] text-sm">{error}</p>}
         <div className="flex gap-3">
@@ -132,6 +150,10 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </form>
+
+      {tierWallReason && (
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
+      )}
     </div>
   )
 }
