@@ -40,11 +40,6 @@ describe('sendEmail', () => {
   });
 
   it('singleton works in sequence', async () => {
-    resetTransporter();
-    vi.clearAllMocks();
-    vi.mocked(nodemailer.createTransport).mockReturnValue({
-      sendMail: mockSendMail,
-    } as any);
     await sendEmail({ to: '1@ex.com', subject: 's', text: 't' });
     await sendEmail({ to: '2@ex.com', subject: 's', text: 't' });
     expect(vi.mocked(nodemailer.createTransport)).toHaveBeenCalledTimes(1);

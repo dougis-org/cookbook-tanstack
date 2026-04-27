@@ -2,13 +2,13 @@
 
 - Relevant architecture:
   - `src/lib/auth.ts` wires Better Auth `emailAndPassword.sendResetPassword`.
-  - `src/lib/mail.ts` sends transactional email through Mailtrap SMTP.
+  - `src/lib/mail.ts` sends transactional email through the Mailtrap SDK transport.
   - `src/components/auth/ForgotPasswordForm.tsx` calls `authClient.requestPasswordReset`.
   - `src/components/auth/ResetPasswordForm.tsx` calls `authClient.resetPassword`.
   - `src/routes/auth/reset-password.tsx` reads `token` from route search params and renders an invalid-token state when missing.
 - Dependencies:
   - Better Auth client and server configuration already on `main`
-  - Mailtrap SMTP configuration through environment variables
+  - Mailtrap API token (`MAILTRAP_API_TOKEN`) and sender address (`MAIL_FROM`) through environment variables
   - Existing Vitest and Playwright test setup
 - Interfaces/contracts touched:
   - Better Auth client methods: `requestPasswordReset`, `resetPassword`

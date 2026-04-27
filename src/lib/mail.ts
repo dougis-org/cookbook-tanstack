@@ -12,14 +12,13 @@ function getTransporter() {
       console.warn(msg);
       throw new Error(msg);
     }
+    const rawInboxId = process.env.MAILTRAP_INBOX_ID;
+    const testInboxId = rawInboxId ? parseInt(rawInboxId, 10) : undefined;
+    if (testInboxId !== undefined && !Number.isFinite(testInboxId)) {
+      throw new Error(`MAILTRAP_INBOX_ID "${rawInboxId}" is not a valid integer`);
+    }
     transporter = nodemailer.createTransport(
-      MailtrapTransport({
-        token: MAILTRAP_API_TOKEN,
-        sandbox: process.env.MAILTRAP_USE_SANDBOX === "true",
-        testInboxId: process.env.MAILTRAP_INBOX_ID
-          ? parseInt(process.env.MAILTRAP_INBOX_ID, 10)
-          : undefined,
-      }),
+      MailtrapTransport({ token: MAILTRAP_API_TOKEN, testInboxId }),
     );
   }
   return transporter;

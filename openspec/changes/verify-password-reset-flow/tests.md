@@ -43,7 +43,7 @@ For each task in `tasks.md`:
 
 ## Manual Mailtrap Smoke Checklist
 
-- Confirm the environment has `MAILTRAP_HOST`, `MAILTRAP_PORT`, `MAILTRAP_USER`, and `MAILTRAP_PASS` set before starting. `MAIL_FROM` may be set to override the default sender.
+- Confirm the environment has `MAILTRAP_API_TOKEN` and `MAIL_FROM` set before starting. To route to a sandbox inbox, also set `MAILTRAP_INBOX_ID`.
 - Open `/auth/forgot-password` and submit a password reset request for a known account.
 - Confirm the reset email appears in Mailtrap.
 - Open the link from the email and confirm it lands on `/auth/reset-password?token=...`.
