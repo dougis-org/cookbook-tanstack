@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { trpc } from '@/lib/trpc'
+import { getTierWallReason } from '@/lib/trpc-error'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
@@ -96,9 +97,9 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
         onClose()
       },
       onError: (err) => {
-        const appError = (err as { data?: { appError?: { type?: string; reason?: string } | null } })?.data?.appError
-        if (appError?.type === 'tier-wall') {
-          setTierWallReason(appError.reason as 'count-limit' | 'private-content' | 'import')
+        const tierWall = getTierWallReason(err)
+        if (tierWall) {
+          setTierWallReason(tierWall)
         } else {
           setError(err.message)
         }

@@ -5,6 +5,7 @@ import { z } from "zod"
 import { useNavigate, useRouter, useBlocker } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
+import { getTierWallReason } from "@/lib/trpc-error"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
@@ -299,9 +300,9 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
       }
     } catch (error) {
-      const appError = (error as { data?: { appError?: { type?: string; reason?: string } | null } })?.data?.appError
-      if (appError?.type === 'tier-wall') {
-        setTierWallReason(appError.reason as 'count-limit' | 'private-content' | 'import')
+      const tierWall = getTierWallReason(error)
+      if (tierWall) {
+        setTierWallReason(tierWall)
       } else {
         setSubmitError(error instanceof Error ? error.message : "Failed to save recipe. Please try again.")
       }

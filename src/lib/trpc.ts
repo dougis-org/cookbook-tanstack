@@ -44,3 +44,4 @@ export const trpc = new Proxy({} as ReturnType<typeof createTrpcProxy>, {
     return Reflect.get(cachedProxy, prop)
   },
 })
+

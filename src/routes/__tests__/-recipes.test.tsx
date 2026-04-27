@@ -55,6 +55,9 @@ vi.mock('@/lib/trpc', () => {
 
 import { RecipesPage } from '@/routes/recipes/index'
 
+const HOME_COOK_ENTITLEMENTS = { tier: 'home-cook', canCreatePrivate: false, canImport: false, recipeLimit: 10, cookbookLimit: 1 }
+const SOUS_CHEF_ENTITLEMENTS = { tier: 'sous-chef', canCreatePrivate: true, canImport: true, recipeLimit: 500, cookbookLimit: 25 }
+
 function setLoggedIn(opts: { tier?: string; isLoggedIn?: boolean } = {}) {
   const tier = opts.tier ?? 'home-cook'
   const isLoggedIn = opts.isLoggedIn ?? true
@@ -78,35 +81,17 @@ function setRecipeCount(total: number) {
 
 function setHomeCookAtLimit() {
   setRecipeCount(10)
-  mockUseTierEntitlements.mockReturnValue({
-    tier: 'home-cook',
-    canCreatePrivate: false,
-    canImport: false,
-    recipeLimit: 10,
-    cookbookLimit: 1,
-  })
+  mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
 }
 
 function setHomeCookBelowLimit() {
   setRecipeCount(7)
-  mockUseTierEntitlements.mockReturnValue({
-    tier: 'home-cook',
-    canCreatePrivate: false,
-    canImport: false,
-    recipeLimit: 10,
-    cookbookLimit: 1,
-  })
+  mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
 }
 
 function setSousChef() {
   setRecipeCount(10)
-  mockUseTierEntitlements.mockReturnValue({
-    tier: 'sous-chef',
-    canCreatePrivate: true,
-    canImport: true,
-    recipeLimit: 500,
-    cookbookLimit: 25,
-  })
+  mockUseTierEntitlements.mockReturnValue(SOUS_CHEF_ENTITLEMENTS)
 }
 
 describe('RecipesPage — tier affordances', () => {

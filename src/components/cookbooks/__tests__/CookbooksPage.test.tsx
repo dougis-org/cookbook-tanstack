@@ -60,6 +60,16 @@ const defaultEntitlements = {
   cookbookLimit: 25,
 }
 
+const homeCookEntitlements = {
+  tier: 'home-cook',
+  canCreatePrivate: false,
+  canImport: false,
+  recipeLimit: 10,
+  cookbookLimit: 1,
+}
+
+const oneCookbook = [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }]
+
 describe('CookbooksPage', () => {
   beforeEach(() => {
     mockUseTierEntitlements.mockReturnValue(defaultEntitlements)
@@ -123,45 +133,21 @@ describe('CookbooksPage', () => {
     })
 
     it('disables New Cookbook button when home-cook is at cookbook limit', () => {
-      mockUseTierEntitlements.mockReturnValue({
-        tier: 'home-cook',
-        canCreatePrivate: false,
-        canImport: false,
-        recipeLimit: 10,
-        cookbookLimit: 1,
-      })
-      mockUseQuery.mockReturnValue({
-        data: [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }],
-        isLoading: false,
-      })
+      mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
+      mockUseQuery.mockReturnValue({ data: oneCookbook, isLoading: false })
       renderPage()
       expect(screen.getByRole('button', { name: /new cookbook/i })).toBeDisabled()
     })
 
     it('shows inline TierWall when at cookbook limit', () => {
-      mockUseTierEntitlements.mockReturnValue({
-        tier: 'home-cook',
-        canCreatePrivate: false,
-        canImport: false,
-        recipeLimit: 10,
-        cookbookLimit: 1,
-      })
-      mockUseQuery.mockReturnValue({
-        data: [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }],
-        isLoading: false,
-      })
+      mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
+      mockUseQuery.mockReturnValue({ data: oneCookbook, isLoading: false })
       renderPage()
       expect(screen.getAllByText(/limit/i).length).toBeGreaterThan(0)
     })
 
     it('enables New Cookbook button when below limit', () => {
-      mockUseTierEntitlements.mockReturnValue({
-        tier: 'home-cook',
-        canCreatePrivate: false,
-        canImport: false,
-        recipeLimit: 10,
-        cookbookLimit: 1,
-      })
+      mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
       mockUseQuery.mockReturnValue({ data: [], isLoading: false })
       renderPage()
       expect(screen.getByRole('button', { name: /new cookbook/i })).not.toBeDisabled()
