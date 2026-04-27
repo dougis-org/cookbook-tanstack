@@ -13,9 +13,14 @@ function getTransporter() {
       throw new Error(msg);
     }
     const rawInboxId = process.env.MAILTRAP_INBOX_ID;
-    const testInboxId = rawInboxId ? parseInt(rawInboxId, 10) : undefined;
-    if (testInboxId !== undefined && !Number.isFinite(testInboxId)) {
-      throw new Error(`MAILTRAP_INBOX_ID "${rawInboxId}" is not a valid integer`);
+    let testInboxId: number | undefined;
+    if (rawInboxId !== undefined) {
+      if (!/^[1-9]\d*$/.test(rawInboxId)) {
+        throw new Error(
+          `MAILTRAP_INBOX_ID "${rawInboxId}" must be a valid positive integer`,
+        );
+      }
+      testInboxId = Number(rawInboxId);
     }
     transporter = nodemailer.createTransport(
       MailtrapTransport({ token: MAILTRAP_API_TOKEN, testInboxId }),
@@ -23,6 +28,7 @@ function getTransporter() {
   }
   return transporter;
 }
+
 export interface SendEmailOptions {
   to: string;
   subject: string;

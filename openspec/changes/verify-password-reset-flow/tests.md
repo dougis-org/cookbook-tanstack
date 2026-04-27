@@ -30,7 +30,7 @@ For each task in `tasks.md`:
   - Assert mismatched passwords block submission
   - Assert success navigates to `/auth/login`
   - Assert Better Auth errors render to the user
-- [ ] **Task group 3 / Spec: Password Reset Completion Verification**
+- [ ] **Task group 3 / Spec: Password Reset Route Token Handling Verification**
   - Add `src/routes/auth/__tests__/-reset-password.test.tsx`
   - Assert missing token renders the invalid-token state
   - Assert valid token renders the form
