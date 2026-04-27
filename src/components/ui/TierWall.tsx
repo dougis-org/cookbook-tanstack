@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 
 type TierWallReason = 'count-limit' | 'private-content' | 'import'
@@ -24,40 +25,73 @@ const MESSAGES: Record<TierWallReason, { title: string; body: string }> = {
 }
 
 const UpgradeLink = () => (
-  <Link to="/pricing" className="underline font-medium text-cyan-400 hover:text-cyan-300">
+  <Link to="/pricing" className="underline font-medium text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]">
     Upgrade
   </Link>
 )
 
-export default function TierWall({ reason, display, onDismiss }: TierWallProps) {
-  const { title, body } = MESSAGES[reason]
+function InlineTierWall({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="text-sm text-amber-400 bg-amber-950/40 rounded-md px-3 py-2 border border-amber-800/50">
+      <span className="font-medium">{title}.</span>{' '}
+      {body}{' '}
+      <UpgradeLink /> to unlock more.
+    </div>
+  )
+}
 
-  if (display === 'inline') {
-    return (
-      <div className="text-sm text-amber-400 bg-amber-950/40 rounded-md px-3 py-2 border border-amber-800/50">
-        <span className="font-medium">{title}.</span>{' '}
-        {body}{' '}
-        <UpgradeLink /> to unlock more.
-      </div>
-    )
-  }
+function ModalTierWall({ title, body, onDismiss }: { title: string; body: string; onDismiss?: () => void }) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement
+    modalRef.current?.focus()
+    return () => {
+      previousFocusRef.current?.focus()
+    }
+  }, [])
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onDismiss?.()
+    }
+  }, [onDismiss])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
-        <h2 className="text-lg font-bold text-white mb-2">{title}</h2>
-        <p className="text-slate-300 mb-6">{body}</p>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={(e) => e.target === e.currentTarget && onDismiss?.()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tier-wall-title"
+      aria-describedby="tier-wall-description"
+    >
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        className="bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl outline-none"
+      >
+        <h2 id="tier-wall-title" className="text-lg font-bold text-[var(--theme-fg)] mb-2">{title}</h2>
+        <p id="tier-wall-description" className="text-[var(--theme-fg-muted)] mb-6">{body}</p>
         <div className="flex gap-3 justify-end">
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-          >
-            Not now
-          </button>
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={onDismiss}
+              className="px-4 py-2 rounded-lg text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)] transition-colors"
+            >
+              Not now
+            </button>
+          )}
           <Link
             to="/pricing"
-            className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium transition-colors"
+            className="px-4 py-2 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-medium transition-colors"
           >
             Upgrade
           </Link>
@@ -65,4 +99,11 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
       </div>
     </div>
   )
+}
+
+export default function TierWall({ reason, display, onDismiss }: TierWallProps) {
+  const { title, body } = MESSAGES[reason]
+  return display === 'inline'
+    ? <InlineTierWall title={title} body={body} />
+    : <ModalTierWall title={title} body={body} onDismiss={onDismiss} />
 }

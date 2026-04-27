@@ -68,7 +68,7 @@ const homeCookEntitlements = {
   cookbookLimit: 1,
 }
 
-const oneCookbook = [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }]
+const oneCookbook = [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0, userId: 'user-1' }]
 
 describe('CookbooksPage', () => {
   beforeEach(() => {

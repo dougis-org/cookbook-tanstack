@@ -44,6 +44,9 @@ vi.mock('@/lib/trpc', () => {
       recipes: {
         list: { queryOptions: (opts?: unknown) => ({ queryKey: ['recipes', opts] }) },
       },
+      usage: {
+        getOwned: { queryOptions: (opts?: unknown) => ({ queryKey: ['usage', 'getOwned', opts] }) },
+      },
       classifications: { list: { queryOptions: empty } },
       sources: { list: { queryOptions: empty } },
       meals: { list: { queryOptions: empty } },
@@ -74,6 +77,9 @@ function setRecipeCount(total: number) {
     const key = JSON.stringify((opts as { queryKey: unknown[] }).queryKey)
     if (key.includes('recipes')) {
       return { data: { items: [], total, page: 1, pageSize: 20 }, isLoading: false }
+    }
+    if (key.includes('usage')) {
+      return { data: { recipeCount: total, cookbookCount: 0 }, isLoading: false }
     }
     return { data: [], isLoading: false }
   })

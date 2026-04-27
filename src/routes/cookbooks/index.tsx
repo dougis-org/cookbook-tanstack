@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
+import { useTierWallState } from '@/hooks/useTierWallState'
 import { trpc } from '@/lib/trpc'
 import { getTierWallReason } from '@/lib/trpc-error'
 import PageLayout from '@/components/layout/PageLayout'
@@ -20,7 +21,10 @@ export function CookbooksPage() {
   const { isLoggedIn, userId } = useAuth()
   const { cookbookLimit } = useTierEntitlements()
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
-  const atCookbookLimit = isLoggedIn && cookbooks.length >= cookbookLimit
+  const ownedCookbookCount = isLoggedIn && userId
+    ? cookbooks.filter((cb) => cb.userId === userId && !cb.hiddenByTier).length
+    : 0
+  const atCookbookLimit = isLoggedIn && ownedCookbookCount >= cookbookLimit
 
   return (
     <PageLayout role="public-content" title="Cookbooks" description="Your recipe collections">
@@ -87,8 +91,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
+  const { serverError: error, tierWallReason, clearErrors, handleServerError, handleTierWallError } = useTierWallState()
 
   const createMutation = useMutation(
     trpc.cookbooks.create.mutationOptions({
@@ -99,9 +102,9 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
       onError: (err) => {
         const tierWall = getTierWallReason(err)
         if (tierWall) {
-          setTierWallReason(tierWall)
+          handleTierWallError(tierWall)
         } else {
-          setError(err.message)
+          handleServerError(err.message)
         }
       },
     }),
@@ -110,7 +113,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
-    setError(null)
+    clearErrors()
     createMutation.mutate({ name: name.trim(), description: description.trim() || undefined, isPublic })
   }
 
@@ -153,7 +156,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
       </form>
 
       {tierWallReason && (
-        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
+        <TierWall reason={tierWallReason} display="modal" onDismiss={clearErrors} />
       )}
     </div>
   )

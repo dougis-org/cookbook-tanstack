@@ -282,6 +282,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   async function onSubmit(values: RecipeFormValues) {
     setSubmitError(null)
+    setTierWallReason(null)
     const payload = toPayload(values)
     const taxonomyIds = {
       mealIds: selectedMealIds.length ? selectedMealIds : undefined,
@@ -303,8 +304,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       const tierWall = getTierWallReason(error)
       if (tierWall) {
         setTierWallReason(tierWall)
+        setSubmitError(null)
       } else {
         setSubmitError(error instanceof Error ? error.message : "Failed to save recipe. Please try again.")
+        setTierWallReason(null)
       }
     }
   }
@@ -522,7 +525,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
 
           {/* Public toggle */}
-          {canCreatePrivate && (
+          {(canCreatePrivate || isEdit) && (
             <div className="flex items-center gap-3">
               <input
                 id="isPublic"

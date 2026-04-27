@@ -63,14 +63,12 @@ export function RecipesPage() {
     hasImage,
   } = Route.useSearch()
 
-  const { isLoggedIn, userId } = useAuth()
+const { isLoggedIn, userId } = useAuth()
   const { recipeLimit, canImport } = useTierEntitlements()
 
-  const { data: myCountData } = useQuery(
-    trpc.recipes.list.queryOptions({ userId: userId || undefined, pageSize: 1 }),
-  )
-  const myRecipeCount = myCountData?.total ?? 0
-  const atRecipeLimit = isLoggedIn && myRecipeCount >= recipeLimit
+  const { data: ownedUsageData } = useQuery(trpc.usage.getOwned.queryOptions())
+  const myRecipeCount = ownedUsageData?.recipeCount ?? 0
+  const atRecipeLimit = isLoggedIn && ownedUsageData && myRecipeCount >= recipeLimit
 
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
