@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T18:12:41.711Z
-> Files: 574 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T21:36:21.680Z
+> Files: 573 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
 
@@ -785,7 +785,7 @@
 
 - `design.md` — Context (~1959 tok)
 - `proposal.md` — GitHub Issues (~1087 tok)
-- `tasks.md` — Tasks (~1364 tok)
+- `tasks.md` — Tasks (~1388 tok)
 - `tests.md` — Tests (~958 tok)
 
 ## openspec/changes/fix-pricing-tier-cta/specs/
@@ -833,8 +833,7 @@
 - `change-tier.tsx` — Route (~262 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
-- `pricing.tsx` — Route (~1180 tok)
-- `upgrade.tsx` — Route (~257 tok)
+- `pricing.tsx` — Route (~1203 tok)
 
 ## src/routes/__tests__/
 

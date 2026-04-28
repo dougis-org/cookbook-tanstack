@@ -22,7 +22,8 @@ function TierCard({ tier, currentTier }: TierCardProps) {
   const limits = TIER_LIMITS[tier]
   const isTopTier = tier === "executive-chef"
   const isCurrent = tier === currentTier
-  // anonymous at index 0 of TIER_ORDER; unauthenticated sessions have currentTier="anonymous"
+  // PricingPage only sets currentTier="anonymous" when session is null, so this
+  // is safe: an authenticated user with a bad tier falls back to "home-cook", not "anonymous"
   const isAnon = currentTier === "anonymous"
 
   function renderCTA() {
@@ -114,8 +115,8 @@ export function PricingPage() {
 
   return (
     <PageLayout role="public-marketing" title="Pricing" description="Compare plans and find the right fit.">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 my-8">
-        {TIER_ORDER.filter(t => t !== 'anonymous').map((tier) => (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 my-8">
+        {TIER_ORDER.filter(t => t !== "anonymous").map((tier) => (
           <TierCard
             key={tier}
             tier={tier}
