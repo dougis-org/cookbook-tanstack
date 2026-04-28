@@ -15,16 +15,18 @@ export const Route = createFileRoute("/pricing")({ component: PricingPage })
 
 interface TierCardProps {
   tier: EntitlementTier
-  isCurrent: boolean
-  isAnon: boolean
+  currentTier: EntitlementTier
 }
 
-function TierCard({ tier, isCurrent, isAnon }: TierCardProps) {
+function TierCard({ tier, currentTier }: TierCardProps) {
   const limits = TIER_LIMITS[tier]
   const isTopTier = tier === "executive-chef"
+  const isCurrent = tier === currentTier
+  // PricingPage only sets currentTier="anonymous" when session is null, so this
+  // is safe: an authenticated user with a bad tier falls back to "home-cook", not "anonymous"
+  const isAnon = currentTier === "anonymous"
 
   function renderCTA() {
-    if (tier === "anonymous") return null
     if (isTopTier) {
       return (
         <p className="text-sm font-medium text-[var(--theme-fg-muted)] mt-4">
@@ -32,6 +34,7 @@ function TierCard({ tier, isCurrent, isAnon }: TierCardProps) {
         </p>
       )
     }
+    if (isCurrent) return null
     if (isAnon) {
       return (
         <Link
@@ -42,12 +45,23 @@ function TierCard({ tier, isCurrent, isAnon }: TierCardProps) {
         </Link>
       )
     }
+    if (TIER_ORDER.indexOf(tier) > TIER_ORDER.indexOf(currentTier)) {
+      return (
+        <Link
+          to="/change-tier"
+          className="mt-4 inline-block rounded-md border border-[var(--theme-accent)] px-4 py-2 text-sm font-semibold text-[var(--theme-accent)] hover:bg-[var(--theme-accent)]/10"
+        >
+          Upgrade
+        </Link>
+      )
+    }
+    // intentionally de-emphasized vs upgrade
     return (
       <Link
-        to="/upgrade"
-        className="mt-4 inline-block rounded-md border border-[var(--theme-accent)] px-4 py-2 text-sm font-semibold text-[var(--theme-accent)] hover:bg-[var(--theme-accent)]/10"
+        to="/change-tier"
+        className="mt-4 inline-block rounded-md border border-[var(--theme-border)] px-4 py-2 text-sm font-semibold text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface)]"
       >
-        Upgrade
+        Downgrade
       </Link>
     )
   }
@@ -101,13 +115,12 @@ export function PricingPage() {
 
   return (
     <PageLayout role="public-marketing" title="Pricing" description="Compare plans and find the right fit.">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 my-8">
-        {TIER_ORDER.map((tier) => (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 my-8">
+        {TIER_ORDER.filter(t => t !== "anonymous").map((tier) => (
           <TierCard
             key={tier}
             tier={tier}
-            isCurrent={currentTier === tier}
-            isAnon={!session}
+            currentTier={currentTier}
           />
         ))}
       </div>

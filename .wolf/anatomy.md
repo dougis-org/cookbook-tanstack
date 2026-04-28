@@ -1,7 +1,12 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-24T21:43:19.724Z
-> Files: 562 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T21:36:21.680Z
+> Files: 573 tracked | Anatomy hits: 0 | Misses: 0
+
+## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
+
+- `feedback_native_tools.md` (~173 tok)
+- `MEMORY.md` — Memory Index (~38 tok)
 
 ## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
 
@@ -776,6 +781,19 @@
 
 - `spec.md` — ADDED Requirements (~1678 tok)
 
+## openspec/changes/fix-pricing-tier-cta/
+
+- `design.md` — Context (~1959 tok)
+- `proposal.md` — GitHub Issues (~1087 tok)
+- `tasks.md` — Tasks (~1388 tok)
+- `tests.md` — Tests (~958 tok)
+
+## openspec/changes/fix-pricing-tier-cta/specs/
+
+- `anonymous-card.md` — ADDED Requirements (~541 tok)
+- `cta-logic.md` — ADDED Requirements (~890 tok)
+- `route-rename.md` — ADDED Requirements (~470 tok)
+
 ## openspec/changes/fix-themed-boot-loader-css-gate/
 
 - `tasks.md` — Tasks (~2018 tok)
@@ -783,6 +801,10 @@
 ## openspec/changes/revamp-home-page-experience/
 
 - `tasks.md` — Tasks (~1672 tok)
+
+## openspec/changes/verify-password-reset-flow/specs/password-reset-validation/
+
+- `spec.md` — ADDED Requirements (~1205 tok)
 
 ## openspec/specs/fouc-prevention/
 
@@ -808,15 +830,16 @@
 
 - `__root.tsx` — Route (~1256 tok)
 - `account.tsx` — Route (~1481 tok)
+- `change-tier.tsx` — Route (~262 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
-- `pricing.tsx` — Route (~1018 tok)
-- `upgrade.tsx` — Route (~257 tok)
+- `pricing.tsx` — Route (~1203 tok)
 
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
-- `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+- `-change-tier.test.tsx` — link (~256 tok)
+- `-pricing.test.tsx` — mockUseAuth (~3282 tok)
 
 ## src/server/trpc/
 
