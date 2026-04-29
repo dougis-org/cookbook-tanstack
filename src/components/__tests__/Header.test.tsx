@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, within } from "@testing-library/react"
 
 const mockNavigate = vi.fn()
 let mockAuthResult: { session: unknown; isPending: boolean } = { session: null, isPending: false }
@@ -386,15 +386,16 @@ describe("Header sidebar Pricing link", () => {
     mockAuthResult = { session: { user: { id: "user-1", email: "test@example.com", name: "Test User" } }, isPending: false }
     render(<Header />)
     fireEvent.click(screen.getByLabelText("Open menu"))
-    const navLinks = screen.getAllByRole("link")
-    const cookbooksIndex = navLinks.findIndex(link => link.textContent?.includes("Cookbooks"))
-    const pricingIndex = navLinks.findIndex(link => link.textContent?.includes("Pricing"))
-    const newRecipeIndex = navLinks.findIndex(link => link.textContent?.includes("New Recipe"))
-    expect(cookbooksIndex).toBeGreaterThan(-1)
-    expect(pricingIndex).toBeGreaterThan(-1)
-    expect(newRecipeIndex).toBeGreaterThan(-1)
-    expect(cookbooksIndex).toBeLessThan(pricingIndex)
-    expect(pricingIndex).toBeLessThan(newRecipeIndex)
+    // Scope query to sidebar nav element
+    const sidebar = screen.getByRole("navigation")
+    const withinSidebar = within(sidebar)
+    const navLinks = withinSidebar.getAllByRole("link")
+    const cookbooksLink = withinSidebar.getByRole("link", { name: /cookbooks/i })
+    const pricingLink = withinSidebar.getByRole("link", { name: /pricing/i })
+    const newRecipeLink = withinSidebar.getByRole("link", { name: /new recipe/i })
+    const navLinkArray = [cookbooksLink, pricingLink, newRecipeLink]
+    expect(navLinks.indexOf(cookbooksLink)).toBeLessThan(navLinks.indexOf(pricingLink))
+    expect(navLinks.indexOf(pricingLink)).toBeLessThan(navLinks.indexOf(newRecipeLink))
   })
 
   it("Pricing link click closes the sidebar menu", () => {
