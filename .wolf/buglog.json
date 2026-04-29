@@ -372,6 +372,35 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-23T23:37:48.133Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-04-29T23:20:10.690Z",
+      "error_message": "Incorrect value in code",
+      "file": "package.json",
+      "root_cause": "Had \"5.96.2\"",
+      "fix": "Changed to \"5.100.6\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-29T23:20:16.024Z"
     }
   ]
-}
+},
+  {
+    "id": "bug-025",
+    "timestamp": "2026-04-29T23:20:00.000Z",
+    "error_message": "npm ci fails in Docker node:24-alpine due to peer dependency hoisting differences between npm 10 (Node 22 CI) and npm 11 (Node 24 Docker)",
+    "file": ".github/workflows/build-and-test.yml, package.json, package-lock.json",
+    "root_cause": "CI runner used Node 22/npm 10 to generate lockfile, but Docker uses Node 24/npm 11 with stricter peer dep hoisting. npm 11 requires @tanstack/query-core at top level, npm 10 nested it and CI 'healed' the lockfile",
+    "fix": "Upgraded CI Node version from 22 to 24, upgraded @tanstack/react-query to 5.100.6, aligned TanStack packages to latest compatible versions, exact-pinned @trpc/* packages, regenerated lockfile with npm 11",
+    "tags": ["npm", "ci", "docker", "dependency-mismatch", "fly-io"],
+    "related_bugs": [],
+    "occurrences": 1,
+    "last_seen": "2026-04-29T23:20:00.000Z"
+  }
+  ]

@@ -209,3 +209,36 @@
 | 16:19 | Edited src/routes/cookbooks/index.tsx | inline fix | ~24 |
 | 16:19 | Edited src/routes/import/index.tsx | inline fix | ~21 |
 | 16:20 | Edited src/routes/import/index.tsx | inline fix | ~24 |
+
+## Session: 2026-04-29 15:30
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:10 | Created openspec/changes/fix-fly-deploy-npm-mismatch/proposal.md | — | ~1325 |
+| 16:11 | Created openspec/changes/fix-fly-deploy-npm-mismatch/design.md | — | ~2617 |
+| 16:11 | Created openspec/changes/fix-fly-deploy-npm-mismatch/specs/deploy/deploy-lockfile-compat.md | — | ~1247 |
+| 16:12 | Created openspec/changes/fix-fly-deploy-npm-mismatch/specs/deploy/dependency-upgrade-compat.md | — | ~1210 |
+| 16:12 | Created openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | — | ~1747 |
+| 16:13 | Created openspec/changes/fix-fly-deploy-npm-mismatch/tests.md | — | ~1076 |
+| 16:13 | Session end: 6 writes across 6 files (proposal.md, design.md, deploy-lockfile-compat.md, dependency-upgrade-compat.md, tasks.md) | 3 reads | ~12406 tok |
+| 16:19 | Session end: 6 writes across 6 files (proposal.md, design.md, deploy-lockfile-compat.md, dependency-upgrade-compat.md, tasks.md) | 3 reads | ~12406 tok |
+
+## Session: 2026-04-29 16:19
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:19 | Edited .github/workflows/build-and-test.yml | 4→4 lines | ~31 |
+| 16:20 | Edited package.json | inline fix | ~12 |
+| 16:20 | Edited package.json | 5→5 lines | ~66 |
+| 16:20 | Edited package.json | 3→3 lines | ~31 |
+| 16:20 | Edited package.json | 5→5 lines | ~66 |
+| 16:32 | Edited openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | reduced (-7 lines) | ~626 |
+| 16:32 | Edited openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | 10→10 lines | ~323 |
+
+## Session: 2026-04-29 23:20
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 23:20 | Fixed Fly.io npm mismatch: Node 24 CI, TanStack pkg alignment, tRPC exact-pin, lockfile regen | .github/workflows/build-and-test.yml, package.json, package-lock.json | Docker npm ci ✅, build ✅, tests 1186/1187 ✅ (pre-existing failure) | 12000 |
+| 23:31 | Created PR #408 with comprehensive fix, CI checks running | openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | PR open, awaiting CI completion | 2000 |
+| 23:35 | Session end: 6 writes across multiple files | — | Monitoring CI for completion, will enable auto-merge when checks pass | 2000 |
