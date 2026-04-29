@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, within } from "@testing-library/react"
 
 const mockNavigate = vi.fn()
 let mockAuthResult: { session: unknown; isPending: boolean } = { session: null, isPending: false }
@@ -350,5 +350,63 @@ describe("Header theme dropdown", () => {
 
     expect(document.documentElement.className).toBe("light-cool")
     expect(screen.getByRole("button", { name: "OK" })).toBeInTheDocument()
+  })
+})
+
+describe("Header sidebar Pricing link", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuthResult = { session: null, isPending: false }
+    mockCurrentTheme = "dark"
+    mockSetTheme = vi.fn()
+    document.documentElement.className = "dark"
+  })
+
+  it("shows Pricing link for unauthenticated user", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    expect(screen.getByRole("link", { name: /pricing/i })).toBeInTheDocument()
+  })
+
+  it("shows Pricing link for authenticated user", () => {
+    mockAuthResult = { session: { user: { id: "user-1", email: "test@example.com", name: "Test User" } }, isPending: false }
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    expect(screen.getByRole("link", { name: /pricing/i })).toBeInTheDocument()
+  })
+
+  it("Pricing link navigates to /pricing", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    const pricingLink = screen.getByRole("link", { name: /pricing/i })
+    expect(pricingLink).toHaveAttribute("href", "/pricing")
+  })
+
+  it("Pricing link appears between Cookbooks and New Recipe links", () => {
+    mockAuthResult = { session: { user: { id: "user-1", email: "test@example.com", name: "Test User" } }, isPending: false }
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    // Scope query to sidebar nav element
+    const sidebar = screen.getByRole("navigation")
+    const withinSidebar = within(sidebar)
+    const navLinks = withinSidebar.getAllByRole("link")
+    const cookbooksLink = withinSidebar.getByRole("link", { name: /cookbooks/i })
+    const pricingLink = withinSidebar.getByRole("link", { name: /pricing/i })
+    const newRecipeLink = withinSidebar.getByRole("link", { name: /new recipe/i })
+    const navLinkArray = [cookbooksLink, pricingLink, newRecipeLink]
+    expect(navLinks.indexOf(cookbooksLink)).toBeLessThan(navLinks.indexOf(pricingLink))
+    expect(navLinks.indexOf(pricingLink)).toBeLessThan(navLinks.indexOf(newRecipeLink))
+  })
+
+  it("Pricing link click closes the sidebar menu", () => {
+    render(<Header />)
+    // Open sidebar first
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    // Verify sidebar is open
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).toBeInTheDocument()
+    // Click the Pricing link
+    fireEvent.click(screen.getByRole("link", { name: /pricing/i }))
+    // Verify sidebar is closed
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
   })
 })

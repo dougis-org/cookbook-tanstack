@@ -13,6 +13,7 @@ import {
   LogOut,
   User,
   ChevronDown,
+  DollarSign,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
@@ -413,9 +414,22 @@ export default function Header() {
           >
             <BookOpen size={20} />
             <span className="font-medium">Cookbooks</span>
-          </Link>
+           </Link>
 
-          {session && (
+           <Link
+             to="/pricing"
+             onClick={() => setIsOpen(false)}
+             className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--theme-surface-hover)] transition-colors mb-2"
+             activeProps={{
+               className:
+                 'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
+             }}
+           >
+             <DollarSign size={20} />
+             <span className="font-medium">Pricing</span>
+           </Link>
+
+           {session && (
             <Link
               to="/recipes/new"
               onClick={() => setIsOpen(false)}
