@@ -282,9 +282,19 @@ describe("Pricing page sidebar active state", () => {
   })
 
   it("sidebar Pricing link has active styling when on /pricing page", () => {
-    // This test verifies the sidebar rendered with Header component
     // The active state is tested in Header.test.tsx
-    // since the sidebar is part of the Header component
-    expect(true).toBe(true)
+    // since the sidebar is part of the Header component rendered in __root.tsx
+    // This test confirms the pricing page itself renders correctly
+    render(<PricingPage />)
+    // Pricing page should render tier cards
+    expect(screen.getByText("Home Cook")).toBeInTheDocument()
+  })
+
+  it("Pricing page renders correctly for anonymous users", () => {
+    // Verify that the pricing page renders tier cards for anonymous users
+    render(<PricingPage />)
+    // Should show 4 tier cards (excluding anonymous)
+    const tierCards = screen.getAllByTestId(/tier-card-/)
+    expect(tierCards.length).toBe(4)
   })
 })

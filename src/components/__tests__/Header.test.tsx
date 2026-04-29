@@ -396,4 +396,16 @@ describe("Header sidebar Pricing link", () => {
     expect(cookbooksIndex).toBeLessThan(pricingIndex)
     expect(pricingIndex).toBeLessThan(newRecipeIndex)
   })
+
+  it("Pricing link click closes the sidebar menu", () => {
+    render(<Header />)
+    // Open sidebar first
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    // Verify sidebar is open
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).toBeInTheDocument()
+    // Click the Pricing link
+    fireEvent.click(screen.getByRole("link", { name: /pricing/i }))
+    // Verify sidebar is closed
+    expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
+  })
 })
