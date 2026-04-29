@@ -92,8 +92,9 @@ export async function enforceContentLimit(
 
   if (count >= limit) {
     throw new TRPCError({
-      code: "FORBIDDEN",
+      code: "PAYMENT_REQUIRED",
       message: `${resource === "recipes" ? "Recipe" : "Cookbook"} limit reached for your plan`,
+      cause: { type: 'tier-wall', reason: 'count-limit' },
     });
   }
 }

@@ -824,12 +824,12 @@ describe("visibility enforcement", () => {
   });
 
   describe("update", () => {
-    it("Prep Cook updates cookbook to private -> rejected with FORBIDDEN", async () => {
+    it("Prep Cook updates cookbook to private -> rejected with PAYMENT_REQUIRED", async () => {
       await withCleanDb(async () => {
         const user = await seedUser();
         const cb = await seedCookbook(user.id, { isPublic: true });
         const caller = await makeAuthCaller(user.id, { tier: "prep-cook" });
-        await expect(caller.cookbooks.update({ id: cb.id, isPublic: false })).rejects.toThrow(/support private cookbooks/i);
+        await expect(caller.cookbooks.update({ id: cb.id, isPublic: false })).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
         const persisted = await Cookbook.findById(cb.id).lean();
         expect(persisted?.isPublic).toBe(true);
       });
@@ -873,10 +873,10 @@ async function withHomeCookCaller(
 }
 
 describe("cookbooks.create — tier limit enforcement", () => {
-  it("throws FORBIDDEN when home-cook user already has 1 cookbook (at limit)", async () => {
+  it("throws PAYMENT_REQUIRED when home-cook user already has 1 cookbook (at limit)", async () => {
     await withHomeCookCaller(
       (owner) => seedCookbook(owner.id).then(() => undefined),
-      (caller) => expect(caller.cookbooks.create({ name: "Second Cookbook" })).rejects.toMatchObject({ code: "FORBIDDEN" }),
+      (caller) => expect(caller.cookbooks.create({ name: "Second Cookbook" })).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" }),
     );
   });
 

@@ -87,4 +87,19 @@ describe("CookbookFields", () => {
     renderFields()
     expect(screen.getByPlaceholderText("Optional description")).toHaveAttribute("maxLength", "500")
   })
+
+  it("hides public checkbox when canSetPrivate is false", () => {
+    renderFields({ canSetPrivate: false })
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument()
+  })
+
+  it("shows public checkbox when canSetPrivate is true", () => {
+    renderFields({ canSetPrivate: true })
+    expect(screen.getByRole("checkbox")).toBeInTheDocument()
+  })
+
+  it("shows public checkbox by default (canSetPrivate undefined)", () => {
+    renderFields()
+    expect(screen.getByRole("checkbox")).toBeInTheDocument()
+  })
 })

@@ -348,8 +348,9 @@ export const cookbooksRouter = router({
         !canCreatePrivate(ctx.user.tier as EntitlementTier)
       ) {
         throw new TRPCError({
-          code: "FORBIDDEN",
+          code: "PAYMENT_REQUIRED",
           message: "Your current tier does not support private cookbooks.",
+          cause: { type: 'tier-wall', reason: 'private-content' },
         });
       }
 

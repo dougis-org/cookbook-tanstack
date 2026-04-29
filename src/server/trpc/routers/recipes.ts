@@ -293,8 +293,9 @@ export const recipesRouter = router({
         !canCreatePrivate(ctx.user.tier)
       ) {
         throw new TRPCError({
-          code: "FORBIDDEN",
+          code: "PAYMENT_REQUIRED",
           message: "Your current tier does not support private recipes.",
+          cause: { type: 'tier-wall', reason: 'private-content' },
         });
       }
 
@@ -389,8 +390,9 @@ export const recipesRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {
         throw new TRPCError({
-          code: "FORBIDDEN",
+          code: "PAYMENT_REQUIRED",
           message: "Recipe import requires Sous Chef or higher.",
+          cause: { type: 'tier-wall', reason: 'import' },
         });
       }
 

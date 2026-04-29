@@ -16,6 +16,16 @@ const {
   mockFetch: vi.fn(),
 }))
 
+vi.mock('@/hooks/useTierEntitlements', () => ({
+  useTierEntitlements: () => ({
+    tier: 'sous-chef',
+    canCreatePrivate: true,
+    canImport: true,
+    recipeLimit: 500,
+    cookbookLimit: 25,
+  }),
+}))
+
 const mockNavigate = vi.fn()
 const mockRouterBack = vi.fn()
 const mockBlockerProceed = vi.fn()
@@ -380,6 +390,52 @@ describe("RecipeForm", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/name is required/i)).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe("PAYMENT_REQUIRED error handling", () => {
+    it("shows TierWall modal when recipe create returns count-limit tier wall", async () => {
+      const tierError = Object.assign(new Error("Recipe limit reached"), {
+        data: { appError: { type: 'tier-wall', reason: 'count-limit' } },
+      })
+      mockCreateMutationFn.mockRejectedValue(tierError)
+      renderWithProviders(<RecipeForm />)
+
+      fireEvent.change(screen.getByLabelText(/recipe name/i), { target: { value: "New Recipe" } })
+      fireEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Plan limit reached')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+      })
+    })
+
+    it("does not show generic submit error for tier-wall errors", async () => {
+      const tierError = Object.assign(new Error("Recipe limit reached"), {
+        data: { appError: { type: 'tier-wall', reason: 'count-limit' } },
+      })
+      mockCreateMutationFn.mockRejectedValue(tierError)
+      renderWithProviders(<RecipeForm />)
+
+      fireEvent.change(screen.getByLabelText(/recipe name/i), { target: { value: "New Recipe" } })
+      fireEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Plan limit reached')).toBeInTheDocument()
+      })
+      expect(screen.queryByText(/recipe limit reached/i)).not.toBeInTheDocument()
+    })
+
+    it("shows generic submit error for non-tier errors", async () => {
+      mockCreateMutationFn.mockRejectedValue(new Error("Network error"))
+      renderWithProviders(<RecipeForm />)
+
+      fireEvent.change(screen.getByLabelText(/recipe name/i), { target: { value: "New Recipe" } })
+      fireEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText(/network error/i)).toBeInTheDocument()
       })
     })
   })

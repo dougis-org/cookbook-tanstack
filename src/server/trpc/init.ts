@@ -4,7 +4,38 @@ import type { Context } from "./context"
 import type { UserTier } from "@/types/user"
 import { hasAtLeastTier } from "@/types/user"
 
-const t = initTRPC.context<Context>().create({ transformer: superjson })
+export type AppErrorCause =
+  | { type: 'tier-wall'; reason: 'count-limit' | 'private-content' | 'import' }
+  | { type: 'ownership' }
+
+const TIER_WALL_REASONS = new Set(['count-limit', 'private-content', 'import'])
+
+export function extractAppError(cause: unknown): AppErrorCause | null {
+  if (cause === null || cause === undefined || typeof cause !== 'object' || cause instanceof Error) {
+    return null
+  }
+  const c = cause as Record<string, unknown>
+  if (c.type === 'tier-wall' && typeof c.reason === 'string' && TIER_WALL_REASONS.has(c.reason)) {
+    return { type: 'tier-wall', reason: c.reason as 'count-limit' | 'private-content' | 'import' }
+  }
+  if (c.type === 'ownership') {
+    return { type: 'ownership' }
+  }
+  return null
+}
+
+const t = initTRPC.context<Context>().create({
+  transformer: superjson,
+  errorFormatter({ shape, error }) {
+    return {
+      ...shape,
+      data: {
+        ...shape.data,
+        appError: extractAppError(error.cause),
+      },
+    }
+  },
+})
 
 export const router = t.router
 export const publicProcedure = t.procedure

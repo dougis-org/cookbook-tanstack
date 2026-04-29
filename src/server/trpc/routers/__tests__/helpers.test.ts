@@ -62,12 +62,12 @@ async function withECLCtx(cb: (ecl: ECL, userId: string) => Promise<void>) {
 }
 
 describe("enforceContentLimit — recipes", () => {
-  it("throws FORBIDDEN when home-cook user is at the 10-recipe limit", async () => {
+  it("throws PAYMENT_REQUIRED when home-cook user is at the 10-recipe limit", async () => {
     await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 10; i++) {
         await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(ecl(userId, "home-cook", false, "recipes")).rejects.toMatchObject({ code: "FORBIDDEN" })
+      await expect(ecl(userId, "home-cook", false, "recipes")).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" })
     })
   })
 
@@ -109,21 +109,21 @@ describe("enforceContentLimit — recipes", () => {
     })
   })
 
-  it("defaults missing tier to home-cook and throws FORBIDDEN at 10 recipes", async () => {
+  it("defaults missing tier to home-cook and throws PAYMENT_REQUIRED at 10 recipes", async () => {
     await withECLCtx(async (ecl, userId) => {
       for (let i = 0; i < 10; i++) {
         await new Recipe({ name: `Recipe ${i}`, userId, isPublic: true }).save()
       }
-      await expect(ecl(userId, undefined, false, "recipes")).rejects.toMatchObject({ code: "FORBIDDEN" })
+      await expect(ecl(userId, undefined, false, "recipes")).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" })
     })
   })
 })
 
 describe("enforceContentLimit — cookbooks", () => {
-  it("throws FORBIDDEN when home-cook user is at the 1-cookbook limit", async () => {
+  it("throws PAYMENT_REQUIRED when home-cook user is at the 1-cookbook limit", async () => {
     await withECLCtx(async (ecl, userId) => {
       await new Cookbook({ name: "My Cookbook", userId, isPublic: true }).save()
-      await expect(ecl(userId, "home-cook", false, "cookbooks")).rejects.toMatchObject({ code: "FORBIDDEN" })
+      await expect(ecl(userId, "home-cook", false, "cookbooks")).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" })
     })
   })
 

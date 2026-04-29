@@ -5,9 +5,11 @@ import { useMutation } from '@tanstack/react-query'
 import PageLayout from '@/components/layout/PageLayout'
 import ImportDropzone from '@/components/recipes/ImportDropzone'
 import ImportPreviewModal from '@/components/recipes/ImportPreviewModal'
+import TierWall from '@/components/ui/TierWall'
 import { importedRecipeSchema, type ImportedRecipeInput } from '@/lib/validation'
 import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { trpc } from '@/lib/trpc'
+import { getTierWallReason } from '@/lib/trpc-error'
 
 export const Route = createFileRoute('/import/')({
   component: ImportPage,
@@ -19,16 +21,25 @@ function ImportPage() {
   const [fieldErrors, setFieldErrors] = useState<string[]>([])
   const [parsedRecipe, setParsedRecipe] = useState<ImportedRecipeInput | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
 
   const importMutation = useMutation(
     trpc.recipes.import.mutationOptions({
       onSuccess: (result) => {
         setParsedRecipe(null)
         setServerError(null)
+        setTierWallReason(null)
         navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
       onError: (error) => {
-        setServerError(error.message)
+        const tierWall = getTierWallReason(error)
+        if (tierWall) {
+          setTierWallReason(tierWall)
+          setServerError(null)
+        } else {
+          setServerError(error.message)
+          setTierWallReason(null)
+        }
       },
     }),
   )
@@ -36,6 +47,7 @@ function ImportPage() {
   async function handleSelectedFile(file: File) {
     setFieldErrors([])
     setServerError(null)
+    setTierWallReason(null)
 
     try {
       const content = await file.text()
@@ -62,10 +74,13 @@ function ImportPage() {
   function handleCancel() {
     setParsedRecipe(null)
     setServerError(null)
+    setTierWallReason(null)
   }
 
   function handleConfirm() {
     if (!parsedRecipe) return
+    setServerError(null)
+    setTierWallReason(null)
     importMutation.mutate(parsedRecipe)
   }
 
@@ -99,6 +114,10 @@ function ImportPage() {
         onCancel={handleCancel}
         onConfirm={handleConfirm}
       />
+
+      {tierWallReason && (
+        <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
+      )}
     </PageLayout>
   )
 }
