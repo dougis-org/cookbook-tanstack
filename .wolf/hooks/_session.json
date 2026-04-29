@@ -6,6 +6,101 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-24T21:43:12.193Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/openspec/changes/tier-wall-ux/tasks.md": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:13:36.527Z"
+    },
+    "/home/doug/.claude/projects/-home-doug-dev-cookbook-tanstack/memory/MEMORY.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:13:48.798Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/init.ts": {
+      "count": 4,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:30.499Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/lib/trpc-error.ts": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:30.882Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/ui/TierWall.tsx": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:31.153Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/hooks/useTierEntitlements.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:33.399Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/_helpers.ts": {
+      "count": 1,
+      "tokens": 1358,
+      "first_read": "2026-04-28T23:14:33.854Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts": {
+      "count": 4,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:37.618Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/cookbooks.ts": {
+      "count": 4,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:37.854Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/ui/__tests__/TierWall.test.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:44.151Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/trpc-error.test.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:46.574Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/hooks/__tests__/useTierEntitlements.test.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:14:46.998Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/__tests__/error-formatter.test.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:15:01.095Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/recipes/index.tsx": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:15:04.375Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/index.tsx": {
+      "count": 6,
+      "tokens": 1858,
+      "first_read": "2026-04-28T23:15:04.912Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/recipes/RecipeForm.tsx": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:15:08.012Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx": {
+      "count": 4,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:15:11.566Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/Header.tsx": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:15:55.143Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/recipes.test.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-28T23:18:06.669Z"
     }
   },
   "files_written": [
@@ -14,14 +109,61 @@
       "action": "edit",
       "tokens": 261,
       "at": "2026-04-24T21:43:19.736Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/tier-wall-ux/tests.md",
+      "action": "create",
+      "tokens": 1092,
+      "at": "2026-04-28T21:57:27.867Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/tier-wall-ux/tasks.md",
+      "action": "edit",
+      "tokens": 24,
+      "at": "2026-04-28T23:13:52.215Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/components/ui/TierWall.tsx",
+      "action": "edit",
+      "tokens": 41,
+      "at": "2026-04-28T23:19:37.089Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/index.tsx",
+      "action": "edit",
+      "tokens": 112,
+      "at": "2026-04-28T23:19:41.494Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/index.tsx",
+      "action": "edit",
+      "tokens": 24,
+      "at": "2026-04-28T23:19:56.379Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+      "action": "edit",
+      "tokens": 21,
+      "at": "2026-04-28T23:19:59.562Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+      "action": "edit",
+      "tokens": 24,
+      "at": "2026-04-28T23:20:06.008Z"
     }
   ],
   "edit_counts": {
-    "openspec/changes/archive/2026-04-24-build-tier-pricing-page/tasks.md": 1
+    "openspec/changes/archive/2026-04-24-build-tier-pricing-page/tasks.md": 1,
+    "openspec/changes/tier-wall-ux/tests.md": 1,
+    "openspec/changes/tier-wall-ux/tasks.md": 1,
+    "src/components/ui/TierWall.tsx": 1,
+    "src/routes/cookbooks/index.tsx": 2,
+    "src/routes/import/index.tsx": 2
   },
-  "anatomy_hits": 0,
-  "anatomy_misses": 1,
-  "repeated_reads_warned": 0,
+  "anatomy_hits": 1,
+  "anatomy_misses": 19,
+  "repeated_reads_warned": 26,
   "cerebrum_warnings": 0,
   "stop_count": 1
 }

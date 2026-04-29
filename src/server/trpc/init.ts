@@ -11,7 +11,7 @@ export type AppErrorCause =
 const TIER_WALL_REASONS = new Set(['count-limit', 'private-content', 'import'])
 
 export function extractAppError(cause: unknown): AppErrorCause | null {
-  if (cause === null || cause === undefined || typeof cause !== 'object' || cause instanceof Error) {
+  if (cause === null || cause === undefined || typeof cause !== 'object') {
     return null
   }
   const c = cause as Record<string, unknown>

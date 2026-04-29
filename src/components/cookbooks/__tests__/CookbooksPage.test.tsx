@@ -42,6 +42,9 @@ vi.mock('@/lib/trpc', () => ({
       list: { queryOptions: () => ({ queryKey: ['cookbooks'] }) },
       create: { mutationOptions: (opts: unknown) => opts },
     },
+    usage: {
+      getOwned: { queryOptions: () => ({ queryKey: ['usage'] }) },
+    },
   },
 }))
 
@@ -73,6 +76,12 @@ const oneCookbook = [{ id: '1', name: 'My Cookbook', description: null, isPublic
 describe('CookbooksPage', () => {
   beforeEach(() => {
     mockUseTierEntitlements.mockReturnValue(defaultEntitlements)
+    // Default mock implementation to return empty/loading data based on queryKey
+    mockUseQuery.mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'cookbooks') return { data: [], isLoading: false }
+      if (queryKey[0] === 'usage') return { data: { cookbookCount: 0, recipeCount: 0 }, isLoading: false }
+      return { data: undefined, isLoading: false }
+    })
   })
 
   describe('when logged out', () => {
@@ -81,19 +90,24 @@ describe('CookbooksPage', () => {
     })
 
     it('hides the New Cookbook button', () => {
-      mockUseQuery.mockReturnValue({ data: [{ id: '1', name: 'Test', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }], isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: [{ id: '1', name: 'Test' }], isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.queryByText('New Cookbook')).not.toBeInTheDocument()
     })
 
     it('hides the Create your first cookbook button in the empty state', () => {
-      mockUseQuery.mockReturnValue({ data: [], isLoading: false })
       renderPage()
       expect(screen.queryByText('Create your first cookbook')).not.toBeInTheDocument()
     })
 
     it('still shows the cookbook list', () => {
-      mockUseQuery.mockReturnValue({ data: [{ id: '1', name: 'My Cookbook', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }], isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: [{ id: '1', name: 'My Cookbook' }], isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.getByText('My Cookbook')).toBeInTheDocument()
     })
@@ -110,13 +124,16 @@ describe('CookbooksPage', () => {
     })
 
     it('shows the New Cookbook button', () => {
-      mockUseQuery.mockReturnValue({ data: [{ id: '1', name: 'Test', description: null, isPublic: true, imageUrl: null, recipeCount: 0 }], isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: [{ id: '1', name: 'Test' }], isLoading: false }
+        if (queryKey[0] === 'usage') return { data: { cookbookCount: 0 }, isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.getByText('New Cookbook')).toBeInTheDocument()
     })
 
     it('shows the Create your first cookbook button in the empty state', () => {
-      mockUseQuery.mockReturnValue({ data: [], isLoading: false })
       renderPage()
       expect(screen.getByText('Create your first cookbook')).toBeInTheDocument()
     })
@@ -134,21 +151,33 @@ describe('CookbooksPage', () => {
 
     it('disables New Cookbook button when home-cook is at cookbook limit', () => {
       mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
-      mockUseQuery.mockReturnValue({ data: oneCookbook, isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: oneCookbook, isLoading: false }
+        if (queryKey[0] === 'usage') return { data: { cookbookCount: 1 }, isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.getByRole('button', { name: /new cookbook/i })).toBeDisabled()
     })
 
     it('shows inline TierWall when at cookbook limit', () => {
       mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
-      mockUseQuery.mockReturnValue({ data: oneCookbook, isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: oneCookbook, isLoading: false }
+        if (queryKey[0] === 'usage') return { data: { cookbookCount: 1 }, isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.getAllByText(/limit/i).length).toBeGreaterThan(0)
     })
 
     it('enables New Cookbook button when below limit', () => {
       mockUseTierEntitlements.mockReturnValue(homeCookEntitlements)
-      mockUseQuery.mockReturnValue({ data: [], isLoading: false })
+      mockUseQuery.mockImplementation(({ queryKey }) => {
+        if (queryKey[0] === 'cookbooks') return { data: [], isLoading: false }
+        if (queryKey[0] === 'usage') return { data: { cookbookCount: 0 }, isLoading: false }
+        return { data: undefined, isLoading: false }
+      })
       renderPage()
       expect(screen.getByRole('button', { name: /new cookbook/i })).not.toBeDisabled()
     })

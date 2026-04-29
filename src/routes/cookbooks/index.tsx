@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { trpc } from '@/lib/trpc'
-import { getTierWallReason } from '@/lib/trpc-error'
+import { getTierWallReason, type TierWallReason } from '@/lib/trpc-error'
 import PageLayout from '@/components/layout/PageLayout'
 import CookbookCard from '@/components/cookbooks/CookbookCard'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
@@ -19,11 +19,14 @@ export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
   const { isLoggedIn, userId } = useAuth()
   const { cookbookLimit } = useTierEntitlements()
+
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
-  const ownedCookbookCount = isLoggedIn && userId
-    ? cookbooks.filter((cb) => cb.userId === userId && !cb.hiddenByTier).length
-    : 0
-  const atCookbookLimit = isLoggedIn && ownedCookbookCount >= cookbookLimit
+  const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
+    ...trpc.usage.getOwned.queryOptions(),
+    enabled: isLoggedIn,
+  })
+  const ownedCookbookCount = ownedUsageData?.cookbookCount ?? 0
+  const atCookbookLimit = isLoggedIn && !isUsageLoading && ownedUsageData && ownedCookbookCount >= cookbookLimit
 
   return (
     <PageLayout role="public-content" title="Cookbooks" description="Your recipe collections">
@@ -91,7 +94,7 @@ function CreateCookbookForm({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<TierWallReason | null>(null)
 
   const createMutation = useMutation(
     trpc.cookbooks.create.mutationOptions({

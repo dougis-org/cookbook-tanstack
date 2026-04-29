@@ -438,6 +438,23 @@ describe("RecipeForm", () => {
         expect(screen.getByText(/network error/i)).toBeInTheDocument()
       })
     })
+
+    it("shows TierWall modal when recipe update returns tier-wall error", async () => {
+      const tierError = Object.assign(new Error("Private content limit"), {
+        data: { appError: { type: 'tier-wall', reason: 'private-content' } },
+      })
+      mockUpdateMutationFn.mockRejectedValue(tierError)
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ name: "Pasta", isPublic: true })} />)
+
+      // Change something to make it dirty
+      await userEvent.type(screen.getByLabelText(/recipe name/i), " Updated")
+      fireEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Private content requires Sous Chef')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /not now/i })).toBeInTheDocument()
+      })
+    })
   })
 
   describe("source picker", () => {

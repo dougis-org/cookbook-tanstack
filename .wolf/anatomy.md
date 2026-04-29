@@ -1,12 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T21:36:21.680Z
-> Files: 573 tracked | Anatomy hits: 0 | Misses: 0
-
-## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
-
-- `feedback_native_tools.md` (~173 tok)
-- `MEMORY.md` — Memory Index (~38 tok)
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T23:20:05.999Z
+> Files: 567 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
 
@@ -781,19 +776,6 @@
 
 - `spec.md` — ADDED Requirements (~1678 tok)
 
-## openspec/changes/fix-pricing-tier-cta/
-
-- `design.md` — Context (~1959 tok)
-- `proposal.md` — GitHub Issues (~1087 tok)
-- `tasks.md` — Tasks (~1388 tok)
-- `tests.md` — Tests (~958 tok)
-
-## openspec/changes/fix-pricing-tier-cta/specs/
-
-- `anonymous-card.md` — ADDED Requirements (~541 tok)
-- `cta-logic.md` — ADDED Requirements (~890 tok)
-- `route-rename.md` — ADDED Requirements (~470 tok)
-
 ## openspec/changes/fix-themed-boot-loader-css-gate/
 
 - `tasks.md` — Tasks (~2018 tok)
@@ -802,13 +784,18 @@
 
 - `tasks.md` — Tasks (~1672 tok)
 
-## openspec/changes/verify-password-reset-flow/specs/password-reset-validation/
+## openspec/changes/tier-wall-ux/
 
-- `spec.md` — ADDED Requirements (~1205 tok)
+- `tasks.md` — Tasks (~1911 tok)
+- `tests.md` — Tests — tier-wall-ux (~956 tok)
 
 ## openspec/specs/fouc-prevention/
 
 - `spec.md` — ADDED Requirements (~3643 tok)
+
+## src/components/ui/
+
+- `TierWall.tsx` — MESSAGES (~827 tok)
 
 ## src/e2e/
 
@@ -830,16 +817,23 @@
 
 - `__root.tsx` — Route (~1256 tok)
 - `account.tsx` — Route (~1481 tok)
-- `change-tier.tsx` — Route (~262 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
-- `pricing.tsx` — Route (~1203 tok)
+- `pricing.tsx` — Route (~1018 tok)
+- `upgrade.tsx` — Route (~257 tok)
 
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
-- `-change-tier.test.tsx` — link (~256 tok)
-- `-pricing.test.tsx` — mockUseAuth (~3282 tok)
+- `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+
+## src/routes/cookbooks/
+
+- `index.tsx` — Route — renders form (~1850 tok)
+
+## src/routes/import/
+
+- `index.tsx` — Route (~1168 tok)
 
 ## src/server/trpc/
 

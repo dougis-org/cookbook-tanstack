@@ -125,7 +125,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   const form = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
-    defaultValues: formDefaults,
+    defaultValues: {
+      ...formDefaults,
+      isPublic: !canCreatePrivate && !isEdit ? true : formDefaults.isPublic,
+    },
     mode: "onChange",
   })
 
@@ -525,7 +528,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           </div>
 
           {/* Public toggle */}
-          {(canCreatePrivate || isEdit) && (
+          {(canCreatePrivate || (isEdit && !watch('isPublic'))) && (
             <div className="flex items-center gap-3">
               <input
                 id="isPublic"
@@ -537,6 +540,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 Public recipe (visible to everyone)
               </label>
             </div>
+          )}
+          {!canCreatePrivate && watch('isPublic') && !isEdit && (
+            <p className="text-sm text-[var(--theme-fg-muted)] italic">
+              New recipes are public on your current plan.
+            </p>
           )}
 
           {/* Ingredients */}

@@ -88,7 +88,7 @@ Spec: `openspec/changes/tier-wall-ux/specs/tier-wall-component.md`
 - [x] Run E2E tests: `npm run test:e2e`
 - [x] Run type checks: `npx tsc --noEmit`
 - [x] Run build: `npm run build`
-- [ ] Confirm `error.data.appError` is not null in a manual test of a tier-limit hit
+- [x] Confirm `error.data.appError` is not null in a manual test of a tier-limit hit
 - [x] All completed tasks marked complete
 - [x] All steps in Remote push validation pass
 
@@ -109,7 +109,7 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [ ] Open PR from `feat/tier-wall-ux` to `main` with title: `feat: add tier-wall UX and upgrade prompts (#391)`
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [ ] Enable auto-merge: `gh pr merge --auto --merge`
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until no unresolved comments remain
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until no unresolved comments remain
 - [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until all checks pass
 - [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user
 

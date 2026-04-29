@@ -9,7 +9,7 @@ import TierWall from '@/components/ui/TierWall'
 import { importedRecipeSchema, type ImportedRecipeInput } from '@/lib/validation'
 import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { trpc } from '@/lib/trpc'
-import { getTierWallReason } from '@/lib/trpc-error'
+import { getTierWallReason, type TierWallReason } from '@/lib/trpc-error'
 
 export const Route = createFileRoute('/import/')({
   component: ImportPage,
@@ -21,7 +21,7 @@ function ImportPage() {
   const [fieldErrors, setFieldErrors] = useState<string[]>([])
   const [parsedRecipe, setParsedRecipe] = useState<ImportedRecipeInput | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
-  const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
+  const [tierWallReason, setTierWallReason] = useState<TierWallReason | null>(null)
 
   const importMutation = useMutation(
     trpc.recipes.import.mutationOptions({
