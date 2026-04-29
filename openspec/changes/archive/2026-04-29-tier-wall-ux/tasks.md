@@ -104,14 +104,14 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `feat/tier-wall-ux` and push to remote
-- [ ] Open PR from `feat/tier-wall-ux` to `main` with title: `feat: add tier-wall UX and upgrade prompts (#391)`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `feat/tier-wall-ux` and push to remote
+- [x] Open PR from `feat/tier-wall-ux` to `main` with title: `feat: add tier-wall UX and upgrade prompts (#391)`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
 - [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix, commit fixes, follow all steps in Remote push validation then push; wait 180 seconds then repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user
 
 Ownership metadata:
 
@@ -127,12 +127,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update `src/hooks/` documentation if any hook-level comments are warranted
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/tier-wall-ux/` to `openspec/changes/archive/YYYY-MM-DD-tier-wall-ux/` — stage both the new location and the deletion of the old in **a single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-tier-wall-ux/` exists and `openspec/changes/tier-wall-ux/` is gone
-- [ ] Commit and push the archive commit to `main`
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -d feat/tier-wall-ux`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update `src/hooks/` documentation if any hook-level comments are warranted
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/tier-wall-ux/` to `openspec/changes/archive/YYYY-MM-DD-tier-wall-ux/` — stage both the new location and the deletion of the old in **a single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-tier-wall-ux/` exists and `openspec/changes/tier-wall-ux/` is gone
+- [x] Commit and push the archive commit to `main`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -d feat/tier-wall-ux`
