@@ -21,65 +21,76 @@ For each task in `tasks.md`:
 
 ### Task 1: Add Pricing link to Header.tsx sidebar nav
 
-- [ ] **Test case 1.1:** Sidebar renders Pricing link for unauthenticated user
+- [x] **Test case 1.1:** Sidebar renders Pricing link for unauthenticated user
   - Map to: specs/sidebar-pricing-link.md → "Anonymous user sees Pricing in sidebar"
-  - Write test in: `src/routes/__tests__/-pricing.test.tsx`
+  - Write test in: `src/components/__tests__/Header.test.tsx`
   - Assert: `screen.getByRole('link', { name: /pricing/i })` exists when session is null
 
-- [ ] **Test case 1.2:** Sidebar renders Pricing link for authenticated user
+- [x] **Test case 1.2:** Sidebar renders Pricing link for authenticated user
   - Map to: specs/sidebar-pricing-link.md → "Authenticated user sees Pricing in sidebar"
-  - Write test in: `src/routes/__tests__/-pricing.test.tsx`
+  - Write test in: `src/components/__tests__/Header.test.tsx`
   - Assert: Pricing link exists alongside Home, Recipes, Categories, Cookbooks, New Recipe, Import Recipe
 
-- [ ] **Test case 1.3:** Pricing link navigates to /pricing
+- [x] **Test case 1.3:** Pricing link navigates to /pricing
   - Map to: specs/sidebar-pricing-link.md → "Pricing link uses correct route"
-  - Write test in: `src/routes/__tests__/-pricing.test.tsx`
+  - Write test in: `src/components/__tests__/Header.test.tsx`
   - Assert: Pricing link has `href` containing `/pricing`
 
-- [ ] **Test case 1.4:** Pricing link shows active state on /pricing page
+- [x] **Test case 1.4:** Pricing link shows active state on /pricing page
   - Map to: specs/sidebar-pricing-link.md → "Pricing link shows active state on /pricing"
-  - Write test in: `src/routes/__tests__/-pricing.test.tsx`
+  - Write test in: `src/components/__tests__/Header.test.tsx` (within "Header sidebar Pricing link" describe block)
   - Assert: When on `/pricing`, Pricing link has active styling class (`bg-[var(--theme-accent)]`)
+
+- [x] **Test case 1.5:** Pricing link click closes sidebar menu
+  - Map to: Interaction requirement for sidebar navigation
+  - Write test in: `src/components/__tests__/Header.test.tsx`
+  - Assert: Clicking Pricing link closes the sidebar menu
+
+- [x] **Test case 1.6:** Pricing link appears in correct position in sidebar nav
+  - Map to: specs/sidebar-pricing-link.md → Navigation order
+  - Write test in: `src/components/__tests__/Header.test.tsx`
+  - Assert: Pricing link appears between Cookbooks and New Recipe (using `within(sidebar)`)
 
 ### Task 2: Add "View Plans and Pricing" button to anonymous home hero
 
-- [ ] **Test case 2.1:** Home page hero renders "View Plans and Pricing" button
+- [x] **Test case 2.1:** Home page hero renders "View Plans and Pricing" button
   - Map to: specs/home-hero-pricing.md → "Anonymous visitor sees pricing button on home page"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: `screen.getByRole('link', { name: /view plans and pricing/i })` exists
 
-- [ ] **Test case 2.2:** Pricing button navigates to /pricing
+- [x] **Test case 2.2:** Pricing button navigates to /pricing
   - Map to: specs/home-hero-pricing.md → "Pricing button uses correct route"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: Button/link has `href` containing `/pricing`
 
-- [ ] **Test case 2.3:** Pricing button uses outline style (not filled accent)
+- [x] **Test case 2.3:** Pricing button uses outline style (not filled accent)
   - Map to: specs/home-hero-pricing.md → "Pricing button has outline style"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: Button has `border-[var(--theme-accent)]` class and `text-[var(--theme-accent)]` class, not `bg-[var(--theme-accent)]`
 
-- [ ] **Test case 2.4:** CTAs stack on mobile, side-by-side on sm+
+- [x] **Test case 2.4:** CTAs stack on mobile, side-by-side on sm+
   - Map to: specs/home-hero-pricing.md → "Buttons stack on mobile, sit side-by-side on desktop"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: CTA container has `flex-col` and `sm:flex-row` classes
 
 ### Task 3: Update tests for home page
 
-- [ ] **Test case 3.1:** Existing "Browse Recipes" link still present
+- [x] **Test case 3.1:** Existing "Browse Recipes" link still present
   - Map to: specs/home-hero-pricing.md → "Two CTAs present"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: `screen.getByRole('link', { name: /browse recipes/i })` still exists
 
-- [ ] **Test case 3.2:** Both CTAs render in hero section
+- [x] **Test case 3.2:** Both CTAs render in hero section
   - Map to: specs/home-hero-pricing.md → "Two CTAs present"
   - Write test in: `src/routes/__tests__/-index.test.tsx`
   - Assert: Exactly two CTA buttons/links exist in the hero section
 
 ### Task 4: Update tests for pricing page sidebar active state
 
-- [ ] **Test case 4.1:** Sidebar Pricing link active state test (covered in 1.4)
+- [x] **Test case 4.1:** Sidebar Pricing link active state test
   - Map to: specs/sidebar-pricing-link.md → "Pricing link shows active state on /pricing"
-  - Already covered by Task 1 test cases
+  - Write test in: `src/components/__tests__/Header.test.tsx` (covered in Task 1 test cases)
+  - Assert: When on `/pricing`, Pricing link has active styling class (`bg-[var(--theme-accent)]`)
 
 ## TDD Workflow Reminder
 
