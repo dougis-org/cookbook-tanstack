@@ -352,3 +352,48 @@ describe("Header theme dropdown", () => {
     expect(screen.getByRole("button", { name: "OK" })).toBeInTheDocument()
   })
 })
+
+describe("Header sidebar Pricing link", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuthResult = { session: null, isPending: false }
+    mockCurrentTheme = "dark"
+    mockSetTheme = vi.fn()
+    document.documentElement.className = "dark"
+  })
+
+  it("shows Pricing link for unauthenticated user", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    expect(screen.getByRole("link", { name: /pricing/i })).toBeInTheDocument()
+  })
+
+  it("shows Pricing link for authenticated user", () => {
+    mockAuthResult = { session: { user: { id: "user-1", email: "test@example.com", name: "Test User" } }, isPending: false }
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    expect(screen.getByRole("link", { name: /pricing/i })).toBeInTheDocument()
+  })
+
+  it("Pricing link navigates to /pricing", () => {
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    const pricingLink = screen.getByRole("link", { name: /pricing/i })
+    expect(pricingLink).toHaveAttribute("href", "/pricing")
+  })
+
+  it("Pricing link appears between Cookbooks and New Recipe links", () => {
+    mockAuthResult = { session: { user: { id: "user-1", email: "test@example.com", name: "Test User" } }, isPending: false }
+    render(<Header />)
+    fireEvent.click(screen.getByLabelText("Open menu"))
+    const navLinks = screen.getAllByRole("link")
+    const cookbooksIndex = navLinks.findIndex(link => link.textContent?.includes("Cookbooks"))
+    const pricingIndex = navLinks.findIndex(link => link.textContent?.includes("Pricing"))
+    const newRecipeIndex = navLinks.findIndex(link => link.textContent?.includes("New Recipe"))
+    expect(cookbooksIndex).toBeGreaterThan(-1)
+    expect(pricingIndex).toBeGreaterThan(-1)
+    expect(newRecipeIndex).toBeGreaterThan(-1)
+    expect(cookbooksIndex).toBeLessThan(pricingIndex)
+    expect(pricingIndex).toBeLessThan(newRecipeIndex)
+  })
+})

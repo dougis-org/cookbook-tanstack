@@ -62,6 +62,12 @@ export function HomePage() {
             >
               Browse Recipes
             </Link>
+            <Link
+              to="/pricing"
+              className="px-8 py-3 border-2 border-[var(--theme-accent)] text-[var(--theme-accent)] hover:bg-[var(--theme-accent)] hover:text-white font-semibold rounded-lg transition-colors"
+            >
+              View Plans and Pricing
+            </Link>
           </div>
         </div>
       </section>

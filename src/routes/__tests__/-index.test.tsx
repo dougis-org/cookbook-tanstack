@@ -61,6 +61,29 @@ describe('/', () => {
       expect(browseLink).toHaveAttribute('href', '/recipes')
     })
 
+    it('renders "View Plans and Pricing" button for anonymous visitors', () => {
+      render(<HomePage />)
+      const pricingLink = screen.getByRole('link', { name: /view plans and pricing/i })
+      expect(pricingLink).toBeInTheDocument()
+      expect(pricingLink).toHaveAttribute('href', '/pricing')
+    })
+
+    it('pricing button uses outline style', () => {
+      render(<HomePage />)
+      const pricingLink = screen.getByRole('link', { name: /view plans and pricing/i })
+      expect(pricingLink.className).toContain('border-2')
+      expect(pricingLink.className).toContain('border-[var(--theme-accent)]')
+      expect(pricingLink.className).toContain('text-[var(--theme-accent)]')
+      // Should not have bg-[var(--theme-accent)] without hover prefix
+      expect(pricingLink.className.split(' ')).not.toContain('bg-[var(--theme-accent)]')
+    })
+
+    it('CTA container uses responsive flex classes', () => {
+      render(<HomePage />)
+      const ctaContainer = screen.getByRole('link', { name: /browse recipes/i }).parentElement
+      expect(ctaContainer).toHaveClass('flex-col', 'sm:flex-row')
+    })
+
     it('does not render AdSense slots outside production for anonymous visitors', () => {
       render(<HomePage />)
       expect(screen.queryByTestId('ad-slot-top')).not.toBeInTheDocument()
