@@ -10,16 +10,16 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 // ─── Pure-logic unit tests (no DB required) ─────────────────────────────────
 
 describe("visibilityFilter", () => {
-  it("returns { isPublic: true } for anonymous users", async () => {
+  it("returns { isPublic: true, hiddenByTier: { $ne: true } } for anonymous users", async () => {
     const { visibilityFilter } = await import("../_helpers")
     const result = visibilityFilter(null)
-    expect(result).toEqual({ isPublic: true })
+    expect(result).toEqual({ isPublic: true, hiddenByTier: { $ne: true } })
   })
 
-  it("returns { $or: [{ isPublic: true }, { userId }] } for authenticated users", async () => {
+  it("returns { $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId, hiddenByTier: { $ne: true } }] } for authenticated users", async () => {
     const { visibilityFilter } = await import("../_helpers")
     const result = visibilityFilter({ id: "u1" })
-    expect(result).toEqual({ $or: [{ isPublic: true }, { userId: "u1" }] })
+    expect(result).toEqual({ $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId: "u1", hiddenByTier: { $ne: true } }] })
   })
 })
 

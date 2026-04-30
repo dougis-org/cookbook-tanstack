@@ -83,7 +83,8 @@ export const recipesRouter = router({
       const filter: Record<string, any> = {};
 
       if (input?.isPublic !== undefined) {
-        filter.isPublic = input.isPublic;
+        filter.isPublic = input.isPublic
+        filter.hiddenByTier = { $ne: true }
       } else {
         Object.assign(filter, visibilityFilter(ctx.user));
       }
