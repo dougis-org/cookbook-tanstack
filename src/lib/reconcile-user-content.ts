@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose'
+import { Types, Model, ClientSession } from 'mongoose'
 import { Recipe, Cookbook } from '@/db/models'
 import { getMongoClient } from '@/db'
 import { TIER_RANK, type UserTier } from '@/types/user'
@@ -14,92 +14,36 @@ export function getTierChangeDirection(oldTier: UserTier, newTier: UserTier): Ti
   return 'same'
 }
 
-type RecipeReconcileResult = { recipesUpdated: number; recipesHidden: number; madePublic: number }
-type CookbookReconcileResult = { cookbooksUpdated: number; cookbooksHidden: number; madePublic: number }
-
-async function reconcileRecipes(
-  session: mongoose.ClientSession,
-  userId: string,
-  direction: TierChangeDirection,
-  newTier: UserTier,
-): Promise<RecipeReconcileResult> {
-  const result: RecipeReconcileResult = { recipesUpdated: 0, recipesHidden: 0, madePublic: 0 }
-  const userObjId = new Types.ObjectId(userId)
-
-  if (direction === 'upgrade') {
-    const res = await Recipe.updateMany(
-      { userId: userObjId },
-      { $set: { hiddenByTier: false } },
-      { session },
-    )
-    result.recipesUpdated = res.modifiedCount
-    return result
-  }
-
-  if (direction === 'downgrade') {
-    if (!canCreatePrivate(newTier)) {
-      const coercionRes = await Recipe.updateMany(
-        { userId: userObjId, isPublic: false },
-        { $set: { isPublic: true } },
-        { session },
-      )
-      result.madePublic = coercionRes.modifiedCount
-    }
-
-    const limit = getRecipeLimit(newTier)
-    const visibleCount = await Recipe.countDocuments({
-      userId: userObjId,
-      hiddenByTier: { $ne: true },
-    })
-
-    if (visibleCount > limit) {
-      const toHide = await Recipe.find({ userId: userObjId, hiddenByTier: { $ne: true } })
-        .sort({ createdAt: 1 as const })
-        .skip(limit)
-        .select({ _id: 1 })
-        .session(session)
-
-      if (toHide.length > 0) {
-        const idsToHide = toHide.map((r) => r._id)
-        const hideRes = await Recipe.updateMany(
-          { _id: { $in: idsToHide } },
-          { $set: { hiddenByTier: true } },
-          { session },
-        )
-        result.recipesHidden = hideRes.modifiedCount
-      } else {
-        result.recipesHidden = 0
-      }
-    }
-
-    return result
-  }
-
-  return result
+type ReconcileResult = {
+  updated: number
+  hidden: number
+  madePublic: number
 }
 
-async function reconcileCookbooks(
-  session: mongoose.ClientSession,
+async function reconcileCollection(
+  session: ClientSession,
   userId: string,
   direction: TierChangeDirection,
   newTier: UserTier,
-): Promise<CookbookReconcileResult> {
-  const result: CookbookReconcileResult = { cookbooksUpdated: 0, cookbooksHidden: 0, madePublic: 0 }
+  getLimit: (tier: UserTier) => number,
+  Model: Model<{ userId: Types.ObjectId; isPublic: boolean; hiddenByTier?: boolean; createdAt: Date; _id: Types.ObjectId }>,
+): Promise<ReconcileResult> {
+  const result: ReconcileResult = { updated: 0, hidden: 0, madePublic: 0 }
   const userObjId = new Types.ObjectId(userId)
 
   if (direction === 'upgrade') {
-    const res = await Cookbook.updateMany(
+    const res = await Model.updateMany(
       { userId: userObjId },
       { $set: { hiddenByTier: false } },
       { session },
     )
-    result.cookbooksUpdated = res.modifiedCount
+    result.updated = res.modifiedCount
     return result
   }
 
   if (direction === 'downgrade') {
     if (!canCreatePrivate(newTier)) {
-      const coercionRes = await Cookbook.updateMany(
+      const coercionRes = await Model.updateMany(
         { userId: userObjId, isPublic: false },
         { $set: { isPublic: true } },
         { session },
@@ -107,29 +51,27 @@ async function reconcileCookbooks(
       result.madePublic = coercionRes.modifiedCount
     }
 
-    const limit = getCookbookLimit(newTier)
-    const visibleCount = await Cookbook.countDocuments({
+    const limit = getLimit(newTier)
+    const visibleCount = await Model.countDocuments({
       userId: userObjId,
       hiddenByTier: { $ne: true },
     })
 
     if (visibleCount > limit) {
-      const toHide = await Cookbook.find({ userId: userObjId, hiddenByTier: { $ne: true } })
+      const toHide = await Model.find({ userId: userObjId, hiddenByTier: { $ne: true } })
         .sort({ createdAt: 1 as const })
         .skip(limit)
         .select({ _id: 1 })
         .session(session)
 
       if (toHide.length > 0) {
-        const idsToHide = toHide.map((c) => c._id)
-        const hideRes = await Cookbook.updateMany(
+        const idsToHide = toHide.map((d) => d._id)
+        const hideRes = await Model.updateMany(
           { _id: { $in: idsToHide } },
           { $set: { hiddenByTier: true } },
           { session },
         )
-        result.cookbooksHidden = hideRes.modifiedCount
-      } else {
-        result.cookbooksHidden = 0
+        result.hidden = hideRes.modifiedCount
       }
     }
 
@@ -169,17 +111,17 @@ export async function reconcileUserContent(
     let madePublic = 0
 
     await session.withTransaction(async () => {
-      const recipeResult = await reconcileRecipes(session, userId, direction, newTier)
-      recipesUpdated = recipeResult.recipesUpdated
-      recipesHidden = recipeResult.recipesHidden
-      madePublic += recipeResult.madePublic
+      const r = await reconcileCollection(session, userId, direction, newTier, getRecipeLimit, Recipe)
+      recipesUpdated = r.updated
+      recipesHidden = r.hidden
+      madePublic += r.madePublic
     })
 
     await session.withTransaction(async () => {
-      const cookbookResult = await reconcileCookbooks(session, userId, direction, newTier)
-      cookbooksUpdated = cookbookResult.cookbooksUpdated
-      cookbooksHidden = cookbookResult.cookbooksHidden
-      madePublic += cookbookResult.madePublic
+      const r = await reconcileCollection(session, userId, direction, newTier, getCookbookLimit, Cookbook)
+      cookbooksUpdated = r.updated
+      cookbooksHidden = r.hidden
+      madePublic += r.madePublic
     })
 
     return { recipesUpdated, cookbooksUpdated, recipesHidden, cookbooksHidden, madePublic }
