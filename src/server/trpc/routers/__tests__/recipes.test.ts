@@ -1851,17 +1851,15 @@ describe("recipes.list — hiddenByTier in response", () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
       await new Recipe({ name: "Visible Recipe", userId: owner.id, isPublic: true }).save();
-      await Recipe.collection.insertOne({
+      await new Recipe({
         name: "Hidden Recipe",
-        userId: new Types.ObjectId(owner.id),
+        userId: owner.id,
         isPublic: true,
         hiddenByTier: true,
         mealIds: [],
         courseIds: [],
         preparationIds: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      }).save();
       const caller = await makeAuthCaller(owner.id);
       const result = await caller.recipes.list({ userId: owner.id });
       expect(result.items).toHaveLength(1);
@@ -1874,19 +1872,17 @@ describe("recipes.byId — hiddenByTier (owner exclusion)", () => {
   it("owner cannot see own hiddenByTier recipe byId — returns null", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const inserted = await Recipe.collection.insertOne({
+      const inserted = await new Recipe({
         name: "Hidden Recipe",
-        userId: new Types.ObjectId(owner.id),
+        userId: owner.id,
         isPublic: true,
         hiddenByTier: true,
         mealIds: [],
         courseIds: [],
         preparationIds: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      }).save();
       const caller = await makeAuthCaller(owner.id);
-      const result = await caller.recipes.byId({ id: inserted.insertedId.toString() });
+      const result = await caller.recipes.byId({ id: inserted.id });
       expect(result).toBeNull();
     });
   });

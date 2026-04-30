@@ -1,6 +1,5 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
-import { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation } from "@/db/models";
 import {
@@ -935,15 +934,13 @@ describe("cookbooks.list — hiddenByTier in response", () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
       await new Cookbook({ name: "Visible Cookbook", userId: owner.id, isPublic: true }).save();
-      await Cookbook.collection.insertOne({
+      await new Cookbook({
         name: "Hidden Cookbook",
-        userId: new Types.ObjectId(owner.id),
+        userId: owner.id,
         isPublic: true,
         hiddenByTier: true,
         recipes: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      }).save();
       const caller = await makeAuthCaller(owner.id);
       const results = await caller.cookbooks.list();
       expect(results).toHaveLength(1);
@@ -956,17 +953,15 @@ describe("cookbooks.byId — hiddenByTier (owner exclusion)", () => {
   it("owner cannot see own hiddenByTier cookbook byId — returns null", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const hiddenCb = await Cookbook.collection.insertOne({
+      const hiddenCb = await new Cookbook({
         name: "Hidden Cookbook",
-        userId: new Types.ObjectId(owner.id),
+        userId: owner.id,
         isPublic: true,
         hiddenByTier: true,
         recipes: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      }).save();
       const caller = await makeAuthCaller(owner.id);
-      const result = await caller.cookbooks.byId({ id: hiddenCb.insertedId.toString() });
+      const result = await caller.cookbooks.byId({ id: hiddenCb.id });
       expect(result).toBeNull();
     });
   });
