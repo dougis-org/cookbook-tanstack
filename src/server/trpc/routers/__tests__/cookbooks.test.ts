@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation } from "@/db/models";
 import {
@@ -927,6 +928,59 @@ describe("cookbooks.list — hiddenByTier in response", () => {
       const results = await caller.cookbooks.list();
       expect(results).toHaveLength(1);
       expect(results[0].hiddenByTier).toBe(false);
+    });
+  });
+
+  it("owner cannot see hiddenByTier cookbook in list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Cookbook({ name: "Visible Cookbook", userId: owner.id, isPublic: true }).save();
+      await Cookbook.collection.insertOne({
+        name: "Hidden Cookbook",
+        userId: new Types.ObjectId(owner.id),
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results).toHaveLength(1);
+      expect(results[0].name).toBe("Visible Cookbook");
+    });
+  });
+});
+
+describe("cookbooks.byId — hiddenByTier (owner exclusion)", () => {
+  it("owner cannot see own hiddenByTier cookbook byId — returns null", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const hiddenCb = await Cookbook.collection.insertOne({
+        name: "Hidden Cookbook",
+        userId: new Types.ObjectId(owner.id),
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.cookbooks.byId({ id: hiddenCb.insertedId.toString() });
+      expect(result).toBeNull();
+    });
+  });
+});
+
+describe("cookbooks.byId — hiddenByTier in response", () => {
+  it("byId response includes hiddenByTier: false by default", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      expect(result).not.toBeNull();
+      expect(result!.hiddenByTier).toBe(false);
     });
   });
 });

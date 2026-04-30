@@ -1846,4 +1846,48 @@ describe("recipes.list — hiddenByTier in response", () => {
       expect(result.items[0].hiddenByTier).toBe(false);
     });
   });
+
+  it("owner cannot see hiddenByTier recipe in list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "Visible Recipe", userId: owner.id, isPublic: true }).save();
+      await Recipe.collection.insertOne({
+        name: "Hidden Recipe",
+        userId: new Types.ObjectId(owner.id),
+        isPublic: true,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.recipes.list({ userId: owner.id });
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].name).toBe("Visible Recipe");
+    });
+  });
+});
+
+describe("recipes.byId — hiddenByTier (owner exclusion)", () => {
+  it("owner cannot see own hiddenByTier recipe byId — returns null", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const inserted = await Recipe.collection.insertOne({
+        name: "Hidden Recipe",
+        userId: new Types.ObjectId(owner.id),
+        isPublic: true,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.recipes.byId({ id: inserted.insertedId.toString() });
+      expect(result).toBeNull();
+    });
+  });
 });
