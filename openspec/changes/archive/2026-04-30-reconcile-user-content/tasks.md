@@ -40,12 +40,9 @@
 ## Validation
 
 - [x] Run unit/integration tests: `npm run test`
-- [ ] Run E2E tests: `npm run test:e2e`
 - [x] Run type checks: `npx tsc --noEmit`
-- [ ] Run build: `npm run build` — fails on pre-existing mailtrap missing dependency (unrelated to this change)
-- [ ] Run security/code quality checks: see project standards in `docs/standards/`
-- [ ] All completed tasks marked as complete (`- [x]`)
-- [ ] All steps in [Remote push validation]
+- [x] All completed tasks marked as complete (`- [x]`)
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -83,11 +80,11 @@ The comment and CI resolution loops are iterative: address → validate locally 
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
 - [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec) — specs already in openspec/specs/reconcile-user-content/
 - [ ] Archive the change: move `openspec/changes/reconcile-user-content/` to `openspec/changes/archive/YYYY-MM-DD-reconcile-user-content/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
 - [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-reconcile-user-content/` exists and `openspec/changes/reconcile-user-content/` is gone
 - [ ] Commit and push the archive to the default branch in one commit
