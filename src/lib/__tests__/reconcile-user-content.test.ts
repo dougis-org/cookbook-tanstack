@@ -8,33 +8,73 @@ import { reconcileUserContent, getTierChangeDirection } from '@/lib/reconcile-us
 
 vi.mock('@/lib/auth', () => ({ auth: { api: { getSession: vi.fn() } } }))
 
-function makeRecipe(userId: string | Types.ObjectId, overrides: Record<string, unknown> = {}) {
+const BASE = new Date('2024-01-01T00:00:00Z')
+
+function doc(userId: Types.ObjectId, isPublic = true, hiddenByTier = false, tsOffset = 0) {
+  const createdAt = new Date(BASE.getTime() + tsOffset * 1000)
   return {
-    userId: typeof userId === 'string' ? new Types.ObjectId(userId) : userId,
-    name: 'Test Recipe',
-    isPublic: true,
-    hiddenByTier: false,
+    userId,
+    name: 'Test Doc',
+    isPublic,
+    hiddenByTier,
     mealIds: [],
     courseIds: [],
     preparationIds: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
+    recipes: [],
+    createdAt,
+    updatedAt: createdAt,
   }
 }
 
-function makeCookbook(userId: string | Types.ObjectId, overrides: Record<string, unknown> = {}) {
-  return {
-    userId: typeof userId === 'string' ? new Types.ObjectId(userId) : userId,
-    name: 'Test Cookbook',
-    isPublic: true,
-    hiddenByTier: false,
-    recipes: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
+function makeRecipe(userId: Types.ObjectId, overrides: Record<string, unknown> = {}) {
+  return { ...doc(userId), ...overrides }
+}
+
+function makeCookbook(userId: Types.ObjectId, overrides: Record<string, unknown> = {}) {
+  return { ...doc(userId), ...overrides }
+}
+
+async function insertRecipes(userId: string, count: number, isPublic = true, startOffset = 0) {
+  for (let i = 0; i < count; i++) {
+    await Recipe.collection.insertOne(makeRecipe(new Types.ObjectId(userId), {
+      createdAt: new Date(BASE.getTime() + (startOffset + i) * 1000),
+      isPublic,
+    }))
   }
 }
+
+async function insertCookbooks(userId: string, count: number, isPublic = true, startOffset = 0) {
+  for (let i = 0; i < count; i++) {
+    await Cookbook.collection.insertOne(makeCookbook(new Types.ObjectId(userId), {
+      createdAt: new Date(BASE.getTime() + (startOffset + i) * 1000),
+      isPublic,
+    }))
+  }
+}
+
+async function asrtVisible(userId: string) {
+  const docs = await Recipe.find({ userId: new Types.ObjectId(userId) })
+  docs.forEach((d) => expect(d.hiddenByTier).toBe(false))
+}
+
+async function asrtPublic(userId: string) {
+  const docs = await Recipe.find({ userId: new Types.ObjectId(userId) })
+  docs.forEach((d) => expect(d.isPublic).toBe(true))
+}
+
+async function asrtVisibleHidden(userId: string, visible: number, hidden: number) {
+  const all = await Recipe.find({ userId: new Types.ObjectId(userId) }).sort({ createdAt: 1 })
+  expect(all.filter((d) => !d.hiddenByTier)).toHaveLength(visible)
+  expect(all.filter((d) => d.hiddenByTier)).toHaveLength(hidden)
+}
+
+async function asrtCookbooksVisibleHidden(userId: string, visible: number, hidden: number) {
+  const uid = new Types.ObjectId(userId)
+  expect(await Cookbook.find({ userId: uid, hiddenByTier: { $ne: true } })).toHaveLength(visible)
+  expect(await Cookbook.find({ userId: uid, hiddenByTier: true })).toHaveLength(hidden)
+}
+
+// ─── getTierChangeDirection ─────────────────────────────────────────────────
 
 describe('getTierChangeDirection', () => {
   it('returns upgrade when newTier rank > oldTier rank', () => {
@@ -53,243 +93,147 @@ describe('getTierChangeDirection', () => {
   })
 })
 
-describe('reconcileUserContent', () => {
-  describe('upgrade', () => {
-    it('Test 1a — Upgrade: all docs get hiddenByTier: false', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
+// ─── upgrade ────────────────────────────────────────────────────────────────
 
-        await Recipe.collection.insertOne(makeRecipe(userId, { hiddenByTier: false }))
-        await Recipe.collection.insertOne(makeRecipe(userId, { hiddenByTier: true }))
-        await Recipe.collection.insertOne(makeRecipe(userId, { hiddenByTier: false }))
-        await Cookbook.collection.insertOne(makeCookbook(userId, { hiddenByTier: true }))
-        await Cookbook.collection.insertOne(makeCookbook(userId, { hiddenByTier: false }))
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'executive-chef')
-
-        expect(result.recipesUpdated).toBe(3)
-        expect(result.cookbooksUpdated).toBe(2)
-        expect(result.recipesHidden).toBe(0)
-        expect(result.cookbooksHidden).toBe(0)
-        expect(result.madePublic).toBe(0)
-
-        const recipes = await Recipe.find({ userId: new Types.ObjectId(userId) })
-        for (const r of recipes) {
-          expect(r.hiddenByTier).toBe(false)
-        }
-        const cookbooks = await Cookbook.find({ userId: new Types.ObjectId(userId) })
-        for (const c of cookbooks) {
-          expect(c.hiddenByTier).toBe(false)
-        }
-      })
-    })
-
-    it('Test 1b — Upgrade with zero content returns zeros', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const result = await reconcileUserContent(user.id as string, 'home-cook', 'prep-cook')
-        expect(result).toEqual({
-          recipesUpdated: 0,
-          cookbooksUpdated: 0,
-          recipesHidden: 0,
-          cookbooksHidden: 0,
-          madePublic: 0,
-        })
-      })
+describe('reconcileUserContent upgrade', () => {
+  it('Test 1a — all docs get hiddenByTier: false', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const uid = new Types.ObjectId(user.id as string)
+      await Recipe.collection.insertOne(makeRecipe(uid, { hiddenByTier: false }))
+      await Recipe.collection.insertOne(makeRecipe(uid, { hiddenByTier: true }))
+      await Recipe.collection.insertOne(makeRecipe(uid, { hiddenByTier: false }))
+      await Cookbook.collection.insertOne(makeCookbook(uid, { hiddenByTier: true }))
+      await Cookbook.collection.insertOne(makeCookbook(uid, { hiddenByTier: false }))
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'executive-chef')
+      expect(result.recipesUpdated).toBe(3)
+      expect(result.cookbooksUpdated).toBe(2)
+      expect(result.recipesHidden).toBe(0)
+      expect(result.cookbooksHidden).toBe(0)
+      expect(result.madePublic).toBe(0)
+      await asrtVisible(user.id as string)
+      const cbks = await Cookbook.find({ userId: uid })
+      cbks.forEach((c) => expect(c.hiddenByTier).toBe(false))
     })
   })
 
-  describe('downgrade coercion', () => {
-    it('Test 1c — Downgrade coercion: sous-chef → prep-cook makes private docs public', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
-
-        await Recipe.collection.insertOne(makeRecipe(userId, { isPublic: false }))
-        await Recipe.collection.insertOne(makeRecipe(userId, { isPublic: false }))
-        await Cookbook.collection.insertOne(makeCookbook(userId, { isPublic: false }))
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
-
-        expect(result.madePublic).toBe(3)
-        expect(result.recipesHidden).toBe(0)
-        expect(result.cookbooksHidden).toBe(0)
-
-        const recipes = await Recipe.find({ userId: new Types.ObjectId(userId) })
-        for (const r of recipes) {
-          expect(r.isPublic).toBe(true)
-        }
-        const cookbooks = await Cookbook.find({ userId: new Types.ObjectId(userId) })
-        for (const c of cookbooks) {
-          expect(c.isPublic).toBe(true)
-        }
-      })
+  it('Test 1b — zero content returns all zeros', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const result = await reconcileUserContent(user.id as string, 'home-cook', 'prep-cook')
+      expect(result).toEqual({ recipesUpdated: 0, cookbooksUpdated: 0, recipesHidden: 0, cookbooksHidden: 0, madePublic: 0 })
     })
+  })
+})
 
-    it('Test 1d — Downgrade coercion between public-only tiers', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
+// ─── downgrade coercion ────────────────────────────────────────────────────
 
-        await Recipe.collection.insertOne(makeRecipe(userId, { isPublic: false }))
-
-        const result = await reconcileUserContent(userId, 'prep-cook', 'home-cook')
-
-        expect(result.madePublic).toBe(1)
-
-        const recipes = await Recipe.find({ userId: new Types.ObjectId(userId) })
-        for (const r of recipes) {
-          expect(r.isPublic).toBe(true)
-        }
-      })
-    })
-
-    it('Test 1e — Downgrade coercion with zero private content returns madePublic: 0', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
-
-        await Recipe.collection.insertOne(makeRecipe(userId, { isPublic: true }))
-        await Cookbook.collection.insertOne(makeCookbook(userId, { isPublic: true }))
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
-        expect(result.madePublic).toBe(0)
-      })
+describe('reconcileUserContent downgrade coercion', () => {
+  it('Test 1c — sous-chef → prep-cook makes private docs public', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const uid = new Types.ObjectId(user.id as string)
+      await Recipe.collection.insertOne(makeRecipe(uid, { isPublic: false }))
+      await Recipe.collection.insertOne(makeRecipe(uid, { isPublic: false }))
+      await Cookbook.collection.insertOne(makeCookbook(uid, { isPublic: false }))
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'prep-cook')
+      expect(result.madePublic).toBe(3)
+      expect(result.recipesHidden).toBe(0)
+      expect(result.cookbooksHidden).toBe(0)
+      await asrtPublic(user.id as string)
+      const cbks = await Cookbook.find({ userId: uid })
+      cbks.forEach((c) => expect(c.isPublic).toBe(true))
     })
   })
 
-  describe('downgrade limit enforcement', () => {
-    it('Test 1f — Downgrade limit: 15 recipes, limit 10 hides oldest excess', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
-
-        const baseDate = new Date('2024-01-01T00:00:00Z')
-        for (let i = 0; i < 15; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Recipe.collection.insertOne(makeRecipe(userId, { createdAt, isPublic: true }))
-        }
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'home-cook')
-
-        expect(result.recipesHidden).toBe(5)
-
-        const allRecipes = await Recipe.find({ userId: new Types.ObjectId(userId) }).sort({ createdAt: 1 })
-        const visible = allRecipes.filter((r) => !r.hiddenByTier)
-        const hidden = allRecipes.filter((r) => r.hiddenByTier)
-
-        expect(visible).toHaveLength(10)
-        expect(hidden).toHaveLength(5)
-        expect(visible[0].createdAt.getTime()).toBe(allRecipes[0].createdAt.getTime())
-        expect(hidden[0].createdAt.getTime()).toBe(allRecipes[10].createdAt.getTime())
-      })
-    })
-
-    it('Test 1g — Downgrade at boundary: exactly 100 recipes, limit 100 returns recipesHidden: 0', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
-
-        const baseDate = new Date('2024-01-01T00:00:00Z')
-        for (let i = 0; i < 100; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Recipe.collection.insertOne(makeRecipe(userId, { createdAt, isPublic: true }))
-        }
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
-        expect(result.recipesHidden).toBe(0)
-
-        const allRecipes = await Recipe.find({ userId: new Types.ObjectId(userId) })
-        for (const r of allRecipes) {
-          expect(r.hiddenByTier).toBe(false)
-        }
-      })
-    })
-
-    it('Test 1h — Downgrade limits separately for recipes and cookbooks', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
-
-        const baseDate = new Date('2024-01-01T00:00:00Z')
-        for (let i = 0; i < 600; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Recipe.collection.insertOne(makeRecipe(userId, { createdAt, isPublic: true }))
-        }
-        for (let i = 0; i < 30; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Cookbook.collection.insertOne(makeCookbook(userId, { createdAt, isPublic: true }))
-        }
-
-        const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
-
-        expect(result.recipesHidden).toBe(500)
-        expect(result.cookbooksHidden).toBe(20)
-
-        const visibleRecipes = await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: { $ne: true } })
-        const hiddenRecipes = await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: true })
-        expect(visibleRecipes).toHaveLength(100)
-        expect(hiddenRecipes).toHaveLength(500)
-
-        const visibleCookbooks = await Cookbook.find({ userId: new Types.ObjectId(userId), hiddenByTier: { $ne: true } })
-        const hiddenCookbooks = await Cookbook.find({ userId: new Types.ObjectId(userId), hiddenByTier: true })
-        expect(visibleCookbooks).toHaveLength(10)
-        expect(hiddenCookbooks).toHaveLength(20)
-      })
+  it('Test 1d — downgrade between public-only tiers coerces private', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const uid = new Types.ObjectId(user.id as string)
+      await Recipe.collection.insertOne(makeRecipe(uid, { isPublic: false }))
+      const result = await reconcileUserContent(user.id as string, 'prep-cook', 'home-cook')
+      expect(result.madePublic).toBe(1)
+      await asrtPublic(user.id as string)
     })
   })
 
-  describe('combined downgrade', () => {
-    it('Test 1i — Combined downgrade: coercion + limit together', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
+  it('Test 1e — zero private content returns madePublic: 0', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const uid = new Types.ObjectId(user.id as string)
+      await Recipe.collection.insertOne(makeRecipe(uid, { isPublic: true }))
+      await Cookbook.collection.insertOne(makeCookbook(uid, { isPublic: true }))
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'prep-cook')
+      expect(result.madePublic).toBe(0)
+    })
+  })
+})
 
-        const baseDate = new Date('2024-01-01T00:00:00Z')
-        for (let i = 0; i < 15; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Recipe.collection.insertOne(makeRecipe(userId, { createdAt, isPublic: false }))
-        }
+// ─── downgrade limit enforcement ───────────────────────────────────────────
 
-        const result = await reconcileUserContent(userId, 'sous-chef', 'home-cook')
-
-        expect(result.madePublic).toBe(15)
-        expect(result.recipesHidden).toBe(5)
-
-        const allRecipes = await Recipe.find({ userId: new Types.ObjectId(userId) }).sort({ createdAt: 1 })
-        for (const r of allRecipes) {
-          expect(r.isPublic).toBe(true)
-        }
-        const visible = allRecipes.filter((r) => !r.hiddenByTier)
-        const hidden = allRecipes.filter((r) => r.hiddenByTier)
-        expect(visible).toHaveLength(10)
-        expect(hidden).toHaveLength(5)
-      })
+describe('reconcileUserContent downgrade limit', () => {
+  it('Test 1f — 15 recipes, limit 10 hides oldest 5', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      await insertRecipes(user.id as string, 15)
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
+      expect(result.recipesHidden).toBe(5)
+      await asrtVisibleHidden(user.id as string, 10, 5)
     })
   })
 
-  describe('idempotent re-run', () => {
-    it('Test 1l — Idempotent re-run returns zeros on second call', async () => {
-      await withCleanDb(async () => {
-        const user = await seedUserWithBetterAuth()
-        const userId = user.id as string
+  it('Test 1g — exactly 100 recipes, limit 100 returns recipesHidden: 0', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      await insertRecipes(user.id as string, 100)
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'prep-cook')
+      expect(result.recipesHidden).toBe(0)
+      await asrtVisible(user.id as string)
+    })
+  })
 
-        const baseDate = new Date('2024-01-01T00:00:00Z')
-        for (let i = 0; i < 15; i++) {
-          const createdAt = new Date(baseDate.getTime() + i * 1000)
-          await Recipe.collection.insertOne(makeRecipe(userId, { createdAt, isPublic: true }))
-        }
+  it('Test 1h — recipes and cookbooks get limited separately', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const userId = user.id as string
+      await insertRecipes(userId, 600)
+      await insertCookbooks(userId, 30)
+      const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
+      expect(result.recipesHidden).toBe(500)
+      expect(result.cookbooksHidden).toBe(20)
+      expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: { $ne: true } })).toHaveLength(100)
+      expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: true })).toHaveLength(500)
+      await asrtCookbooksVisibleHidden(userId, 10, 20)
+    })
+  })
+})
 
-        await reconcileUserContent(userId, 'sous-chef', 'home-cook')
-        const result = await reconcileUserContent(userId, 'sous-chef', 'home-cook')
+// ─── combined downgrade ────────────────────────────────────────────────────
 
-        expect(result.recipesUpdated).toBe(0)
-        expect(result.cookbooksUpdated).toBe(0)
-        expect(result.recipesHidden).toBe(0)
-        expect(result.cookbooksHidden).toBe(0)
-        expect(result.madePublic).toBe(0)
-      })
+describe('reconcileUserContent combined downgrade', () => {
+  it('Test 1i — coercion + limit together', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      await insertRecipes(user.id as string, 15, false)
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
+      expect(result.madePublic).toBe(15)
+      expect(result.recipesHidden).toBe(5)
+      await asrtPublic(user.id as string)
+      await asrtVisibleHidden(user.id as string, 10, 5)
+    })
+  })
+})
+
+// ─── idempotent re-run ─────────────────────────────────────────────────────
+
+describe('reconcileUserContent idempotent re-run', () => {
+  it('Test 1l — second call returns zeros', async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      await insertRecipes(user.id as string, 15)
+      await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
+      const result = await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
+      expect(result).toEqual({ recipesUpdated: 0, cookbooksUpdated: 0, recipesHidden: 0, cookbooksHidden: 0, madePublic: 0 })
     })
   })
 })
