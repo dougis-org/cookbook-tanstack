@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=24.0.0"
   },
   "scripts": {
     "dev": "vite dev --port 3000",
@@ -62,9 +62,7 @@
   },
   "overrides": {
     "defu": "6.1.5",
-    "srvx": "0.11.13",
-    "h3": "2.0.1-rc.18",
-    "h3-v2": "npm:h3@2.0.1-rc.18"
+    "srvx": "0.11.13"
   },
   "devDependencies": {
     "@bgotink/playwright-coverage": "^0.3.2",
