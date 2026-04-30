@@ -13,7 +13,10 @@ export const objectId = z
 
 /**
  * Builds a Mongoose filter enforcing visibility for user-owned content.
- * Public docs are always visible; private docs only visible to their owner.
+ * Public docs are visible only when not hidden by tier; private docs are visible
+ * to their owner only when not hidden by tier. Documents with hiddenByTier: true
+ * are excluded for all users (including the owner) so hidden content is invisible
+ * to everyone.
  */
 export function visibilityFilter(user: { id: string } | null) {
   if (user) {
@@ -24,7 +27,7 @@ export function visibilityFilter(user: { id: string } | null) {
       ],
     }
   }
-  return { isPublic: true }
+  return { isPublic: true, hiddenByTier: { $ne: true } }
 }
 
 /**

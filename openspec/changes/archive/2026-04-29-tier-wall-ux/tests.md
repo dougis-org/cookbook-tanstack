@@ -3,87 +3,164 @@ name: tests
 description: Tests for the tier-wall-ux change
 ---
 
-# Tests — tier-wall-ux
+# Tests
 
 ## Overview
 
-Test cases for the tier-wall UX and upgrade prompts feature. All tests follow strict TDD: failing tests were written before implementation code.
+All work follows strict TDD: write a failing test, implement to pass it, then refactor.
+Each test case maps to a task in `tasks.md` and an acceptance scenario in the relevant spec.
+
+## Testing Steps
+
+For each task:
+1. **Write a failing test** before any implementation code. Run it, confirm it fails.
+2. **Write the simplest code** to make it pass.
+3. **Refactor** while keeping tests green.
+
+---
 
 ## Test Cases
 
-### Task 3–4: AppErrorCause + errorFormatter (`src/server/trpc/__tests__/error-formatter.test.ts`)
+### Task 1 — AppErrorCause type and errorFormatter
 
-- [x] Promotes `tier-wall` cause with `count-limit` reason to `AppErrorCause`
-- [x] Promotes `tier-wall` cause with `private-content` reason to `AppErrorCause`
-- [x] Promotes `tier-wall` cause with `import` reason to `AppErrorCause`
-- [x] Returns null when cause is absent
-- [x] Returns null when cause is a string
-- [x] Returns null when cause is an Error instance
-- [x] Returns null when cause is a plain object with unknown type
-- [x] Returns null when cause is a plain object with `tier-wall` but unknown reason
-- [x] Promotes `ownership` type to `AppErrorCause`
-- [x] Does not throw on null cause
+File: `src/server/trpc/__tests__/error-formatter.test.ts` _(new)_
 
-### Task 7: enforceContentLimit throws PAYMENT_REQUIRED (`src/server/trpc/routers/__tests__/helpers.test.ts`)
+- [ ] **Tier-wall cause is promoted to `data.appError`**
+  Spec: `specs/app-error-cause.md` → "Tier-wall error carries structured cause on client"
+  Given a PAYMENT_REQUIRED TRPCError with `cause: { type: 'tier-wall', reason: 'count-limit' }`,
+  the formatted error shape has `data.appError` equal to that cause object.
 
-- [x] Throws `PAYMENT_REQUIRED` when home-cook user is at 10-recipe limit
-- [x] Throws `PAYMENT_REQUIRED` when home-cook user is at 1-cookbook limit
-- [x] Defaults missing tier to home-cook and throws `PAYMENT_REQUIRED` at 10 recipes
+- [ ] **No-cause error has null `data.appError`**
+  Spec: `specs/app-error-cause.md` → "Non-cause error has null appError"
+  Given a NOT_FOUND TRPCError with no cause, `data.appError` is `null`.
 
-### Task 12–13: useTierEntitlements hook (`src/hooks/__tests__/useTierEntitlements.test.ts`)
+- [ ] **Invalid/non-plain-object cause yields null `data.appError`**
+  Spec: `specs/app-error-cause.md` → "Formatter does not break on unexpected cause shape"
+  Given a TRPCError with `cause` set to a string or Error instance, `data.appError` is `null` and the formatter does not throw.
 
-- [x] Returns correct entitlements for `home-cook`
-- [x] Returns correct entitlements for `prep-cook`
-- [x] Returns elevated entitlements for `sous-chef`
-- [x] Returns max entitlements for `executive-chef`
-- [x] Returns home-cook fallback when session is null
-- [x] Returns home-cook fallback when tier is undefined on session user
+- [ ] **Ownership FORBIDDEN has null `data.appError`**
+  Spec: `specs/app-error-cause.md` → "Ownership FORBIDDEN is unaffected"
+  Given a FORBIDDEN TRPCError from `verifyOwnership` (no cause), `data.appError` is `null`.
 
-### Task 15–16: TierWall component (`src/components/ui/__tests__/TierWall.test.tsx`)
+---
 
-- [x] Renders `count-limit` message and `/pricing` link (inline)
-- [x] Renders `private-content` message mentioning sous chef (inline)
-- [x] Renders `import` message mentioning sous chef (inline)
-- [x] Renders `/pricing` link in modal
-- [x] Calls `onDismiss` when dismiss button is clicked (modal)
-- [x] Renders `count-limit` message in modal
-- [x] Renders `private-content` message in modal
-- [x] Renders `import` message in modal
-- [x] Renders without crashing when `onDismiss` is omitted in modal mode
+### Task 2 — Switch tier-enforcement throws to PAYMENT_REQUIRED
 
-### Task 18–23: Affordance locations
+Files: existing router test files for `recipes.ts` and `cookbooks.ts`
 
-#### Recipes page (`src/routes/__tests__/-recipes.test.tsx`)
+- [ ] **`enforceContentLimit` throws PAYMENT_REQUIRED with count-limit cause**
+  Spec: `specs/app-error-cause.md` → "Count-limit enforcement in recipe/cookbook creation"
+  Given a user at their tier limit, calling `enforceContentLimit` rejects with code `PAYMENT_REQUIRED` and `cause.reason === 'count-limit'`.
 
-- [x] Disables "New Recipe" button when home-cook user is at recipe limit
-- [x] Shows inline TierWall when home-cook user is at recipe limit
-- [x] Enables "New Recipe" button when home-cook user is below limit
-- [x] Hides Import Recipe entry point for home-cook
-- [x] Shows Import Recipe link for sous-chef
+- [ ] **Cookbook update to private throws PAYMENT_REQUIRED for prep-cook**
+  Spec: `specs/app-error-cause.md` → "Private-content enforcement in cookbook update"
+  Given a `prep-cook` user attempts `cookbooks.update` with `isPublic: false`,
+  the mutation rejects with `PAYMENT_REQUIRED` and `cause.reason === 'private-content'`.
 
-#### Cookbooks page (`src/components/cookbooks/__tests__/CookbooksPage.test.tsx`)
+- [ ] **Ownership FORBIDDEN still FORBIDDEN after migration**
+  Spec: `specs/app-error-cause.md` → "Ownership FORBIDDEN is unaffected"
+  Given a user attempts to update another user's cookbook, the mutation rejects with `FORBIDDEN` (not PAYMENT_REQUIRED).
 
-- [x] Disables "New Cookbook" button when home-cook user is at cookbook limit
-- [x] Shows inline TierWall when at cookbook limit
+---
 
-#### Recipe/Cookbook create forms — private toggle
+### Task 3 — useTierEntitlements hook
 
-- [x] Hides "Set to private" toggle when `!canCreatePrivate` (RecipeForm)
+File: `src/hooks/__tests__/useTierEntitlements.test.ts` _(new)_
 
-### Task 24–26: Mutation error handling
+- [ ] **prep-cook returns correct entitlements**
+  Spec: `specs/use-tier-entitlements.md` → "Authenticated user gets correct entitlements"
+  `useTierEntitlements()` with session `tier: 'prep-cook'` returns `{ canCreatePrivate: false, canImport: false, recipeLimit: 100, cookbookLimit: 10 }`.
 
-#### RecipeForm (`src/components/recipes/__tests__/RecipeForm.test.tsx`)
+- [ ] **sous-chef returns elevated entitlements**
+  Spec: `specs/use-tier-entitlements.md` → "sous-chef user gets elevated entitlements"
+  `canCreatePrivate: true`, `canImport: true`, `recipeLimit: 500`, `cookbookLimit: 25`.
 
-- [x] Shows TierWall modal when recipe create returns count-limit tier wall error
-- [x] Does not show generic submit error for tier-wall errors
-- [x] Shows generic submit error for non-tier errors
+- [ ] **executive-chef returns max entitlements**
+  Hook returns `recipeLimit: 2500`, `cookbookLimit: 200`, both can flags `true`.
 
-#### ImportPage (`src/routes/__tests__/-import.test.tsx`)
+- [ ] **Null session returns home-cook fallback**
+  Spec: `specs/use-tier-entitlements.md` → "Null session returns home-cook fallback"
+  With session `null`, hook returns `{ recipeLimit: 10, cookbookLimit: 1, canCreatePrivate: false, canImport: false }`.
 
-- [x] Shows TierWall modal when import returns a tier-wall error
-- [x] Does not show TierWall for non-tier import errors
+- [ ] **home-cook returns correct entitlements**
+  `recipeLimit: 10`, `cookbookLimit: 1`, both can flags `false`.
 
-#### CookbooksPage (`src/components/cookbooks/__tests__/CookbooksPage.test.tsx`)
+---
 
-- [x] Shows TierWall modal when cookbook create returns a tier-wall error
-- [x] Shows generic error (not TierWall) when cookbook create fails with a non-tier error
+### Task 4 — TierWall component
+
+File: `src/components/ui/__tests__/TierWall.test.tsx` _(new)_
+
+- [ ] **Inline mode renders count-limit message and /pricing link**
+  Spec: `specs/tier-wall-component.md` → "Inline TierWall shows correct message for count-limit"
+  RTL render of `<TierWall reason="count-limit" display="inline" />` contains upgrade copy and a link to `/pricing`.
+
+- [ ] **Inline mode renders private-content message**
+  Spec: `specs/tier-wall-component.md` → "Inline TierWall shows correct message for private-content"
+  Copy references sous-chef requirement.
+
+- [ ] **Inline mode renders import message**
+  Spec: `specs/tier-wall-component.md` → "Inline TierWall shows correct message for import"
+  Copy references import requiring sous-chef or above.
+
+- [ ] **Modal mode calls onDismiss when dismiss button clicked**
+  Spec: `specs/tier-wall-component.md` → "Modal TierWall can be dismissed"
+  RTL render of modal TierWall → click dismiss → `onDismiss` spy called once.
+
+- [ ] **Modal mode renders /pricing link**
+  Spec: `specs/tier-wall-component.md` → "Modal TierWall /pricing link is present"
+  Link to `/pricing` present in modal render.
+
+- [ ] **TierWall does not crash with null session context**
+  Spec: `specs/tier-wall-component.md` → "TierWall renders without crash when tier is unknown"
+  Renders without throwing; shows generic upgrade message.
+
+---
+
+### Task 5 — Pre-emptive affordances
+
+Files: `src/routes/__tests__/-recipes.test.tsx`, `src/routes/__tests__/-cookbooks.test.tsx` _(extend existing or add new)_
+
+- [ ] **New Recipe button disabled when home-cook user is at recipe limit**
+  Spec: `specs/pre-emptive-affordances.md` → "New Recipe button disabled at limit"
+  Mock session with `tier: 'home-cook'` + recipe count = 10 → button has `disabled` attribute and inline TierWall present.
+
+- [ ] **New Recipe button enabled when below limit**
+  Spec: `specs/pre-emptive-affordances.md` → "New Recipe button enabled below limit"
+  Mock session with `tier: 'home-cook'` + recipe count = 7 → button enabled, no TierWall.
+
+- [ ] **New Cookbook button disabled when home-cook is at cookbook limit**
+  Spec: `specs/pre-emptive-affordances.md` → "New Cookbook button disabled at limit"
+  Mock session with cookbook count = 1 → button disabled, inline TierWall present.
+
+- [ ] **Private toggle absent for prep-cook**
+  Spec: `specs/pre-emptive-affordances.md` → "Private toggle hidden for prep-cook"
+  Form renders with `tier: 'prep-cook'` → private toggle not in DOM.
+
+- [ ] **Private toggle present for sous-chef**
+  Spec: `specs/pre-emptive-affordances.md` → "Private toggle shown for sous-chef"
+  Form renders with `tier: 'sous-chef'` → private toggle present.
+
+- [ ] **Import entry point hidden for home-cook**
+  Spec: `specs/pre-emptive-affordances.md` → "Import entry point hidden for home-cook"
+  Import button/link absent or disabled for `tier: 'home-cook'`.
+
+- [ ] **Import entry point visible for sous-chef**
+  Spec: `specs/pre-emptive-affordances.md` → "Import entry point visible for sous-chef"
+  Import button/link present for `tier: 'sous-chef'`.
+
+---
+
+### Task 6 — Client-side PAYMENT_REQUIRED catch
+
+Files: affected component test files
+
+- [ ] **PAYMENT_REQUIRED with tier-wall cause renders modal TierWall**
+  Spec: `specs/tier-wall-component.md` → "Modal TierWall is shown after server PAYMENT_REQUIRED"
+  Mock mutation returning PAYMENT_REQUIRED + `appError: { type: 'tier-wall', reason: 'count-limit' }` → modal TierWall rendered with correct reason.
+
+- [ ] **Non-tier error still shows generic toast**
+  A FORBIDDEN error without `appError` → generic error toast shown, no TierWall.
+
+- [ ] **UNAUTHORIZED error is unaffected**
+  UNAUTHORIZED errors continue to redirect/handle as before.

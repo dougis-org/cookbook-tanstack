@@ -52,16 +52,17 @@ async function reconcileCollection(
     }
 
     const limit = getLimit(newTier)
-    const visibleCount = await Model.countDocuments({
-      userId: userObjId,
-      hiddenByTier: { $ne: true },
-    })
+    const visibleCount = await Model.countDocuments(
+      { userId: userObjId, hiddenByTier: { $ne: true } },
+      { session },
+    )
 
     if (visibleCount > limit) {
       const toHide = await Model.find({ userId: userObjId, hiddenByTier: { $ne: true } })
         .sort({ createdAt: 1 as const })
         .skip(limit)
         .select({ _id: 1 })
+        .lean()
         .session(session)
 
       if (toHide.length > 0) {
