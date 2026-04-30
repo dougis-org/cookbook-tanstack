@@ -63,7 +63,7 @@
   "overrides": {
     "defu": "6.1.5",
     "srvx": "0.11.13",
-    "h3": "2.0.1-rc.20"
+    "h3": "2.0.1-rc.21"
   },
   "devDependencies": {
     "@bgotink/playwright-coverage": "^0.3.2",
