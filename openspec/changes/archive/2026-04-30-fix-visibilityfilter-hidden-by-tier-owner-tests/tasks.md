@@ -272,11 +272,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Close GitHub issue #410 with reference to the merged PR
-- [ ] Archive the change: move `openspec/changes/fix-visibilityfilter-hidden-by-tier-owner-tests/` to `openspec/changes/archive/2026-04-30-fix-visibilityfilter-hidden-by-tier-owner-tests/` — stage both the new location and the deletion of the old location in a **single commit**
-- [ ] Confirm `openspec/changes/archive/2026-04-30-fix-visibilityfilter-hidden-by-tier-owner-tests/` exists and `openspec/changes/fix-visibilityfilter-hidden-by-tier-owner-tests/` is gone
-- [ ] Commit and push the archive to the default branch in one commit
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Close GitHub issue #410 with reference to the merged PR
+- [x] Archive the change: move `openspec/changes/fix-visibilityfilter-hidden-by-tier-owner-tests/` to `openspec/changes/archive/2026-04-30-fix-visibilityfilter-hidden-by-tier-owner-tests/` — stage both the new location and the deletion of the old location in a **single commit**
+- [x] Confirm `openspec/changes/archive/2026-04-30-fix-visibilityfilter-hidden-by-tier-owner-tests/` exists and `openspec/changes/fix-visibilityfilter-hidden-by-tier-owner-tests/` is gone
+- [x] Commit and push the archive to the default branch in one commit
 - [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d fix-visibilityfilter-hidden-by-tier-owner-tests`
