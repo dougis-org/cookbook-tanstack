@@ -929,9 +929,77 @@ describe("cookbooks.list — hiddenByTier in response", () => {
       expect(results[0].hiddenByTier).toBe(false);
     });
   });
+
+  it("owner cannot see hiddenByTier cookbook in list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Cookbook({ name: "Visible Cookbook", userId: owner.id, isPublic: true }).save();
+      await new Cookbook({
+        name: "Hidden Cookbook",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results).toHaveLength(1);
+      expect(results[0].name).toBe("Visible Cookbook");
+    });
+  });
+
+  it("owner cannot see hiddenByTier private cookbook in list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Cookbook({ name: "Visible Private Cookbook", userId: owner.id, isPublic: false }).save();
+      await new Cookbook({
+        name: "Hidden Private Cookbook",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results).toHaveLength(1);
+      expect(results[0].name).toBe("Visible Private Cookbook");
+    });
+  });
 });
 
-// ─── cookbooks.byId — hiddenByTier in response ───────────────────────────────
+describe("cookbooks.byId — hiddenByTier (owner exclusion)", () => {
+  it("owner cannot see own hiddenByTier cookbook byId — returns null", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const hiddenCb = await new Cookbook({
+        name: "Hidden Cookbook",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.cookbooks.byId({ id: hiddenCb.id });
+      expect(result).toBeNull();
+    });
+  });
+
+  it("owner cannot see own hiddenByTier private cookbook byId — returns null", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const hiddenCb = await new Cookbook({
+        name: "Hidden Private Cookbook",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.cookbooks.byId({ id: hiddenCb.id });
+      expect(result).toBeNull();
+    });
+  });
+});
 
 describe("cookbooks.byId — hiddenByTier in response", () => {
   it("byId response includes hiddenByTier: false by default", async () => {

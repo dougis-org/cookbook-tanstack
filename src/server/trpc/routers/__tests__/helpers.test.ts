@@ -4,6 +4,7 @@ import mongoose from "mongoose"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
 import { Recipe, Cookbook } from "@/db/models"
 import { seedUserWithBetterAuth } from "./test-helpers"
+import { visibilityFilter } from "../_helpers"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -11,17 +12,102 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
 describe("visibilityFilter", () => {
   it("returns { isPublic: true, hiddenByTier: { $ne: true } } for anonymous users", async () => {
-    const { visibilityFilter } = await import("../_helpers")
-    const result = visibilityFilter(null)
-    expect(result).toEqual({ isPublic: true, hiddenByTier: { $ne: true } })
+    expect(visibilityFilter(null)).toEqual({ isPublic: true, hiddenByTier: { $ne: true } })
   })
 
   it("returns { $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId, hiddenByTier: { $ne: true } }] } for authenticated users", async () => {
-    const { visibilityFilter } = await import("../_helpers")
-    const result = visibilityFilter({ id: "u1" })
-    expect(result).toEqual({ $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId: "u1", hiddenByTier: { $ne: true } }] })
+    expect(visibilityFilter({ id: "u1" })).toEqual({ $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId: "u1", hiddenByTier: { $ne: true } }] })
   })
 })
+
+describe("visibilityFilter — behavior with actual documents", () => {
+  it("excludes hiddenByTier docs for owner — cookbooks (public)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Cookbook({ name: "Visible", userId: owner.id, isPublic: true }).save();
+      await new Cookbook({
+        name: "Hidden",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const docs = await Cookbook.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible");
+    });
+  });
+
+  it("excludes hiddenByTier docs for owner — cookbooks (private)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Cookbook({ name: "Visible Private", userId: owner.id, isPublic: false }).save();
+      await new Cookbook({
+        name: "Hidden Private",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const docs = await Cookbook.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible Private");
+    });
+  });
+
+  it("excludes hiddenByTier docs for owner — recipes (public)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Recipe({ name: "Visible", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Hidden",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+      }).save();
+      const docs = await Recipe.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible");
+    });
+  });
+
+  it("excludes hiddenByTier docs for owner — recipes (private)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Recipe({ name: "Visible Private", userId: owner.id, isPublic: false }).save();
+      await new Recipe({
+        name: "Hidden Private",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+      }).save();
+      const docs = await Recipe.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible Private");
+    });
+  });
+
+  it("excludes hiddenByTier docs for anonymous user — cookbooks", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Cookbook({
+        name: "Hidden",
+        userId: owner.id,
+        isPublic: true,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const docs = await Cookbook.find(visibilityFilter(null)).lean();
+      expect(docs).toHaveLength(0);
+    });
+  });
+});
 
 describe("verifyOwnership", () => {
   it("throws NOT_FOUND when record does not exist (fetchRecord returns null)", async () => {
