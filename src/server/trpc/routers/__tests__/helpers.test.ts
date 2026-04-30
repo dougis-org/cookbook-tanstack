@@ -21,7 +21,7 @@ describe("visibilityFilter", () => {
 })
 
 describe("visibilityFilter — behavior with actual documents", () => {
-  it("excludes hiddenByTier docs for owner — cookbooks", async () => {
+  it("excludes hiddenByTier docs for owner — cookbooks (public)", async () => {
     await withCleanDb(async () => {
       const owner = await seedUserWithBetterAuth();
       await new Cookbook({ name: "Visible", userId: owner.id, isPublic: true }).save();
@@ -38,7 +38,24 @@ describe("visibilityFilter — behavior with actual documents", () => {
     });
   });
 
-  it("excludes hiddenByTier docs for owner — recipes", async () => {
+  it("excludes hiddenByTier docs for owner — cookbooks (private)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Cookbook({ name: "Visible Private", userId: owner.id, isPublic: false }).save();
+      await new Cookbook({
+        name: "Hidden Private",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const docs = await Cookbook.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible Private");
+    });
+  });
+
+  it("excludes hiddenByTier docs for owner — recipes (public)", async () => {
     await withCleanDb(async () => {
       const owner = await seedUserWithBetterAuth();
       await new Recipe({ name: "Visible", userId: owner.id, isPublic: true }).save();
@@ -54,6 +71,25 @@ describe("visibilityFilter — behavior with actual documents", () => {
       const docs = await Recipe.find(visibilityFilter({ id: owner.id })).lean();
       expect(docs).toHaveLength(1);
       expect(docs[0].name).toBe("Visible");
+    });
+  });
+
+  it("excludes hiddenByTier docs for owner — recipes (private)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Recipe({ name: "Visible Private", userId: owner.id, isPublic: false }).save();
+      await new Recipe({
+        name: "Hidden Private",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+      }).save();
+      const docs = await Recipe.find(visibilityFilter({ id: owner.id })).lean();
+      expect(docs).toHaveLength(1);
+      expect(docs[0].name).toBe("Visible Private");
     });
   });
 

@@ -947,6 +947,24 @@ describe("cookbooks.list — hiddenByTier in response", () => {
       expect(results[0].name).toBe("Visible Cookbook");
     });
   });
+
+  it("owner cannot see hiddenByTier private cookbook in list", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Cookbook({ name: "Visible Private Cookbook", userId: owner.id, isPublic: false }).save();
+      await new Cookbook({
+        name: "Hidden Private Cookbook",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const results = await caller.cookbooks.list();
+      expect(results).toHaveLength(1);
+      expect(results[0].name).toBe("Visible Private Cookbook");
+    });
+  });
 });
 
 describe("cookbooks.byId — hiddenByTier (owner exclusion)", () => {
@@ -965,22 +983,23 @@ describe("cookbooks.byId — hiddenByTier (owner exclusion)", () => {
       expect(result).toBeNull();
     });
   });
-});
 
-describe("cookbooks.byId — hiddenByTier in response", () => {
-  it("byId response includes hiddenByTier: false by default", async () => {
+  it("owner cannot see own hiddenByTier private cookbook byId — returns null", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const cb = await seedCookbook(owner.id);
-      const caller = await makeAnonCaller();
-      const result = await caller.cookbooks.byId({ id: cb.id });
-      expect(result).not.toBeNull();
-      expect(result!.hiddenByTier).toBe(false);
+      const hiddenCb = await new Cookbook({
+        name: "Hidden Private Cookbook",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.cookbooks.byId({ id: hiddenCb.id });
+      expect(result).toBeNull();
     });
   });
 });
-
-// ─── cookbooks.byId — hiddenByTier in response ───────────────────────────────
 
 describe("cookbooks.byId — hiddenByTier in response", () => {
   it("byId response includes hiddenByTier: false by default", async () => {
