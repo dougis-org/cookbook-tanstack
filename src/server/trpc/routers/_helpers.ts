@@ -17,9 +17,14 @@ export const objectId = z
  */
 export function visibilityFilter(user: { id: string } | null) {
   if (user) {
-    return { $or: [{ isPublic: true }, { userId: user.id }] };
+    return {
+      $or: [
+        { isPublic: true, hiddenByTier: { $ne: true } },
+        { userId: user.id, hiddenByTier: { $ne: true } },
+      ],
+    }
   }
-  return { isPublic: true };
+  return { isPublic: true }
 }
 
 /**

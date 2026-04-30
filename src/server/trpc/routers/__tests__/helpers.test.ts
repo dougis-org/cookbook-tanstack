@@ -16,10 +16,10 @@ describe("visibilityFilter", () => {
     expect(result).toEqual({ isPublic: true })
   })
 
-  it("returns { $or: [{ isPublic: true }, { userId }] } for authenticated users", async () => {
+  it("returns { $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId, hiddenByTier: { $ne: true } }] } for authenticated users", async () => {
     const { visibilityFilter } = await import("../_helpers")
     const result = visibilityFilter({ id: "u1" })
-    expect(result).toEqual({ $or: [{ isPublic: true }, { userId: "u1" }] })
+    expect(result).toEqual({ $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId: "u1", hiddenByTier: { $ne: true } }] })
   })
 })
 

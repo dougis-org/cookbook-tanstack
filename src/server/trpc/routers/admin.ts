@@ -5,6 +5,7 @@ import { adminProcedure, router } from '../init'
 import { getMongoClient } from '@/db'
 import { objectId } from './_helpers'
 import { transformUserDoc } from './users'
+import { reconcileUserContent } from '@/lib/reconcile-user-content'
 import type { UserTier } from '@/types/user'
 
 const USER_TIERS = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef'] as const
@@ -58,6 +59,13 @@ const usersRouter = router({
         { _id: targetObjectId },
         { $set: { tier: input.tier, updatedAt: new Date() } },
       )
+
+      try {
+        const reconciliationResult = await reconcileUserContent(input.userId, currentTier, input.tier)
+        console.log('[admin.setTier] Reconciliation result:', reconciliationResult)
+      } catch (err) {
+        console.error('[admin.setTier] Content reconciliation failed:', err)
+      }
 
       try {
         const { AdminAuditLog } = await import('@/db/models')
