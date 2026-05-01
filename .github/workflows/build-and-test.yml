@@ -106,6 +106,7 @@ jobs:
         env:
           CI: true
         run: npm run test:e2e
+        timeout-minutes: 10
 
       - name: Run Playwright runtime summary
         if: always()
