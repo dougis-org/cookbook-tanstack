@@ -64,7 +64,7 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 60000,
-    // Expect "ready" log message to confirm server is listening, fail fast if not seen
+    // Pipe stdout/stderr in CI for debugging server startup issues; 60s timeout fails fast if server doesn't respond
     stdout: process.env.CI ? 'pipe' : 'ignore',
     stderr: process.env.CI ? 'pipe' : 'ignore',
   },

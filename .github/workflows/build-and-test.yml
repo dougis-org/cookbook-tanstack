@@ -107,11 +107,11 @@ jobs:
           CI: true
         run: npm run test:e2e
         timeout-minutes: 10
-        continue-on-error: true
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         # TEMPORARY: E2E tests have a pre-existing issue where the production server
         # doesn't start properly in CI (hangs on MongoDB connection or other initialization).
-        # This issue exists on main branch as well. Marked as continue-on-error to unblock
-        # the TanStack package upgrade PR while the server startup issue is investigated separately.
+        # This issue exists on main branch as well. Skip failures on PRs to unblock development
+        # while investigating the server startup issue separately. Main branch pushes remain blocking.
 
       - name: Run Playwright runtime summary
         if: always()
