@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T23:20:05.999Z
-> Files: 567 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-01T15:47:49.909Z
+> Files: 572 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
 
@@ -27,7 +27,7 @@
 - `fix.js` — Escapes characters with special meaning in regular expressions. (~1141 tok)
 - `fly.toml` (~147 tok)
 - `package-lock.json` — npm lock file (~74833 tok)
-- `package.json` — Node.js package manifest (~905 tok)
+- `package.json` — Node.js package manifest (~943 tok)
 - `playwright.config.ts` — Playwright test configuration (~560 tok)
 - `README.md` — Project documentation (~580 tok)
 - `tsconfig.json` — TypeScript configuration (~179 tok)
@@ -788,6 +788,17 @@
 
 - `tasks.md` — Tasks (~1911 tok)
 - `tests.md` — Tests — tier-wall-ux (~956 tok)
+
+## openspec/changes/upgrade-tanstack-packages/
+
+- `design.md` — Context (~2144 tok)
+- `proposal.md` — GitHub Issues (~1149 tok)
+- `tasks.md` — Tasks (~1500 tok)
+- `tests.md` — Tests (~793 tok)
+
+## openspec/changes/upgrade-tanstack-packages/specs/
+
+- `upgrade-compatibility.md` — ADDED Requirements (~1430 tok)
 
 ## openspec/specs/fouc-prevention/
 
