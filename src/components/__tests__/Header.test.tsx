@@ -393,7 +393,6 @@ describe("Header sidebar Pricing link", () => {
     const cookbooksLink = withinSidebar.getByRole("link", { name: /cookbooks/i })
     const pricingLink = withinSidebar.getByRole("link", { name: /pricing/i })
     const newRecipeLink = withinSidebar.getByRole("link", { name: /new recipe/i })
-    const navLinkArray = [cookbooksLink, pricingLink, newRecipeLink]
     expect(navLinks.indexOf(cookbooksLink)).toBeLessThan(navLinks.indexOf(pricingLink))
     expect(navLinks.indexOf(pricingLink)).toBeLessThan(navLinks.indexOf(newRecipeLink))
   })

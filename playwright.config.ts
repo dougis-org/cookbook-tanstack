@@ -63,6 +63,9 @@ export default defineConfig({
       : "npm run dev -- --mode test",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 60000,
+    // Pipe stdout/stderr in CI for debugging server startup issues; 60s timeout fails fast if server doesn't respond
+    stdout: process.env.CI ? 'pipe' : 'ignore',
+    stderr: process.env.CI ? 'pipe' : 'ignore',
   },
 });
