@@ -91,19 +91,27 @@ describe('/pricing', () => {
     })
   })
 
-  describe('tier display', () => {
-    it('does not crash when session.user.tier is undefined', () => {
-      mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
-      expect(() => render(<PricingPage />)).not.toThrow()
+  describe('tier highlight', () => {
+    it('highlights current tier card with data-current attribute', () => {
+      mockUseAuth.mockReturnValue(tierSession('sous-chef'))
+      render(<PricingPage />)
+      expect(screen.getByTestId('tier-card-sous-chef')).toHaveAttribute('data-current', 'true')
+      expect(screen.getByTestId('tier-card-home-cook')).not.toHaveAttribute('data-current')
+      expect(screen.getByTestId('tier-card-prep-cook')).not.toHaveAttribute('data-current')
+      expect(screen.getByTestId('tier-card-executive-chef')).not.toHaveAttribute('data-current')
     })
 
-    it('renders all 4 tier cards for authenticated user', () => {
-      mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    it('highlights home-cook card for authenticated user with missing tier', () => {
+      mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
       render(<PricingPage />)
-      expect(screen.getByTestId('tier-card-home-cook')).toBeInTheDocument()
-      expect(screen.getByTestId('tier-card-prep-cook')).toBeInTheDocument()
-      expect(screen.getByTestId('tier-card-sous-chef')).toBeInTheDocument()
-      expect(screen.getByTestId('tier-card-executive-chef')).toBeInTheDocument()
+      expect(screen.getByTestId('tier-card-home-cook')).toHaveAttribute('data-current', 'true')
+    })
+
+    it('shows "Current plan" badge on current tier card', () => {
+      mockUseAuth.mockReturnValue(tierSession('prep-cook'))
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-prep-cook')
+      expect(card.textContent).toContain('Current plan')
     })
   })
 

@@ -17,9 +17,10 @@ export const Route = createFileRoute("/pricing")({ component: PricingPage })
 
 interface TierCardProps {
   tier: EntitlementTier
+  isCurrentTier: boolean
 }
 
-function TierCard({ tier }: TierCardProps) {
+function TierCard({ tier, isCurrentTier }: TierCardProps) {
   const limits = TIER_LIMITS[tier]
   const pricing = TIER_PRICING[tier]
   const isPaidTier = pricing.annual !== null
@@ -27,8 +28,19 @@ function TierCard({ tier }: TierCardProps) {
   return (
     <div
       data-testid={`tier-card-${tier}`}
-      className="flex flex-col rounded-xl border p-6 text-center border-[var(--theme-border)] bg-[var(--theme-surface)]"
+      data-current={isCurrentTier ? "true" : undefined}
+      className={[
+        "flex flex-col rounded-xl border p-6 text-center",
+        isCurrentTier
+          ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/5 ring-2 ring-[var(--theme-accent)]"
+          : "border-[var(--theme-border)] bg-[var(--theme-surface)]",
+      ].join(" ")}
     >
+      {isCurrentTier && (
+        <span className="mb-2 inline-block rounded-full bg-[var(--theme-accent)] px-3 py-0.5 text-xs font-semibold text-white">
+          Current plan
+        </span>
+      )}
       <h2 className="text-lg font-bold text-[var(--theme-fg)]">
         {TIER_DISPLAY_NAMES[tier]}
       </h2>
@@ -87,6 +99,7 @@ export function PricingPage() {
           <TierCard
             key={tier}
             tier={tier}
+            isCurrentTier={tier === currentTier}
           />
         ))}
       </div>
