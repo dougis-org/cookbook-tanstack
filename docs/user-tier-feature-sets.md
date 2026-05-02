@@ -105,7 +105,7 @@ control the scale of chapter usage.
 
 ## Import Policy
 
-Recipe import is available only to Sous Chef and Executive Chef users.
+Recipe import is available only to Executive Chef users.
 
 Home Cook and Prep Cook users cannot import recipes. This prevents lower tiers
 from rapidly filling their content quota through bulk or semi-automated flows
@@ -126,7 +126,7 @@ changes the model.
 | --- | --- |
 | Ad suppression | Prep Cook and above |
 | Private recipes and cookbooks | Sous Chef and above |
-| Recipe import | Sous Chef and above |
+| Recipe import | Executive Chef only |
 | Bulk import/export | Executive Chef candidate |
 | Advanced sharing | Sous Chef or Executive Chef candidate |
 | Collaboration | Executive Chef candidate |

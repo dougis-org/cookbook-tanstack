@@ -1467,7 +1467,7 @@ describe("recipes.import", () => {
   it("creates a new recipe for the authenticated user", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
 
       const result = await caller.recipes.import({
         name: "Imported Dish",
@@ -1539,10 +1539,10 @@ describe("recipes.import — tier gate and count limit", () => {
     });
   });
 
-  it("sous-chef under limit is allowed", async () => {
+  it("executive-chef under limit is allowed", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
       const result = await caller.recipes.import({ name: "Allowed Import", _version: "1" });
       expect(result).toMatchObject({ name: "Allowed Import" });
     });

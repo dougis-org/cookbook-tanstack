@@ -91,22 +91,19 @@ describe('/pricing', () => {
     })
   })
 
-  describe('tier highlight', () => {
-    it('highlights sous-chef card when session tier is sous-chef', () => {
-      mockUseAuth.mockReturnValue(tierSession('sous-chef'))
-      render(<PricingPage />)
-      expect(screen.getByTestId('tier-card-sous-chef')).toHaveAttribute('data-current', 'true')
-    })
-
+  describe('tier display', () => {
     it('does not crash when session.user.tier is undefined', () => {
       mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
       expect(() => render(<PricingPage />)).not.toThrow()
     })
 
-    it('highlights home-cook card for authenticated user with missing tier', () => {
-      mockUseAuth.mockReturnValue({ session: { user: { id: 'u1', isAdmin: false } } })
+    it('renders all 4 tier cards for authenticated user', () => {
+      mockUseAuth.mockReturnValue(tierSession('home-cook'))
       render(<PricingPage />)
-      expect(screen.getByTestId('tier-card-home-cook')).toHaveAttribute('data-current', 'true')
+      expect(screen.getByTestId('tier-card-home-cook')).toBeInTheDocument()
+      expect(screen.getByTestId('tier-card-prep-cook')).toBeInTheDocument()
+      expect(screen.getByTestId('tier-card-sous-chef')).toBeInTheDocument()
+      expect(screen.getByTestId('tier-card-executive-chef')).toBeInTheDocument()
     })
   })
 
@@ -129,149 +126,160 @@ describe('/pricing', () => {
     })
   })
 
-  describe('CTAs', () => {
-    describe('no CTA on current tier card', () => {
-      it('home-cook current tier card has no link', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-home-cook')
+  describe('no per-tier CTAs', () => {
+    it('no tier card contains a link for anonymous visitor', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const cards = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef']
+      for (const tier of cards) {
+        const card = screen.getByTestId(`tier-card-${tier}`)
         expect(card.querySelector('a')).toBeNull()
-      })
-
-      it('prep-cook current tier card has no link', () => {
-        mockUseAuth.mockReturnValue(tierSession('prep-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-prep-cook')
-        expect(card.querySelector('a')).toBeNull()
-      })
-
-      it('sous-chef current tier card has no link', () => {
-        mockUseAuth.mockReturnValue(tierSession('sous-chef'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-sous-chef')
-        expect(card.querySelector('a')).toBeNull()
-      })
-
-      it('executive-chef current tier card shows "Maximum plan" and has no link', () => {
-        mockUseAuth.mockReturnValue(tierSession('executive-chef'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-executive-chef')
-        expect(card.querySelector('a')).toBeNull()
-        expect(card.textContent).toContain('Maximum plan')
-      })
+      }
     })
 
-    describe('upgrade CTA (tiers above current)', () => {
-      it('home-cook user: prep-cook card shows Upgrade link to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-prep-cook')
-        const link = card.querySelector('a')
-        expect(link?.textContent).toBe('Upgrade')
-        expect(link?.getAttribute('href')).toBe('/change-tier')
-      })
-
-      it('home-cook user: sous-chef card shows Upgrade link to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-sous-chef')
-        const link = card.querySelector('a')
-        expect(link?.textContent).toBe('Upgrade')
-        expect(link?.getAttribute('href')).toBe('/change-tier')
-      })
-
-      it('home-cook user: executive-chef card shows "Maximum plan" not Upgrade', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-executive-chef')
+    it('no tier card contains a link for authenticated home-cook user', () => {
+      mockUseAuth.mockReturnValue(tierSession('home-cook'))
+      render(<PricingPage />)
+      const cards = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef']
+      for (const tier of cards) {
+        const card = screen.getByTestId(`tier-card-${tier}`)
         expect(card.querySelector('a')).toBeNull()
-        expect(card.textContent).toContain('Maximum plan')
-      })
-
-      it('prep-cook user: sous-chef card shows Upgrade to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('prep-cook'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-sous-chef')
-        const link = card.querySelector('a')
-        expect(link?.textContent).toBe('Upgrade')
-        expect(link?.getAttribute('href')).toBe('/change-tier')
-      })
-
-      it('home-cook user: no Downgrade link anywhere on the page', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const downgradeLinks = screen.queryAllByRole('link', { name: /downgrade/i })
-        expect(downgradeLinks.length).toBe(0)
-      })
+      }
     })
 
-    describe('downgrade CTA (tiers below current)', () => {
-      it('sous-chef user: home-cook card shows Downgrade link to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('sous-chef'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-home-cook')
-        const link = card.querySelector('a')
-        expect(link?.textContent).toBe('Downgrade')
-        expect(link?.getAttribute('href')).toBe('/change-tier')
-      })
-
-      it('sous-chef user: prep-cook card shows Downgrade link to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('sous-chef'))
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-prep-cook')
-        const link = card.querySelector('a')
-        expect(link?.textContent).toBe('Downgrade')
-        expect(link?.getAttribute('href')).toBe('/change-tier')
-      })
-
-      it('executive-chef user: all lower tier cards show Downgrade to /change-tier', () => {
-        mockUseAuth.mockReturnValue(tierSession('executive-chef'))
-        render(<PricingPage />)
-        for (const tier of ['home-cook', 'prep-cook', 'sous-chef']) {
-          const card = screen.getByTestId(`tier-card-${tier}`)
-          const link = card.querySelector('a')
-          expect(link?.textContent).toBe('Downgrade')
-          expect(link?.getAttribute('href')).toBe('/change-tier')
-        }
-      })
-    })
-
-    describe('anonymous visitor', () => {
-      it('all 4 visible tier cards contain "Get started free" link to /auth/register except executive-chef', () => {
-        mockUseAuth.mockReturnValue(anonSession())
-        render(<PricingPage />)
-        const signUpLinks = screen.getAllByRole('link', { name: /get started free/i })
-        expect(signUpLinks.length).toBe(3)
-        signUpLinks.forEach((link) => {
-          expect(link.getAttribute('href')).toBe('/auth/register')
-        })
-      })
-
-      it('executive-chef card shows "Maximum plan" with no link for anonymous visitor', () => {
-        mockUseAuth.mockReturnValue(anonSession())
-        render(<PricingPage />)
-        const card = screen.getByTestId('tier-card-executive-chef')
+    it('no tier card contains a link for authenticated sous-chef user', () => {
+      mockUseAuth.mockReturnValue(tierSession('sous-chef'))
+      render(<PricingPage />)
+      const cards = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef']
+      for (const tier of cards) {
+        const card = screen.getByTestId(`tier-card-${tier}`)
         expect(card.querySelector('a')).toBeNull()
-        expect(card.textContent).toContain('Maximum plan')
-      })
+      }
+    })
+  })
+
+  describe('single CTA for anonymous users', () => {
+    it('shows single "Get Started for Free" link below tier grid for anonymous', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const links = screen.getAllByRole('link', { name: /get started for free/i })
+      expect(links.length).toBe(1)
+      expect(links[0].getAttribute('href')).toBe('/auth/register')
     })
 
-    describe('no /upgrade references', () => {
-      it('no links point to /upgrade for any session', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const allLinks = screen.queryAllByRole('link')
-        allLinks.forEach((link) => {
-          expect(link.getAttribute('href')).not.toBe('/upgrade')
-        })
-      })
+    it('no "Get Started for Free" link when authenticated', () => {
+      mockUseAuth.mockReturnValue(tierSession('home-cook'))
+      render(<PricingPage />)
+      const links = screen.queryAllByRole('link', { name: /get started for free/i })
+      expect(links.length).toBe(0)
+    })
+  })
 
-      it('executive-chef card has no link to /change-tier (top tier shows Maximum plan)', () => {
-        mockUseAuth.mockReturnValue(tierSession('home-cook'))
-        render(<PricingPage />)
-        const execCard = screen.getByTestId('tier-card-executive-chef')
-        expect(execCard.querySelector('a[href="/change-tier"]')).toBeNull()
-      })
+  describe('pricing display', () => {
+    it('home-cook shows FREE', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-home-cook')
+      expect(card.textContent).toContain('FREE')
+    })
+
+    it('prep-cook shows annual and monthly price', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-prep-cook')
+      expect(card.textContent).toContain('$27.99/year')
+      expect(card.textContent).toContain('$2.99/month')
+    })
+
+    it('sous-chef shows annual and monthly price', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-sous-chef')
+      expect(card.textContent).toContain('$59.99/year')
+      expect(card.textContent).toContain('$5.99/month')
+    })
+
+    it('executive-chef shows annual and monthly price', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-executive-chef')
+      expect(card.textContent).toContain('$99.99/year')
+      expect(card.textContent).toContain('$9.99/month')
+    })
+
+    it('paid tiers show "Save 2 months" badge', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      expect(screen.getByTestId('tier-card-prep-cook').textContent).toContain('Save 2 months')
+      expect(screen.getByTestId('tier-card-sous-chef').textContent).toContain('Save 2 months')
+      expect(screen.getByTestId('tier-card-executive-chef').textContent).toContain('Save 2 months')
+    })
+
+    it('home-cook does not show "Save 2 months" badge', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-home-cook')
+      expect(card.textContent).not.toContain('Save 2 months')
+    })
+  })
+
+  describe('ad status display', () => {
+    it('home-cook shows "Ad Supported"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-home-cook')
+      expect(card.textContent).toContain('Ad Supported')
+    })
+
+    it('prep-cook shows "No Ads"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-prep-cook')
+      expect(card.textContent).toContain('No Ads')
+    })
+
+    it('sous-chef shows "No Ads"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-sous-chef')
+      expect(card.textContent).toContain('No Ads')
+    })
+
+    it('executive-chef shows "No Ads"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-executive-chef')
+      expect(card.textContent).toContain('No Ads')
+    })
+  })
+
+  describe('import capability display', () => {
+    it('home-cook shows "No import"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-home-cook')
+      expect(card.textContent).toContain('No import')
+    })
+
+    it('prep-cook shows "No import"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-prep-cook')
+      expect(card.textContent).toContain('No import')
+    })
+
+    it('sous-chef shows "No import" (import requires executive-chef)', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-sous-chef')
+      expect(card.textContent).toContain('No import')
+    })
+
+    it('executive-chef shows "Import ✓"', () => {
+      mockUseAuth.mockReturnValue(anonSession())
+      render(<PricingPage />)
+      const card = screen.getByTestId('tier-card-executive-chef')
+      expect(card.textContent).toContain('Import ✓')
     })
   })
 })
