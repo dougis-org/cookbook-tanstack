@@ -875,6 +875,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-03T19:39:19.784Z"
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-05-03T21:34:54.434Z",
+      "error_message": "CSS fix: javascript",
+      "file": "src/routes/auth/verify-email.tsx",
+      "root_cause": "javascript: const isValidRelativePath = search.from === \"\" || (search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")) → const isValidRelativePath = search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")",
+      "fix": "Changed javascript: const isValidRelativePath = search.from === \"\" || (search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")) → const isValidRelativePath = search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T21:34:54.434Z"
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-05-03T21:35:23.547Z",
+      "error_message": "Wrong reference: protectedProcedure should be verifiedProcedure",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "Used \"protectedProcedure\" instead of \"verifiedProcedure\"",
+      "fix": "Changed protectedProcedure → verifiedProcedure",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-03T21:35:31.312Z"
     }
   ]
 }

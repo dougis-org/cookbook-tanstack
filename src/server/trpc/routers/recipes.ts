@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { publicProcedure, protectedProcedure, router } from "../init";
+import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook } from "@/db/models";
 import mongoose from "mongoose";
@@ -245,7 +245,7 @@ export const recipesRouter = router({
       };
     }),
 
-  create: protectedProcedure
+  create: verifiedProcedure
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
@@ -271,7 +271,7 @@ export const recipesRouter = router({
       };
     }),
 
-  update: protectedProcedure
+  update: verifiedProcedure
     .input(
       z
         .object({ id: objectId })
@@ -386,7 +386,7 @@ export const recipesRouter = router({
       return { marked: true };
     }),
 
-  import: protectedProcedure
+  import: verifiedProcedure
     .input(importedRecipeSchema)
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {

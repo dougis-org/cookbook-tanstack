@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
-import { publicProcedure, protectedProcedure, router } from "../init";
+import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
 // Side-effect imports register models needed for Recipe.populate() chains
@@ -290,7 +290,7 @@ export const cookbooksRouter = router({
       return { ...cookbookCoreFields(cb), recipes, chapters };
     }),
 
-  create: protectedProcedure
+  create: verifiedProcedure
     .input(
       z.object({
         name: z.string().min(1).max(255),

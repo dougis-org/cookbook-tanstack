@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T21:19:57.481Z
-> Files: 601 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T21:36:45.952Z
+> Files: 605 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -900,7 +900,7 @@
 
 ## src/routes/auth/
 
-- `verify-email.tsx` — validateVerifyEmailSearch (~370 tok)
+- `verify-email.tsx` — validateVerifyEmailSearch (~366 tok)
 
 ## src/routes/auth/__tests__/
 
@@ -921,15 +921,19 @@
 
 ## src/server/trpc/
 
+- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~799 tok)
 - `router.ts` — Exports appRouter, AppRouter (~258 tok)
 
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7148 tok)
+- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4597 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 
 ## src/server/trpc/routers/__tests__/
 
+- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
 - `usage.test.ts` — Declares user (~853 tok)
 
 ## src/test-helpers/

@@ -497,3 +497,12 @@
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
+| 14:34 | Edited src/routes/auth/verify-email.tsx | modified validateVerifyEmailSearch() | ~195 |
+| 14:35 | Edited src/server/trpc/init.ts | added 1 condition(s) | ~223 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 3→3 lines | ~45 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 2→2 lines | ~21 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 7→7 lines | ~45 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 2→2 lines | ~18 |
+| 14:35 | Edited src/server/trpc/routers/cookbooks.ts | 4→4 lines | ~55 |
+| 14:35 | Edited src/server/trpc/routers/cookbooks.ts | 7→7 lines | ~70 |
+| 14:36 | Edited src/server/trpc/routers/__tests__/test-helpers.ts | modified makeAuthCaller() | ~141 |

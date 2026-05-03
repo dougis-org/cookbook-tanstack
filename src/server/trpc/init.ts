@@ -62,6 +62,20 @@ export function tierProcedure(tier: UserTier) {
 }
 
 /**
+ * Procedure that requires the caller to be authenticated and have a verified email.
+ */
+export const verifiedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  if (!ctx.user.emailVerified) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Email verification required",
+      cause: { type: 'email-not-verified' },
+    })
+  }
+  return next({ ctx })
+})
+
+/**
  * Procedure that requires the caller to be an admin.
  *
  * @future No procedures use this yet. Implemented with real enforcement logic

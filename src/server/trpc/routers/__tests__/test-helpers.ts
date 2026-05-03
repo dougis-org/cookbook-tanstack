@@ -81,7 +81,7 @@ export async function makeAnonCaller() {
 
 export async function makeAuthCaller(
   userId: string,
-  opts: { email?: string; tier?: string; isAdmin?: boolean } = {},
+  opts: { email?: string; tier?: string; isAdmin?: boolean; emailVerified?: boolean } = {},
 ) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
@@ -89,6 +89,7 @@ export async function makeAuthCaller(
     user: {
       id: userId,
       email: opts.email ?? "test@test.com",
+      emailVerified: opts.emailVerified ?? true,
       tier: opts.tier,
       isAdmin: opts.isAdmin ?? false,
     } as never,
