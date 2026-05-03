@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { requireVerifiedAuth } from '@/lib/auth-guard'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { trpc } from '@/lib/trpc'
@@ -14,7 +13,6 @@ import { Plus, X } from 'lucide-react'
 
 export const Route = createFileRoute('/cookbooks/')({
   component: CookbooksPage,
-  beforeLoad: requireVerifiedAuth(),
 })
 
 export function CookbooksPage() {

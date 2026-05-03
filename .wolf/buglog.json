@@ -843,6 +843,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-03T17:24:24.504Z"
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-05-03T19:39:15.470Z",
+      "error_message": "CSS fix: from",
+      "file": "src/routes/auth/verify-email.tsx",
+      "root_cause": "from: string | undefined → undefined",
+      "fix": "Changed from: string | undefined → undefined",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T19:39:15.470Z"
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-05-03T19:39:19.784Z",
+      "error_message": "CSS fix: from",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "from: \"/recipes?sort=newest\", → \"data:text/html,<script>alert('xss')</script>\",",
+      "fix": "Changed from: \"/recipes?sort=newest\", → \"data:text/html,<script>alert('xss')</script>\",",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T19:39:19.784Z"
     }
   ]
 }

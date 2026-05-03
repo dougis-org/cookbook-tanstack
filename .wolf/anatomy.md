@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T17:25:37.362Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T21:19:57.481Z
 > Files: 601 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -900,15 +900,15 @@
 
 ## src/routes/auth/
 
-- `verify-email.tsx` — validateVerifyEmailSearch (~302 tok)
+- `verify-email.tsx` — validateVerifyEmailSearch (~370 tok)
 
 ## src/routes/auth/__tests__/
 
-- `-verify-email.test.tsx` — result (~1452 tok)
+- `-verify-email.test.tsx` — result (~1592 tok)
 
 ## src/routes/cookbooks/
 
-- `index.tsx` — Route — renders form (~1907 tok)
+- `index.tsx` — Route — renders form (~1881 tok)
 
 ## src/routes/import/
 
