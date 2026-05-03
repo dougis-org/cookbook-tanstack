@@ -147,15 +147,34 @@ describe('AdminUsersPage', () => {
     render(<AdminUsersPage />)
     const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
     fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
-    const dialog = screen.getByRole('dialog')
-    expect(dialog.querySelector('.bg-amber-500\\/10')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
   })
 
   it('confirmation modal does not show warning when upgrading tier', () => {
     render(<AdminUsersPage />)
     const aliceSelect = screen.getByLabelText('Change tier for alice@test.com')
     fireEvent.change(aliceSelect, { target: { value: 'prep-cook' } })
-    const dialog = screen.getByRole('dialog')
-    expect(dialog.querySelector('.bg-amber-500\\/10')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByText(/⚠️ This will make all private recipes/)).not.toBeInTheDocument()
+  })
+
+  it('Cancel button dismisses modal when warning is visible', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(mockMutate).not.toHaveBeenCalled()
+  })
+
+  it('Confirm button calls setTier when warning is visible', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    expect(mockMutate).toHaveBeenCalledWith({ userId: USER_B_ID, tier: 'home-cook' })
   })
 })
