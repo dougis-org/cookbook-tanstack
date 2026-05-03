@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { requireAuth } from '@/lib/auth-guard'
+import { requireVerifiedAuth } from '@/lib/auth-guard'
 import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
@@ -8,7 +8,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 
 export const Route = createFileRoute('/recipes/$recipeId_/edit')({
   component: EditRecipePage,
-  beforeLoad: requireAuth(),
+  beforeLoad: requireVerifiedAuth(),
 })
 
 function EditRecipePage() {

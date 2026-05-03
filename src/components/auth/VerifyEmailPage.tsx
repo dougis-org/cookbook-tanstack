@@ -6,11 +6,12 @@ import { getVerificationEmailErrorMessage, requestVerificationEmail } from "@/co
 
 interface VerifyEmailPageProps {
   error?: string
+  from?: string
 }
 
 type ResendStatus = "idle" | "loading" | "success" | "error"
 
-export default function VerifyEmailPage({ error }: VerifyEmailPageProps) {
+export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
   const { session } = useAuth()
   const [resendStatus, setResendStatus] = useState<ResendStatus>("idle")
   const [resendError, setResendError] = useState("")
@@ -42,10 +43,10 @@ export default function VerifyEmailPage({ error }: VerifyEmailPageProps) {
           <p className="text-[var(--theme-fg-muted)]">You can now access all features.</p>
         </div>
         <Link
-          to="/"
+          to={from ?? "/"}
           className="inline-flex items-center justify-center rounded-lg bg-[var(--theme-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--theme-accent-hover)]"
         >
-          Continue to app
+          Continue
         </Link>
       </div>
     )

@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { redirect } from '@tanstack/react-router'
-import { requireAuth, requireTier, requireAdmin, REDIRECT_REASON_MESSAGES } from '@/lib/auth-guard'
+import {
+  requireAuth,
+  requireTier,
+  requireAdmin,
+  requireVerifiedAuth,
+  REDIRECT_REASON_MESSAGES,
+} from '@/lib/auth-guard'
 
 const mockSession = {
   user: { id: 'user-1', email: 'test@example.com', name: 'Test User' },
@@ -224,6 +230,104 @@ describe('requireAdmin()', () => {
     expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
       reason: 'tier-limit-reached',
     })
+  })
+})
+
+describe('requireVerifiedAuth()', () => {
+  function makeSessionWithEmail(
+    emailVerified: boolean | undefined,
+  ) {
+    return {
+      user: { id: 'user-1', email: 'test@example.com', emailVerified },
+      session: { id: 'session-1', userId: 'user-1', expiresAt: new Date() },
+    }
+  }
+
+  it('FR-1: throws redirect to /auth/login when session is null', () => {
+    const guard = requireVerifiedAuth()
+    let thrown: unknown
+    try {
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as ReturnType<typeof redirect>).options.to).toBe('/auth/login')
+  })
+
+  it('FR-1: redirect to login includes reason: auth-required', () => {
+    const guard = requireVerifiedAuth()
+    let thrown: unknown
+    try {
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
+      reason: 'auth-required',
+    })
+  })
+
+  it('FR-1: redirect to login includes from param', () => {
+    const guard = requireVerifiedAuth()
+    let thrown: unknown
+    try {
+      guard({ context: { session: null }, location: { href: '/recipes/new' } })
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
+      from: '/recipes/new',
+    })
+  })
+
+  it('FR-2: throws redirect to /auth/verify-email when emailVerified is false', () => {
+    const guard = requireVerifiedAuth()
+    let thrown: unknown
+    try {
+      guard({
+        context: { session: makeSessionWithEmail(false) as never },
+        location: { href: '/recipes/new' },
+      })
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as ReturnType<typeof redirect>).options.to).toBe('/auth/verify-email')
+  })
+
+  it('FR-2: redirect to verify-email includes from param', () => {
+    const guard = requireVerifiedAuth()
+    let thrown: unknown
+    try {
+      guard({
+        context: { session: makeSessionWithEmail(false) as never },
+        location: { href: '/recipes/new' },
+      })
+    } catch (e) {
+      thrown = e
+    }
+    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
+      from: '/recipes/new',
+    })
+  })
+
+  it('FR-3: does not redirect when emailVerified is true', () => {
+    const guard = requireVerifiedAuth()
+    expect(() =>
+      guard({
+        context: { session: makeSessionWithEmail(true) as never },
+        location: { href: '/recipes/new' },
+      }),
+    ).not.toThrow()
+  })
+
+  it('NFR-2: does not redirect when emailVerified is undefined (legacy session)', () => {
+    const guard = requireVerifiedAuth()
+    expect(() =>
+      guard({
+        context: { session: makeSessionWithEmail(undefined) as never },
+        location: { href: '/recipes/new' },
+      }),
+    ).not.toThrow()
   })
 })
 

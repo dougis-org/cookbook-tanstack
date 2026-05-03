@@ -8,6 +8,7 @@ vi.mock('@tanstack/react-router', async () => {
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAuth: () => () => ({}),
+  requireVerifiedAuth: () => () => ({}),
 }))
 
 vi.mock('@/components/layout/PageLayout', () => ({

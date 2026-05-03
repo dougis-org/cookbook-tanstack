@@ -8,6 +8,48 @@ import {
   unverifiedAuth,
   verifiedAuth,
 } from "@/test-helpers/auth"
+import { validateVerifyEmailSearch } from "@/routes/auth/verify-email"
+
+describe("verify-email route validateSearch", () => {
+  it("NFR-1: strips from if it contains ://", () => {
+    const result = validateVerifyEmailSearch({
+      from: "https://evil.com",
+      error: undefined,
+    })
+    expect(result.from).toBeUndefined()
+  })
+
+  it("NFR-1: strips from if it starts with //", () => {
+    const result = validateVerifyEmailSearch({
+      from: "//evil.com/steal",
+      error: undefined,
+    })
+    expect(result.from).toBeUndefined()
+  })
+
+  it("preserves valid relative from path", () => {
+    const result = validateVerifyEmailSearch({
+      from: "/recipes/new",
+      error: undefined,
+    })
+    expect(result.from).toBe("/recipes/new")
+  })
+
+  it("returns undefined when from is missing", () => {
+    const result = validateVerifyEmailSearch({
+      error: undefined,
+    })
+    expect(result.from).toBeUndefined()
+  })
+
+  it("preserves from with query string", () => {
+    const result = validateVerifyEmailSearch({
+      from: "/recipes?sort=newest",
+      error: undefined,
+    })
+    expect(result.from).toBe("/recipes?sort=newest")
+  })
+})
 
 const mockUseAuth = vi.fn()
 
@@ -39,7 +81,24 @@ describe("VerifyEmailPage", () => {
     render(<VerifyEmailPage />)
 
     expect(screen.getByText(/email verified/i)).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /continue to app/i })).toHaveAttribute("href", "/")
+    expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute("href", "/")
+  })
+
+  it("FR-4: navigates to from prop when verified", () => {
+    mockUseAuth.mockReturnValue(verifiedAuth)
+
+    render(<VerifyEmailPage from="/recipes/new" />)
+
+    expect(screen.getByText(/email verified/i)).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute("href", "/recipes/new")
+  })
+
+  it("FR-5: falls back to / when from is absent", () => {
+    mockUseAuth.mockReturnValue(verifiedAuth)
+
+    render(<VerifyEmailPage />)
+
+    expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute("href", "/")
   })
 
   it("renders success state when verified even if an error param is present", () => {

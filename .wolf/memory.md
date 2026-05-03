@@ -472,3 +472,20 @@
 | 08:53 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tasks.md | — | ~1375 |
 | 08:54 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tests.md | — | ~772 |
 | 08:54 | Session end: 5 writes across 5 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~16924 tok |
+| 10:22 | Edited src/lib/__tests__/auth-guard.test.ts | added error handling | ~919 |
+| 10:22 | Edited src/lib/__tests__/auth-guard.test.ts | expanded (+6 lines) | ~38 |
+| 10:23 | Edited src/lib/auth-guard.ts | added 2 condition(s) | ~469 |
+| 10:23 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | added optional chaining | ~435 |
+| 10:23 | Edited src/routes/auth/verify-email.tsx | CSS: from, undefined | ~290 |
+| 10:23 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: FR-4, FR-5 | ~305 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | 3→4 lines | ~20 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | inline fix | ~23 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | added nullish coalescing | ~80 |
+| 10:24 | Edited src/routes/recipes/new.tsx | requireAuth() → requireVerifiedAuth() | ~113 |
+| 10:24 | Edited src/routes/recipes/$recipeId_.edit.tsx | requireAuth() → requireVerifiedAuth() | ~144 |
+| 10:24 | Edited src/routes/import/index.tsx | requireAuth() → requireVerifiedAuth() | ~232 |
+| 10:24 | Edited src/routes/cookbooks/index.tsx | added 1 import(s) | ~240 |
+| 10:24 | Edited src/routes/change-tier.tsx | CSS: beforeLoad | ~97 |
+| 10:24 | Edited src/routes/__tests__/-import.test.tsx | added 1 import(s) | ~33 |
+| 10:25 | Edited src/routes/auth/verify-email.tsx | modified validateVerifyEmailSearch() | ~235 |
+| 10:25 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | 42→42 lines | ~331 |

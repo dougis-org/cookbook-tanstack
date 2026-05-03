@@ -79,3 +79,39 @@ export function requireAdmin() {
     }
   }
 }
+
+/**
+ * Route guard factory. Usage: `beforeLoad: requireVerifiedAuth()`
+ *
+ * Combines auth + email verification checks. Unauthenticated users are redirected
+ * to `/auth/login`. Authenticated-but-unverified users are redirected to
+ * `/auth/verify-email?from=<path>`. Verified users pass through.
+ *
+ * Treats `emailVerified: undefined` as verified (legacy session compatibility).
+ */
+export function requireVerifiedAuth() {
+  return ({
+    context,
+    location,
+  }: {
+    context: RouterContext
+    location: { href: string }
+  }) => {
+    if (!context.session) {
+      throw redirect({
+        to: '/auth/login',
+        search: {
+          reason: 'auth-required' as RedirectReason,
+          from: location.href,
+        },
+      })
+    }
+
+    if (context.session.user.emailVerified === false) {
+      throw redirect({
+        to: '/auth/verify-email',
+        search: { from: location.href },
+      })
+    }
+  }
+}

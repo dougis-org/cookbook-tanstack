@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T15:54:21.169Z
-> Files: 592 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T17:25:37.362Z
+> Files: 601 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -856,6 +856,10 @@
 
 - `Header.test.tsx` — mockNavigate (~4491 tok)
 
+## src/components/auth/
+
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1175 tok)
+
 ## src/components/ui/
 
 - `TierWall.tsx` — MESSAGES (~827 tok)
@@ -867,11 +871,13 @@
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+- `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~998 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
+- `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
@@ -880,6 +886,7 @@
 
 - `__root.tsx` — minifyInlineCss (~3676 tok)
 - `account.tsx` — Route (~1481 tok)
+- `change-tier.tsx` — Route (~289 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
 - `pricing.tsx` — Route (~1018 tok)
@@ -888,15 +895,29 @@
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
+- `-import.test.tsx` — mockUseMutation (~749 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+
+## src/routes/auth/
+
+- `verify-email.tsx` — validateVerifyEmailSearch (~302 tok)
+
+## src/routes/auth/__tests__/
+
+- `-verify-email.test.tsx` — result (~1452 tok)
 
 ## src/routes/cookbooks/
 
-- `index.tsx` — Route — renders form (~1850 tok)
+- `index.tsx` — Route — renders form (~1907 tok)
 
 ## src/routes/import/
 
-- `index.tsx` — Route (~1168 tok)
+- `index.tsx` — Route (~1173 tok)
+
+## src/routes/recipes/
+
+- `$recipeId_.edit.tsx` — Route (~461 tok)
+- `new.tsx` — Route (~232 tok)
 
 ## src/server/trpc/
 

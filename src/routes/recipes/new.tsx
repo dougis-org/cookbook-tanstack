@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import { requireAuth } from '@/lib/auth-guard'
+import { requireVerifiedAuth } from '@/lib/auth-guard'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeForm from '@/components/recipes/RecipeForm'
 
 export const Route = createFileRoute('/recipes/new')({
   component: NewRecipePage,
-  beforeLoad: requireAuth(),
+  beforeLoad: requireVerifiedAuth(),
 })
 
 function NewRecipePage() {
