@@ -41,14 +41,14 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to `e2e-boot-loader-lsheet-fast-path` and push to remote
-- [ ] Open PR from `e2e-boot-loader-lsheet-fast-path` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to `e2e-boot-loader-lsheet-fast-path` and push to remote
+- [x] Open PR from `e2e-boot-loader-lsheet-fast-path` to `main`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 Ownership metadata:
 
@@ -64,9 +64,9 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
 - [ ] Sync approved spec delta into `openspec/specs/fouc-prevention/spec.md` — append FR-LSHEET-1 scenario from `openspec/changes/e2e-boot-loader-lsheet-fast-path/specs/fouc-prevention/cached-lsheet.md`
 - [ ] Archive the change: move `openspec/changes/e2e-boot-loader-lsheet-fast-path/` to `openspec/changes/archive/YYYY-MM-DD-e2e-boot-loader-lsheet-fast-path/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
 - [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-e2e-boot-loader-lsheet-fast-path/` exists and `openspec/changes/e2e-boot-loader-lsheet-fast-path/` is gone
