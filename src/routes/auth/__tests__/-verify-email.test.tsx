@@ -49,6 +49,22 @@ describe("verify-email route validateSearch", () => {
     })
     expect(result.from).toBe("/recipes?sort=newest")
   })
+
+  it("NFR-1: strips from if it is a javascript: URI (XSS prevention)", () => {
+    const result = validateVerifyEmailSearch({
+      from: "javascript:alert('xss')",
+      error: undefined,
+    })
+    expect(result.from).toBeUndefined()
+  })
+
+  it("NFR-1: strips from if it contains a data: URI", () => {
+    const result = validateVerifyEmailSearch({
+      from: "data:text/html,<script>alert('xss')</script>",
+      error: undefined,
+    })
+    expect(result.from).toBeUndefined()
+  })
 })
 
 const mockUseAuth = vi.fn()

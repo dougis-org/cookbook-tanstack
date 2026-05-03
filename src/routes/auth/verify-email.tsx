@@ -8,8 +8,10 @@ export function validateVerifyEmailSearch(
 ): { error?: string; from?: string } {
   let from: string | undefined
   if (typeof search.from === "string") {
-    const isExternalUrl = search.from.includes("://") || search.from.startsWith("//")
-    from = isExternalUrl ? undefined : search.from
+    // Only allow relative paths starting with / or empty string
+    // Reject absolute URLs (with protocol), protocol-relative URLs, and any XSS vectors like javascript:
+    const isValidRelativePath = search.from === "" || (search.from.startsWith("/") && !search.from.includes("://") && !search.from.startsWith("//"))
+    from = isValidRelativePath ? search.from : undefined
   }
 
   return {
