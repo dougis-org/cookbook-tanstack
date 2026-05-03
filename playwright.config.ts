@@ -63,8 +63,12 @@ export default defineConfig({
       : "npm run dev -- --mode test",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 60000,
-    // Pipe stdout/stderr in CI for debugging server startup issues; 60s timeout fails fast if server doesn't respond
+    // Nitro production server lazy-loads the SSR bundle (~2.5 MB mongoose+auth) on first
+    // request. The health-check URL responds before that load completes, so Playwright can
+    // start before the server is fully ready. 120 s provides headroom for cold CI runners;
+    // passing runs typically reach readiness in ~10-15 s.
+    timeout: 120000,
+    // Pipe stdout/stderr in CI for debugging server startup issues
     stdout: process.env.CI ? 'pipe' : 'ignore',
     stderr: process.env.CI ? 'pipe' : 'ignore',
   },

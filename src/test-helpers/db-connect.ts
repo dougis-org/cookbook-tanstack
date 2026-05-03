@@ -8,6 +8,11 @@
  * Each worker connects to its own database (test_worker_<id>) so that parallel
  * workers don't interfere with each other's data — critical for withCleanDb
  * which calls deleteMany on all collections.
+ *
+ * Some test files import @/db which calls mongoose.connect(baseUri) at module
+ * load time — before this beforeAll runs. We detect that case by checking
+ * whether the active connection's database name matches the expected worker
+ * database, and disconnect/reconnect if not.
  */
 import { beforeAll } from "vitest"
 import mongoose from "mongoose"
@@ -21,14 +26,27 @@ beforeAll(async () => {
   const url = new URL(baseUri)
   url.pathname = `/test_worker_${workerId}`
   const uri = url.toString()
+  const expectedDb = `test_worker_${workerId}`
 
-  if (mongoose.connection.readyState === 0) {
+  const state = mongoose.connection.readyState
+  if (state === 0) {
     await mongoose.connect(uri)
-  } else if (mongoose.connection.readyState === 2) {
-    // Already connecting — wait for the event rather than calling connect again
+  } else if (state === 2) {
+    // Already connecting (likely from @/db module-load auto-connect to base URI).
+    // Wait for it to complete, then check if it landed on the right database.
     await new Promise<void>((resolve, reject) => {
       mongoose.connection.once("connected", resolve)
       mongoose.connection.once("error", reject)
     })
+    if (mongoose.connection.name !== expectedDb) {
+      await mongoose.disconnect()
+      await mongoose.connect(uri)
+    }
+  } else if (state === 1) {
+    // Already connected — reconnect to worker-specific DB if on the wrong one.
+    if (mongoose.connection.name !== expectedDb) {
+      await mongoose.disconnect()
+      await mongoose.connect(uri)
+    }
   }
 }, 30_000)

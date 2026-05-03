@@ -242,7 +242,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       },
     ],
     links: [
-      { rel: 'preload', as: 'style', href: appCss },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -265,7 +264,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const validIds = JSON.stringify(THEMES.map((t) => t.id)).replace(/</g, '\\u003c')
 
   const themeInitScript = `{try{const ids=${validIds};let t=localStorage.getItem("cookbook-theme");if(t==="light"){t="light-cool";try{localStorage.setItem("cookbook-theme","light-cool");}catch(e){}}document.documentElement.className=ids.includes(t)?t:"dark";}catch(e){document.documentElement.className="dark";}}`
-  const bootLoaderScript = `{(function(){function init(){var b=document.getElementById("boot-loader");var r=document.getElementById("boot-loader-retry");var s=document.getElementById("app-shell");var l=document.querySelector('link[rel="stylesheet"][href="${appCss}"]');var settled=false;var slowTimer;var failureTimer;function clearTimers(){if(slowTimer){clearTimeout(slowTimer);}if(failureTimer){clearTimeout(failureTimer);}}function isShellHidden(){if(!s){return true;}var styles=window.getComputedStyle(s);return styles.display==="none"||styles.visibility==="hidden"||styles.opacity==="0";}function markLoaded(){if(settled){return;}settled=true;clearTimers();}function markFailed(){if(settled||!b){return;}settled=true;clearTimers();b.setAttribute("data-status","failed");}if(!b||!r){return;}r.addEventListener("click",function(){window.location.reload();});if(!isShellHidden()){return;}slowTimer=window.setTimeout(function(){if(!settled){b.setAttribute("data-status","slow");}},1200);failureTimer=window.setTimeout(function(){if(!settled&&isShellHidden()){markFailed();}},10000);if(l){l.addEventListener("load",markLoaded,{once:true});l.addEventListener("error",markFailed,{once:true});}}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init,{once:true});}else{init();}})()}`
+  // React 19 (via TanStack Start >=1.167.46) hoists <link rel="stylesheet"> to the top of
+  // <head> before inline <style> tags, inverting the CSS cascade so the inline critical CSS
+  // wins and #app-shell stays hidden. markLoaded() must explicitly set display values instead
+  // of relying on the cascade. l.sheet check handles cached CSS where load event fires before
+  // the listener is attached (second navigation / browser cache race).
+  const bootLoaderScript = `{(function(){function init(){var b=document.getElementById("boot-loader");var r=document.getElementById("boot-loader-retry");var s=document.getElementById("app-shell");var l=document.querySelector('link[rel="stylesheet"][href="${appCss}"]');var settled=false;var slowTimer;var failureTimer;function clearTimers(){if(slowTimer){clearTimeout(slowTimer);}if(failureTimer){clearTimeout(failureTimer);}}function isShellHidden(){if(!s){return true;}var styles=window.getComputedStyle(s);return styles.display==="none"||styles.visibility==="hidden"||styles.opacity==="0";}function markLoaded(){if(settled){return;}settled=true;clearTimers();if(s){s.style.display="block";}if(b){b.style.display="none";}}function markFailed(){if(settled||!b){return;}settled=true;clearTimers();b.setAttribute("data-status","failed");}if(!b||!r){return;}r.addEventListener("click",function(){window.location.reload();});if(!isShellHidden()){return;}slowTimer=window.setTimeout(function(){if(!settled){b.setAttribute("data-status","slow");}},1200);failureTimer=window.setTimeout(function(){if(!settled&&isShellHidden()){markFailed();}},10000);if(l){if(l.sheet){markLoaded();}else{l.addEventListener("load",markLoaded,{once:true});l.addEventListener("error",markFailed,{once:true});}}}if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init,{once:true});}else{init();}})()}`
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
