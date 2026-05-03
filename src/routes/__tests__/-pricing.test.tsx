@@ -215,19 +215,19 @@ describe('/pricing', () => {
       expect(card.textContent).toContain('$9.99/month')
     })
 
-    it('paid tiers show "Save 2 months" badge', () => {
+    it('paid tiers show annual billing benefit badge', () => {
       mockUseAuth.mockReturnValue(anonSession())
       render(<PricingPage />)
-      expect(screen.getByTestId('tier-card-prep-cook').textContent).toContain('Save 2 months')
-      expect(screen.getByTestId('tier-card-sous-chef').textContent).toContain('Save 2 months')
-      expect(screen.getByTestId('tier-card-executive-chef').textContent).toContain('Save 2 months')
+      expect(screen.getByTestId('tier-card-prep-cook').textContent).toContain('Get 2 months free with annual billing')
+      expect(screen.getByTestId('tier-card-sous-chef').textContent).toContain('Get 2 months free with annual billing')
+      expect(screen.getByTestId('tier-card-executive-chef').textContent).toContain('Get 2 months free with annual billing')
     })
 
-    it('home-cook does not show "Save 2 months" badge', () => {
+    it('home-cook does not show annual billing benefit badge', () => {
       mockUseAuth.mockReturnValue(anonSession())
       render(<PricingPage />)
       const card = screen.getByTestId('tier-card-home-cook')
-      expect(card.textContent).not.toContain('Save 2 months')
+      expect(card.textContent).not.toContain('Get 2 months free with annual billing')
     })
   })
 
