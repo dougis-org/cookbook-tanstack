@@ -62,7 +62,7 @@ export default defineConfig({
       ? "PORT=3000 node .output/server/index.mjs"
       : "npm run dev -- --mode test",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     // Nitro production server lazy-loads the SSR bundle (~2.5 MB mongoose+auth) on first
     // request. The health-check URL responds before that load completes, so Playwright can
     // start before the server is fully ready. 120 s provides headroom for cold CI runners;
