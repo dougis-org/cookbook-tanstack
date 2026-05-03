@@ -8,16 +8,16 @@ export async function handleHealthCheck() {
 
   if (isConnected) {
     return jsonResponse({
-      status: 'ok',
-      db: 'connected',
+      status: "ok",
+      db: "connected",
       uptime: process.uptime(),
     })
   }
-  // When DB is unavailable, respond with degraded status (no uptime)
   return jsonResponse(
     {
-      status: 'degraded',
-      db: 'disconnected',
+      status: "degraded",
+      db: "disconnected",
+      uptime: process.uptime(),
     },
     503,
   )

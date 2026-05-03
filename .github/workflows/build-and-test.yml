@@ -113,6 +113,12 @@ jobs:
           timeout 60 bash -c 'until curl -sf http://localhost:3000/api/health > /dev/null; do sleep 1; done'
           echo "Server ready."
 
+          # Verify server process is still alive
+          if ! kill -0 $SERVER_PID 2>/dev/null; then
+            echo "Server process died during warmup (PID: $SERVER_PID)"
+            exit 1
+          fi
+
           # Warm up the SSR bundle with a page route request
           curl -sf http://localhost:3000/ > /dev/null
 
