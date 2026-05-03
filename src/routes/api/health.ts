@@ -12,15 +12,15 @@ export async function handleHealthCheck() {
       db: 'connected',
       uptime: process.uptime(),
     })
-  } else {
-    return jsonResponse(
-      {
-        status: 'degraded',
-        db: 'disconnected',
-      },
-      503,
-    )
   }
+  // When DB is unavailable, respond with degraded status (no uptime)
+  return jsonResponse(
+    {
+      status: 'degraded',
+      db: 'disconnected',
+    },
+    503,
+  )
 }
 
 export const Route = createFileRoute('/api/health')({
