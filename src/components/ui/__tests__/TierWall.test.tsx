@@ -22,9 +22,9 @@ describe("TierWall — inline display", () => {
     expect(screen.getByRole("link", { name: /upgrade/i })).toHaveAttribute("href", "/pricing")
   })
 
-  it("renders import message mentioning sous chef", () => {
+  it("renders import message mentioning executive chef", () => {
     render(<TierWall reason="import" display="inline" />)
-    expect(screen.getAllByText(/sous.?chef/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/executive.?chef/i).length).toBeGreaterThan(0)
     expect(screen.getByRole("link", { name: /upgrade/i })).toHaveAttribute("href", "/pricing")
   })
 })
@@ -54,7 +54,7 @@ describe("TierWall — modal display", () => {
 
   it("renders import message in modal", () => {
     render(<TierWall reason="import" display="modal" onDismiss={vi.fn()} />)
-    expect(screen.getAllByText(/sous.?chef/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/executive.?chef/i).length).toBeGreaterThan(0)
   })
 })
 

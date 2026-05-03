@@ -392,7 +392,7 @@ export const recipesRouter = router({
       if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {
         throw new TRPCError({
           code: "PAYMENT_REQUIRED",
-          message: "Recipe import requires Sous Chef or higher.",
+          message: "Recipe import requires Executive Chef.",
           cause: { type: 'tier-wall', reason: 'import' },
         });
       }
