@@ -8,7 +8,7 @@
  *           cookbook ordering, meal filter, and no-image migration outcome.
  */
 import { describe, expect, it } from "vitest";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import {
   Classification,
@@ -19,7 +19,6 @@ import {
   Recipe,
   Cookbook,
 } from "@/db/models";
-import { getMongoClient } from "@/db";
 import { buildImageAudit } from "../imageAudit";
 import { extractTables, TARGET_TABLES } from "../mysqlDump";
 import {
@@ -420,7 +419,7 @@ async function createAdminUser() {
   const userId = new Types.ObjectId();
   const now = new Date();
 
-  const db = getMongoClient().db();
+  const db = mongoose.connection.db!;
   await db.collection("user").insertOne({
     _id: userId,
     email: "admin@test.com",

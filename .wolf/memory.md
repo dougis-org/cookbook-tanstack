@@ -348,3 +348,107 @@
 | 08:47 | Created openspec/changes/upgrade-tanstack-packages/tasks.md | — | ~1600 |
 | 08:47 | Created openspec/changes/upgrade-tanstack-packages/tests.md | — | ~846 |
 | 08:48 | Session end: 5 writes across 5 files (proposal.md, design.md, upgrade-compatibility.md, tasks.md, tests.md) | 0 reads | ~8018 tok |
+| 09:28 | Created openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | — | ~1646 |
+| 09:28 | Edited openspec/changes/fix-fly-deploy-npm-mismatch/tasks.md | inline fix | ~22 |
+| 10:30 | Session end: 7 writes across 5 files (proposal.md, design.md, upgrade-compatibility.md, tasks.md, tests.md) | 1 reads | ~9805 tok |
+
+## Session: 2026-05-01 10:33
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-01 10:34
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:51 | Edited package.json | 5→5 lines | ~65 |
+| 10:52 | Edited src/components/__tests__/Header.test.tsx | 6→5 lines | ~111 |
+| 10:58 | Edited vitest.config.ts | removed 5 lines | ~20 |
+| 10:58 | Edited vitest.config.ts | 2→1 lines | ~6 |
+| 11:01 | Edited vitest.config.ts | 1→2 lines | ~20 |
+| 11:01 | Edited vitest.config.ts | 2→3 lines | ~17 |
+| 11:02 | Edited vitest.config.ts | 3→2 lines | ~47 |
+| 11:28 | Edited .github/workflows/build-and-test.yml | 4→5 lines | ~34 |
+| 11:32 | Edited playwright.config.ts | 11→11 lines | ~136 |
+| 11:33 | Edited playwright.config.ts | 11→14 lines | ~189 |
+| 14:00 | Edited .github/workflows/build-and-test.yml | 5→10 lines | ~149 |
+| 14:01 | Created ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/e2e_server_startup_issue.md | — | ~395 |
+| 14:01 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:01 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:02 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:02 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:03 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:03 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:03 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:04 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:04 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:04 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:05 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:05 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:05 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:06 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:06 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:06 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:07 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:07 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:07 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:08 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+| 14:08 | Session end: 12 writes across 6 files (package.json, Header.test.tsx, vitest.config.ts, build-and-test.yml, playwright.config.ts) | 11 reads | ~7987 tok |
+
+## Session: 2026-05-01 14:09
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:26 | Edited package.json | 6→6 lines | ~36 |
+| 15:04 | Session end: 1 writes across 1 files (package.json) | 1 reads | ~979 tok |
+| 15:06 | Edited .github/workflows/build-and-test.yml | 10→10 lines | ~162 |
+| 15:06 | Edited playwright.config.ts | 4→4 lines | ~67 |
+| 15:08 | Session end: 3 writes across 3 files (package.json, build-and-test.yml, playwright.config.ts) | 3 reads | ~4045 tok |
+| 16:17 | Session end: 3 writes across 3 files (package.json, build-and-test.yml, playwright.config.ts) | 3 reads | ~4045 tok |
+| 16:18 | Created ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/MEMORY.md | — | ~71 |
+| 16:18 | Created ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/tanstack_upgrade_completed.md | — | ~544 |
+| 16:18 | Session end: 5 writes across 5 files (package.json, build-and-test.yml, playwright.config.ts, MEMORY.md, tanstack_upgrade_completed.md) | 4 reads | ~4703 tok |
+
+## Session: 2026-05-01 16:20
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:26 | Edited ../../.claude/settings.json | "curl -s *" → "Curl -s *" | ~5 |
+| 19:26 | Session end: 1 writes across 1 files (settings.json) | 4 reads | ~2683 tok |
+| 21:05 | Created openspec/changes/fix-e2e-ci-performance-regression/proposal.md | — | ~2207 |
+| 21:07 | Created openspec/changes/fix-e2e-ci-performance-regression/design.md | — | ~2780 |
+| 21:07 | Created openspec/changes/fix-e2e-ci-performance-regression/specs/e2e-ci-performance/spec.md | — | ~1257 |
+| 21:08 | Created openspec/changes/fix-e2e-ci-performance-regression/specs/ci-config/spec.md | — | ~816 |
+| 21:08 | Created openspec/changes/fix-e2e-ci-performance-regression/tasks.md | — | ~2098 |
+| 21:09 | Created openspec/changes/fix-e2e-ci-performance-regression/tests.md | — | ~1335 |
+| 21:09 | Session end: 7 writes across 6 files (settings.json, proposal.md, design.md, spec.md, tasks.md) | 4 reads | ~13926 tok |
+
+## Session: 2026-05-02 22:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:26 | Edited ../../.claude/settings.json | 3→4 lines | ~23 |
+| 08:41 | Edited src/routes/__root.tsx | added 3 condition(s) | ~529 |
+| 08:41 | Edited package.json | 2→2 lines | ~17 |
+| 08:41 | Edited playwright.config.ts | 2→6 lines | ~121 |
+| 08:41 | Edited .github/workflows/build-and-test.yml | removed 10 lines | ~34 |
+| 13:48 | Edited src/routes/__root.tsx | 6→5 lines | ~23 |
+| 13:49 | Created src/e2e/fouc-prevention.spec.ts | — | ~3440 |
+| 13:55 | Edited src/e2e/fouc-prevention.spec.ts | modified gotoWithDelayedAppCss() | ~156 |
+| 13:56 | Edited src/e2e/fouc-prevention.spec.ts | modified checkBootLoaderDomState() | ~206 |
+| 13:56 | Edited src/e2e/fouc-prevention.spec.ts | 3→2 lines | ~46 |
+| 13:56 | Edited src/e2e/fouc-prevention.spec.ts | 3→2 lines | ~41 |
+| 17:35 | Edited src/e2e/fouc-prevention.spec.ts | modified gotoWithDelayedAppCss() | ~184 |
+| 17:41 | Created src/e2e/fouc-prevention.spec.ts | — | ~3340 |
+| 17:46 | Session end: 13 writes across 6 files (settings.json, __root.tsx, package.json, playwright.config.ts, build-and-test.yml) | 13 reads | ~26209 tok |
+
+## Session: 2026-05-03 17:59
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 20:14 | Edited src/test-helpers/db-connect.ts | 2→3 lines | ~65 |
+| 20:32 | Edited src/test-helpers/db-connect.ts | added 3 condition(s) | ~588 |
+| 20:32 | Edited scripts/migration/lib/__tests__/pipeline.integration.test.ts | 2→2 lines | ~23 |
+| 20:32 | Edited scripts/migration/lib/__tests__/pipeline.integration.test.ts | inline fix | ~13 |
+| 20:32 | Edited scripts/migration/lib/__tests__/pipeline.integration.test.ts | — | ~0 |
+| 20:35 | Fixed Vitest test isolation: db-connect.ts reconnect logic for early-connect race, pipeline test uses mongoose.connection.db | src/test-helpers/db-connect.ts, scripts/migration/lib/__tests__/pipeline.integration.test.ts | 1213/1213 tests pass | ~1200 |

@@ -22,6 +22,9 @@
 
 [2026-04-20] After refactoring AdSense slot config, update source-contract assertions to match the rendered contract (for example `data-ad-slot={...}`) instead of internal variable names.
 
+[2026-05-02] `src/db/index.ts` calls `mongoose.connect(MONGODB_URI)` at module-load time. Any test file that imports `@/db` will trigger this before `db-connect.ts`'s `beforeAll` can connect to the worker-specific database — causing parallel Vitest workers to land on the wrong (shared) database. The fix is in `db-connect.ts`: if Mongoose is already connected to the wrong database, disconnect and reconnect to `test_worker_<poolId>`. Test helpers must use `mongoose.connection.db` (not `getMongoClient().db()`) to guarantee they're on the worker-isolated database.
+
+[2026-05-02] React 19 (via TanStack Start ≥1.167.46) adds `data-precedence="default"` to `<link rel="stylesheet">` and hoists it to the top of `<head>`, BEFORE inline `<style>` tags. This inverts the CSS cascade: inline `#app-shell { display: none }` wins permanently. Boot-loader `markLoaded()` must explicitly set `s.style.display="block"` and `b.style.display="none"` — cannot rely on cascade. Also: Playwright CSS interception with React 19 suspends Chrome's HTML parser (body is null), so FOUC tests must use post-load assertions, not mid-load DOM checks.
 
 <!-- Mistakes made and corrected. Each entry prevents the same mistake recurring. -->
 <!-- Format: [YYYY-MM-DD] Description of what went wrong and what to do instead. -->
