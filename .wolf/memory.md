@@ -452,3 +452,12 @@
 | 20:32 | Edited scripts/migration/lib/__tests__/pipeline.integration.test.ts | inline fix | ~13 |
 | 20:32 | Edited scripts/migration/lib/__tests__/pipeline.integration.test.ts | — | ~0 |
 | 20:35 | Fixed Vitest test isolation: db-connect.ts reconnect logic for early-connect race, pipeline test uses mongoose.connection.db | src/test-helpers/db-connect.ts, scripts/migration/lib/__tests__/pipeline.integration.test.ts | 1213/1213 tests pass | ~1200 |
+| 20:38 | Session end: 5 writes across 2 files (db-connect.ts, pipeline.integration.test.ts) | 3 reads | ~3053 tok |
+| 20:41 | Session end: 5 writes across 2 files (db-connect.ts, pipeline.integration.test.ts) | 3 reads | ~3053 tok |
+| 20:46 | Edited package.json | inline fix | ~7 |
+| 20:46 | Edited src/e2e/fouc-prevention.spec.ts | "boot loader retry afforda" → "boot loader retry afforda" | ~20 |
+| 20:48 | Session end: 7 writes across 4 files (db-connect.ts, pipeline.integration.test.ts, package.json, fouc-prevention.spec.ts) | 5 reads | ~7363 tok |
+| 20:50 | Session end: 7 writes across 4 files (db-connect.ts, pipeline.integration.test.ts, package.json, fouc-prevention.spec.ts) | 5 reads | ~7363 tok |
+| 20:51 | Session end: 7 writes across 4 files (db-connect.ts, pipeline.integration.test.ts, package.json, fouc-prevention.spec.ts) | 5 reads | ~7363 tok |
+| 20:56 | Session end: 7 writes across 4 files (db-connect.ts, pipeline.integration.test.ts, package.json, fouc-prevention.spec.ts) | 5 reads | ~7363 tok |
+| 20:58 | Edited openspec/specs/e2e-ci-performance/spec.md | expanded (+40 lines) | ~685 |

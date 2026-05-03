@@ -1,7 +1,17 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-01T15:47:49.909Z
-> Files: 572 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T03:58:49.405Z
+> Files: 587 tracked | Anatomy hits: 0 | Misses: 0
+
+## ../../.claude/
+
+- `settings.json` (~284 tok)
+
+## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
+
+- `e2e_server_startup_issue.md` — Issue (~383 tok)
+- `MEMORY.md` — Memory Index (~66 tok)
+- `tanstack_upgrade_completed.md` — Completion Summary (May 1, 2026) (~523 tok)
 
 ## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
 
@@ -28,13 +38,13 @@
 - `fly.toml` (~147 tok)
 - `package-lock.json` — npm lock file (~74833 tok)
 - `package.json` — Node.js package manifest (~943 tok)
-- `playwright.config.ts` — Playwright test configuration (~560 tok)
+- `playwright.config.ts` — Declares ReporterDescription (~702 tok)
 - `README.md` — Project documentation (~580 tok)
 - `tsconfig.json` — TypeScript configuration (~179 tok)
 - `tsconfig.test.ts` — @vitest-environment node (~388 tok)
 - `vite.config.test.ts` — @vitest-environment node (~574 tok)
 - `vite.config.ts` — Vite build configuration (~215 tok)
-- `vitest.config.ts` — Vitest test configuration (~517 tok)
+- `vitest.config.ts` — ', '**/e2e/**', '**/*.e2e.*'], (~464 tok)
 
 ## .agent/skills/openspec-apply-change/
 
@@ -305,7 +315,7 @@
 
 ## .github/workflows/
 
-- `build-and-test.yml` — CI: Build and Test (~2101 tok)
+- `build-and-test.yml` — CI: Build and Test (~2109 tok)
 - `deploy.yml` — CI: Deploy to Fly.io (~187 tok)
 - `resolve-outdated-comments.yml` — CI: Resolve outdated PR comments (~1810 tok)
 - `sync-openspec-shared.yml` — CI: Sync openspec-shared submodule (~812 tok)
@@ -765,6 +775,25 @@
 
 - `tasks.md` — Tasks (~2134 tok)
 
+## openspec/changes/fix-e2e-ci-performance-regression/
+
+- `design.md` — Context (~2606 tok)
+- `proposal.md` — GitHub Issues (~2069 tok)
+- `tasks.md` — Tasks (~1967 tok)
+- `tests.md` — Tests (~1252 tok)
+
+## openspec/changes/fix-e2e-ci-performance-regression/specs/ci-config/
+
+- `spec.md` — MODIFIED Requirements (~765 tok)
+
+## openspec/changes/fix-e2e-ci-performance-regression/specs/e2e-ci-performance/
+
+- `spec.md` — MODIFIED Requirements (~1178 tok)
+
+## openspec/changes/fix-fly-deploy-npm-mismatch/
+
+- `tasks.md` — Tasks (~1543 tok)
+
 ## openspec/changes/fix-fouc-theme-flash/
 
 - `design.md` — Context (~2475 tok)
@@ -800,9 +829,21 @@
 
 - `upgrade-compatibility.md` — ADDED Requirements (~1430 tok)
 
+## openspec/specs/e2e-ci-performance/
+
+- `spec.md` — MODIFIED Requirements (~1999 tok)
+
 ## openspec/specs/fouc-prevention/
 
 - `spec.md` — ADDED Requirements (~3643 tok)
+
+## scripts/migration/lib/__tests__/
+
+- `pipeline.integration.test.ts` — Integration tests for the Laravel → MongoDB migration pipeline. (~5950 tok)
+
+## src/components/__tests__/
+
+- `Header.test.tsx` — mockNavigate (~4491 tok)
 
 ## src/components/ui/
 
@@ -810,7 +851,7 @@
 
 ## src/e2e/
 
-- `fouc-prevention.spec.ts` — Declares setupThemeAndGoto (~2222 tok)
+- `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
 
 ## src/lib/
 
@@ -826,7 +867,7 @@
 
 ## src/routes/
 
-- `__root.tsx` — Route (~1256 tok)
+- `__root.tsx` — minifyInlineCss (~3676 tok)
 - `account.tsx` — Route (~1481 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
@@ -861,4 +902,5 @@
 
 ## src/test-helpers/
 
+- `db-connect.ts` — Vitest setupFiles entry — runs in every worker process before any tests. (~588 tok)
 - `mocks.ts` — Creates a mock Drizzle database that supports all query chain patterns. (~899 tok)

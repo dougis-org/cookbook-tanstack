@@ -129,3 +129,43 @@ reduce CI minutes without reducing pull request coverage.
 - **Then** the worker and workflow changes are isolated and documented well
   enough to restore the prior baseline without affecting unrelated CI
   capabilities
+
+---
+
+## Changes from fix-e2e-ci-performance-regression (2026-05-02)
+
+### Requirement: MODIFIED E2E test suite completes within CI budget
+
+The system SHALL execute all 155 Playwright E2E tests to completion within the 10-minute `Run E2E tests` step budget on every CI run, including main-branch pushes.
+
+#### Scenario: all tests complete on a main-branch push
+
+- **Given** a push to the `main` branch triggers the `build-and-test` workflow
+- **When** the `Run E2E tests` step executes
+- **Then** the step completes (does not time out), the `playwright-report` artifact is uploaded, and the step exits with status `success`
+
+#### Scenario: auth-related tests pass without retries
+
+- **Given** the CI E2E run is underway with 2 workers
+- **When** tests from `admin/admin-users.spec.ts`, `auth-session.spec.ts`, and `cookbooks-auth.spec.ts` execute
+- **Then** all 14 tests that previously failed complete successfully on their first attempt (retry count for these tests is 0)
+
+#### Scenario: pre-heating state does not block test navigation
+
+- **Given** the production server is running and Playwright has confirmed the health check URL is responsive
+- **When** any test calls `page.goto("/")` as its first step
+- **Then** `#app-shell` becomes visible within 10 seconds, and the test proceeds without hitting the 30-second test timeout
+
+### Requirement: MODIFIED `continue-on-error` is not required as a permanent workaround
+
+The system SHALL NOT rely on `continue-on-error: true` to mask E2E failures on pull request builds.
+
+#### Scenario: E2E failure is visible and blocking on PRs
+
+- **Given** the fix has been applied and merged to main
+- **When** a pull request CI run encounters an E2E failure
+- **Then** the `Run E2E tests` step reports failure and the PR check fails
+
+### Requirement: ADDED Root cause documented and reproducible locally
+
+The system SHALL have a documented root cause for the regression that can be reproduced in a local environment without CI. Root cause: React 19 (TanStack Start ≥1.167.46) hoists `<link rel="stylesheet">` before inline `<style>` tags, inverting the CSS cascade so `#app-shell { display: none }` wins permanently. Fix: `markLoaded()` sets display values explicitly.
