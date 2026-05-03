@@ -102,6 +102,29 @@ jobs:
       - name: Seed database
         run: npm run db:seed
 
+      - name: Warm up production server
+        run: |
+          # Start the server in the background
+          PORT=3000 node .output/server/index.mjs &
+          SERVER_PID=$!
+
+          # Wait for the server to start and health endpoint to return 200
+          echo "Waiting for server health check..."
+          timeout 60 bash -c 'until curl -sf http://localhost:3000/api/health > /dev/null; do sleep 1; done'
+          echo "Server ready."
+
+          # Verify server process is still alive
+          if ! kill -0 $SERVER_PID 2>/dev/null; then
+            echo "Server process died during warmup (PID: $SERVER_PID)"
+            exit 1
+          fi
+
+          # Warm up the SSR bundle with a page route request
+          curl -sf http://localhost:3000/ > /dev/null
+
+          # Server continues running in the background for Playwright to reuse
+          wait $SERVER_PID &
+
       - name: Run E2E tests
         env:
           CI: true
