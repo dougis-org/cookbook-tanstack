@@ -66,8 +66,7 @@
     </div>
   )}
   ```
-- [x] **Remove `currentTier` from `TierCardProps`** — CTA logic no longer in cards
-- [x] **Simplify `TierCard` props interface** to only require `tier: EntitlementTier`
+- [x] **Add `isCurrentTier` prop to `TierCardProps`** — to show "Current plan" badge for authenticated users' current tier
 
 **Verification:** Run `npm run typecheck` and `npm run test` — all should pass.
 
