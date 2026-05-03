@@ -73,16 +73,16 @@
 ### 4. Run existing tests to verify no regressions
 
 - [x] Run `npm run test` — all unit tests pass
-- [x] Run `npm run test:e2e` — all E2E tests pass
+- [ ] Run `npm run test:e2e` — all E2E tests pass
 
 ## Validation
 
 - [x] Run unit/integration tests: `npm run test`
-- [x] Run E2E tests (if applicable): `npm run test:e2e`
+- [ ] Run E2E tests (if applicable): `npm run test:e2e`
 - [x] Run type checks: `npx tsc --noEmit`
 - [x] Run build: `npm run build`
-- [x] Run security/code quality checks required by project standards (Codacy if available)
-- [x] All completed tasks marked as complete
+- [ ] Run security/code quality checks required by project standards (Codacy if available)
+- [ ] All completed tasks marked as complete
 - [x] All steps in [Remote push validation]
 
 ## Remote push validation
@@ -99,14 +99,14 @@ If **ANY** of the above fail, you **MUST** iterate and address the failure befor
 
 ## PR and Merge
 
-- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [x] Commit all changes to the working branch and push to remote
-- [x] Open PR from working branch to `main`
-- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
-- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all checks pass
-- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [ ] Commit all changes to the working branch and push to remote
+- [ ] Open PR from working branch to `main`
+- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
+- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all checks pass
+- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 180 seconds → re-check → poll for merge → repeat until the PR merges.
 
@@ -124,14 +124,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [x] `git checkout main` and `git pull --ff-only`
-- [x] Verify the merged changes appear on the default branch
-- [x] Mark all remaining tasks as complete (`- [x]`)
-- [x] Update repository documentation impacted by the change
-- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [x] Archive the change: move `openspec/changes/add-tier-pricing-to-pricing-page/` to `openspec/changes/archive/2026-05-02-add-tier-pricing-to-pricing-page/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [x] Confirm `openspec/changes/archive/2026-05-02-add-tier-pricing-to-pricing-page/` exists and `openspec/changes/add-tier-pricing-to-pricing-page/` is gone
-- [x] Commit and push the archive to the default branch in one commit
-- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d add-tier-pricing-to-pricing-page`
+- [ ] `git checkout main` and `git pull --ff-only`
+- [ ] Verify the merged changes appear on the default branch
+- [ ] Mark all remaining tasks as complete (`- [x]`)
+- [ ] Update repository documentation impacted by the change
+- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [ ] Archive the change: move `openspec/changes/add-tier-pricing-to-pricing-page/` to `openspec/changes/archive/2026-05-02-add-tier-pricing-to-pricing-page/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [ ] Confirm `openspec/changes/archive/2026-05-02-add-tier-pricing-to-pricing-page/` exists and `openspec/changes/add-tier-pricing-to-pricing-page/` is gone
+- [ ] Commit and push the archive to the default branch in one commit
+- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d add-tier-pricing-to-pricing-page`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d add-tier-pricing-to-pricing-page`
