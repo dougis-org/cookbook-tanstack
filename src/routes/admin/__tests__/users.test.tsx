@@ -142,4 +142,20 @@ describe('AdminUsersPage', () => {
     expect(auditLinks).toHaveLength(mockUsers.length)
     expect(auditLinks[1]).toHaveAttribute('data-user-id', USER_A_ID)
   })
+
+  it('confirmation modal shows warning when downgrading tier', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.querySelector('.bg-amber-500\\/10')).toBeInTheDocument()
+  })
+
+  it('confirmation modal does not show warning when upgrading tier', () => {
+    render(<AdminUsersPage />)
+    const aliceSelect = screen.getByLabelText('Change tier for alice@test.com')
+    fireEvent.change(aliceSelect, { target: { value: 'prep-cook' } })
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.querySelector('.bg-amber-500\\/10')).not.toBeInTheDocument()
+  })
 })

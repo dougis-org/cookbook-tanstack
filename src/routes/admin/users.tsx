@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
-import type { UserTier } from '@/types/user'
+import { TIER_RANK, type UserTier } from '@/types/user'
 
 export const Route = createFileRoute('/admin/users')({
   component: AdminUsersPage,
@@ -157,6 +157,14 @@ export function AdminUsersPage() {
               <strong>{TIER_LABELS[pending.fromTier]}</strong> to{' '}
               <strong>{TIER_LABELS[pending.toTier]}</strong>?
             </p>
+            {TIER_RANK[pending.fromTier] > TIER_RANK[pending.toTier] && (
+              <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  ⚠️ This will make all private recipes and cookbooks public, and hide any
+                  content over the new tier's limit. Your oldest content is preserved first.
+                </p>
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={handleCancel}
