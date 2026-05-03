@@ -220,6 +220,29 @@ The system SHALL document every file that must be updated when boot loader theme
 - **Then** it names `src/routes/__root.tsx`, `src/styles.css`, `src/styles/themes/*.css`, and `src/contexts/ThemeContext.tsx` as relevant sync points
 - **And** it states that boot loader theme colors must match the active app theme
 
+---
+
+### Requirement: FR-LSHEET-1 — Boot-loader resolves via `l.sheet` fast-path on cached stylesheet load
+
+The system SHALL call `markLoaded()` immediately (without attaching a `load` event listener to the stylesheet `<link>`) when `link.sheet` is already non-null at `init()` time, and the app shell SHALL become visible as a result.
+
+#### Scenario: Second navigation — CSS served from browser HTTP cache
+
+- **Given** a user has already visited the app (first navigation primed the browser context HTTP cache with the content-hashed CSS, served with `Cache-Control: public, max-age=31536000, immutable`)
+- **When** the user navigates to `'/'` a second time in the same browser session
+- **Then** `#app-shell` is visible after the page loads
+- **And** `#boot-loader` is not visible
+- **And** no `'load'` event listener was attached to the stylesheet `<link>` element (confirming the `l.sheet` branch fired, not the `addEventListener` branch)
+- **And** `link.sheet` is non-null after the page loads (confirming cache priming worked)
+
+#### Scenario: `l.sheet` guard removed — boot-loader spins on cached load
+
+- **Given** the `if (l.sheet) { markLoaded() }` check has been removed from the boot-loader script
+- **When** the user navigates to `'/'` a second time (CSS from cache, `link.sheet` non-null before `init()`)
+- **Then** a `'load'` event listener IS attached to the stylesheet `<link>` (spy flag is `true`)
+- **And** the `fastPathTaken` assertion (`!__cssLoadListenerAttached`) fails
+- **And** the test does NOT pass
+
 ## MODIFIED Requirements
 
 ### Requirement: MODIFIED — `<head>` and body structure in `__root.tsx`
