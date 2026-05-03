@@ -261,7 +261,7 @@ test.describe('FOUC prevention', () => {
     await expect(page.locator('#boot-loader-retry')).toBeVisible()
   })
 
-  test('boot loader retry affordance requests a reload without React hydration', async ({
+  test('boot loader retry affordance triggers a page reload', async ({
     page,
   }) => {
     await page.goto('/')
