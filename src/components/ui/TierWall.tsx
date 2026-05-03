@@ -11,7 +11,7 @@ interface TierWallProps {
 const MESSAGES: Record<TierWallReason, { title: string; body: string }> = {
   'count-limit': { title: 'Plan limit reached', body: "You've reached the recipe or cookbook limit for your current plan." },
   'private-content': { title: 'Private content requires Sous Chef', body: 'Private recipes and cookbooks require Sous Chef tier or above.' },
-  'import': { title: 'Import requires Sous Chef', body: 'Recipe import requires Sous Chef tier or above.' },
+  'import': { title: 'Import requires Executive Chef', body: 'Recipe import requires Executive Chef tier.' },
 }
 
 export default function TierWall({ reason, display, onDismiss }: TierWallProps) {

@@ -1467,7 +1467,7 @@ describe("recipes.import", () => {
   it("creates a new recipe for the authenticated user", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
 
       const result = await caller.recipes.import({
         name: "Imported Dish",
@@ -1489,7 +1489,7 @@ describe("recipes.import", () => {
   it("fails validation for invalid payload", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
 
       await expect(
         caller.recipes.import({
@@ -1503,7 +1503,7 @@ describe("recipes.import", () => {
   it("fails validation for invalid dateAdded", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
 
       await expect(
         caller.recipes.import({
@@ -1539,21 +1539,31 @@ describe("recipes.import — tier gate and count limit", () => {
     });
   });
 
-  it("sous-chef under limit is allowed", async () => {
+  it("executive-chef under limit is allowed", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
       const result = await caller.recipes.import({ name: "Allowed Import", _version: "1" });
       expect(result).toMatchObject({ name: "Allowed Import" });
     });
   });
 
-  it("sous-chef at limit (500 recipes) is blocked by count gate", async () => {
+  it("sous-chef is blocked by tier gate", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      await expect(
+        caller.recipes.import({ name: "Blocked Import", _version: "1" }),
+      ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
+    });
+  });
+
+  it("executive-chef at limit (2500 recipes) is blocked by count gate", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
       const userId = new Types.ObjectId(user.id);
       await Recipe.insertMany(
-        Array.from({ length: 500 }, (_, i) => ({
+        Array.from({ length: 2500 }, (_, i) => ({
           name: `Recipe ${i}`,
           userId,
           isPublic: true,
@@ -1562,7 +1572,7 @@ describe("recipes.import — tier gate and count limit", () => {
           preparationIds: [],
         })),
       );
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
       await expect(
         caller.recipes.import({ name: "One Over Limit", _version: "1" }),
       ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });

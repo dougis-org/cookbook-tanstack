@@ -49,7 +49,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'sous-chef',
       canCreatePrivate: true,
-      canImport: true,
+      canImport: false,
       recipeLimit: 500,
       cookbookLimit: 25,
     })

@@ -15,7 +15,7 @@ The tiers should create a clear ladder without making the free product useless.
 - Anonymous visitors can discover and print public content.
 - Home Cook users can contribute a small amount of public content for free.
 - Prep Cook is primarily the ad-free tier, with higher public-content limits.
-- Sous Chef unlocks private personal library use and recipe import.
+- Sous Chef unlocks private personal library use.
 - Executive Chef serves power users with high fixed limits and future advanced
   capabilities.
 
@@ -39,7 +39,7 @@ Private content starts at Sous Chef.
 | Recipe visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook chapters | View only | No chapter cap | No chapter cap | No chapter cap | No chapter cap |
-| Recipe import | No | No | No | Yes | Yes |
+| Recipe import | No | No | No | No | Yes |
 
 ## Tier Definitions
 
@@ -71,7 +71,7 @@ public contribution.
 Sous Chef is the personal library tier. Sous Chef users do not see ads and can
 create up to 500 recipes and 25 cookbooks.
 
-Sous Chef unlocks private recipes, private cookbooks, and recipe import.
+Sous Chef unlocks private recipes and private cookbooks.
 
 ### Executive Chef
 
@@ -105,7 +105,7 @@ control the scale of chapter usage.
 
 ## Import Policy
 
-Recipe import is available only to Sous Chef and Executive Chef users.
+Recipe import is available only to Executive Chef users.
 
 Home Cook and Prep Cook users cannot import recipes. This prevents lower tiers
 from rapidly filling their content quota through bulk or semi-automated flows
@@ -126,7 +126,7 @@ changes the model.
 | --- | --- |
 | Ad suppression | Prep Cook and above |
 | Private recipes and cookbooks | Sous Chef and above |
-| Recipe import | Sous Chef and above |
+| Recipe import | Executive Chef only |
 | Bulk import/export | Executive Chef candidate |
 | Advanced sharing | Sous Chef or Executive Chef candidate |
 | Collaboration | Executive Chef candidate |

@@ -28,7 +28,7 @@ export function canCreatePrivate(tier: string | null | undefined): boolean {
 }
 
 export function canImport(tier: string | null | undefined): boolean {
-  return hasAtLeastTier({ tier }, 'sous-chef')
+  return hasAtLeastTier({ tier }, 'executive-chef')
 }
 
 export const TIER_ORDER: EntitlementTier[] = [
@@ -51,6 +51,14 @@ export const TIER_DESCRIPTIONS: Record<EntitlementTier, string> = {
   anonymous: 'Browse public recipes without an account.',
   'home-cook': 'Start your collection with up to 10 recipes and 1 cookbook.',
   'prep-cook': 'Grow your library with up to 100 recipes and 10 cookbooks.',
-  'sous-chef': 'Unlock private recipes, import tools, and room for 500 recipes and 25 cookbooks.',
+  'sous-chef': 'Unlock private recipes and room for 500 recipes and 25 cookbooks.',
   'executive-chef': 'The full CookBook experience — 2500 recipes, 200 cookbooks, and every feature.',
+}
+
+export const TIER_PRICING: Record<EntitlementTier, { annual: number | null; monthly: number | null }> = {
+  'anonymous': { annual: null, monthly: null },
+  'home-cook': { annual: null, monthly: null },
+  'prep-cook': { annual: 27.99, monthly: 2.99 },
+  'sous-chef': { annual: 59.99, monthly: 5.99 },
+  'executive-chef': { annual: 99.99, monthly: 9.99 },
 }

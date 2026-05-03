@@ -6,6 +6,8 @@ import {
   TIER_DESCRIPTIONS,
   TIER_ORDER,
   TIER_DISPLAY_NAMES,
+  TIER_PRICING,
+  showUserAds,
   type EntitlementTier,
   canCreatePrivate,
   canImport,
@@ -15,69 +17,26 @@ export const Route = createFileRoute("/pricing")({ component: PricingPage })
 
 interface TierCardProps {
   tier: EntitlementTier
-  currentTier: EntitlementTier
+  isCurrentTier: boolean
 }
 
-function TierCard({ tier, currentTier }: TierCardProps) {
+function TierCard({ tier, isCurrentTier }: TierCardProps) {
   const limits = TIER_LIMITS[tier]
-  const isTopTier = tier === "executive-chef"
-  const isCurrent = tier === currentTier
-  // PricingPage only sets currentTier="anonymous" when session is null, so this
-  // is safe: an authenticated user with a bad tier falls back to "home-cook", not "anonymous"
-  const isAnon = currentTier === "anonymous"
-
-  function renderCTA() {
-    if (isTopTier) {
-      return (
-        <p className="text-sm font-medium text-[var(--theme-fg-muted)] mt-4">
-          Maximum plan
-        </p>
-      )
-    }
-    if (isCurrent) return null
-    if (isAnon) {
-      return (
-        <Link
-          to="/auth/register"
-          className="mt-4 inline-block rounded-md bg-[var(--theme-accent)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          Get started free
-        </Link>
-      )
-    }
-    if (TIER_ORDER.indexOf(tier) > TIER_ORDER.indexOf(currentTier)) {
-      return (
-        <Link
-          to="/change-tier"
-          className="mt-4 inline-block rounded-md border border-[var(--theme-accent)] px-4 py-2 text-sm font-semibold text-[var(--theme-accent)] hover:bg-[var(--theme-accent)]/10"
-        >
-          Upgrade
-        </Link>
-      )
-    }
-    // intentionally de-emphasized vs upgrade
-    return (
-      <Link
-        to="/change-tier"
-        className="mt-4 inline-block rounded-md border border-[var(--theme-border)] px-4 py-2 text-sm font-semibold text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface)]"
-      >
-        Downgrade
-      </Link>
-    )
-  }
+  const pricing = TIER_PRICING[tier]
+  const isPaidTier = pricing.annual !== null
 
   return (
     <div
       data-testid={`tier-card-${tier}`}
-      data-current={isCurrent ? "true" : undefined}
+      data-current={isCurrentTier ? "true" : undefined}
       className={[
         "flex flex-col rounded-xl border p-6 text-center",
-        isCurrent
+        isCurrentTier
           ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/5 ring-2 ring-[var(--theme-accent)]"
           : "border-[var(--theme-border)] bg-[var(--theme-surface)]",
       ].join(" ")}
     >
-      {isCurrent && (
+      {isCurrentTier && (
         <span className="mb-2 inline-block rounded-full bg-[var(--theme-accent)] px-3 py-0.5 text-xs font-semibold text-white">
           Current plan
         </span>
@@ -92,6 +51,25 @@ function TierCard({ tier, currentTier }: TierCardProps) {
         {TIER_DESCRIPTIONS[tier]}
       </p>
       <div className="mt-4 space-y-1 text-sm text-[var(--theme-fg-subtle)]">
+        {isPaidTier ? (
+          <>
+            <p className="text-base font-bold text-[var(--theme-fg)]">
+              ${pricing.annual}/year
+            </p>
+            <p className="text-sm text-[var(--theme-fg-muted)]">
+              ${pricing.monthly}/month
+            </p>
+            <p>
+              <span className="inline-block rounded-full bg-[var(--theme-accent)] px-2 py-0.5 text-xs font-semibold text-white">
+                Save 2 months
+              </span>
+            </p>
+          </>
+        ) : (
+          <p className="text-base font-bold text-[var(--theme-fg)]">FREE</p>
+        )}
+      </div>
+      <div className="mt-4 space-y-1 text-sm text-[var(--theme-fg-subtle)]">
         <p>
           <span className="font-semibold text-[var(--theme-fg)]">{limits.recipes}</span> recipes
         </p>
@@ -100,8 +78,8 @@ function TierCard({ tier, currentTier }: TierCardProps) {
         </p>
         <p>{canCreatePrivate(tier) ? "Private recipes ✓" : "Public only"}</p>
         <p>{canImport(tier) ? "Import ✓" : "No import"}</p>
+        <p>{showUserAds(tier) ? "Ad Supported" : "No Ads"}</p>
       </div>
-      {renderCTA()}
     </div>
   )
 }
@@ -112,6 +90,7 @@ export function PricingPage() {
   const currentTier: EntitlementTier = session
     ? (rawTier && Object.hasOwn(TIER_LIMITS, rawTier) ? rawTier : "home-cook")
     : "anonymous"
+  const isAnon = currentTier === "anonymous"
 
   return (
     <PageLayout role="public-marketing" title="Pricing" description="Compare plans and find the right fit.">
@@ -120,10 +99,20 @@ export function PricingPage() {
           <TierCard
             key={tier}
             tier={tier}
-            currentTier={currentTier}
+            isCurrentTier={tier === currentTier}
           />
         ))}
       </div>
+      {isAnon && (
+        <div className="mt-8 text-center">
+          <Link
+            to="/auth/register"
+            className="inline-block rounded-md bg-[var(--theme-accent)] px-6 py-3 text-base font-semibold text-white hover:opacity-90"
+          >
+            Get Started for Free
+          </Link>
+        </div>
+      )}
     </PageLayout>
   )
 }

@@ -6,7 +6,7 @@ test.describe("Recipe Import", () => {
   test("imports a JSON recipe and redirects to detail page", async ({
     page,
   }) => {
-    await registerAndLoginWithTier(page, "sous-chef");
+    await registerAndLoginWithTier(page, "executive-chef");
 
     await gotoAndWaitForHydration(page, "/import");
 

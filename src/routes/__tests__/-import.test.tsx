@@ -58,7 +58,7 @@ describe('ImportPage', () => {
     capturedOnError!({ data: { appError: { type: 'tier-wall', reason: 'import' } }, message: 'Import not allowed' })
 
     await waitFor(() => {
-      expect(screen.getByText('Import requires Sous Chef')).toBeInTheDocument()
+      expect(screen.getByText('Import requires Executive Chef')).toBeInTheDocument()
     })
   })
 
@@ -77,6 +77,6 @@ describe('ImportPage', () => {
     capturedOnError!({ message: 'Server error' })
 
     // TierWall not shown; generic server error goes to ImportPreviewModal (not tested here)
-    expect(screen.queryByText('Import requires Sous Chef')).not.toBeInTheDocument()
+    expect(screen.queryByText('Import requires Executive Chef')).not.toBeInTheDocument()
   })
 })

@@ -98,7 +98,7 @@ describe('canImport', () => {
     ['anonymous', false],
     ['home-cook', false],
     ['prep-cook', false],
-    ['sous-chef', true],
+    ['sous-chef', false],
     ['executive-chef', true],
   ] as const)('%s → %s', (tier, expected) => {
     expect(canImport(tier)).toBe(expected)
