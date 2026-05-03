@@ -10,16 +10,16 @@
 - [x] **Add `l.sheet` fast-path test to `src/e2e/fouc-prevention.spec.ts`**
   - Add one test to the existing `FOUC prevention` describe block
   - Test structure:
-    1. `await page.goto('/')` — prime the browser context HTTP cache (Nitro serves CSS with `Cache-Control: public, max-age=31536000, immutable`)
-    2. `await expect(page.locator('#app-shell')).toBeVisible()` — confirm first load works
-    3. `await page.addInitScript(...)` — install spy on `EventTarget.prototype.addEventListener` to set `window.__cssLoadListenerAttached = true` if a `'load'` listener is attached to any `<link>` element; only runs on the next navigation
-    4. `await page.goto('/')` — second navigation; CSS served from cache; `link.sheet` non-null before `init()` runs
-    5. `await expect(page.locator('#app-shell')).toBeVisible()` — app shell visible
-    6. `await expect(page.locator('#boot-loader')).not.toBeVisible()` — boot-loader hidden
-    7. Assert `fastPathTaken` — `page.evaluate(() => !(window as any).__cssLoadListenerAttached)` is `true`
-    8. Assert `sheetWasNonNull` — `page.evaluate(...)` to read `link.sheet` from the non-print stylesheet is non-null
+    1. `test.skip(!process.env.CI, 'Requires production build with immutable cache headers')` — skip in non-CI (Vite dev server sends no-cache headers)
+    2. `await page.goto('/')` — prime the browser context HTTP cache (Nitro serves CSS with `Cache-Control: public, max-age=31536000, immutable`)
+    3. `await expect(page.locator('#app-shell')).toBeVisible()` — confirm first load works
+    4. `await page.addInitScript(...)` — install spy on `EventTarget.prototype.addEventListener` to set `window.__cssLoadListenerAttached = true` if a `'load'` listener is attached to any `<link rel="stylesheet">` element; only runs on the next navigation; uses `instanceof Element` for type safety; does NOT check `sheet` state (the spy must flag any load listener to reliably catch guard removal)
+    5. `await page.goto('/')` — second navigation; CSS served from cache; `link.sheet` non-null before `init()` runs
+    6. `await expect(page.locator('#app-shell')).toBeVisible()` — app shell visible
+    7. `await expect(page.locator('#boot-loader')).not.toBeVisible()` — boot-loader hidden
+    8. Assert `fastPathTaken` — `page.evaluate(() => !(window as any).__cssLoadListenerAttached)` is `true`
+    9. Assert `sheetWasNonNull` — `page.evaluate(...)` to read `link.sheet` from the non-print stylesheet is non-null
   - If `sheetWasNonNull` fails, it means cache priming didn't work; check Nitro headers and environment
-  - Local dev note: Vite dev server may serve CSS with `no-cache` headers, causing `fastPathTaken` to fail locally. If so, skip on non-CI with `test.skip(!process.env.CI, 'Requires production build with immutable cache headers')` — or investigate during implementation.
 
 ## Validation
 

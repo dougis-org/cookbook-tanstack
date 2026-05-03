@@ -372,6 +372,8 @@ test.describe('FOUC prevention', () => {
   test('cached stylesheet uses l.sheet fast-path on second load', async ({
     page,
   }) => {
+    test.skip(!process.env.CI, 'Requires production build with immutable cache headers')
+
     await page.goto('/')
     await expect(page.locator('#app-shell')).toBeVisible()
 
@@ -383,11 +385,12 @@ test.describe('FOUC prevention', () => {
         listener: EventListener | EventListenerObject | null,
         options?: AddEventListenerOptions | boolean,
       ) {
-        const target = this as HTMLElement
+        const target = this as Element
         if (
           type === 'load' &&
+          target instanceof Element &&
           target.tagName === 'LINK' &&
-          !(target as HTMLLinkElement).sheet
+          (target as HTMLLinkElement).rel?.toLowerCase().includes('stylesheet')
         ) {
           ;(window as unknown as Record<string, boolean>).__cssLoadListenerAttached =
             true
