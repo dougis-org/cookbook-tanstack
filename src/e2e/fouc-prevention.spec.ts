@@ -368,4 +368,55 @@ test.describe('FOUC prevention', () => {
     const bytes = new TextEncoder().encode(content!).length
     expect(bytes).toBeLessThanOrEqual(3_500)
   })
+
+  test('cached stylesheet uses l.sheet fast-path on second load', async ({
+    page,
+  }) => {
+    test.skip(!process.env.CI, 'Requires production build with immutable cache headers')
+
+    await page.goto('/')
+    await expect(page.locator('#app-shell')).toBeVisible()
+
+    await page.addInitScript(() => {
+      const proto = EventTarget.prototype
+      const original = proto.addEventListener
+      proto.addEventListener = function (
+        type: string,
+        listener: EventListener | EventListenerObject | null,
+        options?: AddEventListenerOptions | boolean,
+      ) {
+        const target = this as Element
+        if (
+          type === 'load' &&
+          target instanceof Element &&
+          target.tagName === 'LINK' &&
+          (target as HTMLLinkElement).rel?.toLowerCase().includes('stylesheet')
+        ) {
+          ;(window as unknown as Record<string, boolean>).__cssLoadListenerAttached =
+            true
+        }
+        return original.call(this, type, listener, options)
+      }
+    })
+
+    await page.goto('/')
+    await expect(page.locator('#app-shell')).toBeVisible()
+    await expect(page.locator('#boot-loader')).not.toBeVisible()
+
+    const fastPathTaken = await page.evaluate(
+      () => !(window as unknown as Record<string, boolean>).__cssLoadListenerAttached,
+    )
+    expect(fastPathTaken).toBe(true)
+
+    const sheetWasNonNull = await page.evaluate(() => {
+      const links = document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')
+      for (const link of links) {
+        if (link.sheet && link.media !== 'print') {
+          return true
+        }
+      }
+      return false
+    })
+    expect(sheetWasNonNull).toBe(true)
+  })
 })

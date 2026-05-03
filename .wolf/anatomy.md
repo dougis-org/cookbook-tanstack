@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T15:13:25.791Z
-> Files: 595 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T15:54:21.169Z
+> Files: 592 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -35,10 +35,10 @@
 - `Dockerfile` — Docker container definition (~238 tok)
 - `dump-recipe_laravel-202603111712.sql` — MySQL dump 10.13  Distrib 8.4.8, for Linux (x86_64) (~236594 tok)
 - `fix.js` — Escapes characters with special meaning in regular expressions. (~1141 tok)
-- `fly.toml` (~140 tok)
+- `fly.toml` (~147 tok)
 - `package-lock.json` — npm lock file (~74833 tok)
 - `package.json` — Node.js package manifest (~943 tok)
-- `playwright.config.ts` — Declares ReporterDescription (~699 tok)
+- `playwright.config.ts` — Declares ReporterDescription (~702 tok)
 - `README.md` — Project documentation (~580 tok)
 - `tsconfig.json` — TypeScript configuration (~179 tok)
 - `tsconfig.test.ts` — @vitest-environment node (~388 tok)
@@ -315,7 +315,7 @@
 
 ## .github/workflows/
 
-- `build-and-test.yml` — CI: Build and Test (~2360 tok)
+- `build-and-test.yml` — CI: Build and Test (~2109 tok)
 - `deploy.yml` — CI: Deploy to Fly.io (~187 tok)
 - `resolve-outdated-comments.yml` — CI: Resolve outdated PR comments (~1810 tok)
 - `sync-openspec-shared.yml` — CI: Sync openspec-shared submodule (~812 tok)
@@ -771,6 +771,17 @@
 - `upgrade-stub.md` — Spec: /upgrade Stub Route (~377 tok)
 - `usage-router.md` — Spec: usage tRPC Router (~821 tok)
 
+## openspec/changes/e2e-boot-loader-lsheet-fast-path/
+
+- `design.md` — Context (~2193 tok)
+- `proposal.md` — GitHub Issues (~1309 tok)
+- `tasks.md` — Tasks (~1289 tok)
+- `tests.md` — Tests (~724 tok)
+
+## openspec/changes/e2e-boot-loader-lsheet-fast-path/specs/fouc-prevention/
+
+- `cached-lsheet.md` — ADDED Requirements (~728 tok)
+
 ## openspec/changes/enforce-tier-content-limits/
 
 - `tasks.md` — Tasks (~2134 tok)
@@ -808,18 +819,6 @@
 ## openspec/changes/fix-themed-boot-loader-css-gate/
 
 - `tasks.md` — Tasks (~2018 tok)
-
-## openspec/changes/operational-readiness-health-endpoint/
-
-- `design.md` — Context (~2814 tok)
-- `proposal.md` — GitHub Issues (~1397 tok)
-- `tasks.md` — Tasks (~1600 tok)
-- `tests.md` — Tests (~1013 tok)
-
-## openspec/changes/operational-readiness-health-endpoint/specs/
-
-- `ci-warmup.md` — Spec: CI E2E Server Warmup (~1161 tok)
-- `health-endpoint.md` — Spec: Health Endpoint (`GET /api/health`) (~1293 tok)
 
 ## openspec/changes/revamp-home-page-experience/
 
@@ -890,14 +889,6 @@
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
-
-## src/routes/api/
-
-- `health.ts` — Exports handleHealthCheck, Route (~191 tok)
-
-## src/routes/api/__tests__/
-
-- `health.test.ts` — Declares mockMongoose (~786 tok)
 
 ## src/routes/cookbooks/
 
