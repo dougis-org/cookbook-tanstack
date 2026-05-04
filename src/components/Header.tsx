@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { useTheme, THEMES } from '@/contexts/ThemeContext'
 
 type ThemeId = (typeof THEMES)[number]['id']
@@ -29,6 +30,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const { session, isPending } = useAuth()
+  const { canImport } = useTierEntitlements()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -444,7 +446,7 @@ export default function Header() {
             </Link>
           )}
 
-          {session && (
+          {session && canImport && (
             <Link
               to="/import"
               onClick={() => setIsOpen(false)}

@@ -35,11 +35,17 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
+let mockCanImport = true
+vi.mock('@/hooks/useTierEntitlements', () => ({
+  useTierEntitlements: () => ({ canImport: mockCanImport }),
+}))
+
 import { Route } from '@/routes/import/index'
 
 describe('ImportPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockCanImport = true
     mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
   })
 
@@ -78,5 +84,27 @@ describe('ImportPage', () => {
 
     // TierWall not shown; generic server error goes to ImportPreviewModal (not tested here)
     expect(screen.queryByText('Import requires Executive Chef')).not.toBeInTheDocument()
+  })
+
+  it('shows inline TierWall when canImport is false', async () => {
+    mockCanImport = false
+
+    const PageComponent = Route.options.component as () => React.ReactElement
+    render(<PageComponent />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/Import requires Executive Chef/)).toBeInTheDocument()
+    })
+  })
+
+  it('does not render ImportDropzone when canImport is false', async () => {
+    mockCanImport = false
+
+    const PageComponent = Route.options.component as () => React.ReactElement
+    render(<PageComponent />)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: /select/i })).not.toBeInTheDocument()
+    })
   })
 })
