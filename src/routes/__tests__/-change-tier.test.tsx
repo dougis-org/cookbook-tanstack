@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
 
 vi.mock('@tanstack/react-router', async () => {
   const { createRouterMock } = await import('@/test-helpers/mocks')
@@ -13,39 +14,10 @@ vi.mock('@/components/layout/PageLayout', () => ({
 import { Route, ChangeTierPage } from '@/routes/change-tier'
 
 describe('/change-tier — beforeLoad', () => {
-  it('redirects unauthenticated visitors to /auth/login', () => {
+  it('enforces verified authentication', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
-    try {
-      beforeLoad({ context: { session: null }, location: { href: '/change-tier' } } as never)
-      throw new Error('Should have thrown')
-    } catch (err: unknown) {
-      const e = err as { type?: string; options?: { to?: string; search?: { reason?: string } } }
-      expect(e.type).toBe('redirect')
-      expect(e.options?.to).toBe('/auth/login')
-      expect(e.options?.search).toMatchObject({ reason: 'auth-required' })
-    }
-  })
-
-  it('redirects authenticated-but-unverified users to /auth/verify-email', () => {
-    const beforeLoad = Route.options.beforeLoad
-    if (!beforeLoad) throw new Error('beforeLoad not defined')
-    try {
-      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: false } } }, location: { href: '/change-tier' } } as never)
-      throw new Error('Should have thrown')
-    } catch (err: unknown) {
-      const e = err as { type?: string; options?: { to?: string } }
-      expect(e.type).toBe('redirect')
-      expect(e.options?.to).toBe('/auth/verify-email')
-    }
-  })
-
-  it('allows verified users', () => {
-    const beforeLoad = Route.options.beforeLoad
-    if (!beforeLoad) throw new Error('beforeLoad not defined')
-    expect(() => {
-      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: true } } }, location: { href: '/change-tier' } } as never)
-    }).not.toThrow()
+    testVerifiedAuthGuard(beforeLoad, '/change-tier')
   })
 })
 

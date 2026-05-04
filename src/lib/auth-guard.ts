@@ -17,6 +17,39 @@ function throwLoginRedirect(href: string): never {
   })
 }
 
+function throwAccountRedirect(reason: RedirectReason): never {
+  throw redirect({
+    to: '/account',
+    search: { reason },
+  })
+}
+
+type GuardArgs = { context: RouterContext; location: { href: string } }
+type GuardFn = (args: GuardArgs) => void
+type SessionGuardFn = (session: NonNullable<RouterContext['session']>, location: { href: string }) => void
+
+/**
+ * Higher-order guard that only executes if a session exists.
+ * Does NOT redirect unauthenticated users (use withAuthenticatedSession for that).
+ */
+function withSession(fn: SessionGuardFn): GuardFn {
+  return (args) => {
+    if (!args.context.session) return
+    fn(args.context.session, args.location)
+  }
+}
+
+/**
+ * Higher-order guard that requires an active session.
+ * Redirects unauthenticated users to login.
+ */
+function withAuthenticatedSession(fn: SessionGuardFn): GuardFn {
+  return (args) => {
+    if (!args.context.session) throwLoginRedirect(args.location.href)
+    fn(args.context.session, args.location)
+  }
+}
+
 /**
  * Route guard factory. Usage: `beforeLoad: requireAuth()`
  *
@@ -25,15 +58,7 @@ function throwLoginRedirect(href: string): never {
  * search params so the login page can show context and return the user.
  */
 export function requireAuth() {
-  return ({
-    context,
-    location,
-  }: {
-    context: RouterContext
-    location: { href: string }
-  }) => {
-    if (!context.session) throwLoginRedirect(location.href)
-  }
+  return withAuthenticatedSession(() => {})
 }
 
 /**
@@ -45,16 +70,11 @@ export function requireAuth() {
  * (unauthenticated state is handled by `requireAuth`).
  */
 export function requireTier(tier: UserTier) {
-  return ({ context }: { context: RouterContext; location: { href: string } }) => {
-    if (!context.session) return
-
-    if (!hasAtLeastTier(context.session.user, tier)) {
-      throw redirect({
-        to: '/account',
-        search: { reason: 'tier-limit-reached' as RedirectReason },
-      })
+  return withSession((session) => {
+    if (!hasAtLeastTier(session.user, tier)) {
+      throwAccountRedirect('tier-limit-reached')
     }
-  }
+  })
 }
 
 /**
@@ -62,21 +82,13 @@ export function requireTier(tier: UserTier) {
  *
  * Redirects non-admin users to `/account` with `reason: 'tier-limit-reached'`.
  * Has no effect when session is null (unauthenticated state is handled by `requireAuth`).
- *
- * @future No routes use this guard yet. It is implemented with real enforcement
- * logic so it is safe to wire up when an admin route is added.
  */
 export function requireAdmin() {
-  return ({ context }: { context: RouterContext; location: { href: string } }) => {
-    if (!context.session) return
-
-    if (!context.session.user.isAdmin) {
-      throw redirect({
-        to: '/account',
-        search: { reason: 'tier-limit-reached' as RedirectReason },
-      })
+  return withSession((session) => {
+    if (!session.user.isAdmin) {
+      throwAccountRedirect('tier-limit-reached')
     }
-  }
+  })
 }
 
 /**
@@ -89,20 +101,12 @@ export function requireAdmin() {
  * Treats `emailVerified: undefined` as verified (legacy session compatibility).
  */
 export function requireVerifiedAuth() {
-  return ({
-    context,
-    location,
-  }: {
-    context: RouterContext
-    location: { href: string }
-  }) => {
-    if (!context.session) throwLoginRedirect(location.href)
-
-    if (context.session.user.emailVerified === false) {
+  return withAuthenticatedSession((session, location) => {
+    if (session.user.emailVerified === false) {
       throw redirect({
         to: '/auth/verify-email',
         search: { from: location.href },
       })
     }
-  }
+  })
 }
