@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { gotoAndWaitForHydration } from "./app";
+import { withMongoDb } from "./db";
 import { getUniqueSuffix } from "./utils";
 
 interface RegisterOptions {
@@ -9,24 +10,15 @@ interface RegisterOptions {
   password?: string;
 }
 
-/**
- * Verify a user's email via the test API endpoint.
- * Used in E2E tests where email verification is required but we skip the email flow.
- */
-async function verifyUserEmail(page: Page, email: string) {
-  const origin = process.env.BETTER_AUTH_URL
-    ? new URL(process.env.BETTER_AUTH_URL).origin
-    : new URL(page.url()).origin;
-
-  const response = await page.request.post("/api/trpc/test.verifyEmail", {
-    data: { email },
-    headers: { Origin: origin },
+async function verifyUserEmail(email: string) {
+  await withMongoDb(async (db) => {
+    const result = await db
+      .collection("user")
+      .updateOne({ email }, { $set: { emailVerified: true } });
+    if (result.matchedCount === 0) {
+      throw new Error(`User not found for email verification: ${email}`);
+    }
   });
-
-  if (!response.ok()) {
-    const body = await response.text();
-    throw new Error(`Email verification failed: ${response.status()} ${body}`);
-  }
 }
 
 /**
@@ -75,7 +67,7 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
   }
 
   // Verify the email in the database so the user can access email-gated routes
-  await verifyUserEmail(page, email);
+  await verifyUserEmail(email);
 
   await gotoAndWaitForHydration(page, "/");
 

@@ -349,6 +349,16 @@ describe("cookbooks.create", () => {
     });
   });
 
+  it("rejects requests from users with unverified email", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { emailVerified: false });
+      await expect(caller.cookbooks.create({ name: "Test" })).rejects.toThrow(
+        "Email verification required",
+      );
+    });
+  });
+
   it.each([
     [{ name: "My Recipes" }, { name: "My Recipes", isPublic: true }],
     [

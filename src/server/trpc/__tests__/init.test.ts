@@ -99,6 +99,41 @@ describe("tierProcedure()", () => {
   })
 })
 
+describe("verifiedProcedure", () => {
+  function makeVerifiedCtx(emailVerified: boolean | undefined) {
+    return {
+      session: { id: "s1" } as never,
+      user: { id: "u1", emailVerified } as never,
+    }
+  }
+
+  it("allows calls when emailVerified is true", async () => {
+    const { router, verifiedProcedure } = await import("@/server/trpc/init")
+    const testRouter = router({ secret: verifiedProcedure.query(() => "ok") })
+    expect(await testRouter.createCaller(makeVerifiedCtx(true)).secret()).toBe("ok")
+  })
+
+  it("allows calls when emailVerified is undefined (legacy compatibility)", async () => {
+    const { router, verifiedProcedure } = await import("@/server/trpc/init")
+    const testRouter = router({ secret: verifiedProcedure.query(() => "ok") })
+    expect(await testRouter.createCaller(makeVerifiedCtx(undefined)).secret()).toBe("ok")
+  })
+
+  it("throws FORBIDDEN when emailVerified is false", async () => {
+    const { router, verifiedProcedure } = await import("@/server/trpc/init")
+    const testRouter = router({ secret: verifiedProcedure.query(() => "ok") })
+    await expect(
+      testRouter.createCaller(makeVerifiedCtx(false)).secret(),
+    ).rejects.toThrow("Email verification required")
+  })
+
+  it("throws UNAUTHORIZED for unauthenticated call", async () => {
+    const { router, verifiedProcedure } = await import("@/server/trpc/init")
+    const testRouter = router({ secret: verifiedProcedure.query(() => "ok") })
+    await expect(testRouter.createCaller(anonCtx).secret()).rejects.toThrow("UNAUTHORIZED")
+  })
+})
+
 describe("adminProcedure", () => {
   it("executes procedure for admin user", async () => {
     const { router, adminProcedure } = await import("@/server/trpc/init")

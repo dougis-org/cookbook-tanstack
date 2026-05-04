@@ -532,6 +532,16 @@ describe("recipes.create", () => {
     });
   });
 
+  it("rejects requests from users with unverified email", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { emailVerified: false });
+      await expect(caller.recipes.create({ name: "Test" })).rejects.toThrow(
+        "Email verification required",
+      );
+    });
+  });
+
   it("rejects an empty name", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
@@ -560,6 +570,16 @@ describe("recipes.update", () => {
       await expect(
         caller.recipes.update({ id: VALID_OBJECT_ID, name: "Updated" }),
       ).rejects.toThrow("UNAUTHORIZED");
+    });
+  });
+
+  it("rejects requests from users with unverified email", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { emailVerified: false });
+      await expect(
+        caller.recipes.update({ id: VALID_OBJECT_ID, name: "Updated" }),
+      ).rejects.toThrow("Email verification required");
     });
   });
 
@@ -1464,6 +1484,16 @@ describe("recipes.toggleMarked", () => {
 // ─── recipes.import ──────────────────────────────────────────────────────────
 
 describe("recipes.import", () => {
+  it("rejects requests from users with unverified email", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { emailVerified: false, tier: "executive-chef" });
+      await expect(
+        caller.recipes.import({ name: "Imported", _version: "1" }),
+      ).rejects.toThrow("Email verification required");
+    });
+  });
+
   it("creates a new recipe for the authenticated user", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
