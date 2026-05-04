@@ -32,7 +32,7 @@ The system SHALL redirect unauthenticated users to `/auth/login` and redirect au
 
 ### Requirement: ADDED guard applied to content-creation and tier-change routes
 
-The system SHALL apply `requireVerifiedAuth()` as the `beforeLoad` guard on `/recipes/new`, `/recipes/$recipeId/edit`, `/import`, `/cookbooks/`, and `/change-tier`.
+The system SHALL apply `requireVerifiedAuth()` as the `beforeLoad` guard on `/recipes/new`, `/recipes/$recipeId/edit`, `/import`, and `/change-tier`. The `/cookbooks/` listing page is intentionally public and is NOT guarded at the route level; instead, the `cookbooks.create` tRPC mutation uses `verifiedProcedure` to enforce verification at the API level.
 
 #### Scenario: Unverified user navigates to recipe creation
 
@@ -46,11 +46,11 @@ The system SHALL apply `requireVerifiedAuth()` as the `beforeLoad` guard on `/re
 - **When** they navigate to `/change-tier`
 - **Then** they are redirected to `/auth/verify-email?from=/change-tier`
 
-#### Scenario: Verified user accesses cookbooks
+#### Scenario: Unverified user attempts to create a cookbook via API
 
-- **Given** an authenticated user with `emailVerified: true`
-- **When** they navigate to `/cookbooks/`
-- **Then** the cookbooks page renders without redirect
+- **Given** an authenticated user with `emailVerified: false`
+- **When** they call the `cookbooks.create` tRPC mutation
+- **Then** the mutation returns a `FORBIDDEN` error with cause `email-not-verified`
 
 ## MODIFIED Requirements
 
