@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-router', async () => {
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAuth: () => () => ({}),
-  requireVerifiedAuth: () => () => ({}),
+  requireVerifiedAuth: vi.fn(() => () => ({})),
 }))
 
 vi.mock('@/components/layout/PageLayout', () => ({
@@ -36,7 +36,15 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
+import { requireVerifiedAuth } from '@/lib/auth-guard'
 import { Route } from '@/routes/import/index'
+
+describe('/import — beforeLoad', () => {
+  it('wires requireVerifiedAuth as the beforeLoad guard', () => {
+    expect(vi.mocked(requireVerifiedAuth)).toHaveBeenCalled()
+    expect(Route.options.beforeLoad).toBeDefined()
+  })
+})
 
 describe('ImportPage', () => {
   beforeEach(() => {

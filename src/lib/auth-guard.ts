@@ -10,6 +10,13 @@ export const REDIRECT_REASON_MESSAGES: Record<RedirectReason, string> = {
   'tier-limit-reached': 'Upgrade your plan to access this feature.',
 }
 
+function throwLoginRedirect(href: string): never {
+  throw redirect({
+    to: '/auth/login',
+    search: { reason: 'auth-required' as RedirectReason, from: href },
+  })
+}
+
 /**
  * Route guard factory. Usage: `beforeLoad: requireAuth()`
  *
@@ -25,15 +32,7 @@ export function requireAuth() {
     context: RouterContext
     location: { href: string }
   }) => {
-    if (!context.session) {
-      throw redirect({
-        to: '/auth/login',
-        search: {
-          reason: 'auth-required' as RedirectReason,
-          from: location.href,
-        },
-      })
-    }
+    if (!context.session) throwLoginRedirect(location.href)
   }
 }
 
@@ -97,15 +96,7 @@ export function requireVerifiedAuth() {
     context: RouterContext
     location: { href: string }
   }) => {
-    if (!context.session) {
-      throw redirect({
-        to: '/auth/login',
-        search: {
-          reason: 'auth-required' as RedirectReason,
-          from: location.href,
-        },
-      })
-    }
+    if (!context.session) throwLoginRedirect(location.href)
 
     if (context.session.user.emailVerified === false) {
       throw redirect({

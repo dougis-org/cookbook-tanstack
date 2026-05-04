@@ -1,23 +1,24 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
 
 vi.mock('@tanstack/react-router', async () => {
   const { createRouterMock } = await import('@/test-helpers/mocks')
-  return createRouterMock()
+  return createRouterMock({ params: { recipeId: 'r1' } })
 })
 
-vi.mock('@/components/layout/PageLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}))
+vi.mock('@/components/layout/PageLayout', () => ({ default: () => null }))
+vi.mock('@/components/recipes/RecipeForm', () => ({ default: () => null }))
+vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
+vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: null, isLoading: false }) }))
+vi.mock('@/lib/trpc', () => ({ trpc: { recipes: { byId: { queryOptions: () => ({}) } } } }))
 
-import { Route, ChangeTierPage } from '@/routes/change-tier'
+import { Route } from '@/routes/recipes/$recipeId_.edit'
 
-describe('/change-tier — beforeLoad', () => {
+describe('/recipes/$recipeId/edit — beforeLoad', () => {
   it('redirects unauthenticated visitors to /auth/login', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
     try {
-      beforeLoad({ context: { session: null }, location: { href: '/change-tier' } } as never)
+      beforeLoad({ context: { session: null }, location: { href: '/recipes/r1/edit' } } as never)
       throw new Error('Should have thrown')
     } catch (err: unknown) {
       const e = err as { type?: string; options?: { to?: string; search?: { reason?: string } } }
@@ -31,7 +32,7 @@ describe('/change-tier — beforeLoad', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
     try {
-      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: false } } }, location: { href: '/change-tier' } } as never)
+      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: false } } }, location: { href: '/recipes/r1/edit' } } as never)
       throw new Error('Should have thrown')
     } catch (err: unknown) {
       const e = err as { type?: string; options?: { to?: string } }
@@ -44,21 +45,7 @@ describe('/change-tier — beforeLoad', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
     expect(() => {
-      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: true } } }, location: { href: '/change-tier' } } as never)
+      beforeLoad({ context: { session: { user: { id: 'u1', emailVerified: true } } }, location: { href: '/recipes/r1/edit' } } as never)
     }).not.toThrow()
-  })
-})
-
-describe('/change-tier', () => {
-  it('renders the coming soon heading', () => {
-    render(<ChangeTierPage />)
-    expect(screen.getByText(/plan changes coming soon/i)).toBeInTheDocument()
-  })
-
-  it('renders a back link to /pricing', () => {
-    render(<ChangeTierPage />)
-    const link = screen.getByRole('link', { name: /view pricing/i })
-    expect(link).toBeInTheDocument()
-    expect(link.getAttribute('href')).toBe('/pricing')
   })
 })

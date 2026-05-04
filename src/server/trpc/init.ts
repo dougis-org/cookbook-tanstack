@@ -7,6 +7,7 @@ import { hasAtLeastTier } from "@/types/user"
 export type AppErrorCause =
   | { type: 'tier-wall'; reason: 'count-limit' | 'private-content' | 'import' }
   | { type: 'ownership' }
+  | { type: 'email-not-verified' }
 
 const TIER_WALL_REASONS = new Set(['count-limit', 'private-content', 'import'])
 
@@ -20,6 +21,9 @@ export function extractAppError(cause: unknown): AppErrorCause | null {
   }
   if (c.type === 'ownership') {
     return { type: 'ownership' }
+  }
+  if (c.type === 'email-not-verified') {
+    return { type: 'email-not-verified' }
   }
   return null
 }
