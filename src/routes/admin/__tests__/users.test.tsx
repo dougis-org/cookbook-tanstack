@@ -142,4 +142,39 @@ describe('AdminUsersPage', () => {
     expect(auditLinks).toHaveLength(mockUsers.length)
     expect(auditLinks[1]).toHaveAttribute('data-user-id', USER_A_ID)
   })
+
+  it('confirmation modal shows warning when downgrading tier', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
+  })
+
+  it('confirmation modal does not show warning when upgrading tier', () => {
+    render(<AdminUsersPage />)
+    const aliceSelect = screen.getByLabelText('Change tier for alice@test.com')
+    fireEvent.change(aliceSelect, { target: { value: 'prep-cook' } })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.queryByText(/⚠️ This will make all private recipes/)).not.toBeInTheDocument()
+  })
+
+  it('Cancel button dismisses modal when warning is visible', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(mockMutate).not.toHaveBeenCalled()
+  })
+
+  it('Confirm button calls setTier when warning is visible', () => {
+    render(<AdminUsersPage />)
+    const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
+    fireEvent.change(bobSelect, { target: { value: 'home-cook' } })
+    expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    expect(mockMutate).toHaveBeenCalledWith({ userId: USER_B_ID, tier: 'home-cook' })
+  })
 })
