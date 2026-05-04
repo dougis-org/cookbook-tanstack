@@ -10,9 +10,30 @@ interface RegisterOptions {
 }
 
 /**
+ * Verify a user's email via the test API endpoint.
+ * Used in E2E tests where email verification is required but we skip the email flow.
+ */
+async function verifyUserEmail(page: Page, email: string) {
+  const origin = process.env.BETTER_AUTH_URL
+    ? new URL(process.env.BETTER_AUTH_URL).origin
+    : new URL(page.url()).origin;
+
+  const response = await page.request.post("/api/trpc/test.verifyEmail", {
+    data: { email },
+    headers: { Origin: origin },
+  });
+
+  if (!response.ok()) {
+    const body = await response.text();
+    throw new Error(`Email verification failed: ${response.status()} ${body}`);
+  }
+}
+
+/**
  * Register a new unique test user via the auth API and set the session cookie.
  * Uses page.request (which shares the browser cookie jar) to avoid React
  * hydration timing issues with the UI form.
+ * Automatically verifies the user's email so tests can access email-gated routes.
  * Returns the credentials used so tests can re-login if needed.
  */
 export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
@@ -52,6 +73,9 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
       `Post-registration login failed: ${signInResponse.status()} ${body}`,
     );
   }
+
+  // Verify the email in the database so the user can access email-gated routes
+  await verifyUserEmail(page, email);
 
   await gotoAndWaitForHydration(page, "/");
 
