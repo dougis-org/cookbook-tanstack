@@ -98,6 +98,9 @@ export async function enforceContentLimit(
   const Model = (resource === "recipes" ? Recipe : Cookbook) as unknown as mongoose.Model<any>;
   const count = await Model.countDocuments(userContentFilter(userId));
 
+  // Race tolerance: a +1 over-limit window is accepted between the count check
+  // above and the actual create. No locking is needed — the worst case is a
+  // single over-limit document which will be hidden on the next reconcile.
   if (count >= limit) {
     throw new TRPCError({
       code: "PAYMENT_REQUIRED",

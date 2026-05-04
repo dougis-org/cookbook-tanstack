@@ -3,6 +3,28 @@ import { hasAtLeastTier, type UserTier } from '@/types/user'
 
 export type EntitlementTier = UserTier | 'anonymous'
 
+// ─── Enforcement Contract ───────────────────────────────────────────────────
+//
+// Tier enforcement spans three distinct layers with a strict separation of
+// concerns:
+//
+// 1. Server enforcement (this module + tRPC routers)
+//    All tier-limit and boolean-capability checks live in tRPC route handlers.
+//    No tier enforcement logic exists outside the routers and this module.
+//
+// 2. Client hook for UI affordances only (src/hooks/useTierEntitlements.ts)
+//    The client-side hook surfaces tier entitlements for UI display (e.g.,
+//    disabling buttons, showing upgrade prompts). It is never used for access
+//    control — the server is the source of truth and will reject unauthorized
+//    requests regardless of what the client hook reports.
+//
+// 3. Reconciliation on tier downgrade (src/lib/reconcile-user-content.ts)
+//    When an admin changes a user's tier downward, reconcile-user-content.ts
+//    retroactively applies the new limits by setting hiddenByTier on excess
+//    documents. This runs server-side and is triggered by admin.users.setTier.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const TIER_LIMITS: Record<EntitlementTier, { recipes: number; cookbooks: number }> = {
   anonymous: { recipes: 0, cookbooks: 0 },
   'home-cook': { recipes: 10, cookbooks: 1 },

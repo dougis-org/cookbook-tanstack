@@ -132,11 +132,15 @@ changes the model.
 | Collaboration | Executive Chef candidate |
 | Premium cookbook tools | Sous Chef or Executive Chef candidate |
 
-## Implementation Planning Output
+## Implementation
 
-This document does not define implementation details. A separate planning issue
-should produce:
-
-- An implementation plan for enforcing this feature matrix.
-- A list of execution issues that deliver the work in focused pieces.
-- Any product or UX decisions needed before enforcement begins.
+| Enforcement Area | File |
+|---|---|
+| Tier limits and boolean entitlements | `src/lib/tier-entitlements.ts` |
+| Client-side tier hook | `src/hooks/useTierEntitlements.ts` |
+| Recipe count + private enforcement | `src/server/trpc/routers/recipes.ts` |
+| Cookbook count + private enforcement | `src/server/trpc/routers/cookbooks.ts` |
+| Visibility filter (hiddenByTier) | `src/server/trpc/routers/_helpers.ts` |
+| Downgrade/upgrade reconciliation | `src/lib/reconcile-user-content.ts` |
+| Admin tier change entry point | `src/server/trpc/routers/admin.ts` |
+| Tier-wall UI | `src/components/ui/TierWall.tsx` |
