@@ -1748,6 +1748,16 @@ describe("visibility enforcement", () => {
       });
     });
 
+    it("Admin with tier 'home-cook' can set isPublic: false on own recipe update", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({ name: "Public Recipe", userId: user.id, isPublic: true }).save();
+        const caller = await makeAuthCaller(user.id, { tier: "home-cook", isAdmin: true });
+        const result = await caller.recipes.update({ id: recipe.id, isPublic: false });
+        expect(result?.isPublic).toBe(false);
+      });
+    });
+
     it("Executive Chef updates recipe to private -> allowed", async () => {
       await withCleanDb(async () => {
         const user = await seedUser();
@@ -1839,6 +1849,20 @@ describe("recipes.create — tier limit enforcement", () => {
       const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
       const result = await caller.recipes.create({ name: "New Recipe" });
       expect(result.hiddenByTier).toBe(false);
+    });
+  });
+
+  it("tier: undefined (omitted) is blocked at home-cook recipe limit of 10", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      for (let i = 0; i < 10; i++) {
+        await new Recipe({ name: `Recipe ${i}`, userId: user.id, isPublic: true }).save();
+      }
+      // Omit tier from makeAuthCaller opts — simulates tier: undefined
+      const caller = await makeAuthCaller(user.id);
+      await expect(caller.recipes.create({ name: "One Too Many" })).rejects.toMatchObject({
+        code: "PAYMENT_REQUIRED",
+      });
     });
   });
 });

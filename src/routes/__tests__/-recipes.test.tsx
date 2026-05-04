@@ -116,6 +116,7 @@ describe('RecipesPage — tier affordances', () => {
     setHomeCookAtLimit()
     render(<RecipesPage />)
     expect(screen.getAllByText(/limit/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('link', { name: /upgrade/i })).toHaveAttribute('href', '/pricing')
   })
 
   it('enables New Recipe button when home-cook user is below limit', () => {

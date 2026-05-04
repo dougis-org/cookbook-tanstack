@@ -880,6 +880,16 @@ describe("cookbooks.create — tier limit enforcement", () => {
     );
   });
 
+  it("tier: undefined (omitted) is blocked at home-cook cookbook limit of 1", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      // Omit tier from makeAuthCaller opts — simulates tier: undefined
+      const caller = await makeAuthCaller(owner.id);
+      await expect(caller.cookbooks.create({ name: "Second Cookbook" })).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
+    });
+  });
+
   it("succeeds when home-cook user has 0 cookbooks (under limit)", async () => {
     await withHomeCookCaller(null, async (caller) => {
       const result = await caller.cookbooks.create({ name: "First Cookbook" });
