@@ -14,6 +14,7 @@ import {
   User,
   ChevronDown,
   DollarSign,
+  FileUp,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
@@ -456,7 +457,7 @@ export default function Header() {
                   'flex items-center gap-3 p-3 rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white transition-colors mb-2',
               }}
             >
-              <Plus size={20} />
+              <FileUp size={20} aria-hidden="true" />
               <span className="font-medium">Import Recipe</span>
             </Link>
           )}
