@@ -10,6 +10,7 @@ import { importedRecipeSchema, type ImportedRecipeInput } from '@/lib/validation
 import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { trpc } from '@/lib/trpc'
 import { getTierWallReason, type TierWallReason } from '@/lib/trpc-error'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 
 export const Route = createFileRoute('/import/')({
   component: ImportPage,
@@ -18,6 +19,7 @@ export const Route = createFileRoute('/import/')({
 
 function ImportPage() {
   const navigate = useNavigate()
+  const { canImport } = useTierEntitlements()
   const [fieldErrors, setFieldErrors] = useState<string[]>([])
   const [parsedRecipe, setParsedRecipe] = useState<ImportedRecipeInput | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
@@ -91,31 +93,39 @@ function ImportPage() {
   return (
     <PageLayout title="Import Recipe" description="Upload a recipe JSON export and preview it before creating a new recipe.">
       <div className="max-w-2xl mx-auto space-y-4">
-        <ImportDropzone onFileSelected={handleSelectedFile} />
+        {canImport ? (
+          <>
+            <ImportDropzone onFileSelected={handleSelectedFile} />
 
-        {fieldErrors.length > 0 && (
-          <div className="rounded-lg border border-[color:var(--theme-error-border)] bg-[color:var(--theme-error-bg)] p-3">
-            <p className="text-[var(--theme-error)] font-medium mb-2">Validation errors</p>
-            <ul className="list-disc list-inside text-[var(--theme-error)] text-sm space-y-1">
-              {fieldErrors.map((error) => (
-                <li key={error}>{error}</li>
-              ))}
-            </ul>
-          </div>
+            {fieldErrors.length > 0 && (
+              <div className="rounded-lg border border-[color:var(--theme-error-border)] bg-[color:var(--theme-error-bg)] p-3">
+                <p className="text-[var(--theme-error)] font-medium mb-2">Validation errors</p>
+                <ul className="list-disc list-inside text-[var(--theme-error)] text-sm space-y-1">
+                  {fieldErrors.map((error) => (
+                    <li key={error}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
+        ) : (
+          <TierWall reason="import" display="inline" />
         )}
       </div>
 
-      <ImportPreviewModal
-        open={parsedRecipe != null}
-        recipe={parsedRecipe}
-        versionMismatch={versionMismatch}
-        error={serverError}
-        isPending={importMutation.isPending}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-      />
+      {canImport && (
+        <ImportPreviewModal
+          open={parsedRecipe != null}
+          recipe={parsedRecipe}
+          versionMismatch={versionMismatch}
+          error={serverError}
+          isPending={importMutation.isPending}
+          onCancel={handleCancel}
+          onConfirm={handleConfirm}
+        />
+      )}
 
-      {tierWallReason && (
+      {canImport && tierWallReason && (
         <TierWall reason={tierWallReason} display="modal" onDismiss={() => setTierWallReason(null)} />
       )}
     </PageLayout>
