@@ -81,7 +81,7 @@ Blocking resolution flow:
 - [x] Mark all remaining tasks as complete (`- [x]`)
 - [x] No documentation updates required (feature matrix in `docs/user-tier-feature-sets.md` was already updated in #419)
 - [ ] Sync approved spec deltas: copy `openspec/changes/restrict-import-to-executive-chef/specs/import-tier-gate.md` → `openspec/specs/import-tier-gate.md`
-- [ ] Archive the change: move `openspec/changes/restrict-import-to-executive-chef/` to `openspec/changes/archive/YYYY-MM-DD-restrict-import-to-executive-chef/` **staging both the new location and deletion in a single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-restrict-import-to-executive-chef/` exists and `openspec/changes/restrict-import-to-executive-chef/` is gone
-- [ ] Commit and push the archive to `main` in one commit
+- [x] Archive the change: move `openspec/changes/restrict-import-to-executive-chef/` to `openspec/changes/archive/YYYY-MM-DD-restrict-import-to-executive-chef/` **staging both the new location and deletion in a single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-restrict-import-to-executive-chef/` exists and `openspec/changes/restrict-import-to-executive-chef/` is gone
+- [x] Commit and push the archive to `main` in one commit
 - [ ] Prune merged local branch: `git fetch --prune` and `git branch -d restrict-import-to-executive-chef`
