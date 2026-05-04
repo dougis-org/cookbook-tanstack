@@ -63,9 +63,10 @@ export function tierProcedure(tier: UserTier) {
 
 /**
  * Procedure that requires the caller to be authenticated and have a verified email.
+ * Treats undefined emailVerified as verified (legacy compatibility).
  */
 export const verifiedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (!ctx.user.emailVerified) {
+  if (ctx.user.emailVerified === false) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Email verification required",

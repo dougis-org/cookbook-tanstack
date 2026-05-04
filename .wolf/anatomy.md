@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T21:36:45.952Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-04T02:11:25.802Z
 > Files: 605 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -921,7 +921,7 @@
 
 ## src/server/trpc/
 
-- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~799 tok)
+- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~822 tok)
 - `router.ts` — Exports appRouter, AppRouter (~258 tok)
 
 ## src/server/trpc/routers/
