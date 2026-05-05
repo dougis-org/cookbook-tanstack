@@ -45,6 +45,7 @@ vi.mock('@/lib/trpc', () => ({
     usage: {
       getOwned: { queryOptions: () => ({ queryKey: ['usage'] }) },
     },
+    users: { me: { queryOptions: () => ({ queryKey: ['users', 'me'] }) } },
   },
 }))
 
