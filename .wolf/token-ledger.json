@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 671565,
-    "total_reads": 2010,
-    "total_writes": 1084,
+    "total_tokens_estimated": 715922,
+    "total_reads": 2020,
+    "total_writes": 1099,
     "total_sessions": 14,
-    "anatomy_hits": 204,
-    "anatomy_misses": 1806,
+    "anatomy_hits": 212,
+    "anatomy_misses": 1808,
     "repeated_reads_blocked": 2402,
-    "estimated_savings_vs_bare_cli": 907798
+    "estimated_savings_vs_bare_cli": 909398
   },
   "sessions": [
     {
@@ -19319,6 +19319,175 @@
         "output_tokens_estimated": 7136,
         "reads_count": 5,
         "writes_count": 5,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-05-03-0812",
+      "started": "2026-05-03T15:12:53.046Z",
+      "ended": "2026-05-05T20:46:02.728Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/e2e/fouc-prevention.spec.ts",
+          "tokens_estimated": 3334,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 702,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/.github/workflows/build-and-test.yml",
+          "tokens_estimated": 2109,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/node_modules/@bgotink/playwright-coverage/src/fixtures.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/specs/fouc-prevention/spec.md",
+          "tokens_estimated": 3643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/proposal.md",
+          "tokens_estimated": 1496,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/design.md",
+          "tokens_estimated": 2507,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/specs/fouc-prevention/cached-lsheet.md",
+          "tokens_estimated": 832,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/tasks.md",
+          "tokens_estimated": 1473,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/tests.md",
+          "tokens_estimated": 828,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 9788,
+        "output_tokens_estimated": 7136,
+        "reads_count": 5,
+        "writes_count": 5,
+        "repeated_reads_blocked": 0,
+        "anatomy_lookups": 4
+      }
+    },
+    {
+      "id": "session-2026-05-03-0812",
+      "started": "2026-05-03T15:12:53.046Z",
+      "ended": "2026-05-05T21:14:48.987Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/src/e2e/fouc-prevention.spec.ts",
+          "tokens_estimated": 3334,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 702,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/.github/workflows/build-and-test.yml",
+          "tokens_estimated": 2109,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/node_modules/@bgotink/playwright-coverage/src/fixtures.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/specs/fouc-prevention/spec.md",
+          "tokens_estimated": 3643,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/proposal.md",
+          "tokens_estimated": 1496,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/design.md",
+          "tokens_estimated": 2507,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/specs/fouc-prevention/cached-lsheet.md",
+          "tokens_estimated": 832,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/tasks.md",
+          "tokens_estimated": 1473,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/e2e-boot-loader-lsheet-fast-path/tests.md",
+          "tokens_estimated": 828,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/install-stripe-sdk/proposal.md",
+          "tokens_estimated": 1431,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/install-stripe-sdk/design.md",
+          "tokens_estimated": 2697,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/install-stripe-sdk/specs/stripe-sdk-setup.md",
+          "tokens_estimated": 1950,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/install-stripe-sdk/tasks.md",
+          "tokens_estimated": 1885,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/install-stripe-sdk/tests.md",
+          "tokens_estimated": 2546,
+          "action": "create"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 9788,
+        "output_tokens_estimated": 17645,
+        "reads_count": 5,
+        "writes_count": 10,
         "repeated_reads_blocked": 0,
         "anatomy_lookups": 4
       }

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-03T15:54:21.169Z
-> Files: 592 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T21:14:38.725Z
+> Files: 597 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -819,6 +819,17 @@
 ## openspec/changes/fix-themed-boot-loader-css-gate/
 
 - `tasks.md` — Tasks (~2018 tok)
+
+## openspec/changes/install-stripe-sdk/
+
+- `design.md` — Context (~2360 tok)
+- `proposal.md` — GitHub Issues (~1252 tok)
+- `tasks.md` — Tasks (~1649 tok)
+- `tests.md` — Tests (~2227 tok)
+
+## openspec/changes/install-stripe-sdk/specs/
+
+- `stripe-sdk-setup.md` — Stripe SDK Setup Specification (~1706 tok)
 
 ## openspec/changes/revamp-home-page-experience/
 

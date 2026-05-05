@@ -472,3 +472,10 @@
 | 08:53 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tasks.md | — | ~1375 |
 | 08:54 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tests.md | — | ~772 |
 | 08:54 | Session end: 5 writes across 5 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~16924 tok |
+| 13:46 | Session end: 5 writes across 5 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~16924 tok |
+| 14:13 | Created openspec/changes/install-stripe-sdk/proposal.md | — | ~1336 |
+| 14:13 | Created openspec/changes/install-stripe-sdk/design.md | — | ~2517 |
+| 14:13 | Created openspec/changes/install-stripe-sdk/specs/stripe-sdk-setup.md | — | ~1820 |
+| 14:14 | Created openspec/changes/install-stripe-sdk/tasks.md | — | ~1759 |
+| 14:14 | Created openspec/changes/install-stripe-sdk/tests.md | — | ~2376 |
+| 14:14 | Session end: 10 writes across 6 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~27433 tok |
