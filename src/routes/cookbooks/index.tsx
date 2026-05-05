@@ -17,8 +17,9 @@ export const Route = createFileRoute('/cookbooks/')({
 
 export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
-  const { isLoggedIn, userId } = useAuth()
+  const { isLoggedIn, userId, session } = useAuth()
   const { cookbookLimit } = useTierEntitlements()
+  const isVerified = session?.user?.emailVerified !== false
 
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
   const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
@@ -36,20 +37,33 @@ export function CookbooksPage() {
         </span>
         {isLoggedIn && (
           <div>
-            <button
-              onClick={() => !atCookbookLimit && setShowCreate(true)}
-              disabled={atCookbookLimit}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              New Cookbook
-            </button>
-            {atCookbookLimit && <TierWall reason="count-limit" display="inline" />}
+            {isVerified ? (
+              <>
+                <button
+                  onClick={() => !atCookbookLimit && setShowCreate(true)}
+                  disabled={atCookbookLimit}
+                  className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Cookbook
+                </button>
+                {atCookbookLimit && <TierWall reason="count-limit" display="inline" />}
+              </>
+            ) : (
+              <Link
+                to="/auth/verify-email"
+                search={{ from: '/cookbooks/' }}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Verify Email to Create
+              </Link>
+            )}
           </div>
         )}
       </div>
 
-      {showCreate && (
+      {showCreate && isVerified && (
         <div className="mb-8">
           <CreateCookbookForm onClose={() => setShowCreate(false)} />
         </div>
@@ -63,12 +77,22 @@ export function CookbooksPage() {
         <div className="text-center py-20">
           <p className="text-[var(--theme-fg-muted)] text-lg mb-4">No cookbooks yet.</p>
           {isLoggedIn && (
-            <button
-              onClick={() => setShowCreate(true)}
-              className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
-            >
-              Create your first cookbook
-            </button>
+            isVerified ? (
+              <button
+                onClick={() => setShowCreate(true)}
+                className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
+              >
+                Create your first cookbook
+              </button>
+            ) : (
+              <Link
+                to="/auth/verify-email"
+                search={{ from: '/cookbooks/' }}
+                className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
+              >
+                Verify email to get started
+              </Link>
+            )
           )}
         </div>
       ) : (

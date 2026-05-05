@@ -63,8 +63,9 @@ export function RecipesPage() {
     hasImage,
   } = Route.useSearch()
 
-const { isLoggedIn, userId } = useAuth()
+const { isLoggedIn, userId, session } = useAuth()
 const { recipeLimit, canImport } = useTierEntitlements()
+const isVerified = session?.user?.emailVerified !== false
 
 const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
   ...trpc.usage.getOwned.queryOptions(),
@@ -203,37 +204,50 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
 
           {isLoggedIn && (
             <>
-              {canImport ? (
-                <Link
-                  to="/import"
-                  className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
-                >
-                  <Plus className="w-4 h-4" />
-                  Import Recipe
-                </Link>
-              ) : null}
-              <div className="flex flex-col gap-1">
-                {atRecipeLimit ? (
-                  <>
-                    <button
-                      disabled
-                      className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] opacity-50 cursor-not-allowed text-white font-semibold rounded-lg text-sm"
+              {isVerified ? (
+                <>
+                  {canImport ? (
+                    <Link
+                      to="/import"
+                      className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
                     >
                       <Plus className="w-4 h-4" />
-                      New Recipe
-                    </button>
-                    <TierWall reason="count-limit" display="inline" />
-                  </>
-                ) : (
-                  <Link
-                    to="/recipes/new"
-                    className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
-                  >
-                    <Plus className="w-4 h-4" />
-                    New Recipe
-                  </Link>
-                )}
-              </div>
+                      Import Recipe
+                    </Link>
+                  ) : null}
+                  <div className="flex flex-col gap-1">
+                    {atRecipeLimit ? (
+                      <>
+                        <button
+                          disabled
+                          className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] opacity-50 cursor-not-allowed text-white font-semibold rounded-lg text-sm"
+                        >
+                          <Plus className="w-4 h-4" />
+                          New Recipe
+                        </button>
+                        <TierWall reason="count-limit" display="inline" />
+                      </>
+                    ) : (
+                      <Link
+                        to="/recipes/new"
+                        className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
+                      >
+                        <Plus className="w-4 h-4" />
+                        New Recipe
+                      </Link>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <Link
+                  to="/auth/verify-email"
+                  search={{ from: '/recipes/' }}
+                  className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Verify Email to Create
+                </Link>
+              )}
             </>
           )}
         </div>
@@ -304,10 +318,20 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
               Clear all filters
             </button>
           ) : isLoggedIn ? (
-            <Link to="/recipes/new" className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors">
-              <Plus className="w-5 h-5" />
-              Create your first recipe
-            </Link>
+            isVerified ? (
+              <Link to="/recipes/new" className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors">
+                <Plus className="w-5 h-5" />
+                Create your first recipe
+              </Link>
+            ) : (
+              <Link
+                to="/auth/verify-email"
+                search={{ from: '/recipes/' }}
+                className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
+              >
+                Verify email to get started
+              </Link>
+            )
           ) : null}
         </div>
       ) : (

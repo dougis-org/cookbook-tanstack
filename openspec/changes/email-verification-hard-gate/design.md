@@ -47,12 +47,12 @@
 - Rationale: Pricing is an informational page. Requiring auth would reduce conversion for new visitors. The only actionable route is `/change-tier`, which is gated.
 - Trade-offs: None — this is purely additive.
 
-### Decision 4: Guard placement at route level, not tRPC level
+### Decision 4: Guard placement — route level for most routes, tRPC level for cookbooks
 
-- Chosen: Route-level `beforeLoad` guards only. tRPC routers are not modified.
-- Alternatives considered: Adding `emailVerified` check inside tRPC procedures.
-- Rationale: The UI routes are the entry points for user-initiated creation flows. tRPC enforcement is a separate, deeper layer — adding it here would be premature and is out of scope per the proposal.
-- Trade-offs: API endpoints could technically still be called by a determined unverified user, but that is an accepted risk for this iteration.
+- Chosen: Route-level `beforeLoad` guards for `/recipes/new`, `/recipes/$recipeId/edit`, `/import`, and `/change-tier`. For `/cookbooks/` (public-content listing page): UI-level verification check hides the create form and shows a "Verify Email to Create" link; the `cookbooks.create` tRPC mutation is enforced via a new `verifiedProcedure` middleware. The `/api/upload` endpoint also checks `emailVerified` to prevent unverified users from uploading images via direct API calls.
+- Alternatives considered: Adding a route-level guard to `/cookbooks/` (would block public cookbook browsing); leaving tRPC unmodified (allows API-level bypass).
+- Rationale: `/cookbooks/` is public-content — anonymous and unverified users can browse cookbooks. Only the creation action is gated. tRPC enforcement on `cookbooks.create` prevents direct API bypass. The `verifiedProcedure` middleware handles this cleanly.
+- Trade-offs: Unverified users on `/cookbooks/` see the page but not the create controls; they are guided to verify rather than being hard-redirected away from the listing.
 
 ## Proposal to Design Mapping
 

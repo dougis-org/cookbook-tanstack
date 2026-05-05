@@ -1,34 +1,41 @@
-import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
-import { verifiedAuth } from "@/test-helpers/auth"
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
 
-// Mock with from in search so we can verify it reaches VerifyEmailPage
-vi.mock("@tanstack/react-router", async () => {
-  const { createRouterMock } = await import("@/test-helpers/mocks")
-  return createRouterMock({ search: { from: "/recipes/new", error: undefined } })
+const { mockUseSearch } = vi.hoisted(() => ({
+  mockUseSearch: vi.fn().mockReturnValue({}),
+}))
+
+vi.mock('@tanstack/react-router', async () => {
+  return {
+    createFileRoute: (path: string) => (opts: any) => ({
+      ...opts,
+      useSearch: mockUseSearch,
+    }),
+  }
 })
 
-vi.mock("@/hooks/useAuth", () => ({
-  useAuth: () => verifiedAuth,
-}))
-
-vi.mock("@/lib/auth-client", () => ({
-  authClient: { useSession: () => ({ data: null }) },
-}))
-
-vi.mock("@/components/auth/AuthPageLayout", () => ({
+vi.mock('@/components/auth/AuthPageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-import { Route } from "@/routes/auth/verify-email"
+vi.mock('@/components/auth/VerifyEmailPage', () => ({
+  default: ({ from }: { from?: string }) => <div data-testid="verify-email-page">from: {from ?? 'none'}</div>,
+}))
 
-describe("VerifyEmailRoute — from search wiring", () => {
-  it("forwards from search param to the Continue link", () => {
-    const RouteComponent = Route.options.component as () => React.ReactElement
-    render(<RouteComponent />)
-    expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute(
-      "href",
-      "/recipes/new",
-    )
+import { Route } from '@/routes/auth/verify-email'
+
+describe('/auth/verify-email — wiring', () => {
+  it('passes the from search param to the component', () => {
+    mockUseSearch.mockReturnValue({ from: undefined })
+    const Component = (Route as any).component as React.ComponentType
+    render(<Component />)
+    expect(screen.getByTestId('verify-email-page')).toHaveTextContent('from: none')
+  })
+
+  it('passes a custom from search param', () => {
+    mockUseSearch.mockReturnValue({ from: '/recipes/new' })
+    const Component = (Route as any).component as React.ComponentType
+    render(<Component />)
+    expect(screen.getByTestId('verify-email-page')).toHaveTextContent('from: /recipes/new')
   })
 })

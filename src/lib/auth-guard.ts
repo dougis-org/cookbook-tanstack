@@ -10,7 +10,11 @@ export const REDIRECT_REASON_MESSAGES: Record<RedirectReason, string> = {
   'tier-limit-reached': 'Upgrade your plan to access this feature.',
 }
 
-function throwLoginRedirect(href: string): never {
+/**
+ * Throws a redirect to the login page with a reason and the current location.
+ * Shared by all guards that require authentication.
+ */
+export function throwLoginRedirect(href: string): never {
   throw redirect({
     to: '/auth/login',
     search: { reason: 'auth-required' as RedirectReason, from: href },

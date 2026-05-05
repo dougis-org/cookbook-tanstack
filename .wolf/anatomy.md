@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-04T02:11:25.802Z
-> Files: 605 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T04:41:53.938Z
+> Files: 623 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -782,6 +782,15 @@
 
 - `cached-lsheet.md` — ADDED Requirements (~728 tok)
 
+## openspec/changes/email-verification-hard-gate/
+
+- `design.md` — Context (~2634 tok)
+- `proposal.md` — GitHub Issues (~1334 tok)
+
+## openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/
+
+- `spec.md` — ADDED Requirements (~1070 tok)
+
 ## openspec/changes/enforce-tier-content-limits/
 
 - `tasks.md` — Tasks (~2134 tok)
@@ -868,10 +877,14 @@
 
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
 
+## src/e2e/helpers/
+
+- `auth.ts` — Register a new unique test user via the auth API and set the session cookie. (~931 tok)
+
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
-- `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~998 tok)
+- `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
@@ -895,8 +908,18 @@
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
-- `-import.test.tsx` — mockUseMutation (~749 tok)
+- `-change-tier.test.tsx` — beforeLoad (~711 tok)
+- `-import.test.tsx` — mockUseMutation (~832 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+- `-recipes.test.tsx` — actual (~1164 tok)
+
+## src/routes/api/
+
+- `upload.tsx` — UPLOAD_FOLDER (~736 tok)
+
+## src/routes/api/upload/__tests__/
+
+- `-upload.test.ts` — mockInsertOne: getPostHandler, getDeleteHandler, createFormData + 4 more (~2204 tok)
 
 ## src/routes/auth/
 
@@ -904,7 +927,8 @@
 
 ## src/routes/auth/__tests__/
 
-- `-verify-email.test.tsx` — result (~1592 tok)
+- `-verify-email-route-wiring.test.tsx` — Mock with from in search so we can verify it reaches VerifyEmailPage (~330 tok)
+- `-verify-email.test.tsx` — result (~1708 tok)
 
 ## src/routes/cookbooks/
 
@@ -919,24 +943,39 @@
 - `$recipeId_.edit.tsx` — Route (~461 tok)
 - `new.tsx` — Route (~232 tok)
 
+## src/routes/recipes/__tests__/
+
+- `-$recipeId_.edit.test.tsx` — beforeLoad (~660 tok)
+- `-new.test.tsx` — beforeLoad (~567 tok)
+
 ## src/server/trpc/
 
-- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~822 tok)
+- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~856 tok)
 - `router.ts` — Exports appRouter, AppRouter (~258 tok)
+
+## src/server/trpc/__tests__/
+
+- `error-formatter.test.ts` — Declares cause (~1414 tok)
+- `init.test.ts` — tRPC router: 14 procedures (~1726 tok)
 
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
 - `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7148 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4597 tok)
+- `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 
 ## src/server/trpc/routers/__tests__/
 
+- `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~11032 tok)
+- `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
 - `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
+- `test-router.test.ts` — Declares user (~320 tok)
 - `usage.test.ts` — Declares user (~853 tok)
 
 ## src/test-helpers/
 
+- `auth.ts` — Exports TEST_USER, unverifiedAuth, verifiedAuth, loggedOutAuth + 9 more (~672 tok)
 - `db-connect.ts` — Vitest setupFiles entry — runs in every worker process before any tests. (~588 tok)
 - `mocks.ts` — Creates a mock Drizzle database that supports all query chain patterns. (~899 tok)

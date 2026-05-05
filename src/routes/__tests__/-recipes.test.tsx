@@ -1,26 +1,34 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
-vi.mock('@tanstack/react-router', async () => {
-  const { createRouterMock } = await import('@/test-helpers/mocks')
-  return createRouterMock({ search: {} })
+const { mockUseSearch, mockCreateFileRoute, mockLink, mockNavigate } = vi.hoisted(() => ({
+  mockUseSearch: vi.fn().mockReturnValue({}),
+  mockCreateFileRoute: vi.fn().mockImplementation((path: string) => (opts: any) => ({
+    ...opts,
+    useSearch: mockUseSearch,
+    options: opts,
+  })),
+  mockLink: ({ children, to }: any) => <a href={to}>{children}</a>,
+  mockNavigate: vi.fn(),
+}))
+
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+  return {
+    ...actual,
+    createFileRoute: mockCreateFileRoute,
+    Link: mockLink,
+    useNavigate: () => mockNavigate,
+  }
 })
 
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-vi.mock('@/components/recipes/RecipeCard', () => ({
-  default: () => null,
-}))
-
-vi.mock('@/components/recipes/filters/FilterRow1Quick', () => ({
-  FilterRow1Quick: () => null,
-}))
-
-vi.mock('@/components/recipes/filters/FilterDropdowns', () => ({
-  FilterDropdowns: () => null,
-}))
+vi.mock('@/components/recipes/RecipeCard', () => ({ default: () => null }))
+vi.mock('@/components/recipes/filters/FilterRow1Quick', () => ({ FilterRow1Quick: () => null }))
+vi.mock('@/components/recipes/filters/FilterDropdowns', () => ({ FilterDropdowns: () => null }))
 
 const mockUseAuth = vi.fn()
 vi.mock('@/hooks/useAuth', () => ({
@@ -59,13 +67,11 @@ vi.mock('@/lib/trpc', () => {
 import { RecipesPage } from '@/routes/recipes/index'
 
 const HOME_COOK_ENTITLEMENTS = { tier: 'home-cook', canCreatePrivate: false, canImport: false, recipeLimit: 10, cookbookLimit: 1 }
-const SOUS_CHEF_ENTITLEMENTS = { tier: 'sous-chef', canCreatePrivate: true, canImport: true, recipeLimit: 500, cookbookLimit: 25 }
 
-function setLoggedIn(opts: { tier?: string; isLoggedIn?: boolean } = {}) {
-  const tier = opts.tier ?? 'home-cook'
+function setLoggedIn(opts: { emailVerified?: boolean; isLoggedIn?: boolean } = {}) {
   const isLoggedIn = opts.isLoggedIn ?? true
   mockUseAuth.mockReturnValue({
-    session: isLoggedIn ? { user: { id: 'u1', tier } } : null,
+    session: isLoggedIn ? { user: { id: 'u1', emailVerified: opts.emailVerified ?? true } } : null,
     isPending: false,
     isLoggedIn,
     userId: isLoggedIn ? 'u1' : null,
@@ -85,57 +91,27 @@ function setRecipeCount(total: number) {
   })
 }
 
-function setHomeCookAtLimit() {
-  setRecipeCount(10)
-  mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
-}
+describe('RecipesPage — verification gate', () => {
+  it('shows Verify Email CTA when unverified', () => {
+    setLoggedIn({ emailVerified: false })
+    setRecipeCount(0)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+    mockUseSearch.mockReturnValue({})
 
-function setHomeCookBelowLimit() {
-  setRecipeCount(7)
-  mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
-}
+    render(<RecipesPage />)
 
-function setSousChef() {
-  setRecipeCount(10)
-  mockUseTierEntitlements.mockReturnValue(SOUS_CHEF_ENTITLEMENTS)
-}
-
-describe('RecipesPage — tier affordances', () => {
-  beforeEach(() => {
-    setLoggedIn()
+    expect(screen.getByRole('link', { name: /verify email to create/i })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /create your first recipe/i })).not.toBeInTheDocument()
   })
 
-  it('disables New Recipe button when home-cook user is at recipe limit', () => {
-    setHomeCookAtLimit()
-    render(<RecipesPage />)
-    const btn = screen.getByRole('button', { name: /new recipe/i })
-    expect(btn).toBeDisabled()
-  })
+  it('shows Create Recipe button when verified', () => {
+    setLoggedIn({ emailVerified: true })
+    setRecipeCount(0)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+    mockUseSearch.mockReturnValue({})
 
-  it('shows inline TierWall when home-cook user is at recipe limit', () => {
-    setHomeCookAtLimit()
     render(<RecipesPage />)
-    expect(screen.getAllByText(/limit/i).length).toBeGreaterThan(0)
-  })
 
-  it('enables New Recipe button when home-cook user is below limit', () => {
-    setHomeCookBelowLimit()
-    render(<RecipesPage />)
-    const link = screen.getByRole('link', { name: /new recipe/i })
-    expect(link).toBeInTheDocument()
-    expect(link).not.toHaveAttribute('disabled')
-  })
-
-  it('hides Import Recipe entry point for home-cook', () => {
-    setHomeCookBelowLimit()
-    render(<RecipesPage />)
-    expect(screen.queryByRole('link', { name: /import recipe/i })).not.toBeInTheDocument()
-  })
-
-  it('shows Import Recipe link for sous-chef', () => {
-    setSousChef()
-    setLoggedIn({ tier: 'sous-chef' })
-    render(<RecipesPage />)
-    expect(screen.getByRole('link', { name: /import recipe/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /create your first recipe/i })).toBeInTheDocument()
   })
 })

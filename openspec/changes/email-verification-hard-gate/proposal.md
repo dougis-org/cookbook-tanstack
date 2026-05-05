@@ -43,7 +43,7 @@
 - `src/routes/recipes/new.tsx` — swap `requireAuth()` → `requireVerifiedAuth()`
 - `src/routes/recipes/$recipeId_.edit.tsx` — swap `requireAuth()` → `requireVerifiedAuth()`
 - `src/routes/import/index.tsx` — swap `requireAuth()` → `requireVerifiedAuth()`
-- `src/routes/cookbooks/index.tsx` — add `beforeLoad: requireVerifiedAuth()`
+- `src/routes/cookbooks/index.tsx` — UI-level check: unverified users see a "Verify Email to Create" link instead of the create form; route stays public-content (no route guard); `cookbooks.create` tRPC mutation gated via `verifiedProcedure`
 - `src/routes/change-tier.tsx` — add `beforeLoad: requireVerifiedAuth()`
 - `src/routes/auth/verify-email.tsx` — add `from?: string` to `validateSearch`
 - `src/components/auth/VerifyEmailPage.tsx` — use `from` prop on "Continue" navigation

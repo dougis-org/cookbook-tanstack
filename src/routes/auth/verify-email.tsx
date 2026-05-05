@@ -9,9 +9,9 @@ export function validateVerifyEmailSearch(
   let from: string | undefined
   if (typeof search.from === "string" && search.from.length > 0) {
     // Only allow relative paths starting with /
-    // Reject absolute URLs (with protocol), protocol-relative URLs, and any XSS vectors like javascript:
-    const isValidRelativePath = search.from.startsWith("/") && !search.from.includes("://") && !search.from.startsWith("//")
-    from = isValidRelativePath ? search.from : undefined
+    // Reject protocol-relative URLs (//example.com) and XSS vectors
+    const isSafe = search.from.startsWith("/") && !search.from.startsWith("//")
+    from = isSafe ? search.from : undefined
   }
 
   return {

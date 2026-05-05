@@ -1,123 +1,131 @@
 import { useState } from "react"
-import { Link } from "@tanstack/react-router"
-import { AlertTriangle, MailCheck } from "lucide-react"
+import { authClient } from "@/lib/auth-client"
 import { useAuth } from "@/hooks/useAuth"
-import { getVerificationEmailErrorMessage, requestVerificationEmail } from "@/components/auth/verificationEmail"
+import { trpc } from "@/lib/trpc"
+import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
+import { CheckCircle2, AlertCircle, Loader2, ArrowRight } from "lucide-react"
 
 interface VerifyEmailPageProps {
   error?: string
   from?: string
 }
 
-type ResendStatus = "idle" | "loading" | "success" | "error"
-
 export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
   const { session } = useAuth()
-  const [resendStatus, setResendStatus] = useState<ResendStatus>("idle")
-  const [resendError, setResendError] = useState("")
-  const email = session?.user?.email
+  const [resendStatus, setResendStatus] = useState<"idle" | "pending" | "success" | "error">("idle")
+  const [resendError, setResendError] = useState<string | null>(null)
+
   const isVerified = session?.user?.emailVerified === true
-  const hasError = Boolean(error)
+
+  const { data: profile } = useQuery({
+    ...trpc.users.me.queryOptions(),
+    enabled: !isVerified,
+  })
 
   async function handleResend() {
-    if (!email) return
+    if (resendStatus === "pending") return
 
-    setResendStatus("loading")
-    setResendError("")
+    setResendStatus("pending")
+    setResendError(null)
 
-    try {
-      await requestVerificationEmail(email)
-      setResendStatus("success")
-    } catch (resendFailure) {
-      setResendError(getVerificationEmailErrorMessage(resendFailure))
-      setResendStatus("error")
-    }
+    await authClient.sendVerificationEmail(
+      {
+        email: profile?.email || session?.user?.email || "",
+        callbackURL: `${window.location.origin}/auth/verify-email${from ? `?from=${encodeURIComponent(from)}` : ""}`,
+      },
+      {
+        onSuccess: () => setResendStatus("success"),
+        onError: (ctx) => {
+          setResendStatus("error")
+          setResendError(ctx.error.message || "Failed to resend email")
+        },
+      },
+    )
   }
 
+  // Verification successful state
   if (isVerified) {
     return (
-      <div className="text-center space-y-4">
-        <MailCheck className="mx-auto size-10 text-[var(--theme-success)]" aria-hidden="true" />
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-[var(--theme-fg)]">Email verified!</h2>
-          <p className="text-[var(--theme-fg-muted)]">You can now access all features.</p>
+      <div className="text-center animate-in fade-in zoom-in duration-300">
+        <div className="mb-6 flex justify-center">
+          <div className="rounded-full bg-green-100 dark:bg-green-900/30 p-3 text-green-600 dark:text-green-400">
+            <CheckCircle2 className="h-12 w-12" />
+          </div>
         </div>
+        <h2 className="text-2xl font-bold text-[var(--theme-fg)] mb-2">Email Verified!</h2>
+        <p className="text-[var(--theme-fg-muted)] mb-8">
+          Your email has been successfully verified. You now have full access to create and manage recipes.
+        </p>
         <Link
-          to={from ?? "/"}
-          className="inline-flex items-center justify-center rounded-lg bg-[var(--theme-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--theme-accent-hover)]"
+          to={from || "/"}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--theme-accent)] px-4 py-3 font-semibold text-white transition-colors hover:bg-[var(--theme-accent-hover)]"
         >
           Continue
+          <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
     )
   }
 
-  if (hasError) {
-    return (
-      <VerificationState
-        icon={<AlertTriangle className="mx-auto size-10 text-[var(--theme-error)]" aria-hidden="true" />}
-        title="Verification link is invalid or has expired"
-        description="Request a new verification email and use the latest link in your inbox."
-        email={email}
-        resendStatus={resendStatus}
-        resendError={resendError}
-        onResend={handleResend}
-      />
-    )
-  }
-
+  // Error or Landing state
   return (
-    <VerificationState
-      icon={<MailCheck className="mx-auto size-10 text-[var(--theme-accent)]" aria-hidden="true" />}
-      title="Please verify your email"
-      description="Use the verification link we sent to your inbox to finish setting up your account."
-      email={email}
-      resendStatus={resendStatus}
-      resendError={resendError}
-      onResend={handleResend}
-    />
-  )
-}
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {error ? (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-900/30 dark:bg-red-900/20 dark:text-red-400">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <p className="text-sm font-medium">
+              {error === "expired" ? "The verification link has expired." : "Verification failed. The link may be invalid or already used."}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-bold text-[var(--theme-fg)] mb-2">Verify your email</h2>
+          <p className="text-[var(--theme-fg-muted)]">
+            We&apos;ve sent a verification link to <span className="font-semibold text-[var(--theme-fg)]">{profile?.email || session?.user?.email || "your email"}</span>. Please check your inbox.
+          </p>
+        </div>
+      )}
 
-function VerificationState({
-  icon,
-  title,
-  description,
-  email,
-  resendStatus,
-  resendError,
-  onResend,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  email?: string
-  resendStatus: ResendStatus
-  resendError: string
-  onResend: () => void
-}) {
-  return (
-    <div className="text-center space-y-4">
-      {icon}
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold text-[var(--theme-fg)]">{title}</h2>
-        <p className="text-[var(--theme-fg-muted)]">{description}</p>
-        {email ? <p className="text-sm text-[var(--theme-fg-subtle)]">{email}</p> : null}
+      <div className="space-y-4">
+        <button
+          onClick={handleResend}
+          disabled={resendStatus === "pending"}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface-raised)] px-4 py-3 font-semibold text-[var(--theme-fg)] transition-colors hover:bg-[var(--theme-surface-hover)] disabled:opacity-50"
+        >
+          {resendStatus === "pending" ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending...
+            </>
+          ) : (
+            "Resend verification email"
+          )}
+        </button>
+
+        {resendStatus === "success" && (
+          <p className="text-center text-sm font-medium text-green-600 dark:text-green-400 animate-in fade-in slide-in-from-top-1">
+            New verification link sent!
+          </p>
+        )}
+
+        {resendStatus === "error" && (
+          <p className="text-center text-sm font-medium text-red-600 dark:text-red-400 animate-in fade-in slide-in-from-top-1">
+            {resendError}
+          </p>
+        )}
+
+        <div className="pt-4 text-center">
+          <Link
+            to="/auth/login"
+            className="text-sm font-medium text-[var(--theme-accent)] hover:underline"
+          >
+            Back to Sign In
+          </Link>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={onResend}
-        disabled={!email || resendStatus === "loading"}
-        className="inline-flex items-center justify-center rounded-lg bg-[var(--theme-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--theme-accent-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {resendStatus === "loading" ? "Sending..." : "Resend verification email"}
-      </button>
-      {resendStatus === "success" ? (
-        <p className="text-sm text-[var(--theme-success)]">Verification email sent!</p>
-      ) : null}
-      {resendStatus === "error" ? (
-        <p role="alert" className="text-sm text-[var(--theme-error)]">{resendError}</p>
-      ) : null}
     </div>
   )
 }

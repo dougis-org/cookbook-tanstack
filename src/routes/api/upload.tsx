@@ -37,6 +37,10 @@ export const Route = createFileRoute("/api/upload")({
           return jsonResponse({ error: "Unauthorized" }, 401)
         }
 
+        if (session.user.emailVerified === false) {
+          return jsonResponse({ error: "Email verification required" }, 403)
+        }
+
         const formData = await request.formData()
         const file = formData.get("file")
 

@@ -923,6 +923,294 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-04T02:11:25.812Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-05-04T04:31:41.489Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/e2e/helpers/auth.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T04:31:41.489Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-05-04T13:18:48.098Z",
+      "error_message": "Wrong reference: page should be email",
+      "file": "src/e2e/helpers/auth.ts",
+      "root_cause": "Used \"page\" instead of \"email\"",
+      "fix": "Changed page → email",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:18:48.098Z"
+    },
+    {
+      "id": "bug-060",
+      "timestamp": "2026-05-04T13:18:57.404Z",
+      "error_message": "Missing await",
+      "file": "src/server/trpc/__tests__/init.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:18:57.404Z"
+    },
+    {
+      "id": "bug-061",
+      "timestamp": "2026-05-04T13:19:59.152Z",
+      "error_message": "Missing await",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:19:59.153Z"
+    },
+    {
+      "id": "bug-062",
+      "timestamp": "2026-05-04T13:20:30.877Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/server/trpc/routers/__tests__/cookbooks.test.ts",
+      "root_cause": "Had \"FORBIDDEN\"",
+      "fix": "Changed to \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:30.877Z"
+    },
+    {
+      "id": "bug-063",
+      "timestamp": "2026-05-04T13:20:38.524Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Had \"FORBIDDEN\"",
+      "fix": "Changed to \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:38.524Z"
+    },
+    {
+      "id": "bug-064",
+      "timestamp": "2026-05-04T13:20:44.355Z",
+      "error_message": "Wrong reference: FORBIDDEN should be Email",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Used \"FORBIDDEN\" instead of \"Email\"",
+      "fix": "Changed FORBIDDEN → Email",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:44.355Z"
+    },
+    {
+      "id": "bug-065",
+      "timestamp": "2026-05-04T20:04:39.711Z",
+      "error_message": "Missing guard clause",
+      "file": "src/lib/auth-guard.ts",
+      "root_cause": "No early return/throw for edge case: !context.session",
+      "fix": "Added guard clause: if (!context.session)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-04T20:04:45.708Z"
+    },
+    {
+      "id": "bug-066",
+      "timestamp": "2026-05-04T20:05:06.575Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/routes/__tests__/-change-tier.test.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:06.575Z"
+    },
+    {
+      "id": "bug-067",
+      "timestamp": "2026-05-04T20:05:43.934Z",
+      "error_message": "CSS fix: requireVerifiedAuth",
+      "file": "src/routes/__tests__/-import.test.tsx",
+      "root_cause": "requireVerifiedAuth: () => () => ({ → vi.fn(() => () => ({",
+      "fix": "Changed requireVerifiedAuth: () => () => ({ → vi.fn(() => () => ({",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:43.934Z"
+    },
+    {
+      "id": "bug-068",
+      "timestamp": "2026-05-04T20:05:48.745Z",
+      "error_message": "Type error",
+      "file": "src/routes/__tests__/-import.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:48.745Z"
+    },
+    {
+      "id": "bug-069",
+      "timestamp": "2026-05-04T21:29:58.757Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/spec.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 19→19 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:29:58.757Z"
+    },
+    {
+      "id": "bug-070",
+      "timestamp": "2026-05-04T21:30:41.598Z",
+      "error_message": "Type error",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:30:41.598Z"
+    },
+    {
+      "id": "bug-071",
+      "timestamp": "2026-05-04T21:30:54.638Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "14 lines replaced/restructured",
+      "fix": "Rewrote 18→3 lines (14 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:30:54.638Z"
+    },
+    {
+      "id": "bug-072",
+      "timestamp": "2026-05-05T04:35:15.448Z",
+      "error_message": "CSS fix: error",
+      "file": "src/routes/api/upload.tsx",
+      "root_cause": "error: \"Unauthorized\" → \"Email verification required\"",
+      "fix": "Changed error: \"Unauthorized\" → \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:15.448Z"
+    },
+    {
+      "id": "bug-073",
+      "timestamp": "2026-05-05T04:35:25.351Z",
+      "error_message": "Incorrect value in code",
+      "file": "openspec/changes/email-verification-hard-gate/proposal.md",
+      "root_cause": "Had `beforeLoad: requireVerifiedAuth()`",
+      "fix": "Changed to \"Verify Email to Create\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:25.351Z"
+    },
+    {
+      "id": "bug-074",
+      "timestamp": "2026-05-05T04:35:36.026Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/email-verification-hard-gate/design.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 6→6 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:36.026Z"
+    },
+    {
+      "id": "bug-075",
+      "timestamp": "2026-05-05T04:40:58.690Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/test-helpers/auth.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:40:58.690Z"
     }
   ]
 }
