@@ -23,6 +23,12 @@ vi.mock("@/lib/auth-client", () => ({
   signOut: vi.fn(),
 }))
 
+let mockCanImport = false
+
+vi.mock("@/hooks/useTierEntitlements", () => ({
+  useTierEntitlements: () => ({ canImport: mockCanImport }),
+}))
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>
@@ -34,7 +40,7 @@ vi.mock("@tanstack/react-router", () => ({
 import Header from "@/components/Header"
 
 const mockSession = {
-  user: { id: "user-1", email: "test@example.com", name: "Test User" },
+  user: { id: "user-1", email: "test@example.com", name: "Test User", tier: "executive-chef" },
   session: { id: "session-1", userId: "user-1", expiresAt: new Date() },
 }
 
@@ -42,6 +48,7 @@ describe("Header nav visibility", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthResult = { session: null, isPending: false }
+    mockCanImport = false
     mockCurrentTheme = "dark"
     mockSetTheme = vi.fn()
     document.documentElement.className = "dark"
@@ -59,14 +66,27 @@ describe("Header nav visibility", () => {
 
   it("shows New Recipe link when session is non-null", () => {
     mockAuthResult = { session: mockSession, isPending: false }
+    mockCanImport = false
     render(<Header />)
     expect(screen.getByText("New Recipe")).toBeInTheDocument()
+    expect(screen.queryByText("Import Recipe")).not.toBeInTheDocument()
   })
 
-  it("shows Import Recipe link when session is non-null", () => {
+  it("shows Import Recipe link when session is non-null and tier is executive-chef", () => {
     mockAuthResult = { session: mockSession, isPending: false }
+    mockCanImport = true
     render(<Header />)
     expect(screen.getByText("Import Recipe")).toBeInTheDocument()
+  })
+
+  it("does not show Import Recipe link when session tier is sous-chef", () => {
+    mockAuthResult = {
+      session: { ...mockSession, user: { ...mockSession.user, tier: "sous-chef" } },
+      isPending: false,
+    }
+    mockCanImport = false
+    render(<Header />)
+    expect(screen.queryByText("Import Recipe")).not.toBeInTheDocument()
   })
 
   it("does not show New Recipe or Import Recipe when isPending is true", () => {
@@ -81,6 +101,7 @@ describe("Header admin nav link", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthResult = { session: null, isPending: false }
+    mockCanImport = false
     mockCurrentTheme = "dark"
     mockSetTheme = vi.fn()
     document.documentElement.className = "dark"
@@ -136,6 +157,7 @@ describe("Header sidebar backdrop", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthResult = { session: null, isPending: false }
+    mockCanImport = false
     mockCurrentTheme = "dark"
     mockSetTheme = vi.fn()
     document.documentElement.className = "dark"
@@ -180,6 +202,7 @@ describe("Header theme dropdown", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthResult = { session: null, isPending: false }
+    mockCanImport = false
     mockCurrentTheme = "dark"
     mockSetTheme = vi.fn()
     document.documentElement.className = "dark"
@@ -357,6 +380,7 @@ describe("Header sidebar Pricing link", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockAuthResult = { session: null, isPending: false }
+    mockCanImport = false
     mockCurrentTheme = "dark"
     mockSetTheme = vi.fn()
     document.documentElement.className = "dark"

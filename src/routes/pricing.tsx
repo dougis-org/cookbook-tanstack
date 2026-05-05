@@ -56,13 +56,13 @@ function TierCard({ tier, isCurrentTier }: TierCardProps) {
             <p className="text-base font-bold text-[var(--theme-fg)]">
               ${pricing.annual}/year
             </p>
-            <p className="text-sm text-[var(--theme-fg-muted)]">
-              ${pricing.monthly}/month
-            </p>
             <p>
               <span className="inline-block rounded-full bg-[var(--theme-accent)] px-2 py-0.5 text-xs font-semibold text-white">
-                Save 2 months
+                Get 2 months free with annual billing
               </span>
+            </p>
+            <p className="text-sm text-[var(--theme-fg-muted)]">
+              ${pricing.monthly}/month
             </p>
           </>
         ) : (
@@ -71,17 +71,23 @@ function TierCard({ tier, isCurrentTier }: TierCardProps) {
       </div>
       <div className="mt-4 space-y-1 text-sm text-[var(--theme-fg-subtle)]">
         <p>
-          <span className="font-semibold text-[var(--theme-fg)]">{limits.recipes}</span> recipes
+          <span className="font-semibold text-[var(--theme-fg)]">
+            {limits.recipes}
+          </span>{" "}
+          recipes
         </p>
         <p>
-          <span className="font-semibold text-[var(--theme-fg)]">{limits.cookbooks}</span> cookbooks
+          <span className="font-semibold text-[var(--theme-fg)]">
+            {limits.cookbooks}
+          </span>{" "}
+          cookbooks
         </p>
         <p>{canCreatePrivate(tier) ? "Private recipes ✓" : "Public only"}</p>
         <p>{canImport(tier) ? "Import ✓" : "No import"}</p>
         <p>{showUserAds(tier) ? "Ad Supported" : "No Ads"}</p>
       </div>
     </div>
-  )
+  );
 }
 
 export function PricingPage() {
