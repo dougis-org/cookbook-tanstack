@@ -7,10 +7,6 @@ vi.mock('@tanstack/react-router', async () => {
   return createRouterMock()
 })
 
-vi.mock('@/lib/auth-guard', () => ({
-  requireVerifiedAuth: () => () => ({}),
-}))
-
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
