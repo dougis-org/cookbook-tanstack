@@ -38,6 +38,7 @@ vi.mock('@/lib/trpc', () => {
       usage: {
         getOwned: { queryOptions: empty },
       },
+      users: { me: { queryOptions: empty } },
     },
   }
 })

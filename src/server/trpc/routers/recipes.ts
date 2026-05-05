@@ -320,7 +320,7 @@ export const recipesRouter = router({
       return d ? { ...d, id: d._id.toString() as string } : null;
     }),
 
-  delete: protectedProcedure
+  delete: verifiedProcedure
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyOwnership(

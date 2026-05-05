@@ -16,12 +16,15 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
   const [resendStatus, setResendStatus] = useState<"idle" | "pending" | "success" | "error">("idle")
   const [resendError, setResendError] = useState<string | null>(null)
 
-  const isVerified = session?.user?.emailVerified === true
-
   const { data: profile } = useQuery({
     ...trpc.users.me.queryOptions(),
-    enabled: !isVerified && !!session,
+    enabled: session?.user?.emailVerified !== true && !!session,
   })
+
+  // Use fresh profile data to detect verification without waiting for session cache to expire
+  const isVerified = typeof profile?.emailVerified === 'boolean'
+    ? profile.emailVerified
+    : session?.user?.emailVerified === true
 
   const email = profile?.email || session?.user?.email || ""
 
@@ -31,25 +34,30 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
     setResendStatus("pending")
     setResendError(null)
 
-    const result = await authClient.sendVerificationEmail(
-      {
-        email,
-        callbackURL: `${window.location.origin}/auth/verify-email${from ? `?from=${encodeURIComponent(from)}` : ""}`,
-      },
-      {
-        onSuccess: () => setResendStatus("success"),
-        onError: (ctx) => {
-          setResendStatus("error")
-          setResendError(ctx.error.message || "Failed to resend email")
+    try {
+      const result = await authClient.sendVerificationEmail(
+        {
+          email,
+          callbackURL: `${window.location.origin}/auth/verify-email${from ? `?from=${encodeURIComponent(from)}` : ""}`,
         },
-      },
-    )
+        {
+          onSuccess: () => setResendStatus("success"),
+          onError: (ctx) => {
+            setResendStatus("error")
+            setResendError(ctx.error.message || "Failed to resend email")
+          },
+        },
+      )
 
-    // BetterAuth can resolve with { error } without firing callbacks
-    const resolvedError = (result as { error?: { message?: string } | null } | undefined)?.error
-    if (resolvedError) {
+      // BetterAuth can resolve with { error } without firing callbacks
+      const resolvedError = (result as { error?: { message?: string } | null } | undefined)?.error
+      if (resolvedError) {
+        setResendStatus("error")
+        setResendError(resolvedError.message || "Failed to resend email")
+      }
+    } catch {
       setResendStatus("error")
-      setResendError(resolvedError.message || "Failed to resend email")
+      setResendError("Failed to resend email")
     }
   }
 

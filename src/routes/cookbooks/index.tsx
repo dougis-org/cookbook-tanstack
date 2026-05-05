@@ -19,7 +19,14 @@ export function CookbooksPage() {
   const [showCreate, setShowCreate] = useState(false)
   const { isLoggedIn, userId, session } = useAuth()
   const { cookbookLimit } = useTierEntitlements()
-  const isVerified = session?.user?.emailVerified !== false
+  const { data: profile } = useQuery({
+    ...trpc.users.me.queryOptions(),
+    enabled: isLoggedIn,
+  })
+  // Use fresh profile data to bypass stale BetterAuth cookie cache after verification
+  const isVerified = typeof profile?.emailVerified === 'boolean'
+    ? profile.emailVerified
+    : session?.user?.emailVerified !== false
 
   const { data: cookbooks = [], isLoading } = useQuery(trpc.cookbooks.list.queryOptions())
   const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({

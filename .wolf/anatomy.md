@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T20:29:20.243Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T21:19:59.421Z
 > Files: 626 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -868,7 +868,7 @@
 
 ## src/components/auth/
 
-- `VerifyEmailPage.tsx` — VerifyEmailPage (~1517 tok)
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1615 tok)
 
 ## src/components/ui/
 
@@ -912,7 +912,7 @@
 - `-change-tier.test.tsx` — beforeLoad (~203 tok)
 - `-import.test.tsx` — mockUseMutation (~1020 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
-- `-recipes.test.tsx` — mockUseAuth (~1549 tok)
+- `-recipes.test.tsx` — mockUseAuth (~1562 tok)
 
 ## src/routes/api/
 
@@ -933,11 +933,11 @@
 
 ## src/routes/cookbooks/
 
-- `index.tsx` — Route — renders form (~1881 tok)
+- `index.tsx` — Route — renders form (~2256 tok)
 
 ## src/routes/cookbooks/__tests__/
 
-- `index.test.tsx` — mockUseAuth (~736 tok)
+- `index.test.tsx` — mockUseAuth (~749 tok)
 
 ## src/routes/import/
 
@@ -946,7 +946,7 @@
 ## src/routes/recipes/
 
 - `$recipeId_.edit.tsx` — Route (~461 tok)
-- `index.tsx` — Badge showing an active filter with an X to remove it. (~4668 tok)
+- `index.tsx` — Badge showing an active filter with an X to remove it. (~4741 tok)
 - `new.tsx` — Route (~232 tok)
 
 ## src/routes/recipes/__tests__/
@@ -967,7 +967,7 @@
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7148 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4597 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)

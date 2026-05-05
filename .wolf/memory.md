@@ -611,3 +611,21 @@
 | 13:29 | Edited src/routes/recipes/index.tsx | CSS: select | ~53 |
 | 13:29 | Edited src/routes/recipes/index.tsx | inline fix | ~9 |
 | 13:29 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: callbackURL, error, message | ~373 |
+| 13:46 | Session end: 9 writes across 7 files (-change-tier.test.tsx, -new.test.tsx, -$recipeId_.edit.test.tsx, index.test.tsx, VerifyEmailPage.tsx) | 10 reads | ~13002 tok |
+| 14:18 | Edited src/components/auth/VerifyEmailPage.tsx | CSS: emailVerified | ~66 |
+| 14:18 | Edited src/components/auth/VerifyEmailPage.tsx | added error handling | ~252 |
+| 14:18 | Edited src/routes/recipes/index.tsx | CSS: data, enabled, emailVerified | ~121 |
+| 14:19 | Edited src/routes/cookbooks/index.tsx | CSS: data, enabled, emailVerified | ~124 |
+| 14:19 | Edited src/server/trpc/routers/recipes.ts | 4→4 lines | ~40 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~8 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | 2→2 lines | ~19 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~9 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~11 |
+| 14:19 | Edited src/routes/__tests__/-recipes.test.tsx | CSS: users, me | ~88 |
+| 14:19 | Edited src/routes/cookbooks/__tests__/index.test.tsx | CSS: users, me | ~52 |
+| 14:19 | Edited src/components/auth/VerifyEmailPage.tsx | 9→9 lines | ~108 |

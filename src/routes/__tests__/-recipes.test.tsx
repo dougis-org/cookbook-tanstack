@@ -52,6 +52,7 @@ vi.mock('@/lib/trpc', () => {
       meals: { list: { queryOptions: empty } },
       courses: { list: { queryOptions: empty } },
       preparations: { list: { queryOptions: empty } },
+      users: { me: { queryOptions: empty } },
     },
   }
 })

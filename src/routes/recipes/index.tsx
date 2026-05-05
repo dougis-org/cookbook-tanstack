@@ -66,7 +66,14 @@ export function RecipesPage() {
 
 const { isLoggedIn, userId, session } = useAuth()
 const { recipeLimit, canImport } = useTierEntitlements()
-const isVerified = session?.user?.emailVerified !== false
+const { data: profile } = useQuery({
+  ...trpc.users.me.queryOptions(),
+  enabled: isLoggedIn,
+})
+// Use fresh profile data to bypass stale BetterAuth cookie cache after verification
+const isVerified = typeof profile?.emailVerified === 'boolean'
+  ? profile.emailVerified
+  : session?.user?.emailVerified !== false
 
 const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
   ...trpc.usage.getOwned.queryOptions(),
