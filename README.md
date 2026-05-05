@@ -39,6 +39,21 @@ IMAGE_KIT_API_KEY=
 
 ImageKit private keys are server-side only and must never be exposed in client code.
 
+### Stripe Setup (Billing)
+
+Stripe billing is integrated at the subscription tier level. To configure locally:
+
+1. Create a Stripe account at https://stripe.com and use Test mode keys
+2. Add your test `STRIPE_SECRET_KEY` and `VITE_STRIPE_PUBLISHABLE_KEY` to `.env.local`
+3. Install the [Stripe CLI](https://stripe.com/docs/stripe-cli) and run:
+   ```bash
+   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   ```
+   Copy the printed webhook signing secret to `STRIPE_WEBHOOK_SECRET` in `.env.local`
+4. Create price objects in your Stripe dashboard and add their IDs to `.env.local` (see `.env.example` for all six tier price IDs)
+
+`STRIPE_SECRET_KEY` is server-side only and must never be exposed to the client.
+
 Google AdSense is wired into the shared page layout for public marketing/content pages only. The client library is
 not loaded for paid tiers (`prep-cook`, `sous-chef`, `executive-chef`), admins, or non-ad page roles.
 
