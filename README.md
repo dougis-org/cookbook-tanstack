@@ -47,9 +47,10 @@ Stripe billing is integrated at the subscription tier level. To configure locall
 2. Add your test `STRIPE_SECRET_KEY` and `VITE_STRIPE_PUBLISHABLE_KEY` to `.env.local`
 3. Install the [Stripe CLI](https://stripe.com/docs/stripe-cli) and run:
    ```bash
-   stripe listen --forward-to localhost:3000/api/webhooks/stripe
+   stripe listen --print-secret
    ```
    Copy the printed webhook signing secret to `STRIPE_WEBHOOK_SECRET` in `.env.local`
+   (The webhook forwarding endpoint `/api/webhooks/stripe` will be added in a future PR)
 4. Create price objects in your Stripe dashboard and add their IDs to `.env.local` (see `.env.example` for all six tier price IDs)
 
 `STRIPE_SECRET_KEY` is server-side only and must never be exposed to the client.
