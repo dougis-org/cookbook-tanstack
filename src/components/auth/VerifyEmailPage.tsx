@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { authClient } from "@/lib/auth-client"
+import { getVerificationEmailErrorMessage } from "@/components/auth/verificationEmail"
 import { useAuth } from "@/hooks/useAuth"
 import { trpc } from "@/lib/trpc"
 import { useQuery } from "@tanstack/react-query"
@@ -53,11 +54,11 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
       const resolvedError = (result as { error?: { message?: string } | null } | undefined)?.error
       if (resolvedError) {
         setResendStatus("error")
-        setResendError(resolvedError.message || "Failed to resend email")
+        setResendError(getVerificationEmailErrorMessage(resolvedError))
       }
-    } catch {
+    } catch (err) {
       setResendStatus("error")
-      setResendError("Failed to resend email")
+      setResendError(getVerificationEmailErrorMessage(err))
     }
   }
 
