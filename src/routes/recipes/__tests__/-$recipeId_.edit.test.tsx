@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, vi } from 'vitest'
 import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
 
 vi.mock('@tanstack/react-router', async () => {

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T13:00:08.338Z
-> Files: 624 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T20:29:20.243Z
+> Files: 626 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -868,7 +868,7 @@
 
 ## src/components/auth/
 
-- `VerifyEmailPage.tsx` — VerifyEmailPage (~1426 tok)
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1517 tok)
 
 ## src/components/ui/
 
@@ -909,10 +909,10 @@
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
-- `-change-tier.test.tsx` — beforeLoad (~711 tok)
-- `-import.test.tsx` — mockUseMutation (~832 tok)
+- `-change-tier.test.tsx` — beforeLoad (~203 tok)
+- `-import.test.tsx` — mockUseMutation (~1020 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
-- `-recipes.test.tsx` — actual (~1594 tok)
+- `-recipes.test.tsx` — mockUseAuth (~1549 tok)
 
 ## src/routes/api/
 
@@ -929,11 +929,15 @@
 ## src/routes/auth/__tests__/
 
 - `-verify-email-route-wiring.test.tsx` — Mock with from in search so we can verify it reaches VerifyEmailPage (~330 tok)
-- `-verify-email.test.tsx` — result (~1708 tok)
+- `-verify-email.test.tsx` — result (~1970 tok)
 
 ## src/routes/cookbooks/
 
 - `index.tsx` — Route — renders form (~1881 tok)
+
+## src/routes/cookbooks/__tests__/
+
+- `index.test.tsx` — mockUseAuth (~736 tok)
 
 ## src/routes/import/
 
@@ -942,12 +946,13 @@
 ## src/routes/recipes/
 
 - `$recipeId_.edit.tsx` — Route (~461 tok)
+- `index.tsx` — Badge showing an active filter with an X to remove it. (~4668 tok)
 - `new.tsx` — Route (~232 tok)
 
 ## src/routes/recipes/__tests__/
 
-- `-$recipeId_.edit.test.tsx` — beforeLoad (~660 tok)
-- `-new.test.tsx` — beforeLoad (~567 tok)
+- `-$recipeId_.edit.test.tsx` — beforeLoad (~298 tok)
+- `-new.test.tsx` — beforeLoad (~207 tok)
 
 ## src/server/trpc/
 

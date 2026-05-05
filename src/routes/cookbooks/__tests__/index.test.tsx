@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
 
 vi.mock('@tanstack/react-router', async () => {
   const { createRouterMock } = await import('@/test-helpers/mocks')

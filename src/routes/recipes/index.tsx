@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Plus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, X } from 'lucide-react'
 import { z } from 'zod'
@@ -48,6 +48,7 @@ function ActiveBadge({ label, onRemove }: { label: string; onRemove: () => void 
 
 export function RecipesPage() {
   const navigate = useNavigate({ from: '/recipes/' })
+  const currentPath = useRouterState({ select: (s) => s.location.pathname + s.location.searchStr })
   const {
     search = '',
     sort = 'newest',
@@ -241,7 +242,7 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
               ) : (
                 <Link
                   to="/auth/verify-email"
-                  search={{ from: '/recipes/' }}
+                  search={{ from: currentPath }}
                   className="flex items-center gap-2 px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors shadow-lg text-sm"
                 >
                   <Plus className="w-4 h-4" />
@@ -326,7 +327,7 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
             ) : (
               <Link
                 to="/auth/verify-email"
-                search={{ from: '/recipes/' }}
+                search={{ from: currentPath }}
                 className="px-6 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
               >
                 Verify email to get started

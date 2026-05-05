@@ -1,195 +1,126 @@
 {
-  "session_id": "session-2026-05-05-2131",
-  "started": "2026-05-05T04:31:54.580Z",
+  "session_id": "session-2026-05-05-1045",
+  "started": "2026-05-05T17:45:10.833Z",
   "files_read": {
-    "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md": {
-      "count": 4,
-      "tokens": 1334,
-      "first_read": "2026-05-05T04:33:44.702Z"
-    },
-    "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/design.md": {
-      "count": 3,
-      "tokens": 2634,
-      "first_read": "2026-05-05T04:33:45.247Z"
-    },
-    "/home/doug/dev/cookbook-tanstack/src/routes/api/upload.tsx": {
-      "count": 3,
-      "tokens": 736,
-      "first_read": "2026-05-05T04:33:47.953Z"
-    },
-    "/home/doug/dev/cookbook-tanstack/src/routes/api/upload/__tests__/-upload.test.ts": {
-      "count": 1,
-      "tokens": 0,
-      "first_read": "2026-05-05T04:34:54.361Z"
-    },
-    "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx": {
-      "count": 4,
-      "tokens": 1708,
-      "first_read": "2026-05-05T04:37:08.699Z"
-    },
     "/home/doug/dev/cookbook-tanstack/src/components/auth/VerifyEmailPage.tsx": {
       "count": 1,
-      "tokens": 1175,
-      "first_read": "2026-05-05T04:37:21.834Z"
+      "tokens": 1426,
+      "first_read": "2026-05-05T18:05:54.277Z"
     },
-    "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx": {
-      "count": 3,
-      "tokens": 1164,
-      "first_read": "2026-05-05T04:38:57.622Z"
+    "/home/doug/dev/cookbook-tanstack/src/routes/recipes/index.tsx": {
+      "count": 4,
+      "tokens": 4639,
+      "first_read": "2026-05-05T18:05:55.122Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-change-tier.test.tsx": {
+      "count": 1,
+      "tokens": 711,
+      "first_read": "2026-05-05T20:26:14.208Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/recipes/__tests__/-new.test.tsx": {
+      "count": 1,
+      "tokens": 567,
+      "first_read": "2026-05-05T20:26:14.269Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx": {
+      "count": 1,
+      "tokens": 660,
+      "first_read": "2026-05-05T20:26:16.656Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/__tests__/index.test.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-05-05T20:26:16.716Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx": {
+      "count": 1,
+      "tokens": 1708,
+      "first_read": "2026-05-05T20:26:35.787Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/auth/verificationEmail.ts": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-05-05T20:26:38.087Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/index.tsx": {
+      "count": 1,
+      "tokens": 1881,
+      "first_read": "2026-05-05T20:27:40.501Z"
     },
     "/home/doug/dev/cookbook-tanstack/src/test-helpers/auth.ts": {
       "count": 1,
-      "tokens": 0,
-      "first_read": "2026-05-05T04:40:54.436Z"
-    },
-    "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/tests.md": {
-      "count": 1,
-      "tokens": 0,
-      "first_read": "2026-05-05T13:00:03.892Z"
+      "tokens": 672,
+      "first_read": "2026-05-05T20:28:15.920Z"
     }
   },
   "files_written": [
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-change-tier.test.tsx",
       "action": "edit",
-      "tokens": 82,
-      "at": "2026-05-05T04:35:15.447Z"
+      "tokens": 12,
+      "at": "2026-05-05T20:28:45.692Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload/__tests__/-upload.test.ts",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/recipes/__tests__/-new.test.tsx",
       "action": "edit",
-      "tokens": 202,
-      "at": "2026-05-05T04:35:20.933Z"
+      "tokens": 12,
+      "at": "2026-05-05T20:28:48.011Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx",
       "action": "edit",
-      "tokens": 90,
-      "at": "2026-05-05T04:35:25.350Z"
+      "tokens": 12,
+      "at": "2026-05-05T20:28:50.895Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/design.md",
-      "action": "edit",
-      "tokens": 332,
-      "at": "2026-05-05T04:35:36.025Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/test-helpers/auth.ts",
-      "action": "edit",
-      "tokens": 137,
-      "at": "2026-05-05T04:40:58.688Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/__tests__/index.test.tsx",
       "action": "edit",
       "tokens": 30,
-      "at": "2026-05-05T04:41:02.999Z"
+      "at": "2026-05-05T20:28:54.439Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/components/auth/VerifyEmailPage.tsx",
       "action": "edit",
-      "tokens": 15,
-      "at": "2026-05-05T04:41:05.736Z"
+      "tokens": 211,
+      "at": "2026-05-05T20:29:00.696Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/recipes/index.tsx",
       "action": "edit",
-      "tokens": 15,
-      "at": "2026-05-05T04:41:09.816Z"
+      "tokens": 26,
+      "at": "2026-05-05T20:29:03.663Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
-      "action": "edit",
-      "tokens": 1145,
-      "at": "2026-05-05T04:41:45.754Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/recipes/index.tsx",
       "action": "edit",
       "tokens": 53,
-      "at": "2026-05-05T04:41:53.949Z"
+      "at": "2026-05-05T20:29:09.923Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/components/auth/VerifyEmailPage.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/recipes/index.tsx",
       "action": "edit",
-      "tokens": 130,
-      "at": "2026-05-05T12:58:52.879Z"
+      "tokens": 9,
+      "at": "2026-05-05T20:29:12.590Z"
     },
     {
-      "file": "/home/doug/dev/cookbook-tanstack/src/components/auth/VerifyEmailPage.tsx",
+      "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
       "action": "edit",
-      "tokens": 31,
-      "at": "2026-05-05T12:58:55.914Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload.tsx",
-      "action": "edit",
-      "tokens": 42,
-      "at": "2026-05-05T12:59:05.359Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md",
-      "action": "edit",
-      "tokens": 102,
-      "at": "2026-05-05T12:59:14.574Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md",
-      "action": "edit",
-      "tokens": 17,
-      "at": "2026-05-05T12:59:17.734Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/design.md",
-      "action": "edit",
-      "tokens": 16,
-      "at": "2026-05-05T12:59:23.655Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
-      "action": "edit",
-      "tokens": 103,
-      "at": "2026-05-05T12:59:39.808Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
-      "action": "edit",
-      "tokens": 75,
-      "at": "2026-05-05T12:59:43.952Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
-      "action": "edit",
-      "tokens": 378,
-      "at": "2026-05-05T12:59:51.719Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
-      "action": "edit",
-      "tokens": 18,
-      "at": "2026-05-05T12:59:57.520Z"
-    },
-    {
-      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/tests.md",
-      "action": "edit",
-      "tokens": 72,
-      "at": "2026-05-05T13:00:08.344Z"
+      "tokens": 373,
+      "at": "2026-05-05T20:29:20.250Z"
     }
   ],
   "edit_counts": {
-    "src/routes/api/upload.tsx": 2,
-    "src/routes/api/upload/__tests__/-upload.test.ts": 1,
-    "openspec/changes/email-verification-hard-gate/proposal.md": 3,
-    "openspec/changes/email-verification-hard-gate/design.md": 2,
-    "src/test-helpers/auth.ts": 1,
-    "src/routes/__tests__/-recipes.test.tsx": 7,
-    "src/routes/auth/__tests__/-verify-email.test.tsx": 2,
-    "src/components/auth/VerifyEmailPage.tsx": 2,
-    "openspec/changes/email-verification-hard-gate/tests.md": 1
+    "src/routes/__tests__/-change-tier.test.tsx": 1,
+    "src/routes/recipes/__tests__/-new.test.tsx": 1,
+    "src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx": 1,
+    "src/routes/cookbooks/__tests__/index.test.tsx": 1,
+    "src/components/auth/VerifyEmailPage.tsx": 1,
+    "src/routes/recipes/index.tsx": 3,
+    "src/routes/auth/__tests__/-verify-email.test.tsx": 1
   },
-  "anatomy_hits": 2,
-  "anatomy_misses": 7,
-  "repeated_reads_warned": 12,
+  "anatomy_hits": 7,
+  "anatomy_misses": 3,
+  "repeated_reads_warned": 3,
   "cerebrum_warnings": 0,
   "stop_count": 1
 }

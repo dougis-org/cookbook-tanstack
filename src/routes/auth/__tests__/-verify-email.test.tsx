@@ -188,4 +188,29 @@ describe("VerifyEmailPage", () => {
       expect(screen.getByText(/Too many requests/i)).toBeInTheDocument()
     })
   })
+
+  it("encodes from in callbackURL when resending", async () => {
+    render(<VerifyEmailPage from="/recipes/new" />)
+    fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
+
+    await waitFor(() => {
+      expect(mockSendVerificationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          callbackURL: expect.stringContaining(`from=${encodeURIComponent("/recipes/new")}`),
+        }),
+        expect.any(Object),
+      )
+    })
+  })
+
+  it("shows error when BetterAuth resolves with error payload without firing callbacks", async () => {
+    mockSendVerificationEmail.mockResolvedValue({ error: { message: "Rate limit exceeded" } })
+
+    render(<VerifyEmailPage />)
+    fireEvent.click(screen.getByRole("button", { name: /resend verification email/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/Rate limit exceeded/i)).toBeInTheDocument()
+    })
+  })
 })

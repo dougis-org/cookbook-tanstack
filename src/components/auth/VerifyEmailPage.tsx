@@ -31,7 +31,7 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
     setResendStatus("pending")
     setResendError(null)
 
-    await authClient.sendVerificationEmail(
+    const result = await authClient.sendVerificationEmail(
       {
         email,
         callbackURL: `${window.location.origin}/auth/verify-email${from ? `?from=${encodeURIComponent(from)}` : ""}`,
@@ -44,6 +44,13 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
         },
       },
     )
+
+    // BetterAuth can resolve with { error } without firing callbacks
+    const resolvedError = (result as { error?: { message?: string } | null } | undefined)?.error
+    if (resolvedError) {
+      setResendStatus("error")
+      setResendError(resolvedError.message || "Failed to resend email")
+    }
   }
 
   // Verification successful state

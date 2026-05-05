@@ -592,3 +592,22 @@
 | 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | expanded (+43 lines) | ~378 |
 | 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | inline fix | ~18 |
 | 06:00 | Edited openspec/changes/email-verification-hard-gate/tests.md | 2→2 lines | ~68 |
+| 06:48 | Session end: 21 writes across 9 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 9 reads | ~11836 tok |
+| 06:52 | Created src/routes/__tests__/-recipes.test.tsx | — | ~1549 |
+| 06:53 | Created src/routes/__tests__/-import.test.tsx | — | ~1043 |
+| 06:53 | Edited src/routes/__tests__/-import.test.tsx | 5→1 lines | ~15 |
+| 06:54 | Session end: 24 writes across 10 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 10 reads | ~15275 tok |
+
+## Session: 2026-05-05 10:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:28 | Edited src/routes/__tests__/-change-tier.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/recipes/__tests__/-new.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/cookbooks/__tests__/index.test.tsx | 3→2 lines | ~30 |
+| 13:29 | Edited src/components/auth/VerifyEmailPage.tsx | added optional chaining | ~211 |
+| 13:29 | Edited src/routes/recipes/index.tsx | inline fix | ~26 |
+| 13:29 | Edited src/routes/recipes/index.tsx | CSS: select | ~53 |
+| 13:29 | Edited src/routes/recipes/index.tsx | inline fix | ~9 |
+| 13:29 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: callbackURL, error, message | ~373 |
