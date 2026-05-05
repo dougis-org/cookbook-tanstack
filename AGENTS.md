@@ -13,24 +13,10 @@ All dev work follow repo-wide standards. See **[docs/standards/](./docs/standard
 
 Use [CONTRIBUTING.md](./CONTRIBUTING.md) quick-start reference.
 
----
-## Tooling
+## PRs and merge
 
-- MCP servers first for any task they cover. No raw shell sessions.
-- No MCP tool? Use `run_in_terminal` only.
-- Examples: MCP `read_file`/`write_file` for files; GitHub MCP for git; Jira/Confluence MCP for tickets; `run_in_terminal` for `npm run test` or `npm run build`.
-
-### CodeGraph Tools (Available)
-
-Codebase has CodeGraph initialized (`.codegraph/` exists). Use for instant lookups:
-- **`codegraph_search`** — Find symbols by name (functions, classes, types)
-- **`codegraph_context`** — Get relevant code context for task
-- **`codegraph_callers`** — Find what calls function
-- **`codegraph_callees`** — Find what function calls
-- **`codegraph_impact`** — See what's affected by changing symbol
-- **`codegraph_node`** — Get details + source code for symbol
-
-Use CodeGraph over grep. Faster.
+You must **NEVER** bypass PR gates and force merge.
+ALL comments must be addressed and once addressed they must also be resolved to allow auto merge to happen
 
 ## Architecture Guidelines
 

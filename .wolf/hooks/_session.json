@@ -61,6 +61,11 @@
       "count": 8,
       "tokens": 7148,
       "first_read": "2026-05-05T21:17:59.214Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/src/components/cookbooks/__tests__/CookbooksPage.test.tsx": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-05-05T22:24:23.413Z"
     }
   },
   "files_written": [
@@ -219,6 +224,12 @@
       "action": "edit",
       "tokens": 108,
       "at": "2026-05-05T21:19:59.429Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/src/components/cookbooks/__tests__/CookbooksPage.test.tsx",
+      "action": "edit",
+      "tokens": 104,
+      "at": "2026-05-05T22:24:39.261Z"
     }
   ],
   "edit_counts": {
@@ -232,11 +243,12 @@
     "src/routes/cookbooks/index.tsx": 1,
     "src/server/trpc/routers/recipes.ts": 1,
     "src/server/trpc/routers/cookbooks.ts": 9,
-    "src/routes/__tests__/-recipes.test.tsx": 1
+    "src/routes/__tests__/-recipes.test.tsx": 1,
+    "src/components/cookbooks/__tests__/CookbooksPage.test.tsx": 1
   },
   "anatomy_hits": 9,
-  "anatomy_misses": 3,
+  "anatomy_misses": 4,
   "repeated_reads_warned": 14,
   "cerebrum_warnings": 0,
-  "stop_count": 2
+  "stop_count": 4
 }

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T21:19:59.421Z
-> Files: 626 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T22:24:39.253Z
+> Files: 627 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -869,6 +869,10 @@
 ## src/components/auth/
 
 - `VerifyEmailPage.tsx` — VerifyEmailPage (~1615 tok)
+
+## src/components/cookbooks/__tests__/
+
+- `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
 
 ## src/components/ui/
 
