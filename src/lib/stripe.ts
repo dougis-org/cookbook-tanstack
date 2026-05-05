@@ -10,7 +10,9 @@ export function getStripe(): Stripe {
   const secretKey = process.env.STRIPE_SECRET_KEY;
 
   if (!secretKey) {
-    throw new Error("STRIPE_SECRET_KEY env var not set.");
+    throw new Error(
+      "STRIPE_SECRET_KEY env var not set. Set it in .env.local (server-side only). See https://dashboard.stripe.com/test/apikeys",
+    );
   }
 
   _stripe = new Stripe(secretKey, {
