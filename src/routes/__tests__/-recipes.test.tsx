@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 const { mockUseSearch, mockCreateFileRoute, mockLink, mockNavigate } = vi.hoisted(() => ({
@@ -29,6 +29,7 @@ vi.mock('@/components/layout/PageLayout', () => ({
 vi.mock('@/components/recipes/RecipeCard', () => ({ default: () => null }))
 vi.mock('@/components/recipes/filters/FilterRow1Quick', () => ({ FilterRow1Quick: () => null }))
 vi.mock('@/components/recipes/filters/FilterDropdowns', () => ({ FilterDropdowns: () => null }))
+vi.mock('@/components/ui/TierWall', () => ({ default: () => <span>Limit reached</span> }))
 
 const mockUseAuth = vi.fn()
 vi.mock('@/hooks/useAuth', () => ({
@@ -67,6 +68,7 @@ vi.mock('@/lib/trpc', () => {
 import { RecipesPage } from '@/routes/recipes/index'
 
 const HOME_COOK_ENTITLEMENTS = { tier: 'home-cook', canCreatePrivate: false, canImport: false, recipeLimit: 10, cookbookLimit: 1 }
+const SOUS_CHEF_ENTITLEMENTS = { tier: 'sous-chef', canCreatePrivate: true, canImport: true, recipeLimit: 500, cookbookLimit: 25 }
 
 function setLoggedIn(opts: { emailVerified?: boolean; isLoggedIn?: boolean } = {}) {
   const isLoggedIn = opts.isLoggedIn ?? true
@@ -90,6 +92,49 @@ function setRecipeCount(total: number) {
     return { data: [], isLoading: false }
   })
 }
+
+describe('RecipesPage — toolbar controls (verified user)', () => {
+  beforeEach(() => {
+    setLoggedIn({ emailVerified: true })
+    mockUseSearch.mockReturnValue({})
+  })
+
+  it('shows Import Recipe link when user can import', () => {
+    setRecipeCount(5)
+    mockUseTierEntitlements.mockReturnValue(SOUS_CHEF_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.getByRole('link', { name: /import recipe/i })).toBeInTheDocument()
+  })
+
+  it('hides Import Recipe link when user cannot import', () => {
+    setRecipeCount(5)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.queryByRole('link', { name: /import recipe/i })).not.toBeInTheDocument()
+  })
+
+  it('disables New Recipe button when at recipe limit', () => {
+    setRecipeCount(10)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.getByRole('button', { name: /new recipe/i })).toBeDisabled()
+  })
+
+  it('shows New Recipe link when below recipe limit', () => {
+    setRecipeCount(5)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.getByRole('link', { name: /new recipe/i })).toBeInTheDocument()
+  })
+})
 
 describe('RecipesPage — verification gate', () => {
   it('shows Verify Email CTA when unverified', () => {

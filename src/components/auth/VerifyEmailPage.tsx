@@ -20,18 +20,20 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
 
   const { data: profile } = useQuery({
     ...trpc.users.me.queryOptions(),
-    enabled: !isVerified,
+    enabled: !isVerified && !!session,
   })
 
+  const email = profile?.email || session?.user?.email || ""
+
   async function handleResend() {
-    if (resendStatus === "pending") return
+    if (resendStatus === "pending" || !email) return
 
     setResendStatus("pending")
     setResendError(null)
 
     await authClient.sendVerificationEmail(
       {
-        email: profile?.email || session?.user?.email || "",
+        email,
         callbackURL: `${window.location.origin}/auth/verify-email${from ? `?from=${encodeURIComponent(from)}` : ""}`,
       },
       {
@@ -92,7 +94,7 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
       <div className="space-y-4">
         <button
           onClick={handleResend}
-          disabled={resendStatus === "pending"}
+          disabled={resendStatus === "pending" || !email}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface-raised)] px-4 py-3 font-semibold text-[var(--theme-fg)] transition-colors hover:bg-[var(--theme-surface-hover)] disabled:opacity-50"
         >
           {resendStatus === "pending" ? (

@@ -21,7 +21,7 @@
 
 - Changing signup session behavior (`autoSignIn`)
 - Restricting read-only routes
-- tRPC router-level enforcement
+- tRPC router-level enforcement for read-only procedures
 - Modifying admin guard chain
 
 ## Decisions

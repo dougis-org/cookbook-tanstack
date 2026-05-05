@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T04:41:53.938Z
-> Files: 623 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T13:00:08.338Z
+> Files: 624 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -784,8 +784,9 @@
 
 ## openspec/changes/email-verification-hard-gate/
 
-- `design.md` — Context (~2634 tok)
-- `proposal.md` — GitHub Issues (~1334 tok)
+- `design.md` — Context (~2640 tok)
+- `proposal.md` — GitHub Issues (~1399 tok)
+- `tests.md` — Tests (~1103 tok)
 
 ## openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/
 
@@ -867,7 +868,7 @@
 
 ## src/components/auth/
 
-- `VerifyEmailPage.tsx` — VerifyEmailPage (~1175 tok)
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1426 tok)
 
 ## src/components/ui/
 
@@ -911,11 +912,11 @@
 - `-change-tier.test.tsx` — beforeLoad (~711 tok)
 - `-import.test.tsx` — mockUseMutation (~832 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
-- `-recipes.test.tsx` — actual (~1164 tok)
+- `-recipes.test.tsx` — actual (~1594 tok)
 
 ## src/routes/api/
 
-- `upload.tsx` — UPLOAD_FOLDER (~736 tok)
+- `upload.tsx` — UPLOAD_FOLDER (~750 tok)
 
 ## src/routes/api/upload/__tests__/
 

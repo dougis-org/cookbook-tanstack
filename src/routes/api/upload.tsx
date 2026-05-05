@@ -31,6 +31,7 @@ export const Route = createFileRoute("/api/upload")({
       POST: async ({ request }: { request: Request }) => {
         const session = await auth.api.getSession({
           headers: request.headers,
+          query: { disableCookieCache: true },
         })
 
         if (!session) {

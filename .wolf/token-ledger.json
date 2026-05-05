@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 779571,
-    "total_reads": 2092,
-    "total_writes": 1153,
+    "total_tokens_estimated": 785719,
+    "total_reads": 2100,
+    "total_writes": 1163,
     "total_sessions": 19,
-    "anatomy_hits": 239,
-    "anatomy_misses": 1853,
-    "repeated_reads_blocked": 2441,
-    "estimated_savings_vs_bare_cli": 1160355
+    "anatomy_hits": 241,
+    "anatomy_misses": 1859,
+    "repeated_reads_blocked": 2448,
+    "estimated_savings_vs_bare_cli": 1167043
   },
   "sessions": [
     {
@@ -20277,6 +20277,121 @@
         "writes_count": 25,
         "repeated_reads_blocked": 26,
         "anatomy_lookups": 13
+      }
+    },
+    {
+      "id": "session-2026-05-05-2131",
+      "started": "2026-05-05T04:31:54.580Z",
+      "ended": "2026-05-05T04:43:37.362Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/design.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload/__tests__/-upload.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
+          "tokens_estimated": 1708,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/auth/VerifyEmailPage.tsx",
+          "tokens_estimated": 1175,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+          "tokens_estimated": 1164,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/test-helpers/auth.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload.tsx",
+          "tokens_estimated": 82,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/upload/__tests__/-upload.test.ts",
+          "tokens_estimated": 202,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/proposal.md",
+          "tokens_estimated": 90,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/email-verification-hard-gate/design.md",
+          "tokens_estimated": 332,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/test-helpers/auth.ts",
+          "tokens_estimated": 137,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+          "tokens_estimated": 30,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+          "tokens_estimated": 15,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-recipes.test.tsx",
+          "tokens_estimated": 15,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
+          "tokens_estimated": 1145,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/auth/__tests__/-verify-email.test.tsx",
+          "tokens_estimated": 53,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 4047,
+        "output_tokens_estimated": 2101,
+        "reads_count": 8,
+        "writes_count": 10,
+        "repeated_reads_blocked": 7,
+        "anatomy_lookups": 2
       }
     }
   ],

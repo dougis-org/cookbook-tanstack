@@ -79,8 +79,8 @@ These tests confirm the guard is wired correctly. They build on the `requireVeri
   - File: `src/routes/__tests__/-recipes.test.tsx` or new test
   - Spec: `specs/auth-guard-verified/spec.md` — "Unverified user navigates to recipe creation"
 
-- [ ] **`/cookbooks/` guard** — Route renders for verified session; unverified session redirects
-  - File: new test or existing cookbooks route test
+- [ ] **`/cookbooks/` UI gate** — Listing page is public (no redirect); unverified logged-in user sees "Verify Email to Create" CTA instead of the create form; verified user sees the create form
+  - File: `src/routes/cookbooks/__tests__/index.test.tsx`
 
 - [ ] **`/change-tier` guard** — Route renders for verified session; unverified session redirects
   - File: `src/routes/__tests__/-change-tier.test.tsx`

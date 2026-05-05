@@ -25,7 +25,10 @@
 
 - New `requireVerifiedAuth()` guard in `src/lib/auth-guard.ts` combining auth + email verification checks
 - Update `/recipes/new`, `/recipes/$recipeId/edit`, `/import` to use `requireVerifiedAuth()` instead of `requireAuth()`
-- Add `requireVerifiedAuth()` to `/cookbooks/` and `/change-tier` (currently unguarded)
+- Add `requireVerifiedAuth()` to `/change-tier` (currently unguarded)
+- UI-level verification check on `/cookbooks/` and `/recipes/` listing pages (route stays public-content; unverified users see a "Verify Email to Create" CTA)
+- `verifiedProcedure` tRPC middleware for `cookbooks.create` mutation
+- `emailVerified` check on `/api/upload` server endpoint
 - Add `from?: string` to `/auth/verify-email` route's `validateSearch`
 - Update `VerifyEmailPage` "Continue" button to navigate to `from ?? '/'` after verification
 
@@ -73,7 +76,7 @@ No unresolved ambiguity. All decisions confirmed during explore session:
 ## Non-Goals
 
 - Restricting read access (recipe browsing, cookbook viewing) for unverified users
-- Blocking API endpoints directly (tRPC router-level enforcement)
+- Blocking read-access API endpoints for unverified users
 - Building an admin tool to manually verify users
 
 ## Change Control

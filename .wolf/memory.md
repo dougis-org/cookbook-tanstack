@@ -580,3 +580,15 @@
 | 21:41 | Edited src/routes/__tests__/-recipes.test.tsx | removed 9 lines | ~15 |
 | 21:41 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | expanded (+13 lines) | ~1145 |
 | 21:41 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | 8→9 lines | ~53 |
+| 21:43 | Session end: 10 writes across 7 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 8 reads | ~6148 tok |
+| 05:58 | Edited src/components/auth/VerifyEmailPage.tsx | modified handleResend() | ~130 |
+| 05:58 | Edited src/components/auth/VerifyEmailPage.tsx | 3→3 lines | ~31 |
+| 05:59 | Edited src/routes/api/upload.tsx | CSS: query, disableCookieCache | ~42 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/proposal.md | 1→4 lines | ~95 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/proposal.md | inline fix | ~16 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/design.md | inline fix | ~15 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | 3→4 lines | ~103 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | 1→2 lines | ~75 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | expanded (+43 lines) | ~378 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | inline fix | ~18 |
+| 06:00 | Edited openspec/changes/email-verification-hard-gate/tests.md | 2→2 lines | ~68 |
