@@ -102,6 +102,56 @@ The system SHALL protect these routes via `beforeLoad` instead of `server.middle
 
 Reason for removal: `server.middleware` only executes during SSR (server-side rendering of the initial page load), not during client-side SPA navigation. Replaced by `beforeLoad: requireAuth()` which executes in both contexts. The `src/lib/middleware.ts` file is deleted.
 
+### Requirement: ADDED `requireVerifiedAuth()` route guard (email-verification-hard-gate)
+
+The system SHALL redirect unauthenticated users to `/auth/login` and redirect authenticated-but-unverified users to `/auth/verify-email?from=<path>` when accessing any route guarded by `requireVerifiedAuth()`. Authenticated verified users SHALL pass through without redirect.
+
+#### Scenario: FR-1 — Unauthenticated user is redirected to login
+
+- **Given** `context.session` is `null`
+- **When** `requireVerifiedAuth()` runs in `beforeLoad`
+- **Then** a redirect is thrown to `/auth/login` with `reason: 'auth-required'` and `from: <current path>` search params
+
+#### Scenario: FR-2 — Authenticated unverified user is redirected to verify-email
+
+- **Given** `context.session.user.emailVerified` is `false`
+- **When** `requireVerifiedAuth()` runs in `beforeLoad`
+- **Then** a redirect is thrown to `/auth/verify-email` with `from: <current path>` search param
+
+#### Scenario: FR-3 — Authenticated verified user passes through
+
+- **Given** `context.session.user.emailVerified` is `true`
+- **When** `requireVerifiedAuth()` runs in `beforeLoad`
+- **Then** no redirect is thrown and the route renders normally
+
+#### Scenario: NFR-2 — Legacy session with undefined emailVerified passes through
+
+- **Given** `context.session.user.emailVerified` is `undefined`
+- **When** `requireVerifiedAuth()` runs in `beforeLoad`
+- **Then** no redirect is thrown (only explicit `false` gates)
+
+### Requirement: ADDED `requireVerifiedAuth()` applied to content-creation and tier-change routes
+
+The system SHALL apply `requireVerifiedAuth()` as the `beforeLoad` guard on `/recipes/new`, `/recipes/$recipeId/edit`, `/import`, and `/change-tier`. The `/cookbooks/` listing page is intentionally public and is NOT guarded at the route level; instead, the `cookbooks.create` tRPC mutation uses `verifiedProcedure` to enforce verification at the API level.
+
+#### Scenario: Unverified user navigates to recipe creation
+
+- **Given** an authenticated user with `emailVerified: false`
+- **When** they navigate to `/recipes/new`
+- **Then** they are redirected to `/auth/verify-email?from=/recipes/new`
+
+#### Scenario: Unverified user navigates to tier change
+
+- **Given** an authenticated user with `emailVerified: false`
+- **When** they navigate to `/change-tier`
+- **Then** they are redirected to `/auth/verify-email?from=/change-tier`
+
+#### Scenario: Unverified user attempts to create a cookbook via API
+
+- **Given** an authenticated user with `emailVerified: false`
+- **When** they call the `cookbooks.create` tRPC mutation
+- **Then** the mutation returns a `FORBIDDEN` error with cause `email-not-verified`
+
 ## Traceability
 
 - Proposal: "protect /recipes/new, /recipes/$recipeId/edit, /import via beforeLoad" → Requirements: ADDED route guards × 3, MODIFIED route protection

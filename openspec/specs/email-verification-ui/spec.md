@@ -120,6 +120,48 @@ state in place.
 - **When** `onSuccess` fires
 - **Then** `navigate({ to: "/" })` is NOT called; `isSubmitted` state is set to `true`
 
+### Requirement: ADDED `from` search param on `/auth/verify-email` route (email-verification-hard-gate)
+
+The system SHALL accept an optional `from` search parameter on the `/auth/verify-email` route. After a user's email is verified, the "Continue" navigation SHALL direct the user to the `from` path if present and a valid relative path, or to `/` otherwise.
+
+#### Scenario: FR-4 — "Continue" navigates to `from` after verification
+
+- **Given** the user arrived at `/auth/verify-email?from=/recipes/new` via the guard redirect
+- **And** their email is now verified (`emailVerified: true`)
+- **When** the verified state renders on `VerifyEmailPage`
+- **Then** the "Continue" button/link href is `/recipes/new`
+
+#### Scenario: FR-5 — "Continue" falls back to `/` when `from` is absent
+
+- **Given** the user arrived at `/auth/verify-email` without a `from` param
+- **And** their email is now verified
+- **When** the verified state renders on `VerifyEmailPage`
+- **Then** the "Continue" button/link href is `/`
+
+#### Scenario: NFR-1 — External URL in `from` is rejected
+
+- **Given** `from` is set to `https://evil.com` in the query string
+- **When** `validateSearch` processes the route search params
+- **Then** `from` is stripped (returns `undefined`), preventing an open redirect
+
+#### Scenario: NFR-1 variant — Protocol-relative URL in `from` is rejected
+
+- **Given** `from` is set to `//evil.com/steal`
+- **When** `validateSearch` processes the route search params
+- **Then** `from` is stripped (returns `undefined`)
+
+### Requirement: MODIFIED `VerifyEmailPage` accepts and uses `from` prop (email-verification-hard-gate)
+
+`VerifyEmailPage` accepts a `from?: string` prop and uses it as the navigation target when the email-verified state is shown.
+
+#### Scenario: `from` prop flows from route to component
+
+- **Given** the route resolves `from: '/cookbooks/'` from `validateSearch`
+- **When** `VerifyEmailRoute` renders `VerifyEmailPage`
+- **Then** the "Continue" element navigates to `/cookbooks/`
+
+---
+
 ### Requirement: Performance
 
 The system SHALL render the verification banner without introducing network requests beyond the existing session

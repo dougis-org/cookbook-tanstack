@@ -106,12 +106,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No documentation updates required (changes are purely code)
-- [ ] Sync approved spec deltas into `openspec/specs/` (no global specs exist for these capabilities yet — create as needed)
-- [ ] Archive the change: move `openspec/changes/email-verification-hard-gate/` to `openspec/changes/archive/YYYY-MM-DD-email-verification-hard-gate/` — stage both the new location and the deletion of the old location in a **single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-email-verification-hard-gate/` exists and `openspec/changes/email-verification-hard-gate/` is gone
-- [ ] Commit and push the archive commit to `main`
-- [ ] Prune merged local branch: `git fetch --prune` and `git branch -d feat/email-verification-hard-gate`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No documentation updates required (changes are purely code)
+- [x] Sync approved spec deltas into `openspec/specs/` (appended to `auth-route-guards` and `email-verification-ui`)
+- [x] Archive the change: move `openspec/changes/email-verification-hard-gate/` to `openspec/changes/archive/2026-05-06-email-verification-hard-gate/` — staged both the new location and the deletion of the old location in a **single commit**
+- [x] Confirm `openspec/changes/archive/2026-05-06-email-verification-hard-gate/` exists and `openspec/changes/email-verification-hard-gate/` is gone
+- [x] Commit and push the archive commit to `main`
+- [x] Prune merged local branch: `git fetch --prune` and `git branch -d feat/email-verification-hard-gate`
