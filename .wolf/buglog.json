@@ -683,6 +683,694 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-03T14:12:33.282Z"
+    },
+    {
+      "id": "bug-043",
+      "timestamp": "2026-05-03T17:22:49.245Z",
+      "error_message": "Missing error handling in makeSessionWithEmail",
+      "file": "src/lib/__tests__/auth-guard.test.ts",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:22:49.245Z"
+    },
+    {
+      "id": "bug-044",
+      "timestamp": "2026-05-03T17:23:21.785Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:23:21.785Z"
+    },
+    {
+      "id": "bug-045",
+      "timestamp": "2026-05-03T17:23:30.393Z",
+      "error_message": "CSS fix: validateSearch",
+      "file": "src/routes/auth/verify-email.tsx",
+      "root_cause": "validateSearch: (search: Record<string, unknown>): { error?: string → (",
+      "fix": "Changed validateSearch: (search: Record<string, unknown>): { error?: string → (",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-03T17:25:32.239Z"
+    },
+    {
+      "id": "bug-046",
+      "timestamp": "2026-05-03T17:23:41.648Z",
+      "error_message": "CSS fix: name",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "name: /continue to app/i → /continue/i",
+      "fix": "Changed name: /continue to app/i → /continue/i",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:23:41.648Z"
+    },
+    {
+      "id": "bug-047",
+      "timestamp": "2026-05-03T17:23:49.541Z",
+      "error_message": "Wrong reference: VerifyEmailPageProps should be from",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "Used \"VerifyEmailPageProps\" instead of \"from\"",
+      "fix": "Changed VerifyEmailPageProps → from",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:23:49.541Z"
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-05-03T17:23:52.577Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:23:52.577Z"
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-05-03T17:24:01.765Z",
+      "error_message": "CSS fix: beforeLoad",
+      "file": "src/routes/recipes/new.tsx",
+      "root_cause": "beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "fix": "Changed beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:24:01.765Z"
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-05-03T17:24:06.372Z",
+      "error_message": "CSS fix: beforeLoad",
+      "file": "src/routes/recipes/$recipeId_.edit.tsx",
+      "root_cause": "beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "fix": "Changed beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:24:06.372Z"
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-05-03T17:24:12.736Z",
+      "error_message": "CSS fix: beforeLoad",
+      "file": "src/routes/import/index.tsx",
+      "root_cause": "beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "fix": "Changed beforeLoad: requireAuth(), → requireVerifiedAuth(),",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:24:12.736Z"
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-05-03T17:24:24.504Z",
+      "error_message": "CSS fix: component",
+      "file": "src/routes/change-tier.tsx",
+      "root_cause": "component: ChangeTierPage → ChangeTierPage,",
+      "fix": "Changed component: ChangeTierPage → ChangeTierPage,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T17:24:24.504Z"
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-05-03T19:39:15.470Z",
+      "error_message": "CSS fix: from",
+      "file": "src/routes/auth/verify-email.tsx",
+      "root_cause": "from: string | undefined → undefined",
+      "fix": "Changed from: string | undefined → undefined",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T19:39:15.470Z"
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-05-03T19:39:19.784Z",
+      "error_message": "CSS fix: from",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "from: \"/recipes?sort=newest\", → \"data:text/html,<script>alert('xss')</script>\",",
+      "fix": "Changed from: \"/recipes?sort=newest\", → \"data:text/html,<script>alert('xss')</script>\",",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T19:39:19.784Z"
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-05-03T21:34:54.434Z",
+      "error_message": "CSS fix: javascript",
+      "file": "src/routes/auth/verify-email.tsx",
+      "root_cause": "javascript: const isValidRelativePath = search.from === \"\" || (search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")) → const isValidRelativePath = search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")",
+      "fix": "Changed javascript: const isValidRelativePath = search.from === \"\" || (search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")) → const isValidRelativePath = search.from.startsWith(\"/\") && !search.from.includes(\"://\") && !search.from.startsWith(\"//\")",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-03T21:34:54.434Z"
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-05-03T21:35:23.547Z",
+      "error_message": "Wrong reference: protectedProcedure should be verifiedProcedure",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "Used \"protectedProcedure\" instead of \"verifiedProcedure\"",
+      "fix": "Changed protectedProcedure → verifiedProcedure",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-03T21:35:31.312Z"
+    },
+    {
+      "id": "bug-057",
+      "timestamp": "2026-05-04T02:11:25.812Z",
+      "error_message": "Type error",
+      "file": "src/server/trpc/init.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T02:11:25.812Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-05-04T04:31:41.489Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/e2e/helpers/auth.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T04:31:41.489Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-05-04T13:18:48.098Z",
+      "error_message": "Wrong reference: page should be email",
+      "file": "src/e2e/helpers/auth.ts",
+      "root_cause": "Used \"page\" instead of \"email\"",
+      "fix": "Changed page → email",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:18:48.098Z"
+    },
+    {
+      "id": "bug-060",
+      "timestamp": "2026-05-04T13:18:57.404Z",
+      "error_message": "Missing await",
+      "file": "src/server/trpc/__tests__/init.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:18:57.404Z"
+    },
+    {
+      "id": "bug-061",
+      "timestamp": "2026-05-04T13:19:59.152Z",
+      "error_message": "Missing await",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:19:59.153Z"
+    },
+    {
+      "id": "bug-062",
+      "timestamp": "2026-05-04T13:20:30.877Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/server/trpc/routers/__tests__/cookbooks.test.ts",
+      "root_cause": "Had \"FORBIDDEN\"",
+      "fix": "Changed to \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:30.877Z"
+    },
+    {
+      "id": "bug-063",
+      "timestamp": "2026-05-04T13:20:38.524Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Had \"FORBIDDEN\"",
+      "fix": "Changed to \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:38.524Z"
+    },
+    {
+      "id": "bug-064",
+      "timestamp": "2026-05-04T13:20:44.355Z",
+      "error_message": "Wrong reference: FORBIDDEN should be Email",
+      "file": "src/server/trpc/routers/__tests__/recipes.test.ts",
+      "root_cause": "Used \"FORBIDDEN\" instead of \"Email\"",
+      "fix": "Changed FORBIDDEN → Email",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T13:20:44.355Z"
+    },
+    {
+      "id": "bug-065",
+      "timestamp": "2026-05-04T20:04:39.711Z",
+      "error_message": "Missing guard clause",
+      "file": "src/lib/auth-guard.ts",
+      "root_cause": "No early return/throw for edge case: !context.session",
+      "fix": "Added guard clause: if (!context.session)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-04T20:04:45.708Z"
+    },
+    {
+      "id": "bug-066",
+      "timestamp": "2026-05-04T20:05:06.575Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/routes/__tests__/-change-tier.test.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:06.575Z"
+    },
+    {
+      "id": "bug-067",
+      "timestamp": "2026-05-04T20:05:43.934Z",
+      "error_message": "CSS fix: requireVerifiedAuth",
+      "file": "src/routes/__tests__/-import.test.tsx",
+      "root_cause": "requireVerifiedAuth: () => () => ({ → vi.fn(() => () => ({",
+      "fix": "Changed requireVerifiedAuth: () => () => ({ → vi.fn(() => () => ({",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:43.934Z"
+    },
+    {
+      "id": "bug-068",
+      "timestamp": "2026-05-04T20:05:48.745Z",
+      "error_message": "Type error",
+      "file": "src/routes/__tests__/-import.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T20:05:48.745Z"
+    },
+    {
+      "id": "bug-069",
+      "timestamp": "2026-05-04T21:29:58.757Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/spec.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 19→19 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:29:58.757Z"
+    },
+    {
+      "id": "bug-070",
+      "timestamp": "2026-05-04T21:30:41.598Z",
+      "error_message": "Type error",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:30:41.598Z"
+    },
+    {
+      "id": "bug-071",
+      "timestamp": "2026-05-04T21:30:54.638Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/auth/__tests__/-verify-email.test.tsx",
+      "root_cause": "14 lines replaced/restructured",
+      "fix": "Rewrote 18→3 lines (14 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-04T21:30:54.638Z"
+    },
+    {
+      "id": "bug-072",
+      "timestamp": "2026-05-05T04:35:15.448Z",
+      "error_message": "CSS fix: error",
+      "file": "src/routes/api/upload.tsx",
+      "root_cause": "error: \"Unauthorized\" → \"Email verification required\"",
+      "fix": "Changed error: \"Unauthorized\" → \"Email verification required\"",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:15.448Z"
+    },
+    {
+      "id": "bug-073",
+      "timestamp": "2026-05-05T04:35:25.351Z",
+      "error_message": "Incorrect value in code",
+      "file": "openspec/changes/email-verification-hard-gate/proposal.md",
+      "root_cause": "Had `beforeLoad: requireVerifiedAuth()`",
+      "fix": "Changed to \"Verify Email to Create\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:25.351Z"
+    },
+    {
+      "id": "bug-074",
+      "timestamp": "2026-05-05T04:35:36.026Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/email-verification-hard-gate/design.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 6→6 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:35:36.026Z"
+    },
+    {
+      "id": "bug-075",
+      "timestamp": "2026-05-05T04:40:58.690Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/test-helpers/auth.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T04:40:58.690Z"
+    },
+    {
+      "id": "bug-076",
+      "timestamp": "2026-05-05T12:58:52.881Z",
+      "error_message": "CSS fix: enabled",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "enabled: !isVerified, → !isVerified && !!session,",
+      "fix": "Changed enabled: !isVerified, → !isVerified && !!session,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T12:58:52.881Z"
+    },
+    {
+      "id": "bug-077",
+      "timestamp": "2026-05-05T12:59:39.810Z",
+      "error_message": "CSS fix: default",
+      "file": "src/routes/__tests__/-recipes.test.tsx",
+      "root_cause": "default: () => null → () => <span>Limit reached</span>",
+      "fix": "Changed default: () => null → () => <span>Limit reached</span>",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-05T12:59:43.954Z"
+    },
+    {
+      "id": "bug-078",
+      "timestamp": "2026-05-05T12:59:51.720Z",
+      "error_message": "Type error",
+      "file": "src/routes/__tests__/-recipes.test.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T12:59:51.720Z"
+    },
+    {
+      "id": "bug-079",
+      "timestamp": "2026-05-05T20:29:00.698Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T20:29:00.698Z"
+    },
+    {
+      "id": "bug-080",
+      "timestamp": "2026-05-05T20:29:12.593Z",
+      "error_message": "Wrong reference: recipes should be currentPath",
+      "file": "src/routes/recipes/index.tsx",
+      "root_cause": "Used \"recipes\" instead of \"currentPath\"",
+      "fix": "Changed recipes → currentPath",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T20:29:12.593Z"
+    },
+    {
+      "id": "bug-081",
+      "timestamp": "2026-05-05T21:18:45.188Z",
+      "error_message": "Type error",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T21:18:45.188Z"
+    },
+    {
+      "id": "bug-082",
+      "timestamp": "2026-05-05T21:18:52.822Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T21:18:52.822Z"
+    },
+    {
+      "id": "bug-083",
+      "timestamp": "2026-05-05T21:18:58.614Z",
+      "error_message": "Type error",
+      "file": "src/routes/recipes/index.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation | Also: const { data: profile } = useQuery({; ...trpc.users.me.queryOptions(),",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-05T21:19:02.675Z"
+    },
+    {
+      "id": "bug-084",
+      "timestamp": "2026-05-05T21:19:09.810Z",
+      "error_message": "Wrong reference: protectedProcedure should be verifiedProcedure",
+      "file": "src/server/trpc/routers/cookbooks.ts",
+      "root_cause": "Used \"protectedProcedure\" instead of \"verifiedProcedure\"",
+      "fix": "Changed protectedProcedure → verifiedProcedure",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 9,
+      "last_seen": "2026-05-05T21:19:35.779Z"
+    },
+    {
+      "id": "bug-085",
+      "timestamp": "2026-05-05T21:19:59.431Z",
+      "error_message": "CSS fix: enabled",
+      "file": "src/components/auth/VerifyEmailPage.tsx",
+      "root_cause": "enabled: !isVerified && !!session, → session?.user?.emailVerified !== true && !!session,",
+      "fix": "Changed enabled: !isVerified && !!session, → session?.user?.emailVerified !== true && !!session,",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T21:19:59.431Z"
     }
   ]
 }

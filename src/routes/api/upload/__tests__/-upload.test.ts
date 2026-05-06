@@ -173,6 +173,14 @@ describe("POST /api/upload", () => {
     expect(mockUpload).not.toHaveBeenCalled()
   })
 
+  it("returns 403 when the user has not verified their email", async () => {
+    mockGetSession.mockResolvedValue({ user: { id: "user-1", emailVerified: false } })
+    const response = await postUpload(new NodeFile(["image-bytes"], "recipe.jpg"))
+
+    await expectJsonResponse(response, { error: "Email verification required" }, 403)
+    expect(mockUpload).not.toHaveBeenCalled()
+  })
+
   it("returns 400 when the file field is missing", async () => {
     const response = await postUpload(null)
 

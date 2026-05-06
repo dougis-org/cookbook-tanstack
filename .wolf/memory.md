@@ -472,10 +472,163 @@
 | 08:53 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tasks.md | — | ~1375 |
 | 08:54 | Created openspec/changes/e2e-boot-loader-lsheet-fast-path/tests.md | — | ~772 |
 | 08:54 | Session end: 5 writes across 5 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~16924 tok |
-| 13:46 | Session end: 5 writes across 5 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~16924 tok |
-| 14:13 | Created openspec/changes/install-stripe-sdk/proposal.md | — | ~1336 |
-| 14:13 | Created openspec/changes/install-stripe-sdk/design.md | — | ~2517 |
-| 14:13 | Created openspec/changes/install-stripe-sdk/specs/stripe-sdk-setup.md | — | ~1820 |
-| 14:14 | Created openspec/changes/install-stripe-sdk/tasks.md | — | ~1759 |
-| 14:14 | Created openspec/changes/install-stripe-sdk/tests.md | — | ~2376 |
-| 14:14 | Session end: 10 writes across 6 files (proposal.md, design.md, cached-lsheet.md, tasks.md, tests.md) | 5 reads | ~27433 tok |
+| 10:22 | Edited src/lib/__tests__/auth-guard.test.ts | added error handling | ~919 |
+| 10:22 | Edited src/lib/__tests__/auth-guard.test.ts | expanded (+6 lines) | ~38 |
+| 10:23 | Edited src/lib/auth-guard.ts | added 2 condition(s) | ~469 |
+| 10:23 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | added optional chaining | ~435 |
+| 10:23 | Edited src/routes/auth/verify-email.tsx | CSS: from, undefined | ~290 |
+| 10:23 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: FR-4, FR-5 | ~305 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | 3→4 lines | ~20 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | inline fix | ~23 |
+| 10:23 | Edited src/components/auth/VerifyEmailPage.tsx | added nullish coalescing | ~80 |
+| 10:24 | Edited src/routes/recipes/new.tsx | requireAuth() → requireVerifiedAuth() | ~113 |
+| 10:24 | Edited src/routes/recipes/$recipeId_.edit.tsx | requireAuth() → requireVerifiedAuth() | ~144 |
+| 10:24 | Edited src/routes/import/index.tsx | requireAuth() → requireVerifiedAuth() | ~232 |
+| 10:24 | Edited src/routes/cookbooks/index.tsx | added 1 import(s) | ~240 |
+| 10:24 | Edited src/routes/change-tier.tsx | CSS: beforeLoad | ~97 |
+| 10:24 | Edited src/routes/__tests__/-import.test.tsx | added 1 import(s) | ~33 |
+| 10:25 | Edited src/routes/auth/verify-email.tsx | modified validateVerifyEmailSearch() | ~235 |
+| 10:25 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | 42→42 lines | ~331 |
+| 12:39 | Edited src/routes/auth/verify-email.tsx | CSS: javascript | ~199 |
+| 12:39 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | expanded (+16 lines) | ~204 |
+| 14:19 | Edited src/routes/cookbooks/index.tsx | 18→16 lines | ~214 |
+
+## Session: 2026-05-03 14:20
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:34 | Edited src/routes/auth/verify-email.tsx | modified validateVerifyEmailSearch() | ~195 |
+| 14:35 | Edited src/server/trpc/init.ts | added 1 condition(s) | ~223 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 3→3 lines | ~45 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 2→2 lines | ~21 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 7→7 lines | ~45 |
+| 14:35 | Edited src/server/trpc/routers/recipes.ts | 2→2 lines | ~18 |
+| 14:35 | Edited src/server/trpc/routers/cookbooks.ts | 4→4 lines | ~55 |
+| 14:35 | Edited src/server/trpc/routers/cookbooks.ts | 7→7 lines | ~70 |
+| 14:36 | Edited src/server/trpc/routers/__tests__/test-helpers.ts | modified makeAuthCaller() | ~141 |
+| 19:11 | Edited src/server/trpc/init.ts | modified if() | ~134 |
+| 21:16 | Session end: 10 writes across 5 files (verify-email.tsx, init.ts, recipes.ts, cookbooks.ts, test-helpers.ts) | 10 reads | ~17334 tok |
+| 21:23 | Edited src/e2e/helpers/auth.ts | added 1 import(s) | ~49 |
+| 21:23 | Edited src/e2e/helpers/auth.ts | added 3 condition(s) | ~756 |
+
+## Session: 2026-05-04 21:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:31 | Edited src/e2e/helpers/auth.ts | added nullish coalescing | ~234 |
+| 21:33 | Session end: 1 writes across 1 files (auth.ts) | 3 reads | ~1976 tok |
+| 21:33 | Session end: 1 writes across 1 files (auth.ts) | 3 reads | ~1976 tok |
+| 21:34 | Created src/server/trpc/routers/test.ts | — | ~367 |
+| 21:34 | Edited src/server/trpc/router.ts | added 1 import(s) | ~264 |
+| 21:35 | Edited src/e2e/helpers/auth.ts | modified verifyUserEmail() | ~248 |
+| 21:35 | Edited src/e2e/helpers/auth.ts | 4→4 lines | ~47 |
+| 21:41 | Session end: 5 writes across 3 files (auth.ts, test.ts, router.ts) | 5 reads | ~3127 tok |
+
+## Session: 2026-05-04 06:12
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 06:18 | Edited src/e2e/helpers/auth.ts | modified verifyUserEmail() | ~174 |
+| 06:18 | Edited src/e2e/helpers/auth.ts | 2→2 lines | ~32 |
+| 06:18 | Edited src/server/trpc/__tests__/init.test.ts | modified makeVerifiedCtx() | ~449 |
+| 06:19 | Edited src/server/trpc/routers/__tests__/cookbooks.test.ts | expanded (+10 lines) | ~188 |
+| 06:19 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | expanded (+10 lines) | ~196 |
+| 06:19 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | expanded (+10 lines) | ~210 |
+| 06:19 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | expanded (+10 lines) | ~141 |
+| 06:20 | Edited src/server/trpc/__tests__/init.test.ts | 7→7 lines | ~104 |
+| 06:20 | Edited src/server/trpc/routers/__tests__/cookbooks.test.ts | 3→3 lines | ~36 |
+| 06:20 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | 3→3 lines | ~36 |
+| 06:20 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | 5→5 lines | ~34 |
+| 06:20 | Edited src/server/trpc/routers/__tests__/recipes.test.ts | 2→2 lines | ~36 |
+| 06:22 | Created src/server/trpc/routers/__tests__/test-router.test.ts | — | ~320 |
+| 06:23 | Session end: 13 writes across 5 files (auth.ts, init.test.ts, cookbooks.test.ts, recipes.test.ts, test-router.test.ts) | 16 reads | ~24612 tok |
+| 06:25 | Edited src/server/trpc/router.ts | 16→14 lines | ~102 |
+| 06:26 | Session end: 14 writes across 6 files (auth.ts, init.test.ts, cookbooks.test.ts, recipes.test.ts, test-router.test.ts) | 16 reads | ~24714 tok |
+| 13:04 | Edited src/lib/auth-guard.ts | modified throwLoginRedirect() | ~195 |
+| 13:04 | Edited src/lib/auth-guard.ts | modified requireVerifiedAuth() | ~112 |
+| 13:04 | Edited src/server/trpc/init.ts | added 1 condition(s) | ~240 |
+| 13:05 | Edited src/routes/__tests__/-change-tier.test.tsx | added error handling | ~480 |
+| 13:05 | Edited src/routes/__tests__/-import.test.tsx | 4→4 lines | ~35 |
+| 13:05 | Edited src/routes/__tests__/-import.test.tsx | expanded (+8 lines) | ~104 |
+| 13:55 | Created src/routes/recipes/__tests__/-new.test.tsx | — | ~523 |
+| 13:55 | Created src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx | — | ~542 |
+| 13:55 | Edited src/server/trpc/__tests__/error-formatter.test.ts | expanded (+6 lines) | ~188 |
+| 14:24 | Created src/routes/recipes/__tests__/-new.test.tsx | — | ~567 |
+| 14:24 | Created src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx | — | ~660 |
+| 14:25 | Session end: 25 writes across 13 files (auth.ts, init.test.ts, cookbooks.test.ts, recipes.test.ts, test-router.test.ts) | 29 reads | ~34267 tok |
+| 14:29 | Edited openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/spec.md | 19→19 lines | ~296 |
+| 14:30 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: name | ~266 |
+| 14:30 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | removed 18 lines | ~29 |
+| 14:31 | Created src/routes/auth/__tests__/-verify-email-route-wiring.test.tsx | — | ~330 |
+
+## Session: 2026-05-04 14:44
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-05 21:31
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:35 | Edited src/routes/api/upload.tsx | added 1 condition(s) | ~82 |
+| 21:35 | Edited src/routes/api/upload/__tests__/-upload.test.ts | expanded (+8 lines) | ~202 |
+| 21:35 | Edited openspec/changes/email-verification-hard-gate/proposal.md | 2→2 lines | ~84 |
+| 21:35 | Edited openspec/changes/email-verification-hard-gate/design.md | 6→6 lines | ~310 |
+| 21:40 | Edited src/test-helpers/auth.ts | added optional chaining | ~137 |
+| 21:41 | Edited src/routes/__tests__/-recipes.test.tsx | 3→2 lines | ~30 |
+| 21:41 | Edited src/routes/__tests__/-recipes.test.tsx | inline fix | ~15 |
+| 21:41 | Edited src/routes/__tests__/-recipes.test.tsx | removed 9 lines | ~15 |
+| 21:41 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | expanded (+13 lines) | ~1145 |
+| 21:41 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | 8→9 lines | ~53 |
+| 21:43 | Session end: 10 writes across 7 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 8 reads | ~6148 tok |
+| 05:58 | Edited src/components/auth/VerifyEmailPage.tsx | modified handleResend() | ~130 |
+| 05:58 | Edited src/components/auth/VerifyEmailPage.tsx | 3→3 lines | ~31 |
+| 05:59 | Edited src/routes/api/upload.tsx | CSS: query, disableCookieCache | ~42 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/proposal.md | 1→4 lines | ~95 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/proposal.md | inline fix | ~16 |
+| 05:59 | Edited openspec/changes/email-verification-hard-gate/design.md | inline fix | ~15 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | 3→4 lines | ~103 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | 1→2 lines | ~75 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | expanded (+43 lines) | ~378 |
+| 05:59 | Edited src/routes/__tests__/-recipes.test.tsx | inline fix | ~18 |
+| 06:00 | Edited openspec/changes/email-verification-hard-gate/tests.md | 2→2 lines | ~68 |
+| 06:48 | Session end: 21 writes across 9 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 9 reads | ~11836 tok |
+| 06:52 | Created src/routes/__tests__/-recipes.test.tsx | — | ~1549 |
+| 06:53 | Created src/routes/__tests__/-import.test.tsx | — | ~1043 |
+| 06:53 | Edited src/routes/__tests__/-import.test.tsx | 5→1 lines | ~15 |
+| 06:54 | Session end: 24 writes across 10 files (upload.tsx, -upload.test.ts, proposal.md, design.md, auth.ts) | 10 reads | ~15275 tok |
+
+## Session: 2026-05-05 10:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:28 | Edited src/routes/__tests__/-change-tier.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/recipes/__tests__/-new.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/recipes/__tests__/-$recipeId_.edit.test.tsx | inline fix | ~12 |
+| 13:28 | Edited src/routes/cookbooks/__tests__/index.test.tsx | 3→2 lines | ~30 |
+| 13:29 | Edited src/components/auth/VerifyEmailPage.tsx | added optional chaining | ~211 |
+| 13:29 | Edited src/routes/recipes/index.tsx | inline fix | ~26 |
+| 13:29 | Edited src/routes/recipes/index.tsx | CSS: select | ~53 |
+| 13:29 | Edited src/routes/recipes/index.tsx | inline fix | ~9 |
+| 13:29 | Edited src/routes/auth/__tests__/-verify-email.test.tsx | CSS: callbackURL, error, message | ~373 |
+| 13:46 | Session end: 9 writes across 7 files (-change-tier.test.tsx, -new.test.tsx, -$recipeId_.edit.test.tsx, index.test.tsx, VerifyEmailPage.tsx) | 10 reads | ~13002 tok |
+| 14:18 | Edited src/components/auth/VerifyEmailPage.tsx | CSS: emailVerified | ~66 |
+| 14:18 | Edited src/components/auth/VerifyEmailPage.tsx | added error handling | ~252 |
+| 14:18 | Edited src/routes/recipes/index.tsx | CSS: data, enabled, emailVerified | ~121 |
+| 14:19 | Edited src/routes/cookbooks/index.tsx | CSS: data, enabled, emailVerified | ~124 |
+| 14:19 | Edited src/server/trpc/routers/recipes.ts | 4→4 lines | ~40 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~8 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | 2→2 lines | ~19 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~9 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~10 |
+| 14:19 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~11 |
+| 14:19 | Edited src/routes/__tests__/-recipes.test.tsx | CSS: users, me | ~88 |
+| 14:19 | Edited src/routes/cookbooks/__tests__/index.test.tsx | CSS: users, me | ~52 |
+| 14:19 | Edited src/components/auth/VerifyEmailPage.tsx | 9→9 lines | ~108 |
+| 14:20 | Session end: 26 writes across 10 files (-change-tier.test.tsx, -new.test.tsx, -$recipeId_.edit.test.tsx, index.test.tsx, VerifyEmailPage.tsx) | 12 reads | ~25906 tok |
+| 15:24 | Edited src/components/cookbooks/__tests__/CookbooksPage.test.tsx | CSS: users, me | ~104 |
+| 15:25 | Session end: 27 writes across 11 files (-change-tier.test.tsx, -new.test.tsx, -$recipeId_.edit.test.tsx, index.test.tsx, VerifyEmailPage.tsx) | 13 reads | ~26010 tok |

@@ -76,13 +76,20 @@ export function expectVerificationEmailRequest() {
 }
 
 export function holdVerificationEmailRequest() {
-  let resolveRequest: (value: unknown) => void = () => {}
+  let storedOnSuccess: (() => void) | undefined
+  let resolvePromise: (value: unknown) => void = () => {}
 
   mockSendVerificationEmail.mockImplementation(
-    () => new Promise((resolve) => {
-      resolveRequest = resolve
-    }),
+    (_data: unknown, callbacks?: { onSuccess?: () => void }) => {
+      storedOnSuccess = callbacks?.onSuccess
+      return new Promise((resolve) => {
+        resolvePromise = resolve
+      })
+    },
   )
 
-  return () => resolveRequest({})
+  return () => {
+    storedOnSuccess?.()
+    resolvePromise({})
+  }
 }

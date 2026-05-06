@@ -52,6 +52,7 @@ vi.mock('@/lib/trpc', () => {
       meals: { list: { queryOptions: empty } },
       courses: { list: { queryOptions: empty } },
       preparations: { list: { queryOptions: empty } },
+      users: { me: { queryOptions: empty } },
     },
   }
 })
@@ -61,11 +62,10 @@ import { RecipesPage } from '@/routes/recipes/index'
 const HOME_COOK_ENTITLEMENTS = { tier: 'home-cook', canCreatePrivate: false, canImport: false, recipeLimit: 10, cookbookLimit: 1 }
 const SOUS_CHEF_ENTITLEMENTS = { tier: 'sous-chef', canCreatePrivate: true, canImport: true, recipeLimit: 500, cookbookLimit: 25 }
 
-function setLoggedIn(opts: { tier?: string; isLoggedIn?: boolean } = {}) {
-  const tier = opts.tier ?? 'home-cook'
+function setLoggedIn(opts: { tier?: string; emailVerified?: boolean; isLoggedIn?: boolean } = {}) {
   const isLoggedIn = opts.isLoggedIn ?? true
   mockUseAuth.mockReturnValue({
-    session: isLoggedIn ? { user: { id: 'u1', tier } } : null,
+    session: isLoggedIn ? { user: { id: 'u1', tier: opts.tier ?? 'home-cook', emailVerified: opts.emailVerified } } : null,
     isPending: false,
     isLoggedIn,
     userId: isLoggedIn ? 'u1' : null,
@@ -138,5 +138,28 @@ describe('RecipesPage — tier affordances', () => {
     setLoggedIn({ tier: 'sous-chef' })
     render(<RecipesPage />)
     expect(screen.getByRole('link', { name: /import recipe/i })).toBeInTheDocument()
+  })
+})
+
+describe('RecipesPage — verification gate', () => {
+  it('shows Verify Email CTA when unverified', () => {
+    setLoggedIn({ emailVerified: false })
+    setRecipeCount(0)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.getByRole('link', { name: /verify email to create/i })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /create your first recipe/i })).not.toBeInTheDocument()
+  })
+
+  it('shows Create Recipe CTA when verified', () => {
+    setLoggedIn({ emailVerified: true })
+    setRecipeCount(0)
+    mockUseTierEntitlements.mockReturnValue(HOME_COOK_ENTITLEMENTS)
+
+    render(<RecipesPage />)
+
+    expect(screen.getByRole('link', { name: /create your first recipe/i })).toBeInTheDocument()
   })
 })

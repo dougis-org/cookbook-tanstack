@@ -1,6 +1,17 @@
-import { describe, it, expect } from 'vitest'
-import { redirect } from '@tanstack/react-router'
-import { requireAuth, requireTier, requireAdmin, REDIRECT_REASON_MESSAGES } from '@/lib/auth-guard'
+import { describe, it, expect, vi } from 'vitest'
+import {
+  requireAuth,
+  requireTier,
+  requireAdmin,
+  requireVerifiedAuth,
+  REDIRECT_REASON_MESSAGES,
+} from '@/lib/auth-guard'
+import { expectRedirect, testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
+
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock()
+})
 
 const mockSession = {
   user: { id: 'user-1', email: 'test@example.com', name: 'Test User' },
@@ -17,62 +28,17 @@ function makeSession(tier: string | undefined, isAdmin: boolean) {
 describe('requireAuth()', () => {
   it('throws a redirect when session is null', () => {
     const guard = requireAuth()
-    expect(() =>
-      guard({ context: { session: null }, location: { href: '/recipes/new' } }),
-    ).toThrow()
-  })
-
-  it('thrown redirect targets /auth/login', () => {
-    const guard = requireAuth()
-    let thrown: unknown
-    try {
-      guard({ context: { session: null }, location: { href: '/recipes/new' } })
-    } catch (e) {
-      thrown = e
-    }
-    // TanStack Router redirect objects store navigate options in `.options`
-    expect((thrown as ReturnType<typeof redirect>).options.to).toBe('/auth/login')
-  })
-
-  it('thrown redirect search contains reason: auth-required', () => {
-    const guard = requireAuth()
-    let thrown: unknown
-    try {
-      guard({ context: { session: null }, location: { href: '/recipes/new' } })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
+    expectRedirect(guard, { session: null } as never, { href: '/recipes/new' }, '/auth/login', {
       reason: 'auth-required',
-    })
-  })
-
-  it('thrown redirect search contains from equal to the location href', () => {
-    const guard = requireAuth()
-    let thrown: unknown
-    try {
-      guard({ context: { session: null }, location: { href: '/recipes/new' } })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
       from: '/recipes/new',
     })
   })
 
   it('from param is a relative path (starts with /) including query string', () => {
     const guard = requireAuth()
-    let thrown: unknown
-    try {
-      guard({ context: { session: null }, location: { href: '/recipes?search=pasta' } })
-    } catch (e) {
-      thrown = e
-    }
-    const search = (thrown as ReturnType<typeof redirect>).options.search as unknown as Record<string, string>
-    const from = search?.from
-    expect(from).toMatch(/^\//)
-    expect(from).not.toContain('http')
-    expect(from).toBe('/recipes?search=pasta')
+    expectRedirect(guard, { session: null } as never, { href: '/recipes?search=pasta' }, '/auth/login', {
+      from: '/recipes?search=pasta',
+    })
   })
 
   it('returns void (no throw) when session is non-null', () => {
@@ -109,32 +75,13 @@ describe('requireTier()', () => {
 
   it('throws redirect to /account when tier is insufficient', () => {
     const guard = requireTier('sous-chef')
-    let thrown: unknown
-    try {
-      guard({
-        context: { session: makeSession('prep-cook', false) as never },
-        location: { href: '/premium' },
-      })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.to).toBe('/account')
-  })
-
-  it('redirect contains reason: tier-limit-reached', () => {
-    const guard = requireTier('sous-chef')
-    let thrown: unknown
-    try {
-      guard({
-        context: { session: makeSession('prep-cook', false) as never },
-        location: { href: '/premium' },
-      })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
-      reason: 'tier-limit-reached',
-    })
+    expectRedirect(
+      guard,
+      { session: makeSession('prep-cook', false) as never },
+      { href: '/premium' },
+      '/account',
+      { reason: 'tier-limit-reached' },
+    )
   })
 
   it('does not redirect when user is admin (admin bypass)', () => {
@@ -169,18 +116,11 @@ describe('requireTier()', () => {
 
   it('does not throw tier-limit-reached when session is null (auth guard handles unauthenticated)', () => {
     const guard = requireTier('prep-cook')
-    // When there's no session, requireTier should not throw tier-limit-reached
-    // (requireAuth handles unauthenticated state)
-    let thrown: unknown
     try {
-      guard({ context: { session: null }, location: { href: '/premium' } })
-    } catch (e) {
-      thrown = e
-    }
-    if (thrown) {
-      const redirected = thrown as ReturnType<typeof redirect>
-      const search = redirected.options.search as unknown as Record<string, string>
-      expect(search?.reason).not.toBe('tier-limit-reached')
+      guard({ context: { session: null } as never, location: { href: '/premium' } })
+    } catch (e: unknown) {
+      const redirected = e as { options: { search: { reason?: string } } }
+      expect(redirected.options?.search?.reason).not.toBe('tier-limit-reached')
     }
   })
 })
@@ -198,32 +138,29 @@ describe('requireAdmin()', () => {
 
   it('throws redirect to /account for non-admin user', () => {
     const guard = requireAdmin()
-    let thrown: unknown
-    try {
-      guard({
-        context: { session: makeSession('executive-chef', false) as never },
-        location: { href: '/admin' },
-      })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.to).toBe('/account')
+    expectRedirect(
+      guard,
+      { session: makeSession('executive-chef', false) as never },
+      { href: '/admin' },
+      '/account',
+      { reason: 'tier-limit-reached' },
+    )
+  })
+})
+
+describe('requireVerifiedAuth()', () => {
+  it('enforces verified authentication', () => {
+    testVerifiedAuthGuard(requireVerifiedAuth(), '/recipes/new')
   })
 
-  it('redirect for non-admin contains reason: tier-limit-reached', () => {
-    const guard = requireAdmin()
-    let thrown: unknown
-    try {
+  it('NFR-2: does not redirect when emailVerified is undefined (legacy session)', () => {
+    const guard = requireVerifiedAuth()
+    expect(() =>
       guard({
-        context: { session: makeSession('executive-chef', false) as never },
-        location: { href: '/admin' },
-      })
-    } catch (e) {
-      thrown = e
-    }
-    expect((thrown as ReturnType<typeof redirect>).options.search).toMatchObject({
-      reason: 'tier-limit-reached',
-    })
+        context: { session: { user: { id: 'u1', emailVerified: undefined } } } as never,
+        location: { href: '/recipes/new' },
+      }),
+    ).not.toThrow()
   })
 })
 

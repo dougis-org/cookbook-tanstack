@@ -7,6 +7,7 @@ import { hasAtLeastTier } from "@/types/user"
 export type AppErrorCause =
   | { type: 'tier-wall'; reason: 'count-limit' | 'private-content' | 'import' }
   | { type: 'ownership' }
+  | { type: 'email-not-verified' }
 
 const TIER_WALL_REASONS = new Set(['count-limit', 'private-content', 'import'])
 
@@ -20,6 +21,9 @@ export function extractAppError(cause: unknown): AppErrorCause | null {
   }
   if (c.type === 'ownership') {
     return { type: 'ownership' }
+  }
+  if (c.type === 'email-not-verified') {
+    return { type: 'email-not-verified' }
   }
   return null
 }
@@ -60,6 +64,21 @@ export function tierProcedure(tier: UserTier) {
     return next({ ctx })
   })
 }
+
+/**
+ * Procedure that requires the caller to be authenticated and have a verified email.
+ * Treats undefined emailVerified as verified (legacy compatibility).
+ */
+export const verifiedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  if (ctx.user.emailVerified === false) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Email verification required",
+      cause: { type: 'email-not-verified' },
+    })
+  }
+  return next({ ctx })
+})
 
 /**
  * Procedure that requires the caller to be an admin.

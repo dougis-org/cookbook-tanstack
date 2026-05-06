@@ -61,6 +61,12 @@ describe("extractAppError", () => {
     expect(extractAppError(cause)).toEqual({ type: "ownership" })
   })
 
+  it("promotes email-not-verified type to AppErrorCause", async () => {
+    const { extractAppError } = await import("@/server/trpc/init")
+    const cause = { type: "email-not-verified" as const }
+    expect(extractAppError(cause)).toEqual({ type: "email-not-verified" })
+  })
+
   it("does not throw on null cause", async () => {
     const { extractAppError } = await import("@/server/trpc/init")
     expect(() => extractAppError(null)).not.toThrow()

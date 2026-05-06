@@ -31,10 +31,15 @@ export const Route = createFileRoute("/api/upload")({
       POST: async ({ request }: { request: Request }) => {
         const session = await auth.api.getSession({
           headers: request.headers,
+          query: { disableCookieCache: true },
         })
 
         if (!session) {
           return jsonResponse({ error: "Unauthorized" }, 401)
+        }
+
+        if (session.user.emailVerified === false) {
+          return jsonResponse({ error: "Email verification required" }, 403)
         }
 
         const formData = await request.formData()

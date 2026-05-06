@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
-import { publicProcedure, protectedProcedure, router } from "../init";
+import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
 import { Cookbook, Recipe } from "@/db/models";
 // Side-effect imports register models needed for Recipe.populate() chains
@@ -290,7 +290,7 @@ export const cookbooksRouter = router({
       return { ...cookbookCoreFields(cb), recipes, chapters };
     }),
 
-  create: protectedProcedure
+  create: verifiedProcedure
     .input(
       z.object({
         name: z.string().min(1).max(255),
@@ -321,7 +321,7 @@ export const cookbooksRouter = router({
       };
     }),
 
-  update: protectedProcedure
+  update: verifiedProcedure
     .input(
       z
         .object({
@@ -363,7 +363,7 @@ export const cookbooksRouter = router({
       return updated ? { ...updated, id: updated._id.toString() } : null;
     }),
 
-  delete: protectedProcedure
+  delete: verifiedProcedure
     .input(z.object({ id: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.id, ctx.user.id);
@@ -371,7 +371,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  addRecipe: protectedProcedure
+  addRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))
     .mutation(async ({ ctx, input }) => {
       const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
@@ -417,7 +417,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  removeRecipe: protectedProcedure
+  removeRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.cookbookId, ctx.user.id);
@@ -427,7 +427,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  reorderRecipes: protectedProcedure
+  reorderRecipes: verifiedProcedure
     .input(
       z
         .object({
@@ -519,7 +519,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  createChapter: protectedProcedure
+  createChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId }))
     .mutation(async ({ ctx, input }) => {
       const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
@@ -550,7 +550,7 @@ export const cookbooksRouter = router({
       return { success: true, chapterId: newChapterId.toString() };
     }),
 
-  renameChapter: protectedProcedure
+  renameChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId, name: z.string().min(1).max(255) }))
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.cookbookId, ctx.user.id);
@@ -567,7 +567,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  deleteChapter: protectedProcedure
+  deleteChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId }))
     .mutation(async ({ ctx, input }) => {
       const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
@@ -606,7 +606,7 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
-  reorderChapters: protectedProcedure
+  reorderChapters: verifiedProcedure
     .input(
       z.object({
         cookbookId: objectId,

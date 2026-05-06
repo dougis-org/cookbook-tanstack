@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 import { gotoAndWaitForHydration } from "./app";
+import { withMongoDb } from "./db";
 import { getUniqueSuffix } from "./utils";
 
 interface RegisterOptions {
@@ -9,10 +10,22 @@ interface RegisterOptions {
   password?: string;
 }
 
+async function verifyUserEmail(email: string) {
+  await withMongoDb(async (db) => {
+    const result = await db
+      .collection("user")
+      .updateOne({ email }, { $set: { emailVerified: true } });
+    if (result.matchedCount === 0) {
+      throw new Error(`User not found for email verification: ${email}`);
+    }
+  });
+}
+
 /**
  * Register a new unique test user via the auth API and set the session cookie.
  * Uses page.request (which shares the browser cookie jar) to avoid React
  * hydration timing issues with the UI form.
+ * Automatically verifies the user's email so tests can access email-gated routes.
  * Returns the credentials used so tests can re-login if needed.
  */
 export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
@@ -52,6 +65,9 @@ export async function registerAndLogin(page: Page, opts: RegisterOptions = {}) {
       `Post-registration login failed: ${signInResponse.status()} ${body}`,
     );
   }
+
+  // Verify the email in the database so the user can access email-gated routes
+  await verifyUserEmail(email);
 
   await gotoAndWaitForHydration(page, "/");
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { requireAuth } from '@/lib/auth-guard'
+import { requireVerifiedAuth } from '@/lib/auth-guard'
 import { useMutation } from '@tanstack/react-query'
 import PageLayout from '@/components/layout/PageLayout'
 import ImportDropzone from '@/components/recipes/ImportDropzone'
@@ -14,7 +14,7 @@ import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 
 export const Route = createFileRoute('/import/')({
   component: ImportPage,
-  beforeLoad: requireAuth(),
+  beforeLoad: requireVerifiedAuth(),
 })
 
 function ImportPage() {

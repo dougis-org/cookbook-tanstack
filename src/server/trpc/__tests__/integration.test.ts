@@ -18,6 +18,7 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 const VALID_OBJECT_ID = "000000000000000000000000"
 const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never }
 const anonCtx = { session: null, user: null }
+const unverifiedCtx = { session: { id: "s1" } as never, user: { id: "u1", emailVerified: false } as never }
 
 // Unique prefix per test run for slug-based uniqueness
 const RUN_ID = Date.now()
@@ -70,6 +71,22 @@ describe("tRPC integration", () => {
         const [routerName, procName] = path.split(".") as [keyof typeof caller, string]
         const proc = (caller[routerName] as Record<string, Function>)[procName]
         await expect(proc(input)).rejects.toThrow("UNAUTHORIZED")
+      })
+    }
+  })
+
+  describe("email verification enforcement", () => {
+    const verifiedProcedures = [
+      { path: "recipes.delete", input: { id: VALID_OBJECT_ID } },
+      { path: "cookbooks.update", input: { id: VALID_OBJECT_ID, name: "Test" } },
+    ]
+
+    for (const { path, input } of verifiedProcedures) {
+      it(`rejects unverified call to ${path}`, async () => {
+        const caller = appRouter.createCaller({ ...unverifiedCtx })
+        const [routerName, procName] = path.split(".") as [keyof typeof caller, string]
+        const proc = (caller[routerName] as Record<string, Function>)[procName]
+        await expect(proc(input)).rejects.toThrow("Email verification required")
       })
     }
   })

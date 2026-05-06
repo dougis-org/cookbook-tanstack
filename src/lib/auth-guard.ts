@@ -11,6 +11,50 @@ export const REDIRECT_REASON_MESSAGES: Record<RedirectReason, string> = {
 }
 
 /**
+ * Throws a redirect to the login page with a reason and the current location.
+ * Shared by all guards that require authentication.
+ */
+export function throwLoginRedirect(href: string): never {
+  throw redirect({
+    to: '/auth/login',
+    search: { reason: 'auth-required' as RedirectReason, from: href },
+  })
+}
+
+function throwAccountRedirect(reason: RedirectReason): never {
+  throw redirect({
+    to: '/account',
+    search: { reason },
+  })
+}
+
+type GuardArgs = { context: RouterContext; location: { href: string } }
+type GuardFn = (args: GuardArgs) => void
+type SessionGuardFn = (session: NonNullable<RouterContext['session']>, location: { href: string }) => void
+
+/**
+ * Higher-order guard that only executes if a session exists.
+ * Does NOT redirect unauthenticated users (use withAuthenticatedSession for that).
+ */
+function withSession(fn: SessionGuardFn): GuardFn {
+  return (args) => {
+    if (!args.context.session) return
+    fn(args.context.session, args.location)
+  }
+}
+
+/**
+ * Higher-order guard that requires an active session.
+ * Redirects unauthenticated users to login.
+ */
+function withAuthenticatedSession(fn: SessionGuardFn): GuardFn {
+  return (args) => {
+    if (!args.context.session) throwLoginRedirect(args.location.href)
+    fn(args.context.session, args.location)
+  }
+}
+
+/**
  * Route guard factory. Usage: `beforeLoad: requireAuth()`
  *
  * Returns a beforeLoad-compatible function that reads `context.session` and
@@ -18,23 +62,7 @@ export const REDIRECT_REASON_MESSAGES: Record<RedirectReason, string> = {
  * search params so the login page can show context and return the user.
  */
 export function requireAuth() {
-  return ({
-    context,
-    location,
-  }: {
-    context: RouterContext
-    location: { href: string }
-  }) => {
-    if (!context.session) {
-      throw redirect({
-        to: '/auth/login',
-        search: {
-          reason: 'auth-required' as RedirectReason,
-          from: location.href,
-        },
-      })
-    }
-  }
+  return withAuthenticatedSession(() => {})
 }
 
 /**
@@ -46,16 +74,11 @@ export function requireAuth() {
  * (unauthenticated state is handled by `requireAuth`).
  */
 export function requireTier(tier: UserTier) {
-  return ({ context }: { context: RouterContext; location: { href: string } }) => {
-    if (!context.session) return
-
-    if (!hasAtLeastTier(context.session.user, tier)) {
-      throw redirect({
-        to: '/account',
-        search: { reason: 'tier-limit-reached' as RedirectReason },
-      })
+  return withSession((session) => {
+    if (!hasAtLeastTier(session.user, tier)) {
+      throwAccountRedirect('tier-limit-reached')
     }
-  }
+  })
 }
 
 /**
@@ -63,19 +86,31 @@ export function requireTier(tier: UserTier) {
  *
  * Redirects non-admin users to `/account` with `reason: 'tier-limit-reached'`.
  * Has no effect when session is null (unauthenticated state is handled by `requireAuth`).
- *
- * @future No routes use this guard yet. It is implemented with real enforcement
- * logic so it is safe to wire up when an admin route is added.
  */
 export function requireAdmin() {
-  return ({ context }: { context: RouterContext; location: { href: string } }) => {
-    if (!context.session) return
+  return withSession((session) => {
+    if (!session.user.isAdmin) {
+      throwAccountRedirect('tier-limit-reached')
+    }
+  })
+}
 
-    if (!context.session.user.isAdmin) {
+/**
+ * Route guard factory. Usage: `beforeLoad: requireVerifiedAuth()`
+ *
+ * Combines auth + email verification checks. Unauthenticated users are redirected
+ * to `/auth/login`. Authenticated-but-unverified users are redirected to
+ * `/auth/verify-email?from=<path>`. Verified users pass through.
+ *
+ * Treats `emailVerified: undefined` as verified (legacy session compatibility).
+ */
+export function requireVerifiedAuth() {
+  return withAuthenticatedSession((session, location) => {
+    if (session.user.emailVerified === false) {
       throw redirect({
-        to: '/account',
-        search: { reason: 'tier-limit-reached' as RedirectReason },
+        to: '/auth/verify-email',
+        search: { from: location.href },
       })
     }
-  }
+  })
 }

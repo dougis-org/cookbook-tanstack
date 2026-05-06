@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T21:14:38.725Z
-> Files: 597 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T22:24:39.253Z
+> Files: 627 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -782,6 +782,16 @@
 
 - `cached-lsheet.md` — ADDED Requirements (~728 tok)
 
+## openspec/changes/email-verification-hard-gate/
+
+- `design.md` — Context (~2640 tok)
+- `proposal.md` — GitHub Issues (~1399 tok)
+- `tests.md` — Tests (~1103 tok)
+
+## openspec/changes/email-verification-hard-gate/specs/auth-guard-verified/
+
+- `spec.md` — ADDED Requirements (~1070 tok)
+
 ## openspec/changes/enforce-tier-content-limits/
 
 - `tasks.md` — Tasks (~2134 tok)
@@ -820,17 +830,6 @@
 
 - `tasks.md` — Tasks (~2018 tok)
 
-## openspec/changes/install-stripe-sdk/
-
-- `design.md` — Context (~2360 tok)
-- `proposal.md` — GitHub Issues (~1252 tok)
-- `tasks.md` — Tasks (~1649 tok)
-- `tests.md` — Tests (~2227 tok)
-
-## openspec/changes/install-stripe-sdk/specs/
-
-- `stripe-sdk-setup.md` — Stripe SDK Setup Specification (~1706 tok)
-
 ## openspec/changes/revamp-home-page-experience/
 
 - `tasks.md` — Tasks (~1672 tok)
@@ -867,6 +866,14 @@
 
 - `Header.test.tsx` — mockNavigate (~4491 tok)
 
+## src/components/auth/
+
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1615 tok)
+
+## src/components/cookbooks/__tests__/
+
+- `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
+
 ## src/components/ui/
 
 - `TierWall.tsx` — MESSAGES (~827 tok)
@@ -875,14 +882,20 @@
 
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
 
+## src/e2e/helpers/
+
+- `auth.ts` — Register a new unique test user via the auth API and set the session cookie. (~931 tok)
+
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+- `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
+- `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
@@ -891,6 +904,7 @@
 
 - `__root.tsx` — minifyInlineCss (~3676 tok)
 - `account.tsx` — Route (~1481 tok)
+- `change-tier.tsx` — Route (~289 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
 - `pricing.tsx` — Route (~1018 tok)
@@ -899,30 +913,79 @@
 ## src/routes/__tests__/
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
+- `-change-tier.test.tsx` — beforeLoad (~203 tok)
+- `-import.test.tsx` — mockUseMutation (~1020 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
+- `-recipes.test.tsx` — mockUseAuth (~1562 tok)
+
+## src/routes/api/
+
+- `upload.tsx` — UPLOAD_FOLDER (~750 tok)
+
+## src/routes/api/upload/__tests__/
+
+- `-upload.test.ts` — mockInsertOne: getPostHandler, getDeleteHandler, createFormData + 4 more (~2204 tok)
+
+## src/routes/auth/
+
+- `verify-email.tsx` — validateVerifyEmailSearch (~366 tok)
+
+## src/routes/auth/__tests__/
+
+- `-verify-email-route-wiring.test.tsx` — Mock with from in search so we can verify it reaches VerifyEmailPage (~330 tok)
+- `-verify-email.test.tsx` — result (~1970 tok)
 
 ## src/routes/cookbooks/
 
-- `index.tsx` — Route — renders form (~1850 tok)
+- `index.tsx` — Route — renders form (~2256 tok)
+
+## src/routes/cookbooks/__tests__/
+
+- `index.test.tsx` — mockUseAuth (~749 tok)
 
 ## src/routes/import/
 
-- `index.tsx` — Route (~1168 tok)
+- `index.tsx` — Route (~1173 tok)
+
+## src/routes/recipes/
+
+- `$recipeId_.edit.tsx` — Route (~461 tok)
+- `index.tsx` — Badge showing an active filter with an X to remove it. (~4741 tok)
+- `new.tsx` — Route (~232 tok)
+
+## src/routes/recipes/__tests__/
+
+- `-$recipeId_.edit.test.tsx` — beforeLoad (~298 tok)
+- `-new.test.tsx` — beforeLoad (~207 tok)
 
 ## src/server/trpc/
 
+- `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~856 tok)
 - `router.ts` — Exports appRouter, AppRouter (~258 tok)
+
+## src/server/trpc/__tests__/
+
+- `error-formatter.test.ts` — Declares cause (~1414 tok)
+- `init.test.ts` — tRPC router: 14 procedures (~1726 tok)
 
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
+- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4597 tok)
+- `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 
 ## src/server/trpc/routers/__tests__/
 
+- `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~11032 tok)
+- `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
+- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
+- `test-router.test.ts` — Declares user (~320 tok)
 - `usage.test.ts` — Declares user (~853 tok)
 
 ## src/test-helpers/
 
+- `auth.ts` — Exports TEST_USER, unverifiedAuth, verifiedAuth, loggedOutAuth + 9 more (~672 tok)
 - `db-connect.ts` — Vitest setupFiles entry — runs in every worker process before any tests. (~588 tok)
 - `mocks.ts` — Creates a mock Drizzle database that supports all query chain patterns. (~899 tok)

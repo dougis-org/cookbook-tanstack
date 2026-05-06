@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
+import { requireVerifiedAuth } from "@/lib/auth-guard"
 import PageLayout from "@/components/layout/PageLayout"
 
-export const Route = createFileRoute("/change-tier")({ component: ChangeTierPage })
+export const Route = createFileRoute("/change-tier")({
+  component: ChangeTierPage,
+  beforeLoad: requireVerifiedAuth(),
+})
 
 export function ChangeTierPage() {
   return (
