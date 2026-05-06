@@ -55,6 +55,9 @@ export default function VerifyEmailPage({ error, from }: VerifyEmailPageProps) {
       if (resolvedError) {
         setResendStatus("error")
         setResendError(getVerificationEmailErrorMessage(resolvedError))
+      } else {
+        // Also covers the case where onSuccess callback was skipped
+        setResendStatus("success")
       }
     } catch (err) {
       setResendStatus("error")
