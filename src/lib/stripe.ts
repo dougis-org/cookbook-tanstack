@@ -21,3 +21,8 @@ export function getStripe(): Stripe {
 
   return _stripe;
 }
+
+/** @internal - Only for testing */
+export function resetStripe() {
+  _stripe = undefined;
+}

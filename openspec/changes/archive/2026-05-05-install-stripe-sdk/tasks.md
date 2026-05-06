@@ -86,23 +86,23 @@
 
 Verification requirements (all must pass before PR or pushing updates to a PR):
 
-- **Unit tests** — `npm run test` (all tests pass)
-- **Build** — `npm run build` (build succeeds with no errors)
-- **Type check** — `npx tsc --noEmit` (no TypeScript errors)
+- [x] **Unit tests** — `npm run test` (all tests pass)
+- [x] **Build** — `npm run build` (build succeeds with no errors)
+- [x] **Type check** — `npx tsc --noEmit` (no TypeScript errors)
 
 If **ANY** of the above fail, iterate and address the failure before proceeding.
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review before committing
-- [ ] Commit all changes: `git add -A && git commit -m "feat: install and configure Stripe SDK (#422)"`
-- [ ] Push to remote: `git push origin feat/install-stripe-sdk`
-- [ ] Open PR: `gh pr create --base main --head feat/install-stripe-sdk --title "Install and configure Stripe SDK (#422)" --body "$(cat openspec/changes/install-stripe-sdk/proposal.md)"`
-- [ ] Wait 180 seconds for CI to start
-- [ ] Enable auto-merge: `gh pr merge --auto --merge <PR-URL>`
-- [ ] **Monitor PR comments** — autonomously poll for new comments; address any, commit fixes, push, wait 180 seconds, repeat until resolved
-- [ ] **Monitor CI checks** — autonomously poll for check status; if any fail, diagnose, fix, commit, push, wait 180 seconds, repeat until all pass
-- [ ] **Poll for merge** — run `gh pr view <PR-URL> --json state` after each iteration; when `state` is `MERGED` proceed to Post-Merge
+- [x] Run the required pre-PR self-review before committing
+- [x] Commit all changes: `git add -A && git commit -m "feat: install and configure Stripe SDK (#422)"`
+- [x] Push to remote: `git push origin feat/install-stripe-sdk`
+- [x] Open PR: `gh pr create --base main --head feat/install-stripe-sdk --title "Install and configure Stripe SDK (#422)" --body "$(cat openspec/changes/install-stripe-sdk/proposal.md)"`
+- [x] Wait 180 seconds for CI to start
+- [x] Enable auto-merge: `gh pr merge --auto --merge <PR-URL>`
+- [x] **Monitor PR comments** — autonomously poll for new comments; address any, commit fixes, push, wait 180 seconds, repeat until resolved
+- [x] **Monitor CI checks** — autonomously poll for check status; if any fail, diagnose, fix, commit, push, wait 180 seconds, repeat until all pass
+- [x] **Poll for merge** — run `gh pr view <PR-URL> --json state` after each iteration; when `state` is `MERGED` proceed to Post-Merge
 
 Ownership metadata:
 
@@ -118,11 +118,11 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on main: `git log --oneline -5` (confirm latest commit is Stripe SDK merge)
-- [ ] Mark all remaining tasks as complete
-- [ ] Update repository documentation (README and `.env.example` are already updated)
-- [ ] Sync approved spec deltas into `openspec/specs/stripe-sdk.md` (if spec reusable across projects)
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on main: `git log --oneline -5` (confirm latest commit is Stripe SDK merge)
+- [x] Mark all remaining tasks as complete
+- [x] Update repository documentation (README and `.env.example` are already updated)
+- [x] Sync approved spec deltas into `openspec/specs/stripe-sdk.md` (if spec reusable across projects)
 - [ ] Archive the change:
   ```bash
   mkdir -p openspec/changes/archive/2026-05-05-install-stripe-sdk
