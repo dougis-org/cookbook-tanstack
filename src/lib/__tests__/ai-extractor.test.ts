@@ -66,12 +66,12 @@ describe('AIExtractor', () => {
     })
 
     const callArgs = mockCreate.mock.calls[0][0]
-    expect(callArgs.system).toEqual(
+    expect(callArgs.system).toEqual([
       expect.objectContaining({
         type: 'text',
         cache_control: { type: 'ephemeral' },
-      })
-    )
+      }),
+    ])
   })
 
   it('passes maxOutputTokens as max_tokens in request', async () => {

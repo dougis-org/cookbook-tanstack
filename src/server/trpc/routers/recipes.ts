@@ -448,7 +448,7 @@ export const recipesRouter = router({
       };
     }),
 
-  importFromUrl: protectedProcedure
+  importFromUrl: verifiedProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
       if (!canImport(ctx.user.tier)) {
@@ -466,10 +466,9 @@ export const recipesRouter = router({
         });
       }
 
+      urlImportRateLimiter.record(ctx.user.id);
       const extractor = createAnthropicExtractor();
       const parsedRecipe = await fetchAndNormalizeRecipe(input.url, extractor);
-
-      urlImportRateLimiter.record(ctx.user.id);
 
       await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
 

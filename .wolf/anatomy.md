@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T04:52:20.717Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T21:00:24.244Z
 > Files: 650 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -934,10 +934,10 @@
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
-- `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor (~374 tok)
+- `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor (~381 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~362 tok)
-- `recipe-url-import.ts` — Exports fetchAndNormalizeRecipe (~2160 tok)
+- `recipe-url-import.ts` — Exports fetchAndNormalizeRecipe (~2161 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
@@ -965,7 +965,7 @@
 
 - `-account.test.tsx` — mockUseAuth (~1643 tok)
 - `-change-tier.test.tsx` — beforeLoad (~203 tok)
-- `-import.test.tsx` — mockUseMutation (~1020 tok)
+- `-import.test.tsx` — mockUseMutation (~1065 tok)
 - `-pricing.test.tsx` — mockUseAuth (~1692 tok)
 - `-recipes.test.tsx` — mockUseAuth (~1562 tok)
 
@@ -996,7 +996,7 @@
 
 ## src/routes/import/
 
-- `index.tsx` — Route (~1802 tok)
+- `index.tsx` — Route (~1824 tok)
 
 ## src/routes/recipes/
 

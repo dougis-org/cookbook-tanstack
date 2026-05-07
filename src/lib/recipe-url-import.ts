@@ -258,7 +258,7 @@ function normalizeImageUrl(image: unknown): string | null | undefined {
 
 function extractTextFromHtml(html: string): string {
   // Remove script and style tags
-  let text = html
+  const text = html
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     // Remove HTML tags

@@ -733,3 +733,15 @@
 | 21:52 | Edited openspec/changes/url-recipe-import/tasks.md | 3→3 lines | ~191 |
 | 21:52 | Edited openspec/changes/url-recipe-import/tasks.md | 3→3 lines | ~128 |
 | 21:52 | Session end: 29 writes across 12 files (rate-limiter.test.ts, rate-limiter.ts, ai-extractor.test.ts, ai-extractor.ts, recipe-url-import.test.ts) | 13 reads | ~32254 tok |
+
+## Session: 2026-05-07 11:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:59 | Edited src/routes/__tests__/-import.test.tsx | added 1 import(s) | ~57 |
+| 13:59 | Edited src/routes/__tests__/-import.test.tsx | CSS: UrlImportInput | ~50 |
+| 13:59 | Edited src/routes/import/index.tsx | CSS: to, params, recipeId | ~177 |
+| 13:59 | Edited src/lib/ai-extractor.ts | 15→17 lines | ~117 |
+| 13:59 | Edited src/server/trpc/routers/recipes.ts | 22→21 lines | ~220 |
+| 13:59 | Edited src/lib/recipe-url-import.ts | modified extractTextFromHtml() | ~31 |
+| 14:00 | Edited src/lib/__tests__/ai-extractor.test.ts | 7→7 lines | ~58 |

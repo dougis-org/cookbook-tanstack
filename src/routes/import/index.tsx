@@ -52,10 +52,11 @@ function ImportPage() {
   const importFromUrlMutation = useMutation(
     trpc.recipes.importFromUrl.mutationOptions({
       onSuccess: (result) => {
-        setParsedRecipe(result)
+        setParsedRecipe(null)
         setUrlError(null)
         setServerError(null)
         setTierWallReason(null)
+        navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
       onError: (error) => {
         const tierWall = getTierWallReason(error)

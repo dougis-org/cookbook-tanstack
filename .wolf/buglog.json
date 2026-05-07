@@ -1547,6 +1547,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-07T04:52:11.751Z"
+    },
+    {
+      "id": "bug-097",
+      "timestamp": "2026-05-07T20:59:59.574Z",
+      "error_message": "Wrong reference: let should be const",
+      "file": "src/lib/recipe-url-import.ts",
+      "root_cause": "Used \"let\" instead of \"const\"",
+      "fix": "Changed let → const",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T20:59:59.574Z"
     }
   ]
 }

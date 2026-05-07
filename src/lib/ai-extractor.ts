@@ -23,11 +23,13 @@ export class AnthropicExtractor implements AIExtractor {
     const response = await this.client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: opts.maxOutputTokens,
-      system: {
-        type: 'text',
-        text: opts.systemPrompt,
-        cache_control: { type: 'ephemeral' },
-      },
+      system: [
+        {
+          type: 'text',
+          text: opts.systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ],
       messages: [
         {
           role: 'user',
