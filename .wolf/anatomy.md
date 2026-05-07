@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T21:00:24.244Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T21:03:07.397Z
 > Files: 650 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -760,7 +760,7 @@
 
 ## e2e/
 
-- `import-url.spec.ts` — Declares user (~1531 tok)
+- `import-url.spec.ts` — Declares user (~1450 tok)
 
 ## openspec/changes/archive/2026-04-24-build-tier-pricing-page/
 

@@ -42,20 +42,9 @@ test.describe('URL Recipe Import', () => {
     const importButton = page.getByRole('button', { name: /import url/i })
     await importButton.click()
 
-    // Wait for preview modal to appear
-    await expect(page.getByText(/import preview|recipe preview/i)).toBeVisible({
-      timeout: 5000,
-    })
-
-    // Verify recipe title is shown
-    await expect(page.getByText(/pasta|recipe/i)).toBeVisible()
-
-    // Click confirm button
-    const confirmButton = page.getByRole('button', { name: /confirm|import/i })
-    await confirmButton.click()
-
-    // Verify redirect to recipe page
-    await expect(page).toHaveURL(/\/recipes\/[a-f0-9]{24}$/)
+    // URL import bypasses the preview modal and navigates directly to the recipe
+    // Wait for navigation to recipe page
+    await expect(page).toHaveURL(/\/recipes\/[a-f0-9]{24}$/, { timeout: 10000 })
 
     // Verify recipe is displayed
     const pageTitle = page.locator('h1')

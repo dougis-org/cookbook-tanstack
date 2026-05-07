@@ -56,6 +56,11 @@
       "count": 2,
       "tokens": 1116,
       "first_read": "2026-05-07T20:58:49.439Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/e2e/import-url.spec.ts": {
+      "count": 2,
+      "tokens": 1450,
+      "first_read": "2026-05-07T21:03:02.430Z"
     }
   },
   "files_written": [
@@ -100,6 +105,12 @@
       "action": "edit",
       "tokens": 58,
       "at": "2026-05-07T21:00:24.251Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/e2e/import-url.spec.ts",
+      "action": "edit",
+      "tokens": 128,
+      "at": "2026-05-07T21:03:07.406Z"
     }
   ],
   "edit_counts": {
@@ -108,11 +119,12 @@
     "src/lib/ai-extractor.ts": 1,
     "src/server/trpc/routers/recipes.ts": 1,
     "src/lib/recipe-url-import.ts": 1,
-    "src/lib/__tests__/ai-extractor.test.ts": 1
+    "src/lib/__tests__/ai-extractor.test.ts": 1,
+    "e2e/import-url.spec.ts": 1
   },
-  "anatomy_hits": 10,
+  "anatomy_hits": 11,
   "anatomy_misses": 1,
-  "repeated_reads_warned": 6,
+  "repeated_reads_warned": 7,
   "cerebrum_warnings": 0,
   "stop_count": 1
 }

@@ -1563,6 +1563,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-07T20:59:59.574Z"
+    },
+    {
+      "id": "bug-098",
+      "timestamp": "2026-05-07T21:03:07.408Z",
+      "error_message": "Significant refactor of ",
+      "file": "e2e/import-url.spec.ts",
+      "root_cause": "11 lines replaced/restructured",
+      "fix": "Rewrote 21→10 lines (11 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T21:03:07.408Z"
     }
   ]
 }

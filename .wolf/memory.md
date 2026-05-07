@@ -745,3 +745,4 @@
 | 13:59 | Edited src/server/trpc/routers/recipes.ts | 22→21 lines | ~220 |
 | 13:59 | Edited src/lib/recipe-url-import.ts | modified extractTextFromHtml() | ~31 |
 | 14:00 | Edited src/lib/__tests__/ai-extractor.test.ts | 7→7 lines | ~58 |
+| 14:03 | Edited e2e/import-url.spec.ts | reduced (-11 lines) | ~128 |
