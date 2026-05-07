@@ -106,18 +106,18 @@ The system SHALL export `canCreatePrivate(tier: EntitlementTier): boolean` retur
 
 ### Requirement: ADDED canImport helper
 
-The system SHALL export `canImport(tier: EntitlementTier): boolean` returning `true` for `sous-chef` and above.
+The system SHALL export `canImport(tier: EntitlementTier): boolean` returning `true` for `executive-chef` only.
 
-#### Scenario: sous-chef can import recipes
+#### Scenario: executive-chef can import recipes
 
 - **Given** `canImport` is imported
-- **When** called with `'sous-chef'`
+- **When** called with `'executive-chef'`
 - **Then** returns `true`
 
-#### Scenario: tiers below sous-chef cannot import
+#### Scenario: tiers below executive-chef cannot import
 
 - **Given** `canImport` is imported
-- **When** called with `'anonymous'`, `'home-cook'`, or `'prep-cook'`
+- **When** called with `'anonymous'`, `'home-cook'`, `'prep-cook'`, or `'sous-chef'`
 - **Then** returns `false` for each
 
 ---

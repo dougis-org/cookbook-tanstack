@@ -12,6 +12,9 @@ import "@/db/models/course";
 import "@/db/models/preparation";
 import { importedRecipeSchema } from "@/lib/validation";
 import { canCreatePrivate, canImport } from "@/lib/tier-entitlements";
+import { fetchAndNormalizeRecipe } from "@/lib/recipe-url-import";
+import { urlImportRateLimiter } from "@/lib/rate-limiter";
+import { createAnthropicExtractor } from "@/lib/ai-extractor";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -442,6 +445,60 @@ export const recipesRouter = router({
       return {
         id: recipe.id,
         name: recipe.name,
+      };
+    }),
+
+  importFromUrl: protectedProcedure
+    .input(z.object({ url: z.string().url() }))
+    .mutation(async ({ ctx, input }) => {
+      if (!canImport(ctx.user.tier)) {
+        throw new TRPCError({
+          code: "PAYMENT_REQUIRED",
+          message: "Recipe import requires Executive Chef.",
+          cause: { type: 'tier-wall', reason: 'import' },
+        });
+      }
+
+      if (!urlImportRateLimiter.check(ctx.user.id)) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You have exceeded the URL import limit. Try again later.",
+        });
+      }
+
+      const extractor = createAnthropicExtractor();
+      const parsedRecipe = await fetchAndNormalizeRecipe(input.url, extractor);
+
+      urlImportRateLimiter.record(ctx.user.id);
+
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
+
+      const recipe = await new Recipe({
+        name: parsedRecipe.name,
+        userId: ctx.user.id,
+        ingredients: parsedRecipe.ingredients ?? undefined,
+        instructions: parsedRecipe.instructions ?? undefined,
+        notes: parsedRecipe.notes ?? undefined,
+        servings: parsedRecipe.servings ?? undefined,
+        prepTime: parsedRecipe.prepTime ?? undefined,
+        cookTime: parsedRecipe.cookTime ?? undefined,
+        difficulty: parsedRecipe.difficulty ?? undefined,
+        sourceId: parsedRecipe.sourceId ?? undefined,
+        classificationId: parsedRecipe.classificationId ?? undefined,
+        calories: parsedRecipe.calories ?? undefined,
+        fat: parsedRecipe.fat ?? undefined,
+        cholesterol: parsedRecipe.cholesterol ?? undefined,
+        sodium: parsedRecipe.sodium ?? undefined,
+        protein: parsedRecipe.protein ?? undefined,
+        imageUrl: parsedRecipe.imageUrl ?? undefined,
+        isPublic: true,
+        mealIds: [],
+        courseIds: [],
+        preparationIds: [],
+      }).save();
+
+      return {
+        id: recipe.id,
       };
     }),
 });

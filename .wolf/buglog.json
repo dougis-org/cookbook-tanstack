@@ -1371,6 +1371,182 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-05T21:19:59.431Z"
+    },
+    {
+      "id": "bug-086",
+      "timestamp": "2026-05-05T23:49:30.647Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/routes/recipes/index.tsx",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: enabled: isLoggedIn && session?.user?.emailVerified !== true",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-05T23:49:35.003Z"
+    },
+    {
+      "id": "bug-087",
+      "timestamp": "2026-05-05T23:49:37.847Z",
+      "error_message": "Wrong reference: currentPath should be recipes",
+      "file": "src/routes/recipes/index.tsx",
+      "root_cause": "Used \"currentPath\" instead of \"recipes\"",
+      "fix": "Changed currentPath → recipes",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T23:49:37.847Z"
+    },
+    {
+      "id": "bug-088",
+      "timestamp": "2026-05-05T23:50:00.353Z",
+      "error_message": "Missing await",
+      "file": "src/server/trpc/__tests__/integration.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-05T23:50:00.353Z"
+    },
+    {
+      "id": "bug-089",
+      "timestamp": "2026-05-06T17:49:01.118Z",
+      "error_message": "Wrong reference: true should be false",
+      "file": "src/routes/recipes/index.tsx",
+      "root_cause": "Used \"true\" instead of \"false\"",
+      "fix": "Changed true → false",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-06T17:49:05.068Z"
+    },
+    {
+      "id": "bug-090",
+      "timestamp": "2026-05-07T01:14:47.078Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/url-recipe-import/proposal.md",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 6→8 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T01:14:47.078Z"
+    },
+    {
+      "id": "bug-091",
+      "timestamp": "2026-05-07T01:15:13.083Z",
+      "error_message": "Significant refactor of ",
+      "file": "openspec/changes/url-recipe-import/design.md",
+      "root_cause": "9 lines replaced/restructured",
+      "fix": "Rewrote 16→29 lines (9 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T01:15:13.083Z"
+    },
+    {
+      "id": "bug-092",
+      "timestamp": "2026-05-07T04:49:43.933Z",
+      "error_message": "Missing import: ;\nimport { urlImportRateLimiter, createAnthropicExtractor } from ",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "Module(s) not imported: ;\nimport { urlImportRateLimiter, createAnthropicExtractor } from ",
+      "fix": "Added import(s) for ;\nimport { urlImportRateLimiter, createAnthropicExtractor } from ",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-07T04:49:46.504Z"
+    },
+    {
+      "id": "bug-093",
+      "timestamp": "2026-05-07T04:50:01.800Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T04:50:01.800Z"
+    },
+    {
+      "id": "bug-094",
+      "timestamp": "2026-05-07T04:50:40.506Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/components/recipes/UrlImportInput.tsx",
+      "root_cause": "7 lines replaced/restructured",
+      "fix": "Rewrote 59→60 lines (7 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T04:50:40.506Z"
+    },
+    {
+      "id": "bug-095",
+      "timestamp": "2026-05-07T04:51:14.290Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/import/index.tsx",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 22→43 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T04:51:14.290Z"
+    },
+    {
+      "id": "bug-096",
+      "timestamp": "2026-05-07T04:52:11.751Z",
+      "error_message": "Incorrect value in code",
+      "file": "openspec/changes/url-recipe-import/tasks.md",
+      "root_cause": "Had 's responsibility)\n- [ ] **Verify** `",
+      "fix": "Changed to 's responsibility)\n- [x] **Verify** `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-07T04:52:11.751Z"
     }
   ]
 }

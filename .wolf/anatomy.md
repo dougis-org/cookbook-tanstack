@@ -1,11 +1,16 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-05T22:24:39.253Z
-> Files: 627 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T04:52:20.717Z
+> Files: 650 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
 - `settings.json` (~284 tok)
+
+## ../../.claude/plans/
+
+- `github-issue-380-enumerated-lake.md` — Plan: URL-Based Recipe Import (Issue #380) (~1147 tok)
+- `github-issue-380-parallel-origami.md` — Plan: Generate url-recipe-import Change Artifacts (Issue #380) (~3452 tok)
 
 ## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
 
@@ -753,9 +758,17 @@
 
 - `theming.md` — Theming Guide (~549 tok)
 
+## e2e/
+
+- `import-url.spec.ts` — Declares user (~1531 tok)
+
 ## openspec/changes/archive/2026-04-24-build-tier-pricing-page/
 
 - `tasks.md` — Tasks (~1936 tok)
+
+## openspec/changes/archive/2026-05-06-email-verification-hard-gate/
+
+- `tasks.md` — Tasks (~1665 tok)
 
 ## openspec/changes/build-tier-pricing-page/
 
@@ -850,13 +863,37 @@
 
 - `upgrade-compatibility.md` — ADDED Requirements (~1430 tok)
 
+## openspec/changes/url-recipe-import/
+
+- `design.md` — Context (~4114 tok)
+- `proposal.md` — GitHub Issues (~2005 tok)
+- `tasks.md` — Tasks (~1462 tok)
+
+## openspec/changes/url-recipe-import/specs/
+
+- `ai-extractor.md` — ADDED Requirements (~489 tok)
+- `rate-limiter.md` — ADDED Requirements (~458 tok)
+- `url-import-pipeline.md` — ADDED Requirements (~864 tok)
+
+## openspec/specs/auth-route-guards/
+
+- `spec.md` — ADDED Requirements (~2370 tok)
+
 ## openspec/specs/e2e-ci-performance/
 
 - `spec.md` — MODIFIED Requirements (~1999 tok)
 
+## openspec/specs/email-verification-ui/
+
+- `spec.md` — Purpose (~2091 tok)
+
 ## openspec/specs/fouc-prevention/
 
 - `spec.md` — ADDED Requirements (~3643 tok)
+
+## openspec/specs/tier-entitlements/
+
+- `spec.md` — ADDED Requirements (~1659 tok)
 
 ## scripts/migration/lib/__tests__/
 
@@ -868,11 +905,19 @@
 
 ## src/components/auth/
 
-- `VerifyEmailPage.tsx` — VerifyEmailPage (~1615 tok)
+- `VerifyEmailPage.tsx` — VerifyEmailPage (~1679 tok)
 
 ## src/components/cookbooks/__tests__/
 
 - `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
+
+## src/components/recipes/
+
+- `UrlImportInput.tsx` — UrlImportInput (~568 tok)
+
+## src/components/recipes/__tests__/
+
+- `UrlImportInput.test.tsx` — onSubmit (~1059 tok)
 
 ## src/components/ui/
 
@@ -889,14 +934,20 @@
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
+- `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor (~374 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
+- `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~362 tok)
+- `recipe-url-import.ts` — Exports fetchAndNormalizeRecipe (~2160 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
+- `ai-extractor.test.ts` — Declares mockClient (~1116 tok)
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
+- `rate-limiter.test.ts` — Declares mockTime (~622 tok)
+- `recipe-url-import.test.ts` — Declares mockAIExtractor (~1925 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
@@ -937,7 +988,7 @@
 
 ## src/routes/cookbooks/
 
-- `index.tsx` — Route — renders form (~2256 tok)
+- `index.tsx` — Route — renders form (~2268 tok)
 
 ## src/routes/cookbooks/__tests__/
 
@@ -945,12 +996,12 @@
 
 ## src/routes/import/
 
-- `index.tsx` — Route (~1173 tok)
+- `index.tsx` — Route (~1802 tok)
 
 ## src/routes/recipes/
 
 - `$recipeId_.edit.tsx` — Route (~461 tok)
-- `index.tsx` — Badge showing an active filter with an X to remove it. (~4741 tok)
+- `index.tsx` — Badge showing an active filter with an X to remove it. (~4722 tok)
 - `new.tsx` — Route (~232 tok)
 
 ## src/routes/recipes/__tests__/
@@ -967,18 +1018,20 @@
 
 - `error-formatter.test.ts` — Declares cause (~1414 tok)
 - `init.test.ts` — tRPC router: 14 procedures (~1726 tok)
+- `integration.test.ts` — tRPC integration tests. (~1501 tok)
 
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
 - `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
-- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4597 tok)
+- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~5218 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 
 ## src/server/trpc/routers/__tests__/
 
 - `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~11032 tok)
+- `recipe-url-import.test.ts` — Declares ctxWithoutTier (~909 tok)
 - `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
 - `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
 - `test-router.test.ts` — Declares user (~320 tok)
