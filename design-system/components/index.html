@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My CookBooks — UI Kit</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="alternate icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="stylesheet" href="../tokens/colors-and-type.css" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Atoms / leaves first -->
+<script type="text/babel" src="Icon.jsx" data-presets="react"></script>
+<script type="text/babel" src="TaxonomyBadge.jsx" data-presets="react"></script>
+<script type="text/babel" src="PageLayout.jsx" data-presets="react"></script>
+<script type="text/babel" src="Breadcrumb.jsx" data-presets="react"></script>
+<script type="text/babel" src="FormInput.jsx" data-presets="react"></script>
+
+<!-- Molecules -->
+<script type="text/babel" src="RecipeCard.jsx" data-presets="react"></script>
+<script type="text/babel" src="CookbookCard.jsx" data-presets="react"></script>
+<script type="text/babel" src="TierCard.jsx" data-presets="react"></script>
+<script type="text/babel" src="SearchFilter.jsx" data-presets="react"></script>
+
+<!-- Shell + app -->
+<script type="text/babel" src="Header.jsx" data-presets="react"></script>
+<script type="text/babel" src="App.jsx" data-presets="react"></script>
+
+</body>
+</html>

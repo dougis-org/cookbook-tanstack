@@ -4,6 +4,16 @@
 
 This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md every session. Check .wolf/cerebrum.md before generating code. Check .wolf/anatomy.md before reading files.
 
+# Design System
+
+@design-system/CLAUDE.md
+
+When building or editing any user-facing surface — components, routes,
+marketing pages, slides, emails — follow the rules in
+`design-system/CLAUDE.md`. Tokens live in
+`design-system/tokens/colors-and-type.css`; reference component
+implementations live in `design-system/components/`. Don't hard-code
+theme-able color values; don't add emoji; brand name is **My CookBooks**.
 
 # CLAUDE.md
 
@@ -13,7 +23,7 @@ Guidance for Claude Code (claude.ai/code) when working with CookBook repository.
 
 ## Project Overview
 
-CookBook = full-stack recipe management app migrating from Laravel to TanStack Start. DB layer (MongoDB + Mongoose) in place with models and seeds. Migration plan at `docs/plan/MIGRATION_PLAN.md`, milestones at `docs/plan/milestones/`.
+CookBook = full-stack recipe management app in TanStack Start.
 
 ## Quick Setup
 
@@ -132,7 +142,3 @@ Plugin order in `vite.config.ts` matters: devtools → nitro → tailwindcss →
 ## Completed additions
 
 Better-Auth (authentication), tRPC (type-safe API)
-
-## Planned Architecture (Not Yet Implemented)
-
-Per migration plan, future milestones add: Cloudinary/S3 (image storage).

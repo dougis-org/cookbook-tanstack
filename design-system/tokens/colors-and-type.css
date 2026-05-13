@@ -1,0 +1,347 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   My Cookbooks — Colors & Type
+   Source of truth lifted from `dougis-org/cookbook-tanstack` (src/styles/*).
+
+   The product is *theme-driven*: every UI surface reads CSS custom properties
+   under the `--theme-*` namespace. There are FOUR user-selectable color
+   schemes: `dark`, `dark-greens`, `light-cool`, `light-warm`. The default is
+   `dark`. The active theme is set as a class on <html> (e.g. `<html class="dark">`)
+   and persisted under `localStorage["cookbook-theme"]`.
+
+   Tailwind v4 is in play in the real app, so theme tokens often reference
+   `theme(colors.slate.900)` etc. In this file we resolve those to literal
+   hex values so the stylesheet is portable (works without Tailwind).
+   ─────────────────────────────────────────────────────────────────────── */
+
+
+/* ───────────── Type system ───────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  /* Font families —
+     * --font-display — Fraunces. Warm editorial serif used for the wordmark,
+       big section openers, h1/h2, and any "moment" copy.
+     * --font-sans    — Inter (fallback to the system stack). Used for body,
+       UI, buttons, form labels, recipe ingredient lines, everything utility.
+     The live cookbook-tanstack app uses the system stack only; we layered
+     Fraunces on top as the chosen brand display face after typeface review. */
+  --font-display:
+    "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  --font-mono:
+    "JetBrains Mono", source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+
+  /* Fraunces axes used by the wordmark and display headings. Bump SOFT to
+     soften terminals (cookbook-cozy); WONK adds wonky alternates that read
+     editorial without being shouty. */
+  --display-variation: "SOFT" 80, "WONK" 0;
+
+  /* Tracking / scale — pulled from observed JSX in the codebase
+     (text-6xl/7xl with letter-spacing:-0.08em on the hero; text-4xl on page
+     titles; text-2xl on section headers; text-sm/xs for meta).               */
+  /* The wordmark is now SERIF (Fraunces), so the old -0.08em tracking is
+     out; Fraunces sits tighter at -0.03em with SOFT axis bumped. */
+  --type-display-size: clamp(3rem, 6vw, 4.5rem);   /* hero / "My CookBooks" wordmark */
+  --type-display-weight: 600;
+  --type-display-tracking: -0.035em;
+
+  --type-h1-size: 2.25rem; /* 36px — page titles (PageLayout) */
+  --type-h1-weight: 700;
+
+  --type-h2-size: 1.5rem; /* 24px — section headers in recipes */
+  --type-h2-weight: 700;
+
+  --type-h3-size: 1.25rem; /* 20px — recipe card titles */
+  --type-h3-weight: 600;
+
+  --type-body-size: 1rem;       /* 16px */
+  --type-body-weight: 400;
+  --type-body-line: 1.5;
+
+  --type-small-size: 0.875rem;  /* 14px — meta lines, labels */
+  --type-xs-size: 0.75rem;      /* 12px — badge pills, eyebrow labels */
+
+  --type-meta-weight: 500;
+  --type-label-tracking: 0.05em; /* uppercase tracking-wider eyebrows */
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Status, accent, badge, and print tokens — light-theme defaults.
+   These are SEMANTIC tokens that survive across all four themes. Themes
+   below override the *structural* tokens (bg / surface / fg / accent) plus
+   any status base they want darker or lighter for contrast.
+   ────────────────────────────────────────────────────────────────────── */
+:root {
+  /* ---------- Status ---------- */
+  --theme-error-base: #dc2626;          /* red-600 */
+  --theme-error: #dc2626;
+  --theme-error-bg: color-mix(in srgb, var(--theme-error-base) 10%, transparent);
+  --theme-error-border: color-mix(in srgb, var(--theme-error-base) 30%, transparent);
+
+  --theme-success-base: #16a34a;        /* green-600 */
+  --theme-success: #16a34a;
+  --theme-success-bg: color-mix(in srgb, var(--theme-success-base) 10%, transparent);
+
+  --theme-warning-base: #d97706;        /* amber-600 */
+  --theme-warning: #d97706;
+  --theme-warning-bg: color-mix(in srgb, var(--theme-warning-base) 10%, transparent);
+  --theme-warning-border: color-mix(in srgb, var(--theme-warning-base) 30%, transparent);
+
+  /* ---------- Subtle accent (active/selected chips) ---------- */
+  --theme-accent-subtle-base: #06b6d4;  /* cyan-500 */
+  --theme-accent-subtle-bg: color-mix(in srgb, var(--theme-accent-subtle-base) 15%, transparent);
+  --theme-accent-subtle-text: #0e7490;  /* cyan-700 */
+  --theme-accent-subtle-border: color-mix(in srgb, var(--theme-accent-subtle-base) 35%, transparent);
+
+  /* ---------- Badge taxonomy (light defaults) ---------- */
+  /* Meal — amber */
+  --theme-badge-meal-base: #f59e0b;
+  --theme-badge-meal-bg: color-mix(in srgb, var(--theme-badge-meal-base) 15%, transparent);
+  --theme-badge-meal-text: #b45309;
+  --theme-badge-meal-border: color-mix(in srgb, var(--theme-badge-meal-base) 35%, transparent);
+  /* Course — violet */
+  --theme-badge-course-base: #8b5cf6;
+  --theme-badge-course-bg: color-mix(in srgb, var(--theme-badge-course-base) 15%, transparent);
+  --theme-badge-course-text: #6d28d9;
+  --theme-badge-course-border: color-mix(in srgb, var(--theme-badge-course-base) 35%, transparent);
+  /* Preparation — emerald */
+  --theme-badge-prep-base: #10b981;
+  --theme-badge-prep-bg: color-mix(in srgb, var(--theme-badge-prep-base) 15%, transparent);
+  --theme-badge-prep-text: #047857;
+  --theme-badge-prep-border: color-mix(in srgb, var(--theme-badge-prep-base) 35%, transparent);
+  /* Classification — cyan */
+  --theme-badge-classification-base: #06b6d4;
+  --theme-badge-classification-bg: color-mix(in srgb, var(--theme-badge-classification-base) 15%, transparent);
+  --theme-badge-classification-text: #0e7490;
+  --theme-badge-classification-border: color-mix(in srgb, var(--theme-badge-classification-base) 35%, transparent);
+
+  /* ---------- Print tokens (always light, never inherit) ---------- */
+  --theme-print-bg: #ffffff;
+  --theme-print-surface: #ffffff;
+  --theme-print-fg: #111827;             /* gray-900 */
+  --theme-print-fg-muted: #4b5563;       /* gray-600 / 700 for print */
+  --theme-print-fg-subtle: #6b7280;      /* gray-500 */
+  --theme-print-border: #e5e7eb;         /* gray-200 / 300 for print */
+  --theme-print-accent: #111827;         /* gray-900 (default) */
+
+  /* ---------- Layout primitives ---------- */
+  --radius-sm: 0.375rem;   /* rounded     — pills, small chips */
+  --radius-md: 0.5rem;     /* rounded-lg  — inputs, primary buttons */
+  --radius-lg: 0.75rem;    /* rounded-xl  — feature cards, tier cards */
+  --radius-full: 9999px;   /* rounded-full — taxonomy badges */
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  --shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.08);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.10), 0 4px 6px -4px rgb(15 23 42 / 0.10);
+}
+
+html[data-pdf-export] { --theme-print-accent: #0e7490; /* cyan-700 */ }
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme: DARK (default — "Dark (blues)")
+   Slate-900 page · slate-800 surface · cyan-400 accent.
+   This is the brand's hero look — what the marketing page and most product
+   screenshots show. Cyan-on-slate is the signature accent pairing.
+   ────────────────────────────────────────────────────────────────────── */
+html.dark, [data-theme="dark"] {
+  --theme-bg:             #0f172a;  /* slate-900 */
+  --theme-surface:        #1e293b;  /* slate-800 */
+  --theme-surface-raised: #1f2937;  /* gray-800 */
+  --theme-surface-hover:  #374151;  /* gray-700 */
+  --theme-border:         #334155;  /* slate-700 */
+  --theme-border-muted:   #374151;  /* gray-700 */
+  --theme-fg:             #ffffff;
+  --theme-fg-muted:       #d1d5db;  /* gray-300 */
+  --theme-fg-subtle:      #9ca3af;  /* gray-400 */
+  --theme-accent:         #22d3ee;  /* cyan-400 */
+  --theme-accent-hover:   #06b6d4;  /* cyan-500 */
+  --theme-accent-emphasis:#0891b2;  /* cyan-600 */
+  --theme-shadow-sm: 0 0 0 0 transparent;
+  --theme-shadow-md: 0 0 0 0 transparent;
+  --theme-overlay: rgb(0 0 0 / 0.6);
+
+  --theme-accent-subtle-base: #22d3ee;
+  --theme-accent-subtle-text: #67e8f9;
+
+  --theme-error-base:   #f87171;   /* red-400 — softer on dark */
+  --theme-error:        #f87171;
+  --theme-success-base: #4ade80;
+  --theme-success:      #4ade80;
+  --theme-warning-base: #fbbf24;
+  --theme-warning:      #fbbf24;
+
+  --theme-badge-meal-base:           #fbbf24;
+  --theme-badge-meal-text:           #fcd34d;
+  --theme-badge-course-base:         #a78bfa;
+  --theme-badge-course-text:         #c4b5fd;
+  --theme-badge-prep-base:           #34d399;
+  --theme-badge-prep-text:           #6ee7b7;
+  --theme-badge-classification-base: #22d3ee;
+  --theme-badge-classification-text: #67e8f9;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme: DARK-GREENS  (Selenized-inspired teal palette)
+   Hand-picked hex values — not Tailwind-derived. A warm, lived-in dark theme
+   reminiscent of vintage cookbook covers and old terminal greens.
+   ────────────────────────────────────────────────────────────────────── */
+html.dark-greens, [data-theme="dark-greens"] {
+  --theme-bg:             #103c48;
+  --theme-surface:        #184956;
+  --theme-surface-raised: #1e555e;
+  --theme-surface-hover:  #2d5b69;
+  --theme-border:         #2d5b69;
+  --theme-border-muted:   #184956;
+  --theme-fg:             #adbcbc;
+  --theme-fg-muted:       #72898f;
+  --theme-fg-subtle:      #486868;
+  --theme-accent:         #75b938;  /* signature lime-green */
+  --theme-accent-hover:   #8fd44a;
+  --theme-accent-emphasis:#5e9429;
+  --theme-shadow-sm: 0 0 0 0 transparent;
+  --theme-shadow-md: 0 0 0 0 transparent;
+  --theme-overlay: rgb(0 0 0 / 0.6);
+
+  --theme-accent-subtle-base: #75b938;
+  --theme-accent-subtle-text: #8fd44a;
+
+  --theme-error-base: #f87171;  --theme-error: #f87171;
+  --theme-success-base: #4ade80; --theme-success: #4ade80;
+  --theme-warning-base: #fbbf24; --theme-warning: #fbbf24;
+
+  --theme-badge-meal-base:           #dbb32d;
+  --theme-badge-meal-text:           #f0cc66;
+  --theme-badge-course-base:         #af88eb;
+  --theme-badge-course-text:         #c9a8f5;
+  --theme-badge-prep-base:           #ed8649;
+  --theme-badge-prep-text:           #f5a878;
+  --theme-badge-classification-base: #41c7b9;
+  --theme-badge-classification-text: #6fd8cd;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme: LIGHT-COOL  (slate + blue)
+   Crisp neutral light theme. Surfaces are pure white on a slate-100 page.
+   Accent shifts from cyan to blue-600, giving a more "office productivity"
+   tone vs the cookbook-cozy light-warm.
+   ────────────────────────────────────────────────────────────────────── */
+html.light-cool, [data-theme="light-cool"] {
+  --theme-bg:             #f1f5f9;  /* slate-100 */
+  --theme-surface:        #ffffff;
+  --theme-surface-raised: #f8fafc;  /* slate-50 */
+  --theme-surface-hover:  #eff6ff;  /* blue-50 */
+  --theme-border:         #e2e8f0;  /* slate-200 */
+  --theme-border-muted:   #f1f5f9;
+  --theme-fg:             #0f172a;  /* slate-900 */
+  --theme-fg-muted:       #475569;  /* slate-600 */
+  --theme-fg-subtle:      #64748b;  /* slate-500 */
+  --theme-accent:         #2563eb;  /* blue-600 */
+  --theme-accent-hover:   #1d4ed8;  /* blue-700 */
+  --theme-accent-emphasis:#1e40af;  /* blue-800 */
+  --theme-shadow-sm: 0 1px 3px 0 rgb(15 23 42 / 0.08), 0 1px 2px -1px rgb(15 23 42 / 0.08);
+  --theme-shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.08);
+  --theme-overlay: rgb(15 23 42 / 0.4);
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Theme: LIGHT-WARM  (amber + stone) — "cookbook-cozy" daylight theme
+   The most editorial of the four. Cream page, stone neutrals, amber accent.
+   ────────────────────────────────────────────────────────────────────── */
+html.light-warm, [data-theme="light-warm"] {
+  --theme-bg:             #fffbeb;  /* amber-50 */
+  --theme-surface:        #ffffff;
+  --theme-surface-raised: #fafaf9;  /* stone-50 */
+  --theme-surface-hover:  #fef3c7;  /* amber-100 */
+  --theme-border:         #e7e5e4;  /* stone-200 */
+  --theme-border-muted:   #f5f5f4;
+  --theme-fg:             #1c1917;  /* stone-900 */
+  --theme-fg-muted:       #57534e;  /* stone-600 */
+  --theme-fg-subtle:      #78716c;  /* stone-500 */
+  --theme-accent:         #b45309;  /* amber-700 */
+  --theme-accent-hover:   #92400e;  /* amber-800 */
+  --theme-accent-emphasis:#78350f;  /* amber-900 */
+  --theme-shadow-sm: 0 1px 3px 0 rgb(120 53 15 / 0.10), 0 1px 2px -1px rgb(120 53 15 / 0.10);
+  --theme-shadow-md: 0 4px 6px -1px rgb(120 53 15 / 0.10), 0 2px 4px -2px rgb(120 53 15 / 0.10);
+  --theme-overlay: rgb(120 53 15 / 0.4);
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Semantic element styles — equivalent to a small reset + base typography.
+   ────────────────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  background: var(--theme-bg);
+  color: var(--theme-fg);
+  font-family: var(--font-sans);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--type-h1-size);
+  font-weight: 600;
+  font-variation-settings: var(--display-variation);
+  letter-spacing: -0.02em;
+  color: var(--theme-fg);
+}
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--type-h2-size);
+  font-weight: 600;
+  font-variation-settings: var(--display-variation);
+  letter-spacing: -0.015em;
+  color: var(--theme-fg);
+}
+h3 { font-size: var(--type-h3-size); font-weight: var(--type-h3-weight); color: var(--theme-fg); }
+
+.display, .wordmark {
+  font-family: var(--font-display);
+  font-size: var(--type-display-size);
+  font-weight: 600;
+  font-variation-settings: "SOFT" 80, "WONK" 1;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+p  { color: var(--theme-fg-muted); }
+small, .meta { font-size: var(--type-small-size); color: var(--theme-fg-subtle); }
+.eyebrow {
+  font-size: var(--type-xs-size);
+  font-weight: var(--type-meta-weight);
+  text-transform: uppercase;
+  letter-spacing: var(--type-label-tracking);
+  color: var(--theme-fg-subtle);
+}
+
+code, pre { font-family: var(--font-mono); }
+
+a {
+  color: var(--theme-accent);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+a:hover { color: var(--theme-accent-hover); }
