@@ -819,3 +819,6 @@
 | 21:44 | Edited src/lib/__tests__/recipe-url-import.test.ts | expanded (+12 lines) | ~364 |
 | 21:44 | Edited src/lib/__tests__/recipe-url-import.test.ts | expanded (+12 lines) | ~124 |
 | 21:45 | Session end: 19 writes across 8 files (rate-limiter.test.ts, ai-extractor.test.ts, recipe-url-import.test.ts, UrlImportInput.tsx, rate-limiter.ts) | 9 reads | ~16723 tok |
+| 14:35 | Session end: 22 writes across 9 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 17 reads | ~46212 tok |
+| 14:37 | Created openspec/changes/url-recipe-import/tests.md | — | ~996 |
+| 14:37 | Session end: 23 writes across 10 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 17 reads | ~47280 tok |

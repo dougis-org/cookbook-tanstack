@@ -220,6 +220,12 @@
       "action": "edit",
       "tokens": 39,
       "at": "2026-05-15T00:33:00.511Z"
+    },
+    {
+      "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/url-recipe-import/tests.md",
+      "action": "create",
+      "tokens": 1068,
+      "at": "2026-05-15T21:37:21.685Z"
     }
   ],
   "edit_counts": {
@@ -233,11 +239,12 @@
     "src/server/trpc/routers/__tests__/recipe-url-import.test.ts": 1,
     "src/lib/ai-extractor.ts": 1,
     "src/lib/rate-limiter.ts": 1,
-    "src/e2e/import-url.spec.ts": 1
+    "src/e2e/import-url.spec.ts": 1,
+    "openspec/changes/url-recipe-import/tests.md": 1
   },
   "anatomy_hits": 14,
   "anatomy_misses": 3,
   "repeated_reads_warned": 3,
   "cerebrum_warnings": 0,
-  "stop_count": 3
+  "stop_count": 5
 }

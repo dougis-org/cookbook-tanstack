@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T04:44:46.763Z
-> Files: 651 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T21:37:21.679Z
+> Files: 652 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -868,6 +868,7 @@
 - `design.md` — Context (~4114 tok)
 - `proposal.md` — GitHub Issues (~2005 tok)
 - `tasks.md` — Tasks (~1462 tok)
+- `tests.md` — Tests (~934 tok)
 
 ## openspec/changes/url-recipe-import/specs/
 
