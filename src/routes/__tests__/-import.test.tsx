@@ -15,6 +15,10 @@ vi.mock('@/components/recipes/ImportDropzone', () => ({
   default: () => null,
 }))
 
+vi.mock('@/components/recipes/UrlImportInput', () => ({
+  UrlImportInput: () => null,
+}))
+
 vi.mock('@/components/recipes/ImportPreviewModal', () => ({
   default: () => null,
 }))
@@ -28,6 +32,7 @@ vi.mock('@/lib/trpc', () => ({
   trpc: {
     recipes: {
       import: { mutationOptions: (opts: unknown) => opts },
+      importFromUrl: { mutationOptions: (opts: unknown) => opts },
     },
   },
 }))
