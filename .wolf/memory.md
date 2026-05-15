@@ -822,3 +822,9 @@
 | 14:35 | Session end: 22 writes across 9 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 17 reads | ~46212 tok |
 | 14:37 | Created openspec/changes/url-recipe-import/tests.md | — | ~996 |
 | 14:37 | Session end: 23 writes across 10 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 17 reads | ~47280 tok |
+| 14:37 | Session end: 23 writes across 10 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 17 reads | ~47280 tok |
+
+## Session: 2026-05-15 14:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
