@@ -62,17 +62,13 @@ describe('UrlImportInput', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('clears URL input after successful submit', async () => {
-    const { rerender } = setup()
+  it('preserves URL input after submit so user can retry on error', async () => {
+    setup()
     const input = screen.getByPlaceholderText(/url/i) as HTMLInputElement
 
     await userEvent.type(input, 'https://example.com/recipe')
-    expect(input.value).toBe('https://example.com/recipe')
-
     await userEvent.click(screen.getByRole('button', { name: /import/i }))
 
-    rerender(<UrlImportInput onSubmit={onSubmit} isPending={false} />)
-
-    expect((screen.getByPlaceholderText(/url/i) as HTMLInputElement).value).toBe('')
+    expect(input.value).toBe('https://example.com/recipe')
   })
 })
