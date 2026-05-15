@@ -121,4 +121,21 @@ describe('AIExtractor', () => {
       })
     ).rejects.toThrow('API error')
   })
+
+  it('throws when response has no text content block', async () => {
+    const mockCreate = await getMockCreate()
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: 'tool_use', id: 'tu_1', name: 'fn', input: {} }],
+    } as any)
+
+    const extractor = createAnthropicExtractor()
+
+    await expect(
+      extractor.extract({
+        systemPrompt: 'system',
+        userContent: 'content',
+        maxOutputTokens: 1024,
+      })
+    ).rejects.toThrow('No text content in response')
+  })
 })

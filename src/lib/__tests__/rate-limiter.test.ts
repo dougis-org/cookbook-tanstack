@@ -58,6 +58,36 @@ describe('RateLimiter', () => {
     }
     expect(limiter.check('user-1')).toBe(false)
   })
+
+  it('resets window in record() when window has expired for existing entry', () => {
+    vi.useFakeTimers()
+    const shortLimiter = new RateLimiter(5, 1000)
+
+    for (let i = 0; i < 5; i++) shortLimiter.record('user-1')
+    expect(shortLimiter.check('user-1')).toBe(false)
+
+    vi.advanceTimersByTime(1001)
+    shortLimiter.record('user-1') // hits expired-entry reset path
+    expect(shortLimiter.check('user-1')).toBe(true) // count is 1, under limit
+
+    vi.useRealTimers()
+  })
+
+  it('evicts expired entries when map reaches 1000 entries', () => {
+    vi.useFakeTimers()
+    const shortLimiter = new RateLimiter(100, 100)
+
+    for (let i = 0; i < 1000; i++) {
+      shortLimiter.record(`user-${i}`)
+    }
+
+    vi.advanceTimersByTime(101) // all entries now expired
+
+    shortLimiter.record('new-user') // triggers eviction of 1000 expired entries
+    expect(shortLimiter.check('user-0')).toBe(true) // evicted entry allows new request
+
+    vi.useRealTimers()
+  })
 })
 
 describe('urlImportRateLimiter singleton', () => {
