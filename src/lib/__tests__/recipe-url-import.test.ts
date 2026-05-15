@@ -414,8 +414,13 @@ describe('fetchAndNormalizeRecipe', () => {
     })
 
     const promise = fetchAndNormalizeRecipe(TEST_URL, mockAIExtractor)
-    await vi.advanceTimersByTimeAsync(5001)
-    await expect(promise).rejects.toThrow(TRPCError)
+
+    // Advance timers and handle rejection concurrently so the rejection
+    // is subscribed before it occurs, avoiding unhandled-rejection warnings.
+    await Promise.all([
+      vi.advanceTimersByTimeAsync(5001),
+      expect(promise).rejects.toThrow(TRPCError),
+    ])
 
     vi.useRealTimers()
   })
