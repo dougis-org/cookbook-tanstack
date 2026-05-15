@@ -472,11 +472,11 @@ export const recipesRouter = router({
         });
       }
 
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
+
       urlImportRateLimiter.record(ctx.user.id);
       const extractor = createAnthropicExtractor();
       const parsedRecipe = await fetchAndNormalizeRecipe(input.url, extractor);
-
-      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
 
       const recipe = await new Recipe(
         buildImportedRecipeFields(parsedRecipe, ctx.user.id, true)

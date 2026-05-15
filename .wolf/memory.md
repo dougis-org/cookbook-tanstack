@@ -773,3 +773,12 @@
 | 17:14 | Edited src/server/trpc/routers/recipes.ts | 7→7 lines | ~76 |
 | 17:15 | Session end: 14 writes across 7 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 11 reads | ~42693 tok |
 | 17:27 | Session end: 14 writes across 7 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 11 reads | ~42693 tok |
+| 17:28 | Session end: 14 writes across 7 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 11 reads | ~42693 tok |
+| 17:32 | Edited src/lib/recipe-url-import.ts | modified if() | ~279 |
+| 17:32 | Edited src/lib/recipe-url-import.ts | "application\/ld\+json" → "]?application\/ld\+json[" | ~29 |
+| 17:32 | Edited src/lib/ai-extractor.ts | modified createAnthropicExtractor() | ~117 |
+| 17:32 | Edited src/server/trpc/routers/recipes.ts | 12→12 lines | ~147 |
+| 17:32 | Edited src/lib/rate-limiter.ts | added 2 condition(s) | ~343 |
+| 17:32 | Created src/e2e/import-url.spec.ts | — | ~719 |
+| 17:32 | Edited src/lib/__tests__/ai-extractor.test.ts | 2→2 lines | ~45 |
+| 17:33 | Edited src/lib/__tests__/ai-extractor.test.ts | 4→5 lines | ~39 |

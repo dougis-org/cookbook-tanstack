@@ -1659,6 +1659,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-15T00:13:36.593Z"
+    },
+    {
+      "id": "bug-104",
+      "timestamp": "2026-05-15T00:32:06.058Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/lib/recipe-url-import.ts",
+      "root_cause": "Had \"application\\/ld\\+json\"",
+      "fix": "Changed to \"]?application\\/ld\\+json['",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T00:32:06.058Z"
     }
   ]
 }

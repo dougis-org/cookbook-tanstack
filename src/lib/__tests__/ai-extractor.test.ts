@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { createAnthropicExtractor } from '../ai-extractor'
+import { createAnthropicExtractor, resetAnthropicExtractorForTesting } from '../ai-extractor'
 
 vi.mock('@anthropic-ai/sdk', () => {
   const mockClient = {
@@ -22,6 +22,7 @@ async function getMockCreate() {
 describe('AIExtractor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    resetAnthropicExtractorForTesting()
     process.env.ANTHROPIC_API_KEY = 'test-key'
   })
 

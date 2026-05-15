@@ -47,10 +47,17 @@ export class AnthropicExtractor implements AIExtractor {
   }
 }
 
+let _instance: AnthropicExtractor | undefined
+
 export function createAnthropicExtractor(): AnthropicExtractor {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is not set')
   }
-  return new AnthropicExtractor(apiKey)
+  _instance ??= new AnthropicExtractor(apiKey)
+  return _instance
+}
+
+export function resetAnthropicExtractorForTesting(): void {
+  _instance = undefined
 }

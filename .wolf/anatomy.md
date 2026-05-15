@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:14:47.930Z
-> Files: 650 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:33:00.504Z
+> Files: 651 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -926,6 +926,7 @@
 ## src/e2e/
 
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
+- `import-url.spec.ts` — Declares urlInput (~719 tok)
 
 ## src/e2e/helpers/
 
@@ -934,16 +935,16 @@
 ## src/lib/
 
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
-- `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor (~381 tok)
+- `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor, resetAnthropicExtractorForTesting (~427 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
-- `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~362 tok)
-- `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2506 tok)
+- `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~384 tok)
+- `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2536 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
-- `ai-extractor.test.ts` — mockClient: getMockCreate (~966 tok)
+- `ai-extractor.test.ts` — mockClient: getMockCreate (~988 tok)
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~622 tok)

@@ -3,6 +3,8 @@ interface RateLimiterEntry {
   windowStart: number
 }
 
+const EVICTION_THRESHOLD = 1000
+
 export class RateLimiter {
   private limit: number
   private windowMs: number
@@ -21,14 +23,11 @@ export class RateLimiter {
       return true
     }
 
-    // Check if window has expired
     if (now >= entry.windowStart + this.windowMs) {
-      // Window expired, reset and allow
       this.records.delete(key)
       return true
     }
 
-    // Window is active, check if under limit
     return entry.count < this.limit
   }
 
@@ -37,19 +36,27 @@ export class RateLimiter {
     const entry = this.records.get(key)
 
     if (!entry) {
+      if (this.records.size >= EVICTION_THRESHOLD) {
+        this.evictExpired(now)
+      }
       this.records.set(key, { count: 1, windowStart: now })
       return
     }
 
-    // Check if window has expired
     if (now >= entry.windowStart + this.windowMs) {
-      // Window expired, start new one
       this.records.set(key, { count: 1, windowStart: now })
       return
     }
 
-    // Window is active, increment
     entry.count++
+  }
+
+  private evictExpired(now: number): void {
+    for (const [k, v] of this.records) {
+      if (now >= v.windowStart + this.windowMs) {
+        this.records.delete(k)
+      }
+    }
   }
 }
 

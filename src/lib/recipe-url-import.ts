@@ -53,32 +53,36 @@ export async function fetchAndNormalizeRecipe(
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-    const response = await fetch(url, { signal: controller.signal })
-    clearTimeout(timeoutId)
+    try {
+      const response = await fetch(url, { signal: controller.signal })
 
-    if (!response.ok) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: `Failed to fetch URL: HTTP ${response.status}`,
-      })
+      if (!response.ok) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `Failed to fetch URL: HTTP ${response.status}`,
+        })
+      }
+
+      html = await response.text()
+    } finally {
+      clearTimeout(timeoutId)
     }
-
-    html = await response.text()
   } catch (error) {
     if (error instanceof TRPCError) {
       throw error
     }
 
-    const message =
-      error instanceof Error && error.message.includes('abort')
-        ? 'The URL timed out. Try again or use file import.'
-        : error instanceof Error
-          ? `Failed to fetch URL: ${error.message}`
-          : 'Failed to fetch URL'
+    const isAbort =
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.message.includes('abort'))
 
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
-      message,
+      message: isAbort
+        ? 'The URL timed out. Try again or use file import.'
+        : error instanceof Error
+          ? `Failed to fetch URL: ${error.message}`
+          : 'Failed to fetch URL',
     })
   }
 
@@ -149,7 +153,7 @@ Return ONLY the JSON object, no other text.`,
 }
 
 function extractSchemaOrgRecipe(html: string): Record<string, unknown> | null {
-  const ldJsonRegex = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g
+  const ldJsonRegex = /<script[^>]*type=['"]?application\/ld\+json['"]?[^>]*>([\s\S]*?)<\/script>/gi
   let match
 
   while ((match = ldJsonRegex.exec(html))) {
