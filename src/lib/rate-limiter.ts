@@ -76,6 +76,10 @@ export class RateLimiter {
     return true
   }
 
+  reset(): void {
+    this.records.clear()
+  }
+
   private evictExpired(now: number): void {
     for (const [k, v] of this.records) {
       if (now >= v.windowStart + this.windowMs) {

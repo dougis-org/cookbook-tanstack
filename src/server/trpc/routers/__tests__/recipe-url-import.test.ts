@@ -18,7 +18,7 @@ const { fetchAndNormalizeRecipe } = await import('@/lib/recipe-url-import')
 const mockFetchAndNormalize = vi.mocked(fetchAndNormalizeRecipe)
 
 const EXEC_TIER = 'executive-chef'
-const FREE_TIER = 'free'
+const NON_IMPORT_TIER = 'home-cook'
 
 const PARSED_RECIPE = {
   name: 'Pasta Carbonara',
@@ -31,14 +31,16 @@ const PARSED_RECIPE = {
 }
 
 describe('recipes.importFromUrl', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     mockFetchAndNormalize.mockResolvedValue(PARSED_RECIPE)
+    const { urlImportRateLimiter } = await import('@/lib/rate-limiter')
+    urlImportRateLimiter.reset()
   })
 
   it('throws PAYMENT_REQUIRED when user tier cannot import', async () => {
     await withCleanDb(async () => {
-      const caller = await makeTieredCaller(FREE_TIER as never)
+      const caller = await makeTieredCaller(NON_IMPORT_TIER)
       await expect(
         caller.recipes.importFromUrl({ url: 'https://example.com/recipe' })
       ).rejects.toMatchObject({ code: 'PAYMENT_REQUIRED' })

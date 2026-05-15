@@ -29,7 +29,7 @@ test.describe("URL Recipe Import", () => {
   });
 
   test("shows tier wall for non-executive-chef users", async ({ page }) => {
-    await registerAndLoginWithTier(page, "free");
+    await registerAndLoginWithTier(page, "home-cook");
     await gotoAndWaitForHydration(page, "/import");
 
     await expect(page.getByText(/Import requires Executive Chef/i)).toBeVisible();
