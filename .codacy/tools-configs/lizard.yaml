@@ -1,15 +1,15 @@
 patterns:
     Lizard_ccn-medium:
         category: Complexity
-        description: Checks if the cyclomatic complexity of a function or logic block exceeds the medium threshold (default is 8).
+        description: Checks if the cyclomatic complexity of a function or logic block exceeds the medium threshold (default is 15).
         explanation: |-
             # Medium Cyclomatic Complexity control
 
-            Check the Cyclomatic Complexity value of a function or logic block. If the threshold is not met, raise a Medium issue. The default threshold is 7.
+            Check the Cyclomatic Complexity value of a function or logic block. If the threshold is not met, raise a Medium issue. The default threshold is 15.
         id: Lizard_ccn-medium
         level: Warning
         severityLevel: Warning
-        threshold: 8
+        threshold: 15
         timeToFix: 10
         title: Enforce Medium Cyclomatic Complexity Threshold
     Lizard_file-nloc-medium:

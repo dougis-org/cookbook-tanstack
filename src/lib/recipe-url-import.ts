@@ -2,6 +2,32 @@ import { TRPCError } from '@trpc/server'
 import { importedRecipeSchema, type ImportedRecipeInput } from './validation'
 import { AIExtractor } from './ai-extractor'
 
+function isLoopbackOrSpecial(hostname: string): boolean {
+  return (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname === '[::1]'
+  )
+}
+
+function isPrivateIpRange(hostname: string): boolean {
+  return (
+    /^127\./.test(hostname) ||
+    /^169\.254\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname)
+  )
+}
+
+function is172PrivateRange(hostname: string): boolean {
+  const parts = hostname.split('.')
+  if (parts.length !== 4 || parts[0] !== '172') return false
+  const second = parseInt(parts[1], 10)
+  return second >= 16 && second <= 31
+}
+
 export function validateImportUrl(url: string): void {
   let parsed: URL
   try {
@@ -16,98 +42,41 @@ export function validateImportUrl(url: string): void {
 
   const hostname = parsed.hostname.toLowerCase()
 
-  if (
-    hostname === 'localhost' ||
-    hostname.endsWith('.localhost') ||
-    hostname === '0.0.0.0' ||
-    hostname === '::1' ||
-    hostname === '[::1]'
-  ) {
+  if (isLoopbackOrSpecial(hostname) || isPrivateIpRange(hostname) || is172PrivateRange(hostname)) {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
-  }
-
-  // Block IPv4 loopback (127.0.0.0/8), link-local (169.254.0.0/16), and private ranges
-  if (
-    /^127\./.test(hostname) ||
-    /^169\.254\./.test(hostname) ||
-    /^10\./.test(hostname) ||
-    /^192\.168\./.test(hostname)
-  ) {
-    throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
-  }
-
-  // Block 172.16.0.0/12
-  const parts = hostname.split('.')
-  if (parts.length === 4 && parts[0] === '172') {
-    const second = parseInt(parts[1], 10)
-    if (second >= 16 && second <= 31) {
-      throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
-    }
   }
 }
 
-export async function fetchAndNormalizeRecipe(
-  url: string,
-  extractor: AIExtractor
-): Promise<ImportedRecipeInput> {
-  validateImportUrl(url)
-
-  let html: string
+async function fetchHtml(url: string): Promise<string> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(controller.abort.bind(controller), 5000)
 
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const response = await fetch(url, { signal: controller.signal })
 
-    try {
-      const response = await fetch(url, { signal: controller.signal })
-
-      // Re-validate the final URL after redirects to prevent open-redirect SSRF
-      if (response.url && response.url !== url) {
-        validateImportUrl(response.url)
-      }
-
-      if (!response.ok) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: `Failed to fetch URL: HTTP ${response.status}`,
-        })
-      }
-
-      html = await response.text()
-    } finally {
-      clearTimeout(timeoutId)
-    }
-  } catch (error) {
-    if (error instanceof TRPCError) {
-      throw error
+    // Re-validate the final URL after redirects to prevent open-redirect SSRF
+    if (response.url && response.url !== url) {
+      validateImportUrl(response.url)
     }
 
-    const isAbort =
-      error instanceof Error &&
-      (error.name === 'AbortError' || error.message.includes('abort'))
+    if (!response.ok) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: `Failed to fetch URL: HTTP ${response.status}`,
+      })
+    }
 
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: isAbort
-        ? 'The URL timed out. Try again or use file import.'
-        : error instanceof Error
-          ? `Failed to fetch URL: ${error.message}`
-          : 'Failed to fetch URL',
-    })
+    return response.text()
+  } finally {
+    clearTimeout(timeoutId)
   }
+}
 
-  // Try to extract from Schema.org ld+json
-  const schemaOrgRecipe = extractSchemaOrgRecipe(html)
-  if (schemaOrgRecipe) {
-    const parsed = importedRecipeSchema.safeParse(schemaOrgRecipe)
-    if (parsed.success) {
-      return { ...parsed.data, isPublic: true }
-    }
-  }
-
-  // Fall back to AI extraction
-  const bodyText = extractTextFromHtml(html)
-  const truncatedBody = bodyText.substring(0, 8000)
+async function extractRecipeViaAI(
+  html: string,
+  extractor: AIExtractor
+): Promise<ImportedRecipeInput> {
+  const truncatedBody = extractTextFromHtml(html).substring(0, 8000)
 
   let aiResponse: string
   try {
@@ -160,6 +129,43 @@ Return ONLY the JSON object, no other text.`,
   }
 
   return { ...validated.data, isPublic: true }
+}
+
+export async function fetchAndNormalizeRecipe(
+  url: string,
+  extractor: AIExtractor
+): Promise<ImportedRecipeInput> {
+  validateImportUrl(url)
+
+  let html: string
+  try {
+    html = await fetchHtml(url)
+  } catch (error) {
+    if (error instanceof TRPCError) throw error
+
+    const isAbort =
+      error instanceof Error &&
+      (error.name === 'AbortError' || error.message.includes('abort'))
+
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: isAbort
+        ? 'The URL timed out. Try again or use file import.'
+        : error instanceof Error
+          ? `Failed to fetch URL: ${error.message}`
+          : 'Failed to fetch URL',
+    })
+  }
+
+  const schemaOrgRecipe = extractSchemaOrgRecipe(html)
+  if (schemaOrgRecipe) {
+    const parsed = importedRecipeSchema.safeParse(schemaOrgRecipe)
+    if (parsed.success) {
+      return { ...parsed.data, isPublic: true }
+    }
+  }
+
+  return extractRecipeViaAI(html, extractor)
 }
 
 function isRecipeType(type: unknown): boolean {
@@ -306,23 +312,19 @@ function normalizeTime(duration: unknown): number | null | undefined {
   return undefined
 }
 
+function imageUrlFromObject(obj: Record<string, unknown>): string | undefined {
+  if (typeof obj.url === 'string') return obj.url
+  if (typeof obj['@value'] === 'string') return obj['@value'] as string
+  return undefined
+}
+
 function normalizeImageUrl(image: unknown): string | null | undefined {
   if (!image) return undefined
-
-  if (typeof image === 'string') {
-    return image
-  }
-
-  if (Array.isArray(image) && image.length > 0) {
-    return normalizeImageUrl(image[0])
-  }
-
+  if (typeof image === 'string') return image
+  if (Array.isArray(image) && image.length > 0) return normalizeImageUrl(image[0])
   if (typeof image === 'object' && image !== null) {
-    const obj = image as Record<string, unknown>
-    if (typeof obj.url === 'string') return obj.url
-    if (typeof obj['@value'] === 'string') return obj['@value'] as string
+    return imageUrlFromObject(image as Record<string, unknown>)
   }
-
   return undefined
 }
 
