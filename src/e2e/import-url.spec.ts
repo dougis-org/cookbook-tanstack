@@ -7,7 +7,7 @@ test.describe("URL Recipe Import", () => {
     await registerAndLoginWithTier(page, "executive-chef");
     await gotoAndWaitForHydration(page, "/import");
 
-    const urlInput = page.getByPlaceholderText(/paste recipe url/i);
+    const urlInput = page.locator('input[type="url"]');
     await expect(urlInput).toBeVisible();
 
     const urlBox = await page.getByText(/import from url/i).boundingBox();
@@ -20,7 +20,7 @@ test.describe("URL Recipe Import", () => {
     await gotoAndWaitForHydration(page, "/import");
 
     await page
-      .getByPlaceholderText(/paste recipe url/i)
+      .locator('input[type="url"]')
       .fill("https://invalid-site-that-does-not-exist-12345.example/recipe");
 
     await page.getByRole("button", { name: /import url/i }).click();
@@ -34,7 +34,7 @@ test.describe("URL Recipe Import", () => {
 
     await expect(page.getByText(/Import requires Executive Chef/i)).toBeVisible();
     await expect(
-      page.getByPlaceholderText(/paste recipe url/i),
+      page.locator('input[type="url"]'),
     ).not.toBeVisible();
   });
 
