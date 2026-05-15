@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:33:00.504Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:52:16.910Z
 > Files: 651 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -937,18 +937,18 @@
 - `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
 - `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor, resetAnthropicExtractorForTesting (~427 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
-- `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~384 tok)
+- `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~538 tok)
 - `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2536 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
-- `ai-extractor.test.ts` — mockClient: getMockCreate (~988 tok)
+- `ai-extractor.test.ts` — mockClient: getMockCreate (~1130 tok)
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
-- `rate-limiter.test.ts` — Declares mockTime (~622 tok)
-- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse (~2210 tok)
+- `rate-limiter.test.ts` — Declares mockTime (~1283 tok)
+- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4433 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
@@ -1025,7 +1025,7 @@
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
 - `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
-- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~5000 tok)
+- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 

@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 1125521,
-    "total_reads": 2253,
-    "total_writes": 1427,
-    "total_sessions": 30,
-    "anatomy_hits": 344,
-    "anatomy_misses": 1909,
-    "repeated_reads_blocked": 2551,
-    "estimated_savings_vs_bare_cli": 1574619
+    "total_tokens_estimated": 1184350,
+    "total_reads": 2277,
+    "total_writes": 1458,
+    "total_sessions": 31,
+    "anatomy_hits": 364,
+    "anatomy_misses": 1913,
+    "repeated_reads_blocked": 2561,
+    "estimated_savings_vs_bare_cli": 1609373
   },
   "sessions": [
     {
@@ -22966,6 +22966,339 @@
         "writes_count": 14,
         "repeated_reads_blocked": 1,
         "anatomy_lookups": 11
+      }
+    },
+    {
+      "id": "session-2026-05-15-1706",
+      "started": "2026-05-15T00:06:10.464Z",
+      "ended": "2026-05-15T00:34:42.883Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 1925,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/ai-extractor.test.ts",
+          "tokens_estimated": 1116,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 2506,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 5000,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+          "tokens_estimated": 1824,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/e2e/import-url.spec.ts",
+          "tokens_estimated": 1450,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/recipes/__tests__/UrlImportInput.test.tsx",
+          "tokens_estimated": 1059,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/__tests__/-import.test.tsx",
+          "tokens_estimated": 1065,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/test-helpers.ts",
+          "tokens_estimated": 958,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/recipes.test.ts",
+          "tokens_estimated": 18539,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/rate-limiter.ts",
+          "tokens_estimated": 362,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/ai-extractor.ts",
+          "tokens_estimated": 381,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/auth.ts",
+          "tokens_estimated": 931,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/recipes-import.spec.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/admin.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 431,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 2210,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/ai-extractor.test.ts",
+          "tokens_estimated": 966,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/recipes/__tests__/UrlImportInput.test.tsx",
+          "tokens_estimated": 785,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/e2e/import-url.spec.ts",
+          "tokens_estimated": 901,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 375,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 66,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 35,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+          "tokens_estimated": 304,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+          "tokens_estimated": 64,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/import/index.tsx",
+          "tokens_estimated": 60,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 1082,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 23,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 76,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 279,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 29,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/ai-extractor.ts",
+          "tokens_estimated": 117,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 147,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/rate-limiter.ts",
+          "tokens_estimated": 343,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/import-url.spec.ts",
+          "tokens_estimated": 719,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/ai-extractor.test.ts",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/ai-extractor.test.ts",
+          "tokens_estimated": 39,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 37116,
+        "output_tokens_estimated": 9096,
+        "reads_count": 17,
+        "writes_count": 22,
+        "repeated_reads_blocked": 3,
+        "anatomy_lookups": 14
+      }
+    },
+    {
+      "id": "session-2026-05-15-1742",
+      "started": "2026-05-15T00:42:50.837Z",
+      "ended": "2026-05-15T00:53:17.785Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/ai-extractor.ts",
+          "tokens_estimated": 427,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/recipe-url-import.ts",
+          "tokens_estimated": 2536,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/validation.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/rate-limiter.test.ts",
+          "tokens_estimated": 622,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/recipes/UrlImportInput.tsx",
+          "tokens_estimated": 568,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 5000,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 1082,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/rate-limiter.test.ts",
+          "tokens_estimated": 396,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/ai-extractor.test.ts",
+          "tokens_estimated": 255,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 444,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/recipe-url-import.test.ts",
+          "tokens_estimated": 380,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/recipes/UrlImportInput.tsx",
+          "tokens_estimated": 38,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/components/recipes/UrlImportInput.tsx",
+          "tokens_estimated": 10,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/rate-limiter.ts",
+          "tokens_estimated": 364,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/recipes.ts",
+          "tokens_estimated": 97,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/__tests__/rate-limiter.test.ts",
+          "tokens_estimated": 398,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 10235,
+        "output_tokens_estimated": 2382,
+        "reads_count": 7,
+        "writes_count": 9,
+        "repeated_reads_blocked": 7,
+        "anatomy_lookups": 6
       }
     }
   ],
