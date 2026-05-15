@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:52:16.910Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:56:57.037Z
 > Files: 651 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -948,7 +948,7 @@
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~1283 tok)
-- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4433 tok)
+- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4483 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
