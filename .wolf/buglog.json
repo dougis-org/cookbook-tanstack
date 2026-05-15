@@ -1579,6 +1579,86 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-07T21:03:07.408Z"
+    },
+    {
+      "id": "bug-099",
+      "timestamp": "2026-05-15T00:11:41.291Z",
+      "error_message": "Missing error handling in validateImportUrl",
+      "file": "src/lib/recipe-url-import.ts",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T00:11:41.291Z"
+    },
+    {
+      "id": "bug-100",
+      "timestamp": "2026-05-15T00:13:09.131Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T00:13:09.131Z"
+    },
+    {
+      "id": "bug-101",
+      "timestamp": "2026-05-15T00:13:16.014Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/server/trpc/routers/recipes.ts",
+      "root_cause": "21 lines replaced/restructured",
+      "fix": "Rewrote 29→9 lines (21 removed) | Also: const recipe = await new Recipe({; name: parsedRecipe.name,",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-15T00:13:21.517Z"
+    },
+    {
+      "id": "bug-102",
+      "timestamp": "2026-05-15T00:13:32.078Z",
+      "error_message": "CSS fix: onError",
+      "file": "src/routes/import/index.tsx",
+      "root_cause": "onError: (error) => { → (error) => handleMutationError(error, setUrlError),",
+      "fix": "Changed onError: (error) => { → (error) => handleMutationError(error, setUrlError),",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T00:13:32.078Z"
+    },
+    {
+      "id": "bug-103",
+      "timestamp": "2026-05-15T00:13:36.593Z",
+      "error_message": "Significant refactor of ",
+      "file": "src/routes/import/index.tsx",
+      "root_cause": "7 lines replaced/restructured",
+      "fix": "Rewrote 13→9 lines (7 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T00:13:36.593Z"
     }
   ]
 }

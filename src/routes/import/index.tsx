@@ -27,63 +27,53 @@ function ImportPage() {
   const [urlError, setUrlError] = useState<string | null>(null)
   const [tierWallReason, setTierWallReason] = useState<TierWallReason | null>(null)
 
+  function resetAllState() {
+    setParsedRecipe(null)
+    setServerError(null)
+    setUrlError(null)
+    setTierWallReason(null)
+  }
+
+  function handleMutationError(error: { message: string }, setError: (msg: string | null) => void) {
+    const tierWall = getTierWallReason(error)
+    if (tierWall) {
+      setTierWallReason(tierWall)
+      setError(null)
+    } else {
+      setError(error.message)
+      setTierWallReason(null)
+    }
+  }
+
   const importMutation = useMutation(
     trpc.recipes.import.mutationOptions({
       onSuccess: (result) => {
-        setParsedRecipe(null)
-        setServerError(null)
-        setUrlError(null)
-        setTierWallReason(null)
+        resetAllState()
         navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
-      onError: (error) => {
-        const tierWall = getTierWallReason(error)
-        if (tierWall) {
-          setTierWallReason(tierWall)
-          setServerError(null)
-        } else {
-          setServerError(error.message)
-          setTierWallReason(null)
-        }
-      },
+      onError: (error) => handleMutationError(error, setServerError),
     }),
   )
 
   const importFromUrlMutation = useMutation(
     trpc.recipes.importFromUrl.mutationOptions({
       onSuccess: (result) => {
-        setParsedRecipe(null)
-        setUrlError(null)
-        setServerError(null)
-        setTierWallReason(null)
+        resetAllState()
         navigate({ to: '/recipes/$recipeId', params: { recipeId: result.id } })
       },
-      onError: (error) => {
-        const tierWall = getTierWallReason(error)
-        if (tierWall) {
-          setTierWallReason(tierWall)
-          setUrlError(null)
-        } else {
-          setUrlError(error.message)
-          setTierWallReason(null)
-        }
-      },
+      onError: (error) => handleMutationError(error, setUrlError),
     }),
   )
 
-  async function handleUrlImport(url: string) {
-    setUrlError(null)
-    setServerError(null)
-    setTierWallReason(null)
+  function handleUrlImport(url: string) {
+    resetAllState()
     setFieldErrors([])
     importFromUrlMutation.mutate({ url })
   }
 
   async function handleSelectedFile(file: File) {
     setFieldErrors([])
-    setServerError(null)
-    setUrlError(null)
-    setTierWallReason(null)
+    resetAllState()
 
     try {
       const content = await file.text()
@@ -108,10 +98,7 @@ function ImportPage() {
   }
 
   function handleCancel() {
-    setParsedRecipe(null)
-    setServerError(null)
-    setUrlError(null)
-    setTierWallReason(null)
+    resetAllState()
   }
 
   function handleConfirm() {

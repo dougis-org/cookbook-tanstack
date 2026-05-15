@@ -1,126 +1,78 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UrlImportInput } from '../UrlImportInput'
 
 describe('UrlImportInput', () => {
-  it('renders URL input and submit button', () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
+  let onSubmit: ReturnType<typeof vi.fn>
 
+  beforeEach(() => {
+    onSubmit = vi.fn()
+  })
+
+  function setup(props: Partial<Parameters<typeof UrlImportInput>[0]> = {}) {
+    return render(
+      <UrlImportInput onSubmit={onSubmit} isPending={false} {...props} />
+    )
+  }
+
+  it('renders URL input and submit button', () => {
+    setup()
     expect(screen.getByPlaceholderText(/url/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /import/i })).toBeInTheDocument()
   })
 
   it('does not call onSubmit for empty URL', async () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
-
-    const button = screen.getByRole('button', { name: /import/i })
-    await userEvent.click(button)
-
+    setup()
+    await userEvent.click(screen.getByRole('button', { name: /import/i }))
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it('does not call onSubmit for whitespace-only URL', async () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
-
-    const input = screen.getByPlaceholderText(/url/i) as HTMLInputElement
-    await userEvent.type(input, '   ')
-
-    const button = screen.getByRole('button', { name: /import/i })
-    await userEvent.click(button)
-
+    setup()
+    await userEvent.type(screen.getByPlaceholderText(/url/i), '   ')
+    await userEvent.click(screen.getByRole('button', { name: /import/i }))
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
   it('calls onSubmit with trimmed URL', async () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
-
-    const input = screen.getByPlaceholderText(/url/i) as HTMLInputElement
-    await userEvent.type(input, '  https://example.com/recipe  ')
-
-    const button = screen.getByRole('button', { name: /import/i })
-    await userEvent.click(button)
-
+    setup()
+    await userEvent.type(screen.getByPlaceholderText(/url/i), '  https://example.com/recipe  ')
+    await userEvent.click(screen.getByRole('button', { name: /import/i }))
     expect(onSubmit).toHaveBeenCalledWith('https://example.com/recipe')
   })
 
   it('disables button when isPending is true', () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={true} />
-    )
-
-    const button = screen.getByRole('button', { name: /import/i })
-    expect(button).toBeDisabled()
+    setup({ isPending: true })
+    expect(screen.getByRole('button', { name: /import/i })).toBeDisabled()
   })
 
   it('shows loading state when isPending is true', () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput onSubmit={onSubmit} isPending={true} />
-    )
-
+    setup({ isPending: true })
     expect(screen.getByText(/loading|importing/i)).toBeInTheDocument()
   })
 
   it('displays error message when error prop is provided', () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput
-        onSubmit={onSubmit}
-        isPending={false}
-        error="Failed to import recipe"
-      />
-    )
-
+    setup({ error: 'Failed to import recipe' })
     expect(screen.getByText('Failed to import recipe')).toBeInTheDocument()
   })
 
   it('hides error message when no error', () => {
-    const onSubmit = vi.fn()
-    render(
-      <UrlImportInput
-        onSubmit={onSubmit}
-        isPending={false}
-        error={null}
-      />
-    )
-
+    setup({ error: null })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('clears URL input after successful submit', async () => {
-    const onSubmit = vi.fn()
-    const { rerender } = render(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
-
+    const { rerender } = setup()
     const input = screen.getByPlaceholderText(/url/i) as HTMLInputElement
-    await userEvent.type(input, 'https://example.com/recipe')
 
+    await userEvent.type(input, 'https://example.com/recipe')
     expect(input.value).toBe('https://example.com/recipe')
 
-    const button = screen.getByRole('button', { name: /import/i })
-    await userEvent.click(button)
+    await userEvent.click(screen.getByRole('button', { name: /import/i }))
 
-    // Simulate component re-render with new state
-    rerender(
-      <UrlImportInput onSubmit={onSubmit} isPending={false} />
-    )
+    rerender(<UrlImportInput onSubmit={onSubmit} isPending={false} />)
 
-    const inputAfter = screen.getByPlaceholderText(/url/i) as HTMLInputElement
-    expect(inputAfter.value).toBe('')
+    expect((screen.getByPlaceholderText(/url/i) as HTMLInputElement).value).toBe('')
   })
 })

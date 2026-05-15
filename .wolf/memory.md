@@ -746,3 +746,30 @@
 | 13:59 | Edited src/lib/recipe-url-import.ts | modified extractTextFromHtml() | ~31 |
 | 14:00 | Edited src/lib/__tests__/ai-extractor.test.ts | 7→7 lines | ~58 |
 | 14:03 | Edited e2e/import-url.spec.ts | reduced (-11 lines) | ~128 |
+| 15:55 | Session end: 8 writes across 7 files (-import.test.tsx, index.tsx, ai-extractor.ts, recipes.ts, recipe-url-import.ts) | 12 reads | ~17091 tok |
+
+## Session: 2026-05-15 17:05
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-15 17:06
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:11 | Edited src/lib/recipe-url-import.ts | added error handling | ~431 |
+| 17:12 | Created src/lib/__tests__/recipe-url-import.test.ts | — | ~2210 |
+| 17:12 | Created src/lib/__tests__/ai-extractor.test.ts | — | ~966 |
+| 17:12 | Created src/components/recipes/__tests__/UrlImportInput.test.tsx | — | ~785 |
+| 17:12 | Created e2e/import-url.spec.ts | — | ~901 |
+| 17:13 | Edited src/server/trpc/routers/recipes.ts | added nullish coalescing | ~375 |
+| 17:13 | Edited src/server/trpc/routers/recipes.ts | reduced (-20 lines) | ~66 |
+| 17:13 | Edited src/server/trpc/routers/recipes.ts | removed 23 lines | ~35 |
+| 17:13 | Edited src/routes/import/index.tsx | modified resetAllState() | ~304 |
+| 17:13 | Edited src/routes/import/index.tsx | modified handleUrlImport() | ~64 |
+| 17:13 | Edited src/routes/import/index.tsx | modified handleCancel() | ~60 |
+| 17:14 | Created src/server/trpc/routers/__tests__/recipe-url-import.test.ts | — | ~1082 |
+| 17:14 | Edited src/lib/recipe-url-import.ts | 2→3 lines | ~23 |
+| 17:14 | Edited src/server/trpc/routers/recipes.ts | 7→7 lines | ~76 |
+| 17:15 | Session end: 14 writes across 7 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 11 reads | ~42693 tok |
+| 17:27 | Session end: 14 writes across 7 files (recipe-url-import.ts, recipe-url-import.test.ts, ai-extractor.test.ts, UrlImportInput.test.tsx, import-url.spec.ts) | 11 reads | ~42693 tok |

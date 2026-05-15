@@ -10,11 +10,37 @@ import "@/db/models/classification";
 import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
-import { importedRecipeSchema } from "@/lib/validation";
+import { importedRecipeSchema, type ImportedRecipeInput } from "@/lib/validation";
 import { canCreatePrivate, canImport } from "@/lib/tier-entitlements";
 import { fetchAndNormalizeRecipe } from "@/lib/recipe-url-import";
 import { urlImportRateLimiter } from "@/lib/rate-limiter";
 import { createAnthropicExtractor } from "@/lib/ai-extractor";
+
+function buildImportedRecipeFields(fields: ImportedRecipeInput, userId: string, isPublic: boolean) {
+  return {
+    name: fields.name,
+    userId,
+    ingredients: fields.ingredients ?? undefined,
+    instructions: fields.instructions ?? undefined,
+    notes: fields.notes ?? undefined,
+    servings: fields.servings ?? undefined,
+    prepTime: fields.prepTime ?? undefined,
+    cookTime: fields.cookTime ?? undefined,
+    difficulty: fields.difficulty ?? undefined,
+    sourceId: fields.sourceId ?? undefined,
+    classificationId: fields.classificationId ?? undefined,
+    calories: fields.calories ?? undefined,
+    fat: fields.fat ?? undefined,
+    cholesterol: fields.cholesterol ?? undefined,
+    sodium: fields.sodium ?? undefined,
+    protein: fields.protein ?? undefined,
+    imageUrl: fields.imageUrl ?? undefined,
+    isPublic,
+    mealIds: fields.mealIds ?? [],
+    courseIds: fields.courseIds ?? [],
+    preparationIds: fields.preparationIds ?? [],
+  };
+}
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -418,28 +444,8 @@ export const recipesRouter = router({
       }
 
       const recipe = await new Recipe({
-        name: input.name,
-        userId: ctx.user.id,
-        ingredients: input.ingredients ?? undefined,
-        instructions: input.instructions ?? undefined,
-        notes: input.notes ?? undefined,
-        servings: input.servings ?? undefined,
-        prepTime: input.prepTime ?? undefined,
-        cookTime: input.cookTime ?? undefined,
-        difficulty: input.difficulty ?? undefined,
-        sourceId: input.sourceId ?? undefined,
-        classificationId: input.classificationId ?? undefined,
+        ...buildImportedRecipeFields(input, ctx.user.id, isPublic),
         dateAdded: parsedDate,
-        calories: input.calories ?? undefined,
-        fat: input.fat ?? undefined,
-        cholesterol: input.cholesterol ?? undefined,
-        sodium: input.sodium ?? undefined,
-        protein: input.protein ?? undefined,
-        imageUrl: input.imageUrl ?? undefined,
-        isPublic,
-        mealIds: input.mealIds ?? [],
-        courseIds: input.courseIds ?? [],
-        preparationIds: input.preparationIds ?? [],
       }).save();
 
       return {
@@ -451,7 +457,7 @@ export const recipesRouter = router({
   importFromUrl: verifiedProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ ctx, input }) => {
-      if (!canImport(ctx.user.tier)) {
+      if (!ctx.user.isAdmin && !canImport(ctx.user.tier)) {
         throw new TRPCError({
           code: "PAYMENT_REQUIRED",
           message: "Recipe import requires Executive Chef.",
@@ -472,29 +478,9 @@ export const recipesRouter = router({
 
       await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
 
-      const recipe = await new Recipe({
-        name: parsedRecipe.name,
-        userId: ctx.user.id,
-        ingredients: parsedRecipe.ingredients ?? undefined,
-        instructions: parsedRecipe.instructions ?? undefined,
-        notes: parsedRecipe.notes ?? undefined,
-        servings: parsedRecipe.servings ?? undefined,
-        prepTime: parsedRecipe.prepTime ?? undefined,
-        cookTime: parsedRecipe.cookTime ?? undefined,
-        difficulty: parsedRecipe.difficulty ?? undefined,
-        sourceId: parsedRecipe.sourceId ?? undefined,
-        classificationId: parsedRecipe.classificationId ?? undefined,
-        calories: parsedRecipe.calories ?? undefined,
-        fat: parsedRecipe.fat ?? undefined,
-        cholesterol: parsedRecipe.cholesterol ?? undefined,
-        sodium: parsedRecipe.sodium ?? undefined,
-        protein: parsedRecipe.protein ?? undefined,
-        imageUrl: parsedRecipe.imageUrl ?? undefined,
-        isPublic: true,
-        mealIds: [],
-        courseIds: [],
-        preparationIds: [],
-      }).save();
+      const recipe = await new Recipe(
+        buildImportedRecipeFields(parsedRecipe, ctx.user.id, true)
+      ).save();
 
       return {
         id: recipe.id,

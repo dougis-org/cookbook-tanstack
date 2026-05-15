@@ -14,9 +14,15 @@ vi.mock('@anthropic-ai/sdk', () => {
   }
 })
 
+async function getMockCreate() {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk')
+  return vi.mocked(new Anthropic().messages.create)
+}
+
 describe('AIExtractor', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    process.env.ANTHROPIC_API_KEY = 'test-key'
   })
 
   it('throws if ANTHROPIC_API_KEY is missing', () => {
@@ -29,11 +35,7 @@ describe('AIExtractor', () => {
   })
 
   it('extracts text from first content block', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key'
-
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
-    const mockCreate = vi.mocked(new Anthropic().messages.create)
-
+    const mockCreate = await getMockCreate()
     mockCreate.mockResolvedValueOnce({
       content: [{ type: 'text', text: 'extracted recipe' }],
     } as any)
@@ -49,11 +51,7 @@ describe('AIExtractor', () => {
   })
 
   it('sends cache_control on system prompt', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key'
-
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
-    const mockCreate = vi.mocked(new Anthropic().messages.create)
-
+    const mockCreate = await getMockCreate()
     mockCreate.mockResolvedValueOnce({
       content: [{ type: 'text', text: 'result' }],
     } as any)
@@ -75,11 +73,7 @@ describe('AIExtractor', () => {
   })
 
   it('passes maxOutputTokens as max_tokens in request', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key'
-
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
-    const mockCreate = vi.mocked(new Anthropic().messages.create)
-
+    const mockCreate = await getMockCreate()
     mockCreate.mockResolvedValueOnce({
       content: [{ type: 'text', text: 'result' }],
     } as any)
@@ -96,11 +90,7 @@ describe('AIExtractor', () => {
   })
 
   it('uses claude-haiku-4-5-20251001 model', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key'
-
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
-    const mockCreate = vi.mocked(new Anthropic().messages.create)
-
+    const mockCreate = await getMockCreate()
     mockCreate.mockResolvedValueOnce({
       content: [{ type: 'text', text: 'result' }],
     } as any)
@@ -117,13 +107,8 @@ describe('AIExtractor', () => {
   })
 
   it('propagates SDK errors', async () => {
-    process.env.ANTHROPIC_API_KEY = 'test-key'
-
-    const { default: Anthropic } = await import('@anthropic-ai/sdk')
-    const mockCreate = vi.mocked(new Anthropic().messages.create)
-
-    const testError = new Error('API error')
-    mockCreate.mockRejectedValueOnce(testError)
+    const mockCreate = await getMockCreate()
+    mockCreate.mockRejectedValueOnce(new Error('API error'))
 
     const extractor = createAnthropicExtractor()
 

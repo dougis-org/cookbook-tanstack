@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-07T21:03:07.397Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:14:47.930Z
 > Files: 650 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -760,7 +760,7 @@
 
 ## e2e/
 
-- `import-url.spec.ts` — Declares user (~1450 tok)
+- `import-url.spec.ts` — Declares user (~901 tok)
 
 ## openspec/changes/archive/2026-04-24-build-tier-pricing-page/
 
@@ -917,7 +917,7 @@
 
 ## src/components/recipes/__tests__/
 
-- `UrlImportInput.test.tsx` — onSubmit (~1059 tok)
+- `UrlImportInput.test.tsx` — setup (~785 tok)
 
 ## src/components/ui/
 
@@ -937,17 +937,17 @@
 - `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor (~381 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~362 tok)
-- `recipe-url-import.ts` — Exports fetchAndNormalizeRecipe (~2161 tok)
+- `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2506 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
 - `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
-- `ai-extractor.test.ts` — Declares mockClient (~1116 tok)
+- `ai-extractor.test.ts` — mockClient: getMockCreate (~966 tok)
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~622 tok)
-- `recipe-url-import.test.ts` — Declares mockAIExtractor (~1925 tok)
+- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse (~2210 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
@@ -996,7 +996,7 @@
 
 ## src/routes/import/
 
-- `index.tsx` — Route (~1824 tok)
+- `index.tsx` — Route (~1721 tok)
 
 ## src/routes/recipes/
 
@@ -1024,14 +1024,14 @@
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
 - `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
-- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~5218 tok)
+- `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~5000 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
 
 ## src/server/trpc/routers/__tests__/
 
 - `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~11032 tok)
-- `recipe-url-import.test.ts` — Declares ctxWithoutTier (~909 tok)
+- `recipe-url-import.test.ts` — Declares mockFetchAndNormalize (~1082 tok)
 - `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
 - `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
 - `test-router.test.ts` — Declares user (~320 tok)

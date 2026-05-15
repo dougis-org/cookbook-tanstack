@@ -2,10 +2,51 @@ import { TRPCError } from '@trpc/server'
 import { importedRecipeSchema, type ImportedRecipeInput } from './validation'
 import { AIExtractor } from './ai-extractor'
 
+export function validateImportUrl(url: string): void {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Invalid URL' })
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Only HTTP and HTTPS URLs are allowed' })
+  }
+
+  const hostname = parsed.hostname.toLowerCase()
+
+  if (
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    hostname === '0.0.0.0' ||
+    hostname === '::1' ||
+    hostname === '[::1]'
+  ) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
+  }
+
+  // Block IPv4 loopback (127.0.0.0/8) and private ranges
+  if (/^127\./.test(hostname) || /^10\./.test(hostname) || /^192\.168\./.test(hostname)) {
+    throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
+  }
+
+  // Block 172.16.0.0/12
+  const parts = hostname.split('.')
+  if (parts.length === 4 && parts[0] === '172') {
+    const second = parseInt(parts[1], 10)
+    if (second >= 16 && second <= 31) {
+      throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
+    }
+  }
+}
+
 export async function fetchAndNormalizeRecipe(
   url: string,
   extractor: AIExtractor
 ): Promise<ImportedRecipeInput> {
+  validateImportUrl(url)
+
   let html: string
 
   try {
