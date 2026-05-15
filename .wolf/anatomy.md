@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T00:56:57.037Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T04:31:17.463Z
 > Files: 651 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -926,7 +926,7 @@
 ## src/e2e/
 
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
-- `import-url.spec.ts` — Declares urlInput (~719 tok)
+- `import-url.spec.ts` — Declares urlInput (~708 tok)
 
 ## src/e2e/helpers/
 

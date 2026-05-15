@@ -1723,6 +1723,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-15T00:49:06.082Z"
+    },
+    {
+      "id": "bug-108",
+      "timestamp": "2026-05-15T04:31:13.164Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/e2e/import-url.spec.ts",
+      "root_cause": "Had \"https://invalid-site-that-does-not-exist-12345.ex",
+      "fix": "Changed to 'input[type=\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T04:31:13.164Z"
     }
   ]
 }
