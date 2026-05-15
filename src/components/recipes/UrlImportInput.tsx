@@ -18,7 +18,6 @@ export function UrlImportInput({
     const trimmedUrl = url.trim()
     if (trimmedUrl) {
       onSubmit(trimmedUrl)
-      setUrl('')
     }
   }
 
