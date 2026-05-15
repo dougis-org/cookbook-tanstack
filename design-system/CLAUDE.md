@@ -131,6 +131,32 @@ brand. Reach for a Lucide icon instead.
 
 ---
 
+## Adblock-safe classnames for tier-gated surfaces
+
+**Any element that renders an ad, sponsor unit, upgrade prompt, or tier
+upsell MUST use a neutral classname.** Browser ad-blockers (uBlock Origin,
+AdGuard, Brave Shields) apply cosmetic filters from EasyList against
+classname patterns — not against what the element actually does. The
+following prefixes are filtered and will be silently `display: none`'d for
+~40% of your users:
+
+- `.ad-*` / `[data-ad]` / `[id*="ad-"]`
+- `.sponsor-*` / `.sponsored-*`
+- `.promo-*` / `.promotion-*`
+- `.banner-*` / `.adv-*` / `.adsbygoogle`
+
+Use a semantically neutral prefix instead. The reference mocks in this
+repo use `.up-*` ("upgrade prompt"): `.up-card`, `.up-media`, `.up-body`,
+`.up-cta`. Other safe choices: `.tier-promo-*`, `.upsell-*`, or a generic
+feature name (`.kitchen-card`, etc).
+
+This applies equally to the ad container, its children, any data
+attributes, and the iframe `name`/`id` if you embed an ad-network unit.
+If the entire revenue surface gets blocked, the entire conversion funnel
+for Prep Cook collapses with it.
+
+---
+
 ## Iconography
 
 **Lucide React.** Already a dependency (`lucide-react`). Use it in all

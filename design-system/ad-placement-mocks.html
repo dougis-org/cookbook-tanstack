@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My CookBooks — Free-tier ad placement mocks</title>
+<link rel="icon" type="image/svg+xml" href="design-system/assets/favicon.svg" />
+<link rel="stylesheet" href="design-system/tokens/colors-and-type.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #0a0f1c; font-family: var(--font-sans); }
+
+  /* ── shared mock chrome ── */
+  .mock {
+    background: var(--theme-bg);
+    color: var(--theme-fg);
+    font-family: var(--font-sans);
+    width: 100%; height: 100%;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .mock-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 24px;
+    background: var(--theme-surface-raised);
+    border-bottom: 1px solid var(--theme-border);
+    flex-shrink: 0;
+  }
+  .mock-header .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--theme-fg);
+    letter-spacing: -0.02em;
+    font-variation-settings: "SOFT" 80, "WONK" 1;
+  }
+  .mock-header .brand .gradient {
+    background: linear-gradient(to right, var(--theme-accent), #60a5fa);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .mock-header .nav { display: flex; gap: 18px; margin-left: 24px; flex: 1; }
+  .mock-header .nav a {
+    color: var(--theme-fg-muted); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+  }
+  .mock-header .nav a.active { color: var(--theme-fg); }
+  .mock-header .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--theme-accent); opacity: .25;
+  }
+  .mock-body { flex: 1; overflow: hidden; padding: 32px 40px; }
+  .mock-body h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 36px;
+    letter-spacing: -0.025em;
+    margin: 0 0 20px;
+    color: var(--theme-fg);
+    font-variation-settings: "SOFT" 80, "WONK" 0;
+  }
+  .mock-body h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 14px;
+    color: var(--theme-fg);
+    font-variation-settings: "SOFT" 80, "WONK" 0;
+  }
+
+  /* ── the SLOT — what this whole doc is about ──
+     Naming history: started as .ad-slot (blocked by ad-blocker cosmetic
+     filters), renamed to .sponsor-card (outer survived, but .sponsor-text
+     was still eaten by EasyList). Final: neutral .up-* prefix
+     ("upgrade prompt"). Production must do the same — avoid the
+     ad-*/sponsor-*/promo-*/banner-* families entirely. Adblockers filter
+     by classname pattern, not by what the element actually does. */
+  .up-card {
+    background: var(--theme-surface);
+    border: 1px dashed var(--theme-border);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex; align-items: center; gap: 16px;
+    position: relative;
+  }
+  .up-card::before {
+    content: "Sponsored";
+    position: absolute; top: -8px; left: 16px;
+    background: var(--theme-bg);
+    color: var(--theme-fg-subtle);
+    font-size: 10px; font-weight: 600;
+    padding: 0 6px;
+    letter-spacing: .12em;
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+  }
+  .up-card .up-media {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .up-card .up-body { flex: 1; min-width: 0; }
+  .up-card .up-body .t {
+    font-size: 14px; font-weight: 600; color: var(--theme-fg);
+    margin-bottom: 2px;
+  }
+  .up-card .up-body .d {
+    font-size: 12px; color: var(--theme-fg-subtle);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .up-card .up-cta {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 4px; flex-shrink: 0;
+    border-left: 1px solid var(--theme-border-muted);
+    padding-left: 16px;
+  }
+  .up-card .up-cta .remove {
+    font-size: 12px; color: var(--theme-accent);
+    text-decoration: none; font-weight: 500;
+    white-space: nowrap;
+  }
+  .up-card .up-cta .price {
+    font-size: 11px; color: var(--theme-fg-subtle);
+  }
+
+  /* annotation arrows on artboards */
+  .annot {
+    position: absolute;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--theme-accent);
+    background: rgb(0 0 0 / .8);
+    padding: 4px 8px; border-radius: 4px;
+    border: 1px solid var(--theme-accent);
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  /* card patterns reused across artboards */
+  .card {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .card-row {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 16px;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+  }
+  .card-row .ic {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: color-mix(in srgb, var(--theme-accent) 12%, transparent);
+    color: var(--theme-accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-weight: 700;
+  }
+  .card-row .t { font-weight: 600; font-size: 15px; color: var(--theme-fg); }
+  .card-row .d { font-size: 13px; color: var(--theme-fg-subtle); margin-top: 2px; }
+
+  /* recipe card */
+  .recipe-card {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .recipe-card .img {
+    aspect-ratio: 16/10;
+    background: linear-gradient(135deg, var(--theme-surface-hover), var(--theme-surface-raised));
+  }
+  .recipe-card .body { padding: 12px 14px; }
+  .recipe-card .title { font-weight: 600; font-size: 15px; color: var(--theme-fg); margin-bottom: 4px; }
+  .recipe-card .meta { font-size: 12px; color: var(--theme-fg-subtle); }
+  .pill {
+    display: inline-block;
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 999px; font-weight: 500;
+  }
+  .pill-classification {
+    background: var(--theme-badge-classification-bg);
+    color: var(--theme-badge-classification-text);
+    border: 1px solid var(--theme-badge-classification-border);
+  }
+
+  /* usage progress */
+  .progress {
+    height: 6px; border-radius: 999px;
+    background: var(--theme-border);
+    overflow: hidden;
+  }
+  .progress > div { height: 100%; background: var(--theme-accent); border-radius: 999px; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ad-mocks/MockHeader.jsx"></script>
+<script type="text/babel" src="ad-mocks/AdSlot.jsx"></script>
+<script type="text/babel" src="ad-mocks/HomeMock.jsx"></script>
+<script type="text/babel" src="ad-mocks/RecipesMock.jsx"></script>
+<script type="text/babel" src="ad-mocks/RecipeDetailMock.jsx"></script>
+<script type="text/babel" src="ad-mocks/UpgradedMock.jsx"></script>
+<script type="text/babel" src="ad-mocks/app.jsx"></script>
+
+</body>
+</html>

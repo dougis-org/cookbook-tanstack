@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>My CookBooks — UX & Conversion Audit</title>
+<link rel="icon" type="image/svg+xml" href="design-system/assets/favicon.svg" />
+<link rel="stylesheet" href="design-system/tokens/colors-and-type.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--theme-bg);
+    color: var(--theme-fg);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: var(--theme-accent); text-decoration: none; }
+  a:hover { color: var(--theme-accent-hover); text-decoration: underline; }
+  code, pre { font-family: var(--font-mono); font-size: 0.9em; }
+  code { background: var(--theme-surface); padding: 0.1em 0.35em; border-radius: 4px; border: 1px solid var(--theme-border-muted); }
+  pre { background: var(--theme-surface); padding: 16px; border-radius: 8px; border: 1px solid var(--theme-border); overflow-x: auto; }
+  hr { border: 0; border-top: 1px solid var(--theme-border); margin: 56px 0; }
+
+  .page { max-width: 880px; margin: 0 auto; padding: 64px 32px 96px; }
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 12px; font-weight: 500;
+    color: var(--theme-fg-subtle);
+    text-transform: uppercase; letter-spacing: .12em;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 16px;
+    color: var(--theme-fg);
+    font-variation-settings: "SOFT" 80, "WONK" 0;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 20px;
+    color: var(--theme-fg);
+    font-variation-settings: "SOFT" 80, "WONK" 0;
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.015em;
+    margin: 32px 0 12px;
+    color: var(--theme-fg);
+    font-variation-settings: "SOFT" 80, "WONK" 0;
+  }
+  h4 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0 0 4px;
+    color: var(--theme-fg);
+  }
+  p { margin: 0 0 16px; color: var(--theme-fg-muted); }
+  .lead { font-size: 19px; line-height: 1.55; color: var(--theme-fg-muted); }
+  strong { color: var(--theme-fg); font-weight: 600; }
+
+  .header { margin-bottom: 56px; }
+  .header .meta {
+    display: flex; gap: 24px; flex-wrap: wrap;
+    font-size: 13px; color: var(--theme-fg-subtle);
+    margin-top: 24px; padding-top: 24px;
+    border-top: 1px solid var(--theme-border-muted);
+  }
+  .header .meta span strong { color: var(--theme-fg-muted); font-weight: 500; }
+
+  /* TL;DR callout */
+  .tldr {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-left: 3px solid var(--theme-accent);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 0 0 48px;
+  }
+  .tldr h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    color: var(--theme-fg-subtle);
+    margin-bottom: 12px;
+  }
+  .tldr ol { margin: 0; padding-left: 22px; color: var(--theme-fg); }
+  .tldr ol li { margin-bottom: 10px; }
+  .tldr ol li:last-child { margin-bottom: 0; }
+  .tldr ol li strong { color: var(--theme-fg); }
+
+  /* Severity tags */
+  .sev {
+    display: inline-flex; align-items: center;
+    font-family: var(--font-sans);
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em;
+    padding: 3px 8px; border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+  .sev-fatal { background: #dc2626; color: white; }
+  .sev-high { background: rgb(245 158 11 / .15); color: #f59e0b; border: 1px solid rgb(245 158 11 / .35); }
+  .sev-med { background: var(--theme-accent); color: white; opacity: .85; }
+  .sev-low { background: var(--theme-surface-raised); color: var(--theme-fg-muted); border: 1px solid var(--theme-border); }
+
+  /* Funnel diagram */
+  .funnel {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 32px;
+    margin: 32px 0 48px;
+  }
+  .funnel-row {
+    display: grid;
+    grid-template-columns: 1fr 24px 1.4fr;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+  }
+  .funnel-row + .funnel-row { border-top: 1px dashed var(--theme-border-muted); }
+  .funnel-stage {
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .funnel-stage .num {
+    font-family: var(--font-display); font-weight: 600;
+    color: var(--theme-fg-subtle);
+    font-size: 18px;
+    width: 22px;
+  }
+  .funnel-stage .name { font-weight: 600; color: var(--theme-fg); font-size: 15px; }
+  .funnel-arrow {
+    color: var(--theme-fg-subtle); font-size: 18px; text-align: center;
+  }
+  .funnel-leak {
+    font-size: 13px; color: var(--theme-fg-muted);
+  }
+  .funnel-leak.is-leak {
+    color: #f59e0b;
+  }
+  .funnel-leak.is-block {
+    color: #dc2626; font-weight: 500;
+  }
+  .leak-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; margin-right: 8px; vertical-align: 2px; }
+
+  /* Finding cards */
+  .finding {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+  }
+  .finding-head {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .finding-id {
+    font-family: var(--font-mono);
+    font-size: 13px; color: var(--theme-fg-subtle);
+    min-width: 32px;
+  }
+  .finding-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 19px; letter-spacing: -0.012em;
+    color: var(--theme-fg);
+    line-height: 1.3;
+    flex: 1;
+  }
+  .finding dl { margin: 0; display: grid; grid-template-columns: 100px 1fr; gap: 8px 16px; }
+  .finding dt {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--theme-fg-subtle); font-weight: 500; padding-top: 2px;
+  }
+  .finding dd { margin: 0; color: var(--theme-fg-muted); font-size: 15px; }
+  .finding dd strong { color: var(--theme-fg); }
+
+  /* Tier restructure table */
+  .tier-table {
+    width: 100%; border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+  }
+  .tier-table th, .tier-table td {
+    text-align: left; padding: 12px 14px;
+    border-bottom: 1px solid var(--theme-border-muted);
+    vertical-align: top;
+  }
+  .tier-table th {
+    color: var(--theme-fg-subtle);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    background: var(--theme-surface);
+  }
+  .tier-table td.tier-name {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 16px; color: var(--theme-fg);
+  }
+  .tier-table td.price { font-weight: 600; color: var(--theme-fg); }
+  .tier-table .was {
+    text-decoration: line-through; color: var(--theme-fg-subtle); margin-right: 8px;
+  }
+  .tier-table .now { color: var(--theme-accent); font-weight: 600; }
+
+  /* Comparison: current vs proposed */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0 8px;
+  }
+  .compare > div {
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-border-muted);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-size: 14px;
+  }
+  .compare h5 {
+    margin: 0 0 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--theme-fg-subtle);
+    font-weight: 500;
+  }
+  .compare .current { border-left: 3px solid var(--theme-fg-subtle); }
+  .compare .proposed { border-left: 3px solid var(--theme-accent); }
+
+  /* Roadmap */
+  .phase {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-top: 1px solid var(--theme-border-muted);
+  }
+  .phase:first-of-type { border-top: 0; padding-top: 0; }
+  .phase-num {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 600;
+    color: var(--theme-accent);
+    line-height: 1;
+    font-variation-settings: "SOFT" 80, "WONK" 1;
+  }
+  .phase h4 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .phase ul { margin: 8px 0 0; padding-left: 18px; color: var(--theme-fg-muted); }
+  .phase ul li { margin-bottom: 4px; }
+
+  @media (max-width: 720px) {
+    .page { padding: 40px 20px 64px; }
+    .funnel-row { grid-template-columns: 1fr; }
+    .funnel-arrow { display: none; }
+    .compare { grid-template-columns: 1fr; }
+    .phase { grid-template-columns: 1fr; gap: 8px; }
+    .finding dl { grid-template-columns: 1fr; gap: 4px; }
+    .finding dt { padding-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <header class="header">
+    <div class="eyebrow">UX & Conversion Audit · May 2026 · v2</div>
+    <h1>My CookBooks needs a checkout button — and a felt reason to use it.</h1>
+    <p class="lead">
+      The product is well built and on-brand. The tier structure is sound. The
+      funnel has two structural breaks that account for most of the missing
+      paid revenue. Everything else is polish.
+    </p>
+    <div class="meta">
+      <span><strong>Scope:</strong> anonymous landing → register → free use → upgrade</span>
+      <span><strong>Source:</strong> <code>dougis-org/cookbook-tanstack@main</code></span>
+      <span><strong>Files reviewed:</strong> 14 routes + lib</span>
+    </div>
+  </header>
+
+  <!-- TL;DR -->
+  <div class="tldr">
+    <h2>TL;DR — the three things that matter</h2>
+    <ol>
+      <li><strong>Ship checkout.</strong> <code>/change-tier</code> currently
+      reads "Plan changes coming soon." There is no way for any user to pay,
+      anywhere in the app. Everything else in this document is downstream of
+      fixing this.</li>
+      <li><strong>Make free-tier ads actually felt.</strong> The first paid
+      tier (Prep Cook, $27.99/yr) exists to remove ads — that's its single
+      differentiating value. But <code>ad-policy.ts</code> only renders ads
+      on <code>public-marketing</code> / <code>public-content</code> pages,
+      so once a Home Cook signs in they never see one. Tier 2 sells a relief
+      the user has never experienced. Either serve ads on free-tier app
+      pages (so removal feels meaningful) or repackage what Prep Cook
+      unlocks.</li>
+      <li><strong>Sell the product on the landing page.</strong> The hero
+      says "CookBook" (wrong brand name), and the three feature cards all
+      describe the same thing: browsing. There is no mention of saving,
+      organising, importing, sharing, or printing — the things people would
+      actually pay for.</li>
+      <li><strong>Also worth a hard look:</strong> Import is locked at the
+      $99.99/yr top tier and Private recipes at $59.99/yr. Both are strong
+      acquisition hooks; consider whether pulling either down (especially
+      Import) would lift conversion more than they currently earn at the
+      top.</li>
+    </ol>
+  </div>
+
+  <!-- Funnel -->
+  <h2>The funnel, with leaks marked</h2>
+  <p>
+    Tracing the path of a brand-new visitor through the product as it exists
+    today. Stage names map to actual routes; leak severity is qualitative — no
+    analytics were inspected.
+  </p>
+
+  <div class="funnel">
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">01</span><span class="name">Anonymous landing &nbsp;<code style="font-size:12px">/</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span>Hero is wrong-named, features describe browsing only, no paid value props, no signup CTA above the fold.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">02</span><span class="name">Register &nbsp;<code style="font-size:12px">/auth/register</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span>Bare form. No "free forever / no card" reassurance, no benefits panel, no tier preselect.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">03</span><span class="name">Verify email</span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span><code style="font-size:12px">requireVerifiedAuth</code> blocks the first satisfying action. User leaves the app to click an email link before ever creating a recipe.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">04</span><span class="name">Home (authed) &nbsp;<code style="font-size:12px">/home</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak"><span class="leak-dot"></span>Two columns of links. No usage, no recent activity, no imagery, no upgrade nudge in context.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">05</span><span class="name">Create + save recipes &nbsp;<code style="font-size:12px">/recipes/new</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span>Working core loop, but no ads on free-tier app pages — so Prep Cook's value prop (no ads) is invisible to the people meant to buy it. See F2.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">06</span><span class="name">Hit free-tier limit &nbsp;<code style="font-size:12px">TierWall</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span>Limit appears only at 100%. No progressive nudge at 70% or 90%. Wall CTA points to pricing, not to a one-click upgrade.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">07</span><span class="name">Pricing &nbsp;<code style="font-size:12px">/pricing</code></span></div>
+      <div class="funnel-arrow">↓</div>
+      <div class="funnel-leak is-leak"><span class="leak-dot"></span>4 tiers, no monthly/annual toggle, no "most popular", weak first-paid value prop, no FAQ, no proof.</div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="funnel-stage"><span class="num">08</span><span class="name">Pay &nbsp;<code style="font-size:12px">/change-tier</code></span></div>
+      <div class="funnel-arrow">✕</div>
+      <div class="funnel-leak is-block"><span class="leak-dot"></span><strong>HARD STOP.</strong> Page reads "Plan changes coming soon." No Stripe checkout wired up. Funnel ends here.</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Tier restructure -->
+  <h2>The tier 2 problem</h2>
+  <p>
+    Prep Cook ($27.99/yr) is the first paid step, and its single value prop
+    is <strong>removing ads</strong> — that's a reasonable, well-priced first
+    rung for a content-heavy product. The issue isn't the tier; it's that
+    free users <strong>never experience the thing they'd be paying to remove</strong>.
+  </p>
+  <p>
+    Looking at <code>src/lib/ad-policy.ts</code>:
+  </p>
+  <pre><code>const AD_ENABLED_ROLES: PageRole[] = ['public-marketing', 'public-content']</code></pre>
+  <p>
+    Ads render only on the public landing + public-content routes — not on
+    <code>/home</code>, <code>/recipes</code>, recipe detail, or any other
+    authed-user surface. A Home Cook who saves 10 recipes and uses the app
+    daily literally never sees an ad. So the Prep Cook upgrade is selling
+    a relief from something they've never felt.
+  </p>
+  <p>
+    Two ways to fix it, in rough order of leverage:
+  </p>
+
+  <h3>Option A — deliver the pain (recommended)</h3>
+  <p>
+    Add a single banner ad slot to free-tier authed pages: <code>/home</code>,
+    <code>/recipes</code> (above the grid), and recipe detail (between
+    ingredients and steps, or at the bottom). Keep the slot quiet — one
+    unit, not three — so free still feels usable. This validates the existing
+    pricing structure: Prep Cook becomes "buy back the clean view of the
+    product you already know." That's a measurable, daily-friction-driven
+    upgrade trigger.
+  </p>
+  <p>
+    Expand <code>AD_ENABLED_ROLES</code> to include
+    <code>authenticated-home</code> and <code>authenticated-task</code>;
+    <code>showUserAds()</code> already correctly returns <code>true</code>
+    for <code>home-cook</code>, so the gating is already right — the policy
+    just isn't being applied to the pages where it would matter.
+  </p>
+
+  <h3>Option B — repackage Prep Cook</h3>
+  <p>
+    If you'd rather not serve ads in-app, Prep Cook needs a second tangible
+    feature to justify the price. Candidates: <strong>print exports</strong>
+    (if currently free, gate it), <strong>basic recipe import via URL</strong>
+    (today only at top tier), <strong>cookbook PDF download</strong>, or
+    <strong>recipe sharing links</strong>. Pick the cheapest-to-build one
+    that has the highest "oh I'd use that" rating.
+  </p>
+
+  <h3>Worth considering separately: Import + Private placement</h3>
+  <p>
+    Independent of the ads question — Import is currently the highest-tier
+    feature ($99.99/yr). It's also the most search-friendly acquisition hook
+    ("how do I import my recipes from <em>X</em>"). Top-tier gating is
+    defensible (limits abuse, anchors the premium price) but you should
+    decide deliberately: is Import a <em>premium</em> feature, or an
+    <em>acquisition</em> feature? Same question for Private recipes at
+    Sous Chef ($59.99/yr). Both decisions are upstream of the pricing
+    page redesign in F9.
+  </p>
+
+  <hr>
+
+  <!-- Findings -->
+  <h2>Findings, ranked by impact ÷ effort</h2>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F1</span>
+      <span class="finding-title">Checkout doesn't exist</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-fatal">Fatal</span></dd>
+      <dt>Where</dt><dd><code>src/routes/change-tier.tsx</code> renders <em>"Plan changes coming soon."</em></dd>
+      <dt>Why it matters</dt><dd>There is no path from "want to pay" to "have paid." Every other recommendation in this document is moot until this is fixed.</dd>
+      <dt>Recommendation</dt><dd>Wire up Stripe checkout (<code>src/lib/stripe.ts</code> already exists). Minimum viable flow: tier card "Upgrade" → Stripe Checkout session → webhook updates <code>user.tier</code> → success page lands user back on <code>/account</code> with new entitlements. Annual + monthly price IDs per tier.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F2</span>
+      <span class="finding-title">Prep Cook's value (no ads) is invisible to the people meant to buy it</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-fatal">Fatal</span></dd>
+      <dt>Where</dt><dd><code>src/lib/ad-policy.ts</code> — ads only render on <code>public-marketing</code> + <code>public-content</code> roles. <code>src/lib/tier-entitlements.ts</code> — <code>showUserAds</code> correctly returns <code>true</code> for <code>home-cook</code>, but no app page asks the policy.</dd>
+      <dt>Why it matters</dt><dd>Prep Cook ($27.99/yr) exists to remove ads — that's the differentiator at the cheapest paid step. But Home Cook users <em>never see ads on the pages they actually live on</em> (<code>/home</code>, <code>/recipes</code>, recipe detail). The upgrade sells a relief from a friction the user has never felt. This is structurally the same problem as F1 (no checkout) — the entry-level conversion path is broken at the demand side rather than the supply side.</dd>
+      <dt>Recommendation</dt><dd>Add a single banner ad slot to free-tier authed pages — quiet (one unit, not a stack), one location per page. Extend <code>AD_ENABLED_ROLES</code> to include <code>authenticated-home</code> and <code>authenticated-task</code>; <code>showUserAds()</code> already gates correctly by tier. The Prep Cook pitch then becomes <em>"buy back the clean view of the product you already know,"</em> which is the strongest possible framing for a removing-friction upgrade.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F3</span>
+      <span class="finding-title">Landing page doesn't sell the product</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-high">High</span></dd>
+      <dt>Where</dt><dd><code>src/routes/index.tsx</code></dd>
+      <dt>Why it matters</dt><dd>Three issues compound: (1) the hero says "CookBook" instead of "My CookBooks" — the brand name in the design system. (2) The three feature cards all describe browsing — Recipe Collection, Categories, Search & Filter — they're the same feature. (3) There is no mention of <em>saving</em>, <em>importing</em>, <em>private cookbooks</em>, <em>printing</em>, or <em>sharing</em> — the things behind a paid plan.</dd>
+      <dt>Recommendation</dt><dd>Rewrite hero with the brand name; rewrite features around the verbs the product enables (<strong>Save</strong>, <strong>Organise</strong>, <strong>Import</strong>, <strong>Print</strong>, <strong>Share</strong>); add a product screenshot or a recipe image; primary CTA → <em>Start free</em> (signup), secondary → <em>Browse public recipes</em>.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F4</span>
+      <span class="finding-title">Top-tier features are likely under-earning at the top tier</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>src/lib/tier-entitlements.ts</code> — <code>canImport</code> requires <code>executive-chef</code>; <code>canCreatePrivate</code> requires <code>sous-chef</code>.</dd>
+      <dt>Why it matters</dt><dd>Import is the most search-friendly acquisition hook in the entire product ("how do I import my recipes from <em>X</em>"). Locking it at $99.99/yr is defensible — it limits abuse and anchors the premium price — but worth deciding deliberately rather than by default. Same question for Private recipes at $59.99/yr. Tier 1 (Prep Cook) already has a clear job (remove ads); tiers 3 and 4 should each have one too.</dd>
+      <dt>Recommendation</dt><dd>Decide explicitly: is Import a <em>premium</em> feature (keeps it where it is) or an <em>acquisition</em> feature (pull it down to Sous Chef, anchor Executive Chef on family sharing or API)? Worth A/B testing if traffic allows. Independent of F2.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F5</span>
+      <span class="finding-title">No progressive paywall nudges</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>src/routes/recipes/index.tsx</code> — <code>atRecipeLimit</code> only fires at 100%.</dd>
+      <dt>Why it matters</dt><dd>The first time a user learns there's a limit is the moment they hit it. That's frustrating and reactive. Showing the ceiling earlier turns the limit into a planning signal, not a wall.</dd>
+      <dt>Recommendation</dt><dd>Three tiers of nudge: at <strong>70%</strong>, a quiet inline notice on <code>/recipes</code> and the recipe form ("8 of 10 recipes used"). At <strong>90%</strong>, a persistent banner with an "Upgrade" button. At <strong>100%</strong>, the existing TierWall — keep it.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F6</span>
+      <span class="finding-title">Authed home is a links menu, not a dashboard</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>src/routes/home.tsx</code></dd>
+      <dt>Why it matters</dt><dd>The first thing every returning user sees is two columns of generic links. There's no signal about <em>their</em> data — usage, recent activity, the cookbook they last opened — and no surface to drop an in-context upgrade nudge.</dd>
+      <dt>Recommendation</dt><dd>Reframe as a dashboard: usage card (recipes / cookbooks with progress bars), recent recipes (3–6 thumbnails), recent cookbook, a single contextual upgrade card when nearing limits or when a paid-only action was attempted recently.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F7</span>
+      <span class="finding-title">Account page's only upgrade path is a text link</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>src/routes/account.tsx</code></dd>
+      <dt>Why it matters</dt><dd>The page does the right thing showing usage + next-tier preview, but the only call-to-action is a 14px underlined link reading "View pricing plans." If a user is on this page, they're already thinking about plans — the CTA should be a primary button with the specific upgrade ("Upgrade to Sous Chef — $3.99/mo").</dd>
+      <dt>Recommendation</dt><dd>Replace the text link with a primary CTA button targeted at the <em>next</em> tier. Below it, secondary link to "Compare all plans." If the next-tier preview is shown, include the specific delta benefit in the button label.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F8</span>
+      <span class="finding-title">Email verification blocks the first satisfying action</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>requireVerifiedAuth</code> on <code>/recipes/new</code>, <code>/import</code>, <code>/change-tier</code>.</dd>
+      <dt>Why it matters</dt><dd>The user signs up, sees a "check your email" screen, leaves the app to find the verification email, clicks the link, comes back. That's three context switches before they've felt any value. Verification matters, but not before first value.</dd>
+      <dt>Recommendation</dt><dd>Let an unverified user create one recipe locally / in a sandboxed state, then prompt verification when they try to <strong>save</strong> it. Or push verification to milestones — first share, first import, first paid action.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F9</span>
+      <span class="finding-title">Pricing page is sparse</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-med">Medium</span></dd>
+      <dt>Where</dt><dd><code>src/routes/pricing.tsx</code></dd>
+      <dt>Why it matters</dt><dd>The page renders 4 cards and stops. There's no monthly/annual toggle (both prices show side-by-side, which is harder to scan), no "most popular" treatment, no FAQ, no money-back guarantee, no social proof, no comparison table view.</dd>
+      <dt>Recommendation</dt><dd>Add an annual/monthly toggle (default annual since it's discounted). Visually emphasise the recommended tier. Below the cards: FAQ accordion (cancellation, billing, refunds), and either testimonials or a feature-by-feature comparison table.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F10</span>
+      <span class="finding-title">Registration form is dry</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-low">Low</span></dd>
+      <dt>Where</dt><dd><code>src/components/auth/RegisterForm.tsx</code></dd>
+      <dt>Why it matters</dt><dd>Four fields and a submit button. No reassurance ("free forever, no credit card"), no preview of what's behind the door, no testimonial. Conversion-rate impact is small per visitor but compounds because every paid customer passes through here.</dd>
+      <dt>Recommendation</dt><dd>Add a benefits sidebar next to the form on desktop: <em>"What you get with a free account: save 10 recipes, build 1 cookbook, print anything, no credit card needed."</em> Below submit: "Already have an account?" + "By signing up you agree to…" microcopy. Keep the form itself unchanged.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="finding-head">
+      <span class="finding-id">F11</span>
+      <span class="finding-title">Brand name inconsistency on the public homepage</span>
+    </div>
+    <dl>
+      <dt>Severity</dt><dd><span class="sev sev-low">Low</span></dd>
+      <dt>Where</dt><dd><code>src/routes/index.tsx</code> hero — reads <em>"CookBook"</em></dd>
+      <dt>Why it matters</dt><dd>The design system canonicalises the name as <strong>My CookBooks</strong> (capital C and capital B, joined). Trivial to fix; first impression matters.</dd>
+      <dt>Recommendation</dt><dd>Replace the hero text. While there, swap the inline <code>ChefHat</code> for the brand mark in <code>design-system/assets/logo-mark.svg</code>.</dd>
+    </dl>
+  </div>
+
+  <hr>
+
+  <!-- Suggested order of work -->
+  <h2>Suggested order of work</h2>
+  <p>Sequenced by what unblocks what — not by ease.</p>
+
+  <div class="phase">
+    <div class="phase-num">01</div>
+    <div>
+      <h4>Unblock revenue (1 sprint)</h4>
+      <p style="margin: 0;">Without this, the rest is decoration.</p>
+      <ul>
+        <li><strong>F1</strong> — Wire Stripe Checkout into <code>/change-tier</code>. Webhook updates <code>user.tier</code>.</li>
+        <li><strong>F11</strong> — Fix the brand name on the landing hero (5-minute fix, ship it now).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">02</div>
+    <div>
+      <h4>Make the existing tier ladder felt (1–2 sprints)</h4>
+      <p style="margin: 0;">Today's tier structure is largely sound — it just isn't being delivered in a way the user experiences.</p>
+      <ul>
+        <li><strong>F2</strong> — Render ads on free-tier <code>authenticated-home</code> + <code>authenticated-task</code> roles. This is the single largest conversion lift available.</li>
+        <li><strong>F9</strong> — Redesign pricing page: monthly/annual toggle, "most popular" emphasis on Prep Cook, FAQ, comparison table.</li>
+        <li><strong>F4</strong> — Decide explicitly whether Import + Private stay at top tiers or move down. Independent decision from F2.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">03</div>
+    <div>
+      <h4>Move users through the funnel (1–2 sprints)</h4>
+      <p style="margin: 0;">In-product surfaces that turn engagement into upgrade intent.</p>
+      <ul>
+        <li><strong>F5</strong> — Progressive paywall nudges (70% / 90% / 100%).</li>
+        <li><strong>F6</strong> — Authed home becomes a dashboard with usage + recent activity + contextual upgrade card.</li>
+        <li><strong>F7</strong> — Account page primary CTA → next-tier upgrade button.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="phase">
+    <div class="phase-num">04</div>
+    <div>
+      <h4>Polish acquisition (1 sprint)</h4>
+      <p style="margin: 0;">Get more people through the top of the funnel and reduce drop-off in onboarding.</p>
+      <ul>
+        <li><strong>F3</strong> — Landing page rewrite: hero, feature verbs, screenshot, primary CTA to signup.</li>
+        <li><strong>F8</strong> — Defer email verification past the first satisfying action.</li>
+        <li><strong>F10</strong> — Register page benefits sidebar.</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Closing -->
+  <h2>What I'd want next</h2>
+  <p>
+    Two things are worth doing in parallel with implementation:
+  </p>
+  <ul style="color: var(--theme-fg-muted); padding-left: 22px;">
+    <li><strong>Analytics.</strong> Every recommendation above is a hypothesis until you can see drop-off between funnel stages. A simple event funnel (<em>landing → signup → verify → first recipe → hit limit → pricing → checkout</em>) will tell you which fixes earned the biggest lift.</li>
+    <li><strong>Five-user interviews.</strong> Two free users, two paid users, one churned user. Cheap insurance against re-tiering in the wrong direction. The proposed tier structure above is opinionated — five conversations would either validate or kill it.</li>
+  </ul>
+  <p>
+    Happy to mock up any of the proposed UI changes — pricing page, dashboard,
+    paywall nudges, landing — at fidelity, in the design system. Just point.
+  </p>
+
+  <p style="font-size: 13px; color: var(--theme-fg-subtle); margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--theme-border-muted);">
+    Auditor's note: this review is qualitative — based on code, not metrics.
+    Numbers will sharpen the prioritisation; opinions will not.
+  </p>
+
+</main>
+
+</body>
+</html>
