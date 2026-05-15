@@ -1,6 +1,6 @@
 # E2E Testing with Playwright
 
-This directory contains end-to-end tests for CookBook using [Playwright](https://playwright.dev).
+This directory contains end-to-end tests for My CookBooks using [Playwright](https://playwright.dev).
 
 ## Setup
 

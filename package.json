@@ -1,5 +1,6 @@
 {
   "name": "cookbook-tanstack",
+  "description": "My CookBooks - Your Personal Recipe Management System",
   "private": true,
   "type": "module",
   "engines": {
