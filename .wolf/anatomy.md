@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T04:31:17.463Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T04:44:46.763Z
 > Files: 651 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -938,7 +938,7 @@
 - `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor, resetAnthropicExtractorForTesting (~427 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~538 tok)
-- `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2536 tok)
+- `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2747 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
@@ -948,7 +948,7 @@
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~1283 tok)
-- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4483 tok)
+- `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4886 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 

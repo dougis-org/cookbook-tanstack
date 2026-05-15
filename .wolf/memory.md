@@ -812,3 +812,10 @@
 | 21:34 | Session end: 13 writes across 7 files (rate-limiter.test.ts, ai-extractor.test.ts, recipe-url-import.test.ts, UrlImportInput.tsx, rate-limiter.ts) | 9 reads | ~15549 tok |
 | 21:37 | Session end: 13 writes across 7 files (rate-limiter.test.ts, ai-extractor.test.ts, recipe-url-import.test.ts, UrlImportInput.tsx, rate-limiter.ts) | 9 reads | ~15549 tok |
 | 21:40 | Session end: 13 writes across 7 files (rate-limiter.test.ts, ai-extractor.test.ts, recipe-url-import.test.ts, UrlImportInput.tsx, rate-limiter.ts) | 9 reads | ~15549 tok |
+| 21:44 | Edited src/lib/recipe-url-import.ts | modified if() | ~171 |
+| 21:44 | Edited src/lib/recipe-url-import.ts | added 1 condition(s) | ~80 |
+| 21:44 | Edited src/lib/recipe-url-import.ts | added 4 condition(s) | ~349 |
+| 21:44 | Edited src/lib/__tests__/recipe-url-import.test.ts | 3→7 lines | ~86 |
+| 21:44 | Edited src/lib/__tests__/recipe-url-import.test.ts | expanded (+12 lines) | ~364 |
+| 21:44 | Edited src/lib/__tests__/recipe-url-import.test.ts | expanded (+12 lines) | ~124 |
+| 21:45 | Session end: 19 writes across 8 files (rate-limiter.test.ts, ai-extractor.test.ts, recipe-url-import.test.ts, UrlImportInput.tsx, rate-limiter.ts) | 9 reads | ~16723 tok |

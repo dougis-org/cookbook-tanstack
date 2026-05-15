@@ -1739,6 +1739,54 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-15T04:31:13.164Z"
+    },
+    {
+      "id": "bug-109",
+      "timestamp": "2026-05-15T04:44:16.367Z",
+      "error_message": "Wrong condition in logic",
+      "file": "src/lib/recipe-url-import.ts",
+      "root_cause": "Condition was: if (!response.ok)",
+      "fix": "Changed to: if (response.url && response.url !== url)",
+      "tags": [
+        "auto-detected",
+        "logic-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T04:44:16.367Z"
+    },
+    {
+      "id": "bug-110",
+      "timestamp": "2026-05-15T04:44:26.144Z",
+      "error_message": "Missing guard clause",
+      "file": "src/lib/recipe-url-import.ts",
+      "root_cause": "No early return/throw for edge case: type === 'Recipe'",
+      "fix": "Added guard clause: if (type === 'Recipe')",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T04:44:26.144Z"
+    },
+    {
+      "id": "bug-111",
+      "timestamp": "2026-05-15T04:44:46.777Z",
+      "error_message": "Missing await",
+      "file": "src/lib/__tests__/recipe-url-import.test.ts",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-15T04:44:46.777Z"
     }
   ]
 }
