@@ -7,8 +7,8 @@ test.describe('Home Page Revamp', () => {
     // Should stay on /
     await expect(page).toHaveURL('/')
     
-    // Should see CookBook title in the main section (more specific selector)
-    await expect(page.locator('section h1')).toContainText('CookBook')
+    // Should see My CookBooks title in the main section (more specific selector)
+    await expect(page.locator('section h1')).toContainText('My CookBooks')
     
     // Should NOT see Create Recipe CTA
     await expect(page.getByRole('link', { name: 'Create Recipe', exact: true })).not.toBeVisible()

@@ -31,7 +31,7 @@ const DISCOVERY = [
 
 export function HomePageComponent() {
   return (
-    <PageLayout role="authenticated-home" title="Welcome Home">
+    <PageLayout role="authenticated-home" title="My CookBooks Home">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           <section>
             <h2 className="text-2xl font-semibold text-[var(--theme-fg)] mb-4">Quick Actions</h2>
