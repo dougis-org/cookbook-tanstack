@@ -51,6 +51,31 @@ export class RateLimiter {
     entry.count++
   }
 
+  tryConsume(key: string): boolean {
+    const now = Date.now()
+    const entry = this.records.get(key)
+
+    if (!entry) {
+      if (this.records.size >= EVICTION_THRESHOLD) {
+        this.evictExpired(now)
+      }
+      this.records.set(key, { count: 1, windowStart: now })
+      return true
+    }
+
+    if (now >= entry.windowStart + this.windowMs) {
+      this.records.set(key, { count: 1, windowStart: now })
+      return true
+    }
+
+    if (entry.count >= this.limit) {
+      return false
+    }
+
+    entry.count++
+    return true
+  }
+
   private evictExpired(now: number): void {
     for (const [k, v] of this.records) {
       if (now >= v.windowStart + this.windowMs) {

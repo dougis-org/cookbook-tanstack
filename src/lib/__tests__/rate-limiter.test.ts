@@ -90,6 +90,47 @@ describe('RateLimiter', () => {
   })
 })
 
+describe('RateLimiter.tryConsume', () => {
+  it('returns true and increments count on first call', () => {
+    const limiter = new RateLimiter(3, 60_000)
+    expect(limiter.tryConsume('user-1')).toBe(true)
+    expect(limiter.tryConsume('user-1')).toBe(true)
+    expect(limiter.tryConsume('user-1')).toBe(true)
+  })
+
+  it('returns false when limit is reached', () => {
+    const limiter = new RateLimiter(3, 60_000)
+    limiter.tryConsume('user-1')
+    limiter.tryConsume('user-1')
+    limiter.tryConsume('user-1')
+    expect(limiter.tryConsume('user-1')).toBe(false)
+  })
+
+  it('resets and returns true after window expires', () => {
+    vi.useFakeTimers()
+    const limiter = new RateLimiter(2, 1000)
+    limiter.tryConsume('user-1')
+    limiter.tryConsume('user-1')
+    expect(limiter.tryConsume('user-1')).toBe(false)
+
+    vi.advanceTimersByTime(1001)
+    expect(limiter.tryConsume('user-1')).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('evicts expired entries when map reaches threshold', () => {
+    vi.useFakeTimers()
+    const limiter = new RateLimiter(100, 100)
+    for (let i = 0; i < 1000; i++) {
+      limiter.tryConsume(`user-${i}`)
+    }
+    vi.advanceTimersByTime(101)
+    expect(limiter.tryConsume('new-user')).toBe(true)
+    expect(limiter.check('user-0')).toBe(true) // evicted, fresh window
+    vi.useRealTimers()
+  })
+})
+
 describe('urlImportRateLimiter singleton', () => {
   it('blocks on 11th call within the same hour', () => {
     const limiter = new RateLimiter(10, 60 * 60 * 1000)

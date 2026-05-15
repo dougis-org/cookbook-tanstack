@@ -465,16 +465,14 @@ export const recipesRouter = router({
         });
       }
 
-      if (!urlImportRateLimiter.check(ctx.user.id)) {
+      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
+
+      if (!urlImportRateLimiter.tryConsume(ctx.user.id)) {
         throw new TRPCError({
           code: "TOO_MANY_REQUESTS",
           message: "You have exceeded the URL import limit. Try again later.",
         });
       }
-
-      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
-
-      urlImportRateLimiter.record(ctx.user.id);
       const extractor = createAnthropicExtractor();
       const parsedRecipe = await fetchAndNormalizeRecipe(input.url, extractor);
 
