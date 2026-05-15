@@ -61,6 +61,10 @@ describe('validateImportUrl', () => {
     expect(() => validateImportUrl('http://[::1]/recipe')).toThrow(TRPCError)
   })
 
+  it('rejects 169.254.x.x link-local (cloud metadata)', () => {
+    expect(() => validateImportUrl('http://169.254.169.254/latest/meta-data/')).toThrow(TRPCError)
+  })
+
   it('rejects 10.x.x.x private range', () => {
     expect(() => validateImportUrl('http://10.0.0.1/recipe')).toThrow(TRPCError)
   })
@@ -112,6 +116,18 @@ describe('Schema.org normalize helpers (via fetchAndNormalizeRecipe)', () => {
     mockFetch(`<script type="application/ld+json">${JSON.stringify([{ '@type': 'WebPage' }, { '@type': 'Recipe', name: 'Array Recipe', recipeIngredient: ['flour'], recipeInstructions: 'Bake' }])}</script>`)
     const result = await fetchAndNormalizeRecipe(TEST_URL, mockAIExtractor)
     expect(result.name).toBe('Array Recipe')
+  })
+
+  it('extracts Recipe when @type is an array containing Recipe', async () => {
+    mockFetch(`<script type="application/ld+json">${JSON.stringify({ '@type': ['Recipe', 'NewsArticle'], name: 'Array Type Recipe', recipeIngredient: ['flour'], recipeInstructions: 'Bake' })}</script>`)
+    const result = await fetchAndNormalizeRecipe(TEST_URL, mockAIExtractor)
+    expect(result.name).toBe('Array Type Recipe')
+  })
+
+  it('extracts Recipe from @graph pattern (WordPress/Yoast)', async () => {
+    mockFetch(`<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': [{ '@type': 'WebPage' }, { '@type': 'Recipe', name: 'Graph Recipe', recipeIngredient: ['flour'], recipeInstructions: 'Bake' }] })}</script>`)
+    const result = await fetchAndNormalizeRecipe(TEST_URL, mockAIExtractor)
+    expect(result.name).toBe('Graph Recipe')
   })
 
   it('skips invalid JSON ld+json blocks and continues', async () => {
@@ -392,6 +408,18 @@ describe('fetchAndNormalizeRecipe', () => {
 
     const call = vi.mocked(mockAIExtractor.extract).mock.calls[0][0]
     expect(call.userContent.length).toBeLessThanOrEqual(8000)
+  })
+
+  it('throws TRPCError when redirect target is a private URL', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      url: 'http://169.254.169.254/latest/meta-data/',
+      text: () => Promise.resolve('<html></html>'),
+    })
+
+    await expect(
+      fetchAndNormalizeRecipe(TEST_URL, mockAIExtractor)
+    ).rejects.toThrow(TRPCError)
   })
 
   it('throws TRPCError when AI extractor throws', async () => {

@@ -26,8 +26,13 @@ export function validateImportUrl(url: string): void {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
   }
 
-  // Block IPv4 loopback (127.0.0.0/8) and private ranges
-  if (/^127\./.test(hostname) || /^10\./.test(hostname) || /^192\.168\./.test(hostname)) {
+  // Block IPv4 loopback (127.0.0.0/8), link-local (169.254.0.0/16), and private ranges
+  if (
+    /^127\./.test(hostname) ||
+    /^169\.254\./.test(hostname) ||
+    /^10\./.test(hostname) ||
+    /^192\.168\./.test(hostname)
+  ) {
     throw new TRPCError({ code: 'BAD_REQUEST', message: 'URL not allowed' })
   }
 
@@ -55,6 +60,11 @@ export async function fetchAndNormalizeRecipe(
 
     try {
       const response = await fetch(url, { signal: controller.signal })
+
+      // Re-validate the final URL after redirects to prevent open-redirect SSRF
+      if (response.url && response.url !== url) {
+        validateImportUrl(response.url)
+      }
 
       if (!response.ok) {
         throw new TRPCError({
@@ -152,6 +162,12 @@ Return ONLY the JSON object, no other text.`,
   return { ...validated.data, isPublic: true }
 }
 
+function isRecipeType(type: unknown): boolean {
+  if (type === 'Recipe') return true
+  if (Array.isArray(type)) return (type as string[]).includes('Recipe')
+  return false
+}
+
 function extractSchemaOrgRecipe(html: string): Record<string, unknown> | null {
   const ldJsonRegex = /<script[^>]*type=['"]?application\/ld\+json['"]?[^>]*>([\s\S]*?)<\/script>/gi
   let match
@@ -160,14 +176,23 @@ function extractSchemaOrgRecipe(html: string): Record<string, unknown> | null {
     try {
       const data = JSON.parse(match[1])
 
-      // Check if this is a Recipe or an array containing a Recipe
-      if (data['@type'] === 'Recipe') {
+      if (isRecipeType(data['@type'])) {
         return normalizeSchemaOrgRecipe(data)
       }
 
+      // Top-level array of items
       if (Array.isArray(data)) {
         for (const item of data) {
-          if (item['@type'] === 'Recipe') {
+          if (item && isRecipeType(item['@type'])) {
+            return normalizeSchemaOrgRecipe(item)
+          }
+        }
+      }
+
+      // @graph pattern (WordPress/Yoast/Squarespace)
+      if (data['@graph'] && Array.isArray(data['@graph'])) {
+        for (const item of data['@graph'] as Record<string, unknown>[]) {
+          if (item && isRecipeType(item['@type'])) {
             return normalizeSchemaOrgRecipe(item)
           }
         }
