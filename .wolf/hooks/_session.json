@@ -1,11 +1,22 @@
 {
-  "session_id": "session-2026-05-15-1437",
-  "started": "2026-05-15T21:37:52.662Z",
-  "files_read": {},
+  "session_id": "session-2026-05-15-1507",
+  "started": "2026-05-15T22:07:21.702Z",
+  "files_read": {
+    "/home/doug/dev/cookbook-tanstack/openspec/changes/render-sponsored-content-on-authed-pages/proposal.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-05-15T22:07:55.717Z"
+    },
+    "/home/doug/dev/cookbook-tanstack/openspec/changes/render-sponsored-content-on-authed-pages/design.md": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-05-15T22:07:56.047Z"
+    }
+  },
   "files_written": [],
   "edit_counts": {},
   "anatomy_hits": 0,
-  "anatomy_misses": 0,
+  "anatomy_misses": 2,
   "repeated_reads_warned": 0,
   "cerebrum_warnings": 0,
   "stop_count": 0
