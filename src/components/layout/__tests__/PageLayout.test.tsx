@@ -63,17 +63,29 @@ describe('PageLayout', () => {
     expect(grid?.className).toContain('lg:grid-cols-[1fr_300px]')
   })
 
-  it('right rail aside is present in DOM', () => {
-    const { container } = render(<PageLayout><span /></PageLayout>)
+  it('right rail aside is present in DOM for ad-eligible pages', () => {
+    const { container } = render(<PageLayout role="public-marketing"><span /></PageLayout>)
     const aside = container.querySelector('aside')
     expect(aside).not.toBeNull()
   })
 
+  it('right rail aside is absent for non-ad-eligible pages', () => {
+    const { container } = render(<PageLayout role="admin"><span /></PageLayout>)
+    const aside = container.querySelector('aside')
+    expect(aside).toBeNull()
+  })
+
   it('right rail aside is hidden below lg breakpoint', () => {
-    const { container } = render(<PageLayout><span /></PageLayout>)
+    const { container } = render(<PageLayout role="public-marketing"><span /></PageLayout>)
     const aside = container.querySelector('aside')
     expect(aside?.className).toContain('hidden')
     expect(aside?.className).toContain('lg:block')
+  })
+
+  it('grid is single-column for non-ad-eligible pages', () => {
+    const { container } = render(<PageLayout role="admin"><span /></PageLayout>)
+    const grid = container.querySelector('.grid')
+    expect(grid?.className).not.toContain('lg:grid-cols-[1fr_300px]')
   })
 })
 

@@ -109,10 +109,10 @@ export function AdSlot({
     )
   }
 
-  const rawTier = session?.user?.tier ?? 'anonymous'
+  const rawTier = session ? (session.user.tier ?? 'home-cook') : 'anonymous'
   const tier: EntitlementTier | 'anonymous' = Object.hasOwn(TIER_LIMITS, rawTier)
     ? (rawTier as EntitlementTier)
-    : 'anonymous'
+    : 'home-cook'
 
   return <SponsorSlot tier={tier} />
 }
@@ -123,10 +123,13 @@ export default function PageLayout({
   description,
   role = 'authenticated-task',
 }: PageLayoutProps) {
+  const { session } = useAuth()
+  const showAds = isPageAdEligible(role, session)
+
   return (
     <div className="min-h-screen bg-[var(--theme-bg)]">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+        <div className={`grid grid-cols-1 ${showAds ? 'lg:grid-cols-[1fr_300px]' : ''} gap-8 items-start`}>
           <div>
             {(title || description) && (
               <div className="mb-8" data-testid="page-title-section">
@@ -146,9 +149,11 @@ export default function PageLayout({
             <AdSlot role={role} position="bottom" />
           </div>
 
-          <aside className="hidden lg:block sticky top-8">
-            <AdSlot role={role} position="right-rail" />
-          </aside>
+          {showAds && (
+            <aside className="hidden lg:block sticky top-8">
+              <AdSlot role={role} position="right-rail" />
+            </aside>
+          )}
         </div>
       </div>
     </div>
