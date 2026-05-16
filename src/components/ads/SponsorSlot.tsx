@@ -14,7 +14,7 @@ export default function SponsorSlot({ tier }: SponsorSlotProps) {
   return (
     <div
       className="up-card relative flex items-center gap-4 rounded-lg border border-dashed border-[var(--theme-border)] bg-[var(--theme-surface)] px-5 py-3.5 before:absolute before:-top-2 before:left-4 before:bg-[var(--theme-bg)] before:px-1.5 before:text-[10px] before:font-semibold before:uppercase before:tracking-[.12em] before:text-[var(--theme-fg-subtle)] before:content-['Sponsored']"
-      data-testid="sponsor-slot"
+      data-testid="up-slot"
     >
       <div className="up-media h-14 w-14 flex-shrink-0 rounded-md bg-gradient-to-br from-amber-400 to-amber-700" />
       <div className="up-body min-w-0 flex-1">

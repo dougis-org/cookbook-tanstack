@@ -56,8 +56,8 @@ describe('PageLayout', () => {
     expect(wrapper.className).not.toContain('dark:')
   })
 
-  it('renders CSS grid container with responsive right rail', () => {
-    const { container } = render(<PageLayout><span>content</span></PageLayout>)
+  it('renders CSS grid container with responsive right rail for ad-eligible pages', () => {
+    const { container } = render(<PageLayout role="public-marketing"><span>content</span></PageLayout>)
     const grid = container.querySelector('.grid')
     expect(grid).not.toBeNull()
     expect(grid?.className).toContain('lg:grid-cols-[1fr_300px]')
@@ -123,7 +123,7 @@ describe('AdSlot', () => {
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
-    expect(screen.getByTestId('sponsor-slot')).toBeInTheDocument()
+    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
   })
 
@@ -133,7 +133,7 @@ describe('AdSlot', () => {
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
-    expect(screen.getByTestId('sponsor-slot')).toBeInTheDocument()
+    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
   })
 
@@ -143,7 +143,7 @@ describe('AdSlot', () => {
       render(<AdSlot role="admin" position="top" />)
     })
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
-    expect(screen.queryByTestId('sponsor-slot')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
   })
 
   it('renders null when session is prep-cook (paid user, showUserAds=false)', async () => {
@@ -154,7 +154,7 @@ describe('AdSlot', () => {
     })
     // isPageAdEligible gates paid users — AdSlot returns null before SponsorSlot
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
-    expect(screen.queryByTestId('sponsor-slot')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
   })
 
   it('renders null when session is admin', async () => {
@@ -164,7 +164,7 @@ describe('AdSlot', () => {
       render(<AdSlot role="authenticated-home" position="top" />)
     })
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
-    expect(screen.queryByTestId('sponsor-slot')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
   })
 
   it('SponsorSlot uses adblock-safe up-* class family only', async () => {
@@ -172,7 +172,7 @@ describe('AdSlot', () => {
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
-    const slot = screen.getByTestId('sponsor-slot')
+    const slot = screen.getByTestId('up-slot')
     expect(slot.className).toContain('up-card')
     // Collect all CSS class tokens from slot and its descendants
     const allClassTokens = [slot, ...Array.from(slot.querySelectorAll('*'))]
@@ -189,7 +189,7 @@ describe('AdSlot', () => {
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
-    const slot = screen.getByTestId('sponsor-slot')
+    const slot = screen.getByTestId('up-slot')
     expect(slot.querySelector('.up-media')).not.toBeNull()
     expect(slot.querySelector('.up-body')).not.toBeNull()
     expect(slot.querySelector('.up-cta')).not.toBeNull()

@@ -10,10 +10,19 @@ describe('isPageAdEligible', () => {
   ]
   const rolesWithoutAds: PageRole[] = ['auth', 'admin', 'account', 'print']
 
-  describe('Anonymous viewers', () => {
+  const publicRolesWithAds: PageRole[] = ['public-marketing', 'public-content']
+  const authenticatedRolesWithAds: PageRole[] = ['authenticated-home', 'authenticated-task']
+
+  describe('Anonymous viewers (no session)', () => {
     it('returns true on ad-enabled public roles', () => {
-      rolesWithAds.forEach(role => {
+      publicRolesWithAds.forEach(role => {
         expect(isPageAdEligible(role, null)).toBe(true)
+      })
+    })
+
+    it('returns false on authenticated roles — session required', () => {
+      authenticatedRolesWithAds.forEach(role => {
+        expect(isPageAdEligible(role, null)).toBe(false)
       })
     })
 
