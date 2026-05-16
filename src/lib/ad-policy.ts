@@ -15,11 +15,20 @@ export interface AdEligibleSession {
   user: TierUser
 }
 
-const AD_ENABLED_ROLES: PageRole[] = ['public-marketing', 'public-content']
+const AD_ENABLED_ROLES: PageRole[] = [
+  'public-marketing',
+  'public-content',
+  'authenticated-home',
+  'authenticated-task',
+]
 
 export function isPageAdEligible(role: PageRole, session: AdEligibleSession | null): boolean {
   if (!AD_ENABLED_ROLES.includes(role)) return false
-  if (!session) return showUserAds('anonymous')
+  if (!session) {
+    // Authenticated roles require an active session — no ads during auth-loading or logged-out state
+    if (role === 'authenticated-home' || role === 'authenticated-task') return false
+    return showUserAds('anonymous')
+  }
   if (session.user.isAdmin) return false
   const raw = session.user.tier ?? 'home-cook'
   const tier: EntitlementTier = Object.hasOwn(TIER_LIMITS, raw) ? (raw as EntitlementTier) : 'home-cook'

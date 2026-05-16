@@ -3,7 +3,7 @@ export const GOOGLE_ADSENSE_ACCOUNT = `ca-${GOOGLE_ADSENSE_PUBLISHER_ID}`
 export const GOOGLE_ADSENSE_SCRIPT_SRC =
   `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(GOOGLE_ADSENSE_ACCOUNT)}`
 
-export type GoogleAdSenseSlotPosition = 'top' | 'bottom'
+export type GoogleAdSenseSlotPosition = 'top' | 'bottom' | 'right-rail'
 
 /**
  * Google AdSense slot IDs are numeric strings issued per ad unit.
@@ -18,6 +18,7 @@ export function getValidatedGoogleAdSenseSlotId(slotId: string | undefined) {
 const GOOGLE_ADSENSE_SLOT_IDS: Record<GoogleAdSenseSlotPosition, string | null> = {
   top: getValidatedGoogleAdSenseSlotId(import.meta.env.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID),
   bottom: getValidatedGoogleAdSenseSlotId(import.meta.env.VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID),
+  'right-rail': getValidatedGoogleAdSenseSlotId(import.meta.env.VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID),
 }
 
 export function getGoogleAdSenseSlotId(position: GoogleAdSenseSlotPosition) {

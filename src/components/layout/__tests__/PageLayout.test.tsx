@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import PageLayout, { AdSlot } from '../PageLayout'
+import { TIER_PRICING } from '@/lib/tier-entitlements'
+
+let mockSession: { session: { user: { tier?: string; isAdmin?: boolean } } | null } = {
+  session: null,
+}
 
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ session: null }),
+  useAuth: () => mockSession,
 }))
 
 vi.mock('@/lib/google-adsense', async (importOriginal) => {
@@ -11,6 +16,16 @@ vi.mock('@/lib/google-adsense', async (importOriginal) => {
   return {
     ...actual,
     getGoogleAdSenseSlotId: () => '1234567890',
+  }
+})
+
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-router')>()
+  return {
+    ...actual,
+    Link: ({ to, children, className }: { to: string; children: React.ReactNode; className?: string }) => (
+      <a href={to} className={className}>{children}</a>
+    ),
   }
 })
 
@@ -40,24 +55,59 @@ describe('PageLayout', () => {
     const wrapper = container.firstChild as HTMLElement
     expect(wrapper.className).not.toContain('dark:')
   })
+
+  it('renders CSS grid container with responsive right rail for ad-eligible pages', () => {
+    const { container } = render(<PageLayout role="public-marketing"><span>content</span></PageLayout>)
+    const grid = container.querySelector('.grid')
+    expect(grid).not.toBeNull()
+    expect(grid?.className).toContain('lg:grid-cols-[1fr_300px]')
+  })
+
+  it('right rail is present in DOM for ad-eligible pages', () => {
+    render(<PageLayout role="public-marketing"><span /></PageLayout>)
+    expect(screen.getByTestId('right-rail')).toBeInTheDocument()
+  })
+
+  it('right rail is absent for non-ad-eligible pages', () => {
+    render(<PageLayout role="admin"><span /></PageLayout>)
+    expect(screen.queryByTestId('right-rail')).toBeNull()
+  })
+
+  it('right rail is hidden below lg breakpoint', () => {
+    render(<PageLayout role="public-marketing"><span /></PageLayout>)
+    const rail = screen.getByTestId('right-rail')
+    expect(rail.className).toContain('hidden')
+    expect(rail.className).toContain('lg:block')
+  })
+
+  it('grid is single-column for non-ad-eligible pages', () => {
+    render(<PageLayout role="admin"><span /></PageLayout>)
+    expect(screen.queryByTestId('right-rail')).toBeNull()
+  })
 })
 
 describe('AdSlot', () => {
-  let originalProdValue: unknown
+  let originalProd: unknown
+  let originalAdsenseEnabled: unknown
 
   beforeEach(() => {
-    originalProdValue = (import.meta.env as Record<string, unknown>).PROD
-    ;(import.meta.env as Record<string, unknown>).PROD = true
+    originalProd = (import.meta.env as Record<string, unknown>).PROD
+    originalAdsenseEnabled = (import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED
     window.adsbygoogle = []
+    mockSession = { session: null }
   })
 
   afterEach(() => {
-    ;(import.meta.env as Record<string, unknown>).PROD = originalProdValue
+    ;(import.meta.env as Record<string, unknown>).PROD = originalProd
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = originalAdsenseEnabled
     delete window.adsbygoogle
     document.querySelectorAll('script[src*="adsbygoogle"]').forEach((s) => s.remove())
+    mockSession = { session: null }
   })
 
-  it('renders ins element with correct AdSense attributes in production', async () => {
+  it('renders ins element with correct AdSense attributes in production with flag on', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = 'true'
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
@@ -68,14 +118,117 @@ describe('AdSlot', () => {
     expect(ins?.getAttribute('data-full-width-responsive')).toBe('true')
   })
 
-  it('renders null for non-ad-eligible roles', async () => {
+  it('renders SponsorSlot in dev mode for right-rail position', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
     await act(async () => {
-      render(<AdSlot role="authenticated-task" position="top" />)
+      render(<AdSlot role="public-marketing" position="right-rail" />)
     })
+    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
   })
 
-  it('injects AdSense script into document.head on first render', async () => {
+  it('returns null for top/bottom positions in sponsor mode (single upgrade card per page)', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="top" />)
+    })
+    expect(screen.queryByTestId('up-slot')).toBeNull()
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+  })
+
+  it('renders SponsorSlot when VITE_ADSENSE_ENABLED is not set in prod', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = undefined
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="right-rail" />)
+    })
+    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+  })
+
+  it('renders null for non-ad-eligible roles (admin page)', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="admin" position="top" />)
+    })
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
+  })
+
+  it('renders null when session is prep-cook (paid user, showUserAds=false)', async () => {
+    mockSession = { session: { user: { tier: 'prep-cook', isAdmin: false } } }
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="authenticated-home" position="top" />)
+    })
+    // isPageAdEligible gates paid users — AdSlot returns null before SponsorSlot
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
+  })
+
+  it('renders null when session is admin', async () => {
+    mockSession = { session: { user: { tier: 'home-cook', isAdmin: true } } }
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="authenticated-home" position="top" />)
+    })
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
+  })
+
+  it('SponsorSlot uses adblock-safe up-* class family only', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="right-rail" />)
+    })
+    const slot = screen.getByTestId('up-slot')
+    expect(slot.className).toContain('up-card')
+    // Collect all CSS class tokens from slot and its descendants
+    const allClassTokens = [slot, ...Array.from(slot.querySelectorAll('*'))]
+      .flatMap((el) => Array.from(el.classList))
+      .join(' ')
+    expect(allClassTokens).not.toMatch(/\bad-\w/)
+    expect(allClassTokens).not.toMatch(/\bsponsor-\w/)
+    expect(allClassTokens).not.toMatch(/\bpromo-\w/)
+    expect(allClassTokens).not.toMatch(/\bbanner-\w/)
+  })
+
+  it('SponsorSlot contains up-media, up-body, up-cta elements', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="right-rail" />)
+    })
+    const slot = screen.getByTestId('up-slot')
+    expect(slot.querySelector('.up-media')).not.toBeNull()
+    expect(slot.querySelector('.up-body')).not.toBeNull()
+    expect(slot.querySelector('.up-cta')).not.toBeNull()
+  })
+
+  it('SponsorSlot CTA includes tier name and price from TIER_PRICING', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="right-rail" />)
+    })
+    const expectedCta = `Prep Cook · $${TIER_PRICING['prep-cook'].monthly!.toFixed(2)}/mo`
+    expect(screen.getByText(expectedCta)).toBeInTheDocument()
+  })
+
+  it('isPageAdEligible returns true for authenticated-home with home-cook session', async () => {
+    const { isPageAdEligible } = await import('@/lib/ad-policy')
+    const session = { user: { tier: 'home-cook', isAdmin: false } }
+    expect(isPageAdEligible('authenticated-home', session as never)).toBe(true)
+    expect(isPageAdEligible('authenticated-task', session as never)).toBe(true)
+  })
+
+  it('isPageAdEligible returns false for authenticated-home with prep-cook session', async () => {
+    const { isPageAdEligible } = await import('@/lib/ad-policy')
+    const session = { user: { tier: 'prep-cook', isAdmin: false } }
+    expect(isPageAdEligible('authenticated-home', session as never)).toBe(false)
+  })
+
+  it('injects AdSense script into document.head on first adsense render', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = 'true'
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
@@ -85,6 +238,8 @@ describe('AdSlot', () => {
   })
 
   it('does not inject duplicate AdSense scripts on second slot', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = 'true'
     await act(async () => {
       render(
         <>
@@ -97,7 +252,9 @@ describe('AdSlot', () => {
     expect(scripts).toHaveLength(1)
   })
 
-  it('pushes to adsbygoogle queue on mount', async () => {
+  it('pushes to adsbygoogle queue on mount in adsense mode', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = 'true'
     const pushSpy = vi.fn()
     window.adsbygoogle = { push: pushSpy } as unknown as typeof window.adsbygoogle
     await act(async () => {
@@ -107,6 +264,8 @@ describe('AdSlot', () => {
   })
 
   it('skips push when data-adsbygoogle-status is done', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = true
+    ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = 'true'
     const pushSpy = vi.fn()
     window.adsbygoogle = { push: pushSpy } as unknown as typeof window.adsbygoogle
     let rerender!: (ui: React.ReactElement) => void
