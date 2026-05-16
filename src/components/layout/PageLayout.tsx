@@ -150,9 +150,9 @@ export default function PageLayout({
           </div>
 
           {showAds && (
-            <aside className="hidden lg:block sticky top-8">
+            <div className="hidden lg:block sticky top-8" data-testid="right-rail">
               <AdSlot role={role} position="right-rail" />
-            </aside>
+            </div>
           )}
         </div>
       </div>
