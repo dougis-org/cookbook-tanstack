@@ -118,12 +118,21 @@ describe('AdSlot', () => {
     expect(ins?.getAttribute('data-full-width-responsive')).toBe('true')
   })
 
-  it('renders SponsorSlot in dev mode for eligible role', async () => {
+  it('renders SponsorSlot in dev mode for right-rail position', async () => {
+    ;(import.meta.env as Record<string, unknown>).PROD = false
+    await act(async () => {
+      render(<AdSlot role="public-marketing" position="right-rail" />)
+    })
+    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
+    expect(document.querySelector('ins.adsbygoogle')).toBeNull()
+  })
+
+  it('returns null for top/bottom positions in sponsor mode (single upgrade card per page)', async () => {
     ;(import.meta.env as Record<string, unknown>).PROD = false
     await act(async () => {
       render(<AdSlot role="public-marketing" position="top" />)
     })
-    expect(screen.getByTestId('up-slot')).toBeInTheDocument()
+    expect(screen.queryByTestId('up-slot')).toBeNull()
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
   })
 
@@ -131,7 +140,7 @@ describe('AdSlot', () => {
     ;(import.meta.env as Record<string, unknown>).PROD = true
     ;(import.meta.env as Record<string, unknown>).VITE_ADSENSE_ENABLED = undefined
     await act(async () => {
-      render(<AdSlot role="public-marketing" position="top" />)
+      render(<AdSlot role="public-marketing" position="right-rail" />)
     })
     expect(screen.getByTestId('up-slot')).toBeInTheDocument()
     expect(document.querySelector('ins.adsbygoogle')).toBeNull()
@@ -170,7 +179,7 @@ describe('AdSlot', () => {
   it('SponsorSlot uses adblock-safe up-* class family only', async () => {
     ;(import.meta.env as Record<string, unknown>).PROD = false
     await act(async () => {
-      render(<AdSlot role="public-marketing" position="top" />)
+      render(<AdSlot role="public-marketing" position="right-rail" />)
     })
     const slot = screen.getByTestId('up-slot')
     expect(slot.className).toContain('up-card')
@@ -187,7 +196,7 @@ describe('AdSlot', () => {
   it('SponsorSlot contains up-media, up-body, up-cta elements', async () => {
     ;(import.meta.env as Record<string, unknown>).PROD = false
     await act(async () => {
-      render(<AdSlot role="public-marketing" position="top" />)
+      render(<AdSlot role="public-marketing" position="right-rail" />)
     })
     const slot = screen.getByTestId('up-slot')
     expect(slot.querySelector('.up-media')).not.toBeNull()
@@ -195,13 +204,13 @@ describe('AdSlot', () => {
     expect(slot.querySelector('.up-cta')).not.toBeNull()
   })
 
-  it('SponsorSlot upgrade price matches TIER_PRICING prep-cook monthly', async () => {
+  it('SponsorSlot CTA includes tier name and price from TIER_PRICING', async () => {
     ;(import.meta.env as Record<string, unknown>).PROD = false
     await act(async () => {
-      render(<AdSlot role="public-marketing" position="top" />)
+      render(<AdSlot role="public-marketing" position="right-rail" />)
     })
-    const expectedPrice = `$${TIER_PRICING['prep-cook'].monthly!.toFixed(2)}/mo`
-    expect(screen.getByText(expectedPrice)).toBeInTheDocument()
+    const expectedCta = `Prep Cook · $${TIER_PRICING['prep-cook'].monthly!.toFixed(2)}/mo`
+    expect(screen.getByText(expectedCta)).toBeInTheDocument()
   })
 
   it('isPageAdEligible returns true for authenticated-home with home-cook session', async () => {

@@ -11,6 +11,10 @@ const prepCookMonthly = TIER_PRICING['prep-cook'].monthly
 export default function SponsorSlot({ tier }: SponsorSlotProps) {
   if (!showUserAds(tier)) return null
 
+  const ctaLabel = prepCookMonthly !== null
+    ? `Prep Cook · $${prepCookMonthly.toFixed(2)}/mo`
+    : 'Prep Cook'
+
   return (
     <div
       className="up-card relative flex items-center gap-4 rounded-lg border border-dashed border-[var(--theme-border)] bg-[var(--theme-surface)] px-5 py-3.5 before:absolute before:-top-2 before:left-4 before:bg-[var(--theme-bg)] before:px-1.5 before:text-[10px] before:font-semibold before:uppercase before:tracking-[.12em] before:text-[var(--theme-fg-subtle)] before:content-['Sponsored']"
@@ -30,13 +34,8 @@ export default function SponsorSlot({ tier }: SponsorSlotProps) {
           to="/pricing"
           className="up-cta-link whitespace-nowrap text-xs font-medium text-[var(--theme-accent)] no-underline"
         >
-          Upgrade
+          {ctaLabel}
         </Link>
-        {prepCookMonthly !== null && (
-          <span className="up-cta-price text-[11px] text-[var(--theme-fg-subtle)]">
-            ${prepCookMonthly.toFixed(2)}/mo
-          </span>
-        )}
       </div>
     </div>
   )

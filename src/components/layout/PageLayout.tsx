@@ -106,6 +106,9 @@ export function AdSlot({
     )
   }
 
+  // SponsorSlot only occupies the right-rail slot — top/bottom are real ad positions
+  if (position !== 'right-rail') return null
+
   const rawTier = session ? (session.user.tier ?? 'home-cook') : 'anonymous'
   const tier: EntitlementTier | 'anonymous' = Object.hasOwn(TIER_LIMITS, rawTier)
     ? (rawTier as EntitlementTier)
