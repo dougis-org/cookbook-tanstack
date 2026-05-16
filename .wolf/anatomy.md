@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T19:05:44.951Z
-> Files: 677 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-16T16:50:21.867Z
+> Files: 653 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -43,12 +43,12 @@
 - `fly.toml` (~147 tok)
 - `package-lock.json` — npm lock file (~74833 tok)
 - `package.json` — Node.js package manifest (~943 tok)
-- `playwright.config.ts` — Declares ReporterDescription (~723 tok)
+- `playwright.config.ts` — Declares ReporterDescription (~702 tok)
 - `README.md` — Project documentation (~580 tok)
 - `tsconfig.json` — TypeScript configuration (~179 tok)
 - `tsconfig.test.ts` — @vitest-environment node (~388 tok)
 - `vite.config.test.ts` — @vitest-environment node (~574 tok)
-- `vite.config.ts` — Declares env (~284 tok)
+- `vite.config.ts` — Vite build configuration (~215 tok)
 - `vitest.config.ts` — ', '**/e2e/**', '**/*.e2e.*'], (~464 tok)
 
 ## .agent/skills/openspec-apply-change/
@@ -784,16 +784,6 @@
 - `upgrade-stub.md` — Spec: /upgrade Stub Route (~377 tok)
 - `usage-router.md` — Spec: usage tRPC Router (~821 tok)
 
-## openspec/changes/collaborative-cookbooks/
-
-- `proposal.md` — Collaborative Cookbooks for Executive Chef Tier (~1327 tok)
-- `tasks.md` — Collaborative Cookbooks — Implementation Tasks (~2079 tok)
-- `tests.md` — Collaborative Cookbooks — Test Plan (~1415 tok)
-
-## openspec/changes/collaborative-cookbooks/specs/cookbook-collaboration/
-
-- `spec.md` — ADDED Requirements (~3222 tok)
-
 ## openspec/changes/e2e-boot-loader-lsheet-fast-path/
 
 - `design.md` — Context (~2193 tok)
@@ -853,9 +843,9 @@
 
 - `tasks.md` — Tasks (~2018 tok)
 
-## openspec/changes/render-sponsored-content-on-authed-pages/
+## openspec/changes/refactor-site-title-engagement/
 
-- `tasks.md` — Tasks — F02: Render sponsored content on free-tier authed pages (~2991 tok)
+- `tasks.md` — Tasks (~1143 tok)
 
 ## openspec/changes/revamp-home-page-experience/
 
@@ -918,31 +908,13 @@
 
 - `Header.test.tsx` — mockNavigate (~4491 tok)
 
-## src/components/ads/
-
-- `SponsorSlot.tsx` — prepCookMonthly (~510 tok)
-
 ## src/components/auth/
 
 - `VerifyEmailPage.tsx` — VerifyEmailPage (~1679 tok)
 
-## src/components/cookbooks/
-
-- `CookbookCard.tsx` — CookbookCard (~738 tok)
-
 ## src/components/cookbooks/__tests__/
 
-- `CookbookCard.test.tsx` — makeCookbook (~1706 tok)
-- `CookbookDetail.test.tsx` — Unit tests for cookbook detail page chapter UI: (~3842 tok)
 - `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
-
-## src/components/layout/
-
-- `PageLayout.tsx` — Global queue consumed by the async Google AdSense library for slot requests. (~1289 tok)
-
-## src/components/layout/__tests__/
-
-- `PageLayout.test.tsx` — actual (~3393 tok)
 
 ## src/components/recipes/
 
@@ -956,18 +928,8 @@
 
 - `TierWall.tsx` — MESSAGES (~827 tok)
 
-## src/db/models/
-
-- `collaborator.ts` — Exports ICollaborator, Collaborator (~284 tok)
-- `index.ts` (~132 tok)
-
-## src/db/models/__tests__/
-
-- `collaborator.test.ts` — Declares makeIds (~1043 tok)
-
 ## src/e2e/
 
-- `cookbooks-collaboration.spec.ts` — ─── Shared setup helpers ───────────────────────────────────────────────────── (~1441 tok)
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
 - `import-url.spec.ts` — Declares urlInput (~708 tok)
 
@@ -977,24 +939,21 @@
 
 ## src/lib/
 
-- `ad-policy.ts` — Exports PageRole, AdEligibleSession, isPageAdEligible (~314 tok)
+- `ad-policy.ts` — Exports PageRole, AdEligibleSession, isAdEligible (~213 tok)
 - `ai-extractor.ts` — Exports AIExtractor, AnthropicExtractor, createAnthropicExtractor, resetAnthropicExtractorForTesting (~427 tok)
 - `auth-guard.ts` — Route guard factory. Usage: `beforeLoad: requireAuth()` (~963 tok)
-- `google-adsense.ts` — Google AdSense slot IDs are numeric strings issued per ad unit. (~344 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~538 tok)
 - `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2747 tok)
-- `reconcile-user-content.ts` — Exports TierChangeDirection, getTierChangeDirection, ReconcileUserContentResult, reconcileUserConten (~1289 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
 
-- `ad-policy.test.ts` — Declares rolesWithAds (~868 tok)
+- `ad-policy.test.ts` — Declares rolesWithAds (~668 tok)
 - `ai-extractor.test.ts` — mockClient: getMockCreate (~1130 tok)
 - `auth-guard.test.ts` — mockSession: makeSession, makeSessionWithEmail (~2928 tok)
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~1283 tok)
 - `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4886 tok)
-- `reconcile-user-content.test.ts` — BASE: doc, makeRecipe, makeCookbook + 7 more (~3535 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
@@ -1003,7 +962,6 @@
 - `__root.tsx` — minifyInlineCss (~3676 tok)
 - `account.tsx` — Route (~1481 tok)
 - `change-tier.tsx` — Route (~289 tok)
-- `cookbooks.$cookbookId.tsx` — Discriminated union replaces four separate boolean/nullable modal states. (~13952 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
 - `pricing.tsx` — Route (~1018 tok)
@@ -1059,37 +1017,31 @@
 
 ## src/server/trpc/
 
-- `context.ts` — Exports createContext, Context (~262 tok)
 - `init.ts` — Procedure factory that requires the caller to be authenticated and have at (~856 tok)
 - `router.ts` — Exports appRouter, AppRouter (~258 tok)
 
 ## src/server/trpc/__tests__/
 
-- `context.test.ts` — API routes: GET (2 endpoints) (~1352 tok)
 - `error-formatter.test.ts` — Declares cause (~1414 tok)
-- `init.test.ts` — tRPC router: 14 procedures (~1769 tok)
-- `integration.test.ts` — tRPC integration tests. (~1531 tok)
+- `init.test.ts` — tRPC router: 14 procedures (~1726 tok)
+- `integration.test.ts` — tRPC integration tests. (~1501 tok)
 
 ## src/server/trpc/routers/
 
-- `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8685 tok)
+- `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1358 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~7146 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
-- `users.ts` — Exports transformUserDoc, usersRouter (~1534 tok)
 
 ## src/server/trpc/routers/__tests__/
 
-- `admin.test.ts` — ─── Module-level mocks ──────────────────────────────────────────────────── (~2288 tok)
-- `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~13102 tok)
-- `helpers.test.ts` — result: withECLCtx (~2900 tok)
+- `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~11032 tok)
 - `recipe-url-import.test.ts` — Declares mockFetchAndNormalize (~1082 tok)
 - `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
-- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~1164 tok)
+- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~958 tok)
 - `test-router.test.ts` — Declares user (~320 tok)
 - `usage.test.ts` — Declares user (~853 tok)
-- `users.test.ts` — withLoggedIn: expectUpdateProfile (~3939 tok)
 
 ## src/test-helpers/
 

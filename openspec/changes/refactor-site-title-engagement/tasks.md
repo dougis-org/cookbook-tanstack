@@ -34,15 +34,15 @@ Suggested start-of-work commands: `git checkout main` â†’ `git pull --ff-only` â
 
 ## Validation
 
-- [ ] **Visual Verification:** Manually verify "My CookBooks" appears correctly across all themes and viewports.
-- [ ] **Typography Verification:** Check computed styles for `h1` to ensure Fraunces is active.
-- [ ] **Asset Verification:** Confirm favicons and logos are updated in the browser.
-- [ ] **Automated Tests:**
-  - [ ] Run `npm test` (unit tests).
+- [x] **Visual Verification:** Manually verify "My CookBooks" appears correctly across all themes and viewports.
+- [x] **Typography Verification:** Check computed styles for `h1` to ensure Fraunces is active.
+- [x] **Asset Verification:** Confirm favicons and logos are updated in the browser.
+- [x] **Automated Tests:**
+  - [x] Run `npm test` (unit tests).
   - [ ] Run `npm run test:e2e` (Playwright tests).
-- [ ] **Build & Lint:**
-  - [ ] Run `npm run build`.
-  - [ ] Run `npm run lint:route-outlet`.
+- [x] **Build & Lint:**
+  - [x] Run `npm run build`.
+  - [x] Run `npm run lint:route-outlet`.
 
 ## Remote push validation
 
