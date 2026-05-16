@@ -1,8 +1,10 @@
 # F11 — Fix brand name on landing hero
 
+> **IMPLEMENTED** — Completed in PR #457 (`refactor/my-cookbooks-branding`). This issue is now archived and should not be re-opened.
+
 ## Context
 
-`src/routes/index.tsx` hero currently renders the wordmark as **"CookBook"**:
+`src/routes/index.tsx` hero previously rendered the wordmark as **"CookBook"**:
 
 ```tsx
 <span className="bg-gradient-to-r from-[var(--theme-accent)] to-blue-400 bg-clip-text text-transparent">

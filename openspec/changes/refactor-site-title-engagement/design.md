@@ -56,11 +56,11 @@
 
 - **Requirement:** User sees "My CookBooks" in the header.
   - **Design element:** `src/components/Header.tsx`
-  - **Acceptance criteria reference:** `specs/branding/spec.md` (to be created)
+  - **Acceptance criteria reference:** `specs/branding.md` (to be created)
   - **Testability notes:** Easy to target with `screen.getByText`.
 - **Requirement:** User sees "My CookBooks" in the browser tab.
   - **Design element:** `src/routes/__root.tsx`
-  - **Acceptance criteria reference:** `specs/branding/spec.md`
+  - **Acceptance criteria reference:** `specs/branding.md`
   - **Testability notes:** Verify via `document.title`.
 
 ## Non-Functional Requirements Mapping
@@ -68,7 +68,7 @@
 - **Requirement category:** Operability/UI
   - **Requirement:** Title must not wrap or overflow on mobile.
   - **Design element:** `src/components/Header.tsx` flex properties.
-  - **Acceptance criteria reference:** `specs/branding/spec.md`
+  - **Acceptance criteria reference:** `specs/branding.md`
   - **Testability notes:** Test with Playwright at `iphone-14` viewport.
 
 ## Risks / Trade-offs

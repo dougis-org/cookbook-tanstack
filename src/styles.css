@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Inter:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -42,17 +42,15 @@ h3,
 }
 
 @utility brand-gradient {
-  background: linear-gradient(to right, #22d3ee, #60a5fa);
+  background: linear-gradient(90deg, var(--theme-accent), #60a5fa);
   -webkit-background-clip: text;
   background-clip: text;
+  color: transparent;
 }
 
 .brand-wordmark {
-  font-family: var(--font-display);
-  font-variation-settings: "SOFT" 80, "WONK" 1;
+  @apply font-display brand-gradient;
   letter-spacing: -0.035em;
-  @apply brand-gradient;
-  -webkit-text-fill-color: transparent;
 }
 
 code {
