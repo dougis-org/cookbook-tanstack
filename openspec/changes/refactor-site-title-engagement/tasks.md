@@ -56,11 +56,11 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from working branch to `main`
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from working branch to `main`
 - [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge --auto --merge`
+- [x] Enable auto-merge: `gh pr merge --auto --merge`
 - [ ] **Monitor PR comments** — poll for new comments autonomously; address, validate, and push fixes.
 - [ ] **Monitor CI checks** — poll for check status; fix, validate, and push on failure.
 - [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; proceed when `MERGED`.

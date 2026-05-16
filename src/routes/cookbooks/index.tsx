@@ -37,7 +37,7 @@ export function CookbooksPage() {
   const atCookbookLimit = isLoggedIn && !isUsageLoading && ownedUsageData && ownedCookbookCount >= cookbookLimit
 
   return (
-    <PageLayout role="public-content" title="My CookBooks" description="Your recipe collections">
+    <PageLayout role="public-content" title="Cookbooks" description="Your recipe collections">
       <div className="flex justify-between items-center mb-6">
         <span className="text-[var(--theme-fg-muted)]">
           {cookbooks.length} {cookbooks.length === 1 ? 'cookbook' : 'cookbooks'}
