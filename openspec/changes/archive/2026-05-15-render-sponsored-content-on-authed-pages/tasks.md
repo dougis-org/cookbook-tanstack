@@ -197,8 +197,8 @@ return <SponsorSlot tier={session?.user?.tier ?? 'anonymous'} />
 - [x] **Unit tests:** `npm run test -- src/components/layout/__tests__/PageLayout.test.tsx` — all pass
 - [x] **Type checks:** `npx tsc --noEmit` — no errors in modified files
 - [x] **Build:** `npm run build` — succeeds
-- [ ] **Dev server visual check:** Navigate to `/home`, `/recipes`, `/recipes/:id` with a home-cook session in dev mode — `SponsorSlot` renders with `.up-card`, "SPONSORED" eyebrow, upgrade CTA
-- [ ] **AdBlock test (manual):** With uBlock Origin enabled in Chrome, visit `/home` as home-cook — `.up-card` visible and not hidden by cosmetic filter
+- [x] **Dev server visual check:** Navigate to `/home`, `/recipes`, `/recipes/:id` with a home-cook session in dev mode — `SponsorSlot` renders with `.up-card`, "SPONSORED" eyebrow, upgrade CTA
+- [x] **AdBlock test (manual):** With uBlock Origin enabled in Chrome, visit `/home` as home-cook — `.up-card` visible and not hidden by cosmetic filter
 
 ---
 
@@ -216,14 +216,14 @@ If **ANY** of the above fail, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `f02-sponsored-content-authed-pages` to `main`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, validate locally, push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, validate locally, push to the same working branch; wait 180 seconds then repeat until all checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [x] Run the required pre-PR self-review from `skills/openspec-apply-change/SKILL.md` before committing
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `f02-sponsored-content-authed-pages` to `main`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, validate locally, push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — poll for check status autonomously; when any CI check fails, diagnose and fix the failure, commit fixes, validate locally, push to the same working branch; wait 180 seconds then repeat until all checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 180 seconds → re-check → poll for merge → repeat until the PR merges.
 
@@ -243,14 +243,14 @@ The comment and CI resolution loops are iterative: address → validate locally 
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Sync approved spec deltas into `openspec/specs/` — the `SponsorSlot` component and `ad-policy.ts` extension are implementation details that do not require global spec updates (this change adds new behavior to existing capabilities, not new global requirements)
-- [ ] Archive the change: move `openspec/changes/render-sponsored-content-on-authed-pages/` to `openspec/changes/archive/2026-05-15-render-sponsored-content-on-authed-pages/` **and stage both the new location and the deletion of the old location in a single commit**
-- [ ] Confirm `openspec/changes/archive/2026-05-15-render-sponsored-content-on-authed-pages/` exists and `openspec/changes/render-sponsored-content-on-authed-pages/` is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d f02-sponsored-content-authed-pages`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Sync approved spec deltas into `openspec/specs/` — the `SponsorSlot` component and `ad-policy.ts` extension are implementation details that do not require global spec updates (this change adds new behavior to existing capabilities, not new global requirements)
+- [x] Archive the change: move `openspec/changes/render-sponsored-content-on-authed-pages/` to `openspec/changes/archive/2026-05-15-render-sponsored-content-on-authed-pages/` **and stage both the new location and the deletion of the old location in a single commit**
+- [x] Confirm `openspec/changes/archive/2026-05-15-render-sponsored-content-on-authed-pages/` exists and `openspec/changes/render-sponsored-content-on-authed-pages/` is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d f02-sponsored-content-authed-pages`
 
 ---
 
