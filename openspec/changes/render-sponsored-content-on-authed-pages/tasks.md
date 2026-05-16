@@ -2,8 +2,8 @@
 
 ## Preparation
 
-- [ ] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
-- [ ] **Step 2 — Create and publish working branch:** `git checkout -b f02-sponsored-content-authed-pages` then immediately `git push -u origin f02-sponsored-content-authed-pages`
+- [x] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
+- [x] **Step 2 — Create and publish working branch:** `git checkout -b f02-sponsored-content-authed-pages` then immediately `git push -u origin f02-sponsored-content-authed-pages`
 
 ---
 
@@ -194,9 +194,9 @@ return <SponsorSlot tier={session?.user?.tier ?? 'anonymous'} />
 
 ## Validation
 
-- [ ] **Unit tests:** `npm run test -- src/components/layout/__tests__/PageLayout.test.tsx` — all pass
-- [ ] **Type checks:** `npx tsc --noEmit` — no errors
-- [ ] **Build:** `npm run build` — succeeds
+- [x] **Unit tests:** `npm run test -- src/components/layout/__tests__/PageLayout.test.tsx` — all pass
+- [x] **Type checks:** `npx tsc --noEmit` — no errors in modified files
+- [x] **Build:** `npm run build` — succeeds
 - [ ] **Dev server visual check:** Navigate to `/home`, `/recipes`, `/recipes/:id` with a home-cook session in dev mode — `SponsorSlot` renders with `.up-card`, "SPONSORED" eyebrow, upgrade CTA
 - [ ] **AdBlock test (manual):** With uBlock Origin enabled in Chrome, visit `/home` as home-cook — `.up-card` visible and not hidden by cosmetic filter
 

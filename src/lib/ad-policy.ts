@@ -15,7 +15,12 @@ export interface AdEligibleSession {
   user: TierUser
 }
 
-const AD_ENABLED_ROLES: PageRole[] = ['public-marketing', 'public-content']
+const AD_ENABLED_ROLES: PageRole[] = [
+  'public-marketing',
+  'public-content',
+  'authenticated-home',
+  'authenticated-task',
+]
 
 export function isPageAdEligible(role: PageRole, session: AdEligibleSession | null): boolean {
   if (!AD_ENABLED_ROLES.includes(role)) return false

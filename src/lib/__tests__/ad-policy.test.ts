@@ -2,8 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { isPageAdEligible, PageRole } from '@/lib/ad-policy'
 
 describe('isPageAdEligible', () => {
-  const rolesWithAds: PageRole[] = ['public-marketing', 'public-content']
-  const rolesWithoutAds: PageRole[] = ['authenticated-home', 'authenticated-task', 'auth', 'admin', 'account', 'print']
+  const rolesWithAds: PageRole[] = [
+    'public-marketing',
+    'public-content',
+    'authenticated-home',
+    'authenticated-task',
+  ]
+  const rolesWithoutAds: PageRole[] = ['auth', 'admin', 'account', 'print']
 
   describe('Anonymous viewers', () => {
     it('returns true on ad-enabled public roles', () => {
