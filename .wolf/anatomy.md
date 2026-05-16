@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T21:37:21.679Z
-> Files: 652 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-16T16:50:21.867Z
+> Files: 653 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -842,6 +842,10 @@
 ## openspec/changes/fix-themed-boot-loader-css-gate/
 
 - `tasks.md` — Tasks (~2018 tok)
+
+## openspec/changes/refactor-site-title-engagement/
+
+- `tasks.md` — Tasks (~1143 tok)
 
 ## openspec/changes/revamp-home-page-experience/
 

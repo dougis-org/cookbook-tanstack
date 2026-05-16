@@ -3,12 +3,12 @@
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
     "total_tokens_estimated": 1468010,
-    "total_reads": 2408,
+    "total_reads": 2410,
     "total_writes": 1646,
-    "total_sessions": 33,
+    "total_sessions": 34,
     "anatomy_hits": 476,
-    "anatomy_misses": 1932,
-    "repeated_reads_blocked": 2652,
+    "anatomy_misses": 1934,
+    "repeated_reads_blocked": 2653,
     "estimated_savings_vs_bare_cli": 1862523
   },
   "sessions": [
@@ -25246,6 +25246,34 @@
         "writes_count": 23,
         "repeated_reads_blocked": 3,
         "anatomy_lookups": 14
+      }
+    },
+    {
+      "id": "session-2026-05-16-0946",
+      "started": "2026-05-16T16:46:32.279Z",
+      "ended": "2026-05-16T16:49:16.654Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/refactor-site-title-engagement/tasks.md",
+          "tokens_estimated": 0,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev2/cookbook-tanstack/openspec/changes/refactor-site-title-engagement/tests.md",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [],
+      "totals": {
+        "input_tokens_estimated": 0,
+        "output_tokens_estimated": 0,
+        "reads_count": 2,
+        "writes_count": 0,
+        "repeated_reads_blocked": 1,
+        "anatomy_lookups": 0
       }
     }
   ],
