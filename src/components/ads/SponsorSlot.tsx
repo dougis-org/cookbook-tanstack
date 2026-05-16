@@ -19,7 +19,7 @@ export default function SponsorSlot({ tier }: SponsorSlotProps) {
       <div className="up-media h-14 w-14 flex-shrink-0 rounded-md bg-gradient-to-br from-amber-400 to-amber-700" />
       <div className="up-body min-w-0 flex-1">
         <div className="mb-0.5 text-sm font-semibold text-[var(--theme-fg)]">
-          Remove sponsors
+          Remove sponsors → Prep Cook
         </div>
         <div className="truncate text-xs text-[var(--theme-fg-subtle)]">
           Upgrade to Prep Cook for a sponsor-free experience.

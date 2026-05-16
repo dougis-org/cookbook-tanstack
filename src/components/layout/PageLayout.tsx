@@ -93,10 +93,7 @@ export function AdSlot({
 
   if (adConfig.mode === 'adsense') {
     return (
-      <div
-        data-testid={`ad-slot-${position}`}
-        className="my-8 overflow-hidden rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 p-2"
-      >
+      <div className="my-8 overflow-hidden rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)]/80 p-2">
         <ins
           ref={adRef}
           className="adsbygoogle block"
