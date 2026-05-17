@@ -38,6 +38,10 @@ data/legacy-migration/reports/*
 
 .vscode/
 
+# OpenWolf operational logs (machine-specific runtime data)
+.wolf/hooks/_session.json
+.wolf/token-ledger.json
+
 src/e2e/e2e-coverage/lcov.info
 
 .serena/
