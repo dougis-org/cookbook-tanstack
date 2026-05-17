@@ -225,6 +225,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     return { session }
   },
   head: () => ({
+    title: 'My CookBooks - Recipe Management',
     meta: [
       {
         charSet: 'utf-8',
@@ -232,9 +233,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
-      },
-      {
-        title: 'My CookBooks - Recipe Management',
       },
       {
         name: 'google-adsense-account',
@@ -284,6 +282,15 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <style data-id="critical-startup">{criticalCss}</style>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: bootLoaderScript }} />
+        {/* Google Fonts — loaded without precedence so React 19 doesn't hoist it before
+            the theme-init script above. Fonts are non-critical; appCss defines fallbacks. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* eslint-disable-next-line react/no-unknown-property -- crossOrigin is valid on link */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:SOFT,WONK,ital,opsz,wght@0..100,0..1,0..1,9..144,300..900&family=Inter:wght@400;500;600;700;800;900&display=swap"
+        />
         {import.meta.env.DEV ? (
           <script
             type="module"
