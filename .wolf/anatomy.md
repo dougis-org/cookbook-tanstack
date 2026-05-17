@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-15T21:37:21.679Z
-> Files: 652 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-16T20:49:29.055Z
+> Files: 657 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -754,6 +754,10 @@
 - `save-095748.log` (~0 tok)
 - `save-095751.log` (~0 tok)
 
+## design-system/handoff/issues/
+
+- `F11-brand-name-hero.md` — F11 — Fix brand name on landing hero (~364 tok)
+
 ## docs/
 
 - `theming.md` — Theming Guide (~549 tok)
@@ -843,6 +847,11 @@
 
 - `tasks.md` — Tasks (~2018 tok)
 
+## openspec/changes/refactor-site-title-engagement/
+
+- `design.md` — Context (~1147 tok)
+- `tasks.md` — Tasks (~1143 tok)
+
 ## openspec/changes/revamp-home-page-experience/
 
 - `tasks.md` — Tasks (~1672 tok)
@@ -900,6 +909,10 @@
 
 - `pipeline.integration.test.ts` — Integration tests for the Laravel → MongoDB migration pipeline. (~5950 tok)
 
+## src/
+
+- `styles.css` — Styles: 14 rules, 2 vars (~483 tok)
+
 ## src/components/__tests__/
 
 - `Header.test.tsx` — mockNavigate (~4491 tok)
@@ -928,6 +941,7 @@
 
 - `fouc-prevention.spec.ts` — DelayedAppCss: setStoredTheme, blockLocalStorage, delayAppStylesheet, readBootTheme (~3334 tok)
 - `import-url.spec.ts` — Declares urlInput (~708 tok)
+- `owner-icon.spec.ts` — Declares OWN_THIS (~1426 tok)
 
 ## src/e2e/helpers/
 

@@ -1787,6 +1787,102 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-15T04:44:46.777Z"
+    },
+    {
+      "id": "bug-112",
+      "timestamp": "2026-05-16T20:41:26.366Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/styles.css",
+      "root_cause": "Had 'https://fonts.googleapis.com/css2?family=Fraunces",
+      "fix": "Changed to 'https://fonts.googleapis.com/css2?family=Fraunces",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:41:26.366Z"
+    },
+    {
+      "id": "bug-113",
+      "timestamp": "2026-05-16T20:41:30.537Z",
+      "error_message": "CSS fix: background",
+      "file": "src/styles.css",
+      "root_cause": "background: linear-gradient(to right, #22d3ee, #60a5fa) → linear-gradient(90deg, var(--theme-accent), #60a5fa)",
+      "fix": "Changed background: linear-gradient(to right, #22d3ee, #60a5fa) → linear-gradient(90deg, var(--theme-accent), #60a5fa)",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:41:30.537Z"
+    },
+    {
+      "id": "bug-114",
+      "timestamp": "2026-05-16T20:41:37.837Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/routes/cookbooks/index.tsx",
+      "root_cause": "Had \"My CookBooks\"",
+      "fix": "Changed to \"Cookbooks\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:41:37.837Z"
+    },
+    {
+      "id": "bug-115",
+      "timestamp": "2026-05-16T20:41:40.192Z",
+      "error_message": "Incorrect value in code",
+      "file": "src/routes/home.tsx",
+      "root_cause": "Had \"My CookBooks Home\"",
+      "fix": "Changed to \"Welcome Home\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:41:40.192Z"
+    },
+    {
+      "id": "bug-116",
+      "timestamp": "2026-05-16T20:41:43.145Z",
+      "error_message": "Wrong reference: spec should be md",
+      "file": "openspec/changes/refactor-site-title-engagement/design.md",
+      "root_cause": "Used \"spec\" instead of \"md\"",
+      "fix": "Changed spec → md",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:41:43.145Z"
+    },
+    {
+      "id": "bug-117",
+      "timestamp": "2026-05-16T20:49:29.067Z",
+      "error_message": "Wrong reference: toBeVisible should be exact",
+      "file": "src/e2e/owner-icon.spec.ts",
+      "root_cause": "Used \"toBeVisible\" instead of \"exact\"",
+      "fix": "Changed toBeVisible → exact",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-16T20:49:29.067Z"
     }
   ]
 }

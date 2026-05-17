@@ -131,7 +131,7 @@ test.describe("Owner icon — logged-out user sees no icons", () => {
   }) => {
     await gotoAndWaitForHydration(page, "/cookbooks");
     // Wait for the page heading to confirm rendering is complete
-    await expect(page.getByRole("heading", { name: "Cookbooks" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Cookbooks", exact: true })).toBeVisible();
     await expect(page.getByRole("img", { name: OWN_THIS })).toHaveCount(0);
   });
 });

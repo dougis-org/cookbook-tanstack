@@ -1,14 +1,19 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 
 test.describe('Home Page Revamp', () => {
+  test('document title reflects brand name', async ({ page }) => {
+    await page.goto('/')
+    await expect(page).toHaveTitle(/My CookBooks/)
+  })
+
   test('anonymous visitor sees public landing page on /', async ({ page }) => {
     await page.goto('/')
-    
+
     // Should stay on /
     await expect(page).toHaveURL('/')
-    
-    // Should see CookBook title in the main section (more specific selector)
-    await expect(page.locator('section h1')).toContainText('CookBook')
+
+    // Should see My CookBooks title in the main section (more specific selector)
+    await expect(page.locator('section h1')).toContainText('My CookBooks')
     
     // Should NOT see Create Recipe CTA
     await expect(page.getByRole('link', { name: 'Create Recipe', exact: true })).not.toBeVisible()

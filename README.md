@@ -1,6 +1,6 @@
-# CookBook - Recipe Management Application
+# My CookBooks - Recipe Management Application
 
-A TanStack Start migration of the Laravel recipe application. This is a full-stack recipe management system
+A TanStack Start migration of the Laravel recipe application. This is a full-stack recipe management system called My CookBooks,
 built with TanStack Start, React, and Tailwind CSS.
 
 ## Project Structure
