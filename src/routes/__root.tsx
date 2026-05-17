@@ -225,8 +225,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     return { session }
   },
   head: () => ({
-    title: 'My CookBooks - Recipe Management',
     meta: [
+      {
+        title: 'My CookBooks - Recipe Management',
+      },
       {
         charSet: 'utf-8',
       },
