@@ -833,3 +833,192 @@
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
+
+## Session: 2026-05-16 09:45
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-16 09:46
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-05-16 09:47
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:48 | Edited src/lib/ad-policy.ts | 1→6 lines | ~38 |
+| 09:48 | Edited src/lib/google-adsense.ts | modified getValidatedGoogleAdSenseSlotId() | ~222 |
+| 09:48 | Created src/components/ads/SponsorSlot.tsx | — | ~805 |
+| 09:49 | Created src/components/ads/SponsorSlot.tsx | — | ~530 |
+| 09:49 | Created src/components/layout/PageLayout.tsx | — | ~1213 |
+| 09:50 | Created src/components/layout/__tests__/PageLayout.test.tsx | — | ~3087 |
+| 09:51 | Edited src/components/ads/SponsorSlot.tsx | 3→3 lines | ~43 |
+| 09:52 | Edited src/components/layout/__tests__/PageLayout.test.tsx | CSS: mockSession, user | ~120 |
+| 09:52 | Edited src/components/layout/__tests__/PageLayout.test.tsx | CSS: session, session | ~171 |
+| 09:52 | Edited src/components/layout/__tests__/PageLayout.test.tsx | reduced (-7 lines) | ~279 |
+| 09:52 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 13→16 lines | ~218 |
+| 09:53 | Edited src/lib/__tests__/ad-policy.test.ts | 2→7 lines | ~62 |
+| 09:54 | Edited openspec/changes/render-sponsored-content-on-authed-pages/tasks.md | 2→2 lines | ~71 |
+| 09:54 | Edited openspec/changes/render-sponsored-content-on-authed-pages/tasks.md | modified test() | ~151 |
+| 10:04 | Session end: 14 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~8461 tok |
+| 10:07 | Edited src/components/layout/PageLayout.tsx | 6→6 lines | ~72 |
+| 10:07 | Edited src/components/layout/PageLayout.tsx | modified PageLayout() | ~358 |
+| 10:07 | Edited src/components/layout/__tests__/PageLayout.test.tsx | expanded (+12 lines) | ~307 |
+| 10:08 | Session end: 17 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~10411 tok |
+| 10:12 | Session end: 17 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~10411 tok |
+| 10:15 | Session end: 17 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~10411 tok |
+| 10:19 | Edited src/components/layout/PageLayout.tsx | 5→5 lines | ~57 |
+| 10:19 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 18→16 lines | ~192 |
+| 10:19 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 5→4 lines | ~53 |
+| 10:20 | Session end: 20 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~10713 tok |
+| 10:25 | Session end: 20 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 9 reads | ~10713 tok |
+| 10:29 | Edited src/components/ads/SponsorSlot.tsx | "sponsor-slot" → "up-slot" | ~8 |
+| 10:29 | Edited src/components/layout/__tests__/PageLayout.test.tsx | inline fix | ~2 |
+| 10:29 | Edited src/lib/ad-policy.ts | added 1 condition(s) | ~112 |
+| 10:30 | Edited src/lib/__tests__/ad-policy.test.ts | expanded (+9 lines) | ~220 |
+| 10:31 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 6→6 lines | ~100 |
+| 10:31 | Session end: 25 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 10 reads | ~11243 tok |
+| 10:36 | Session end: 25 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 10 reads | ~11243 tok |
+| 10:53 | Edited src/components/layout/PageLayout.tsx | modified if() | ~50 |
+| 10:53 | Edited src/components/ads/SponsorSlot.tsx | 3→3 lines | ~38 |
+| 10:54 | Session end: 27 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 10 reads | ~11331 tok |
+| 10:59 | Session end: 27 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 10 reads | ~11331 tok |
+| 13:35 | Edited src/components/layout/PageLayout.tsx | added 1 condition(s) | ~109 |
+| 13:36 | Created src/components/ads/SponsorSlot.tsx | — | ~510 |
+| 13:36 | Edited src/components/layout/__tests__/PageLayout.test.tsx | expanded (+9 lines) | ~356 |
+| 13:36 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 8→8 lines | ~118 |
+| 13:36 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 5→5 lines | ~70 |
+| 13:36 | Edited src/components/layout/__tests__/PageLayout.test.tsx | 5→5 lines | ~71 |
+| 13:37 | Session end: 33 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 11 reads | ~16401 tok |
+| 13:42 | Session end: 33 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 11 reads | ~16401 tok |
+| 13:47 | Session end: 33 writes across 7 files (ad-policy.ts, google-adsense.ts, SponsorSlot.tsx, PageLayout.tsx, PageLayout.test.tsx) | 12 reads | ~16401 tok |
+
+## Session: 2026-05-16 14:16
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 14:47 | Edited openspec/changes/collaborative-cookbooks/proposal.md | 12→14 lines | ~246 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/proposal.md | inline fix | ~43 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/proposal.md | inline fix | ~34 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 3→3 lines | ~86 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~26 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/tasks.md | expanded (+8 lines) | ~144 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/tests.md | expanded (+11 lines) | ~126 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/specs/cookbook-collaboration/spec.md | expanded (+42 lines) | ~432 |
+| 14:48 | Edited openspec/changes/collaborative-cookbooks/specs/cookbook-collaboration/spec.md | 2→4 lines | ~110 |
+| 14:48 | Session end: 9 writes across 4 files (proposal.md, tasks.md, tests.md, spec.md) | 5 reads | ~1334 tok |
+
+## Session: 2026-05-16 15:18
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 15:21 | Created src/db/models/collaborator.ts | — | ~284 |
+| 15:21 | Edited src/db/models/index.ts | 1→2 lines | ~28 |
+| 15:21 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 4→4 lines | ~97 |
+| 15:21 | Created src/server/trpc/context.ts | — | ~240 |
+| 15:21 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 4→4 lines | ~77 |
+| 15:22 | Edited src/server/trpc/routers/_helpers.ts | added 1 condition(s) | ~257 |
+| 15:22 | Edited src/server/trpc/routers/cookbooks.ts | 4→4 lines | ~51 |
+| 15:22 | Edited src/server/trpc/routers/cookbooks.ts | 9→9 lines | ~109 |
+| 15:22 | Edited src/server/trpc/routers/cookbooks.ts | 4→4 lines | ~52 |
+| 15:22 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 4→4 lines | ~119 |
+| 15:22 | Edited src/lib/reconcile-user-content.ts | 5→5 lines | ~87 |
+| 15:22 | Edited src/lib/reconcile-user-content.ts | added 1 condition(s) | ~135 |
+| 15:22 | Edited src/lib/reconcile-user-content.ts | added 1 condition(s) | ~142 |
+| 15:23 | Edited openspec/changes/collaborative-cookbooks/tasks.md | modified in() | ~126 |
+| 15:23 | Edited src/server/trpc/routers/users.ts | added nullish coalescing | ~282 |
+| 15:23 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 6→6 lines | ~128 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | added 2 import(s) | ~42 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~30 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | added 1 import(s) | ~35 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | added nullish coalescing | ~115 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | expanded (+13 lines) | ~346 |
+| 15:23 | Edited src/server/trpc/routers/cookbooks.ts | expanded (+25 lines) | ~420 |
+| 15:24 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 9→9 lines | ~140 |
+| 15:24 | Edited src/server/trpc/routers/cookbooks.ts | added error handling | ~634 |
+| 15:24 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 21→21 lines | ~256 |
+| 15:24 | Created src/components/cookbooks/CookbookCard.tsx | — | ~748 |
+| 15:24 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 10→10 lines | ~135 |
+| 15:24 | Edited src/routes/cookbooks.$cookbookId.tsx | inline fix | ~39 |
+| 15:24 | Edited src/routes/cookbooks.$cookbookId.tsx | expanded (+10 lines) | ~162 |
+
+## Session: 2026-05-16 15:26
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 15:31 | Edited src/routes/cookbooks.$cookbookId.tsx | added nullish coalescing | ~102 |
+| 15:31 | Edited src/routes/cookbooks.$cookbookId.tsx | CSS: onSuccess, onSuccess | ~135 |
+| 15:31 | Edited src/routes/cookbooks.$cookbookId.tsx | added nullish coalescing | ~222 |
+| 15:31 | Edited src/routes/cookbooks.$cookbookId.tsx | expanded (+7 lines) | ~367 |
+| 15:31 | Edited src/routes/cookbooks.$cookbookId.tsx | added optional chaining | ~560 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | 30→30 lines | ~440 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | 8→8 lines | ~103 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | inline fix | ~16 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | 7→7 lines | ~93 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | inline fix | ~13 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | 2→2 lines | ~21 |
+| 15:32 | Edited src/routes/cookbooks.$cookbookId.tsx | added 1 condition(s) | ~2142 |
+| 15:33 | Edited src/routes/cookbooks/index.tsx | 4→5 lines | ~79 |
+| 15:33 | Edited src/routes/cookbooks/index.tsx | 5→4 lines | ~60 |
+| 15:33 | Edited src/lib/__tests__/reconcile-user-content.test.ts | inline fix | ~18 |
+| 15:33 | Edited src/lib/__tests__/reconcile-user-content.test.ts | expanded (+65 lines) | ~1000 |
+| 15:33 | Edited src/components/cookbooks/__tests__/CookbookCard.test.tsx | CSS: collaboratorCount, collaboratorCount, collaboratorCount | ~495 |
+| 15:34 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 3→3 lines | ~65 |
+| 15:34 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 17→20 lines | ~253 |
+| 15:34 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | modified makeCollaborator() | ~1199 |
+| 15:35 | Edited src/server/trpc/routers/__tests__/test-helpers.ts | modified makeAnonCaller() | ~220 |
+| 15:35 | Edited src/server/trpc/__tests__/init.test.ts | modified makeUserCtx() | ~116 |
+| 15:35 | Edited src/server/trpc/__tests__/integration.test.ts | 3→3 lines | ~97 |
+| 15:48 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~26 |
+| 15:49 | Edited src/server/trpc/routers/cookbooks.ts | inline fix | ~16 |
+| 15:49 | Edited src/server/trpc/__tests__/init.test.ts | modified makeVerifiedCtx() | ~62 |
+| 21:22 | Edited src/server/trpc/routers/__tests__/admin.test.ts | modified makeAdminCaller() | ~224 |
+| 21:22 | Edited src/server/trpc/routers/__tests__/users.test.ts | 4→5 lines | ~41 |
+| 21:22 | Edited src/server/trpc/routers/__tests__/users.test.ts | 4→5 lines | ~58 |
+| 21:23 | Edited src/server/trpc/routers/__tests__/users.test.ts | 4→5 lines | ~56 |
+| 21:31 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~21 |
+| 21:31 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~32 |
+| 21:32 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 36→36 lines | ~571 |
+| 21:32 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 3→3 lines | ~58 |
+| 21:32 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 21→21 lines | ~237 |
+| 21:32 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 7→7 lines | ~55 |
+| 21:33 | Edited src/server/trpc/context.ts | added 1 import(s) | ~54 |
+| 21:33 | Edited src/server/trpc/context.ts | 4→4 lines | ~68 |
+
+## Session: 2026-05-17 21:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 21:37 | Edited src/server/trpc/routers/_helpers.ts | inline fix | ~13 |
+| 21:37 | Edited src/server/trpc/routers/_helpers.ts | modified if() | ~118 |
+| 21:38 | Edited src/server/trpc/routers/__tests__/helpers.test.ts | expanded (+17 lines) | ~350 |
+| 21:38 | Edited src/server/trpc/routers/__tests__/cookbooks.test.ts | inline fix | ~32 |
+| 21:39 | Edited src/server/trpc/routers/__tests__/cookbooks.test.ts | expanded (+178 lines) | ~1984 |
+| 21:39 | Created src/db/models/__tests__/collaborator.test.ts | — | ~1043 |
+| 21:39 | Edited src/server/trpc/routers/__tests__/cookbooks.test.ts | 12→12 lines | ~144 |
+| 08:09 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 13→13 lines | ~148 |
+| 08:09 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 6→6 lines | ~72 |
+| 08:10 | Session end: 9 writes across 5 files (_helpers.ts, helpers.test.ts, cookbooks.test.ts, collaborator.test.ts, tasks.md) | 7 reads | ~28349 tok |
+
+## Session: 2026-05-17 08:14
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:16 | Created src/e2e/cookbooks-collaboration.spec.ts | — | ~1433 |
+| 08:17 | Edited src/e2e/cookbooks-collaboration.spec.ts | 3→1 lines | ~21 |
+| 08:17 | Edited openspec/changes/collaborative-cookbooks/tasks.md | 3→3 lines | ~45 |
+| 09:30 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~38 |
+| 16:30 | Created E2E spec for collaborative cookbooks (TC-COL-1/2/3: invite, access, remove) | src/e2e/cookbooks-collaboration.spec.ts | done — TS clean, E2E tests blocked by port conflict in current env | ~3k |
+| 09:30 | Session end: 4 writes across 2 files (cookbooks-collaboration.spec.ts, tasks.md) | 10 reads | ~19858 tok |
+| 09:31 | Edited playwright.config.ts | added nullish coalescing | ~65 |
+| 09:31 | Edited playwright.config.ts | 4→4 lines | ~18 |
+| 09:31 | Edited playwright.config.ts | 4→4 lines | ~45 |
+| 10:54 | Edited vite.config.ts | added 1 condition(s) | ~139 |
+| 10:56 | Edited src/e2e/cookbooks-collaboration.spec.ts | 3→3 lines | ~57 |
+| 10:56 | Edited src/e2e/cookbooks-collaboration.spec.ts | 3→4 lines | ~78 |
+| 10:56 | Edited src/e2e/cookbooks-collaboration.spec.ts | 4→3 lines | ~49 |
+| 10:57 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~14 |
+| 18:10 | Fixed E2E tests for collaborative cookbooks (all 3 passing) | src/e2e/cookbooks-collaboration.spec.ts, vite.config.ts, playwright.config.ts | done | ~5k |
+| 10:58 | Session end: 12 writes across 4 files (cookbooks-collaboration.spec.ts, tasks.md, playwright.config.ts, vite.config.ts) | 18 reads | ~23509 tok |

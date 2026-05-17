@@ -31,7 +31,7 @@ import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
-import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User } from 'lucide-react'
+import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
 import { useScrollSentinel } from '@/hooks/useScrollSentinel'
 
@@ -106,6 +106,14 @@ interface CookbookRecipe {
   chapterId?: string | null
 }
 
+interface Collaborator {
+  id: string
+  userId: string
+  name: string
+  role: 'editor' | 'viewer'
+  addedAt: Date
+}
+
 /** Discriminated union replaces four separate boolean/nullable modal states. */
 type Modal =
   | { kind: 'none' }
@@ -115,6 +123,8 @@ type Modal =
   | { kind: 'removeRecipe'; recipe: CookbookRecipe }
   | { kind: 'renameChapter'; chapter: Chapter }
   | { kind: 'deleteChapter'; chapter: Chapter }
+  | { kind: 'inviteCollaborator' }
+  | { kind: 'removeCollaborator'; collaborator: Collaborator }
 
 // ─── Shared modal overlay with a11y and keyboard handling ─────────────────────
 
@@ -178,6 +188,9 @@ function CookbookDetailPage() {
   )
 
   const isOwner = userId === cookbook?.userId
+  const myCollabRole = !isOwner ? cookbook?.collaborators?.find(c => c.userId === userId)?.role : null
+  const accessLevel: 'owner' | 'editor' | 'viewer' = isOwner ? 'owner' : (myCollabRole ?? 'viewer')
+  const canEdit = accessLevel === 'owner' || accessLevel === 'editor'
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({
@@ -212,6 +225,17 @@ function CookbookDetailPage() {
   )
 
   const reorderChaptersMutation = useMutation(trpc.cookbooks.reorderChapters.mutationOptions())
+
+  const addCollaboratorMutation = useMutation(
+    trpc.cookbooks.addCollaborator.mutationOptions({
+      onSuccess: () => { invalidate(); closeModal() },
+    }),
+  )
+  const removeCollaboratorMutation = useMutation(
+    trpc.cookbooks.removeCollaborator.mutationOptions({
+      onSuccess: () => { invalidate(); closeModal() },
+    }),
+  )
 
   const recipes: CookbookRecipe[] = cookbook?.recipes ?? []
   const chapters: Chapter[] = (cookbook?.chapters ?? []).slice().sort((a, b) => a.orderIndex - b.orderIndex)
@@ -363,6 +387,13 @@ function CookbookDetailPage() {
                   aria-label="You own this"
                 />
               )}
+              {(cookbook.collaboratorCount ?? 0) > 0 && (
+                <Users
+                  className="w-4 h-4 text-[var(--theme-fg-muted)] print:hidden"
+                  role="img"
+                  aria-label={`Shared with ${cookbook.collaboratorCount} ${cookbook.collaboratorCount === 1 ? 'collaborator' : 'collaborators'}`}
+                />
+              )}
             </div>
             {cookbook.description && (
               <p className="text-[var(--theme-fg-muted)] mt-2 max-w-2xl">{cookbook.description}</p>
@@ -397,6 +428,13 @@ function CookbookDetailPage() {
             </Link>
             {isOwner && (
               <>
+                <button
+                  onClick={() => setModal({ kind: 'inviteCollaborator' })}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
+                >
+                  <Users className="w-4 h-4" />
+                  Invite
+                </button>
                 <button
                   onClick={() => setModal({ kind: 'editCookbook' })}
                   className="flex items-center gap-1.5 px-3 py-2 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
@@ -482,12 +520,43 @@ function CookbookDetailPage() {
         />
       )}
 
+      {modal.kind === 'inviteCollaborator' && (
+        <InviteCollaboratorModal
+          cookbookId={cookbookId}
+          isPending={addCollaboratorMutation.isPending}
+          onInvite={(userId, role) => addCollaboratorMutation.mutate({ cookbookId, userId, role })}
+          onClose={closeModal}
+        />
+      )}
+
+      {modal.kind === 'removeCollaborator' && (
+        <ConfirmModal
+          title="Remove Collaborator"
+          body={<>Remove <strong className="text-[var(--theme-fg)]">{modal.collaborator.name}</strong> from this cookbook?</>}
+          confirmLabel="Remove"
+          danger
+          isPending={removeCollaboratorMutation.isPending}
+          onConfirm={() => removeCollaboratorMutation.mutate({ cookbookId, userId: modal.collaborator.userId })}
+          onCancel={closeModal}
+        />
+      )}
+
+      {/* Collaborators panel */}
+      {((cookbook.collaborators?.length ?? 0) > 0 || isOwner) && (
+        <CollaboratorsPanel
+          collaborators={cookbook.collaborators ?? []}
+          isOwner={isOwner}
+          onInvite={() => setModal({ kind: 'inviteCollaborator' })}
+          onRemove={(collaborator) => setModal({ kind: 'removeCollaborator', collaborator })}
+        />
+      )}
+
       {/* Recipe list */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold text-[var(--theme-fg)]">Recipes</h2>
-            {isOwner && hasChapters && (
+            {canEdit && hasChapters && (
               <button
                 onClick={() => setIsCollapsed((v) => !v)}
                 className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
@@ -498,7 +567,7 @@ function CookbookDetailPage() {
               </button>
             )}
           </div>
-          {isOwner && (
+          {canEdit && (
             <div className="flex gap-2">
               <button
                 onClick={() => createChapterMutation.mutate({ cookbookId })}
@@ -522,7 +591,7 @@ function CookbookDetailPage() {
         {recipes.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-[var(--theme-fg-muted)] mb-4">No recipes in this cookbook yet.</p>
-            {isOwner && (
+            {canEdit && (
               <button
                 onClick={() => setModal({ kind: 'addRecipe' })}
                 className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white font-semibold rounded-lg transition-colors"
@@ -531,7 +600,7 @@ function CookbookDetailPage() {
               </button>
             )}
           </div>
-        ) : isCollapsed && isOwner && hasChapters ? (
+        ) : isCollapsed && canEdit && hasChapters ? (
           /* Collapsed mode: chapter rows are sortable */
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleChapterDragEnd}>
             <SortableContext items={sortedChapterIds} strategy={verticalListSortingStrategy}>
@@ -559,11 +628,11 @@ function CookbookDetailPage() {
                 <div key={chapter.id} className="space-y-2" data-testid={`chapter-section-${chapter.id}`}>
                   <ChapterHeader
                     chapter={chapter}
-                    isOwner={isOwner}
+                    isOwner={canEdit}
                     onRename={() => setModal({ kind: 'renameChapter', chapter })}
                     onDelete={() => setModal({ kind: 'deleteChapter', chapter })}
                   />
-                  {isOwner ? (
+                  {canEdit ? (
                     chapterRecipes.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <SortableContext items={chapterRecipeIds} strategy={rectSortingStrategy} id={chapter.id}>
@@ -590,7 +659,7 @@ function CookbookDetailPage() {
                 </div>
               )
             })}
-            {isOwner && activeDragRecipe && (
+            {canEdit && activeDragRecipe && (
               <DragOverlay>
                 <div className="opacity-90 shadow-xl">
                   <StaticRecipeCard recipe={activeDragRecipe} index={0} />
@@ -598,7 +667,7 @@ function CookbookDetailPage() {
               </DragOverlay>
             )}
           </DndContext>
-        ) : isOwner ? (
+        ) : canEdit ? (
           /* Flat (no chapters) sortable list */
           <DndContext
             sensors={sensors}
@@ -990,5 +1059,184 @@ function ConfirmModal({
   )
 }
 
+// ─── Collaborators Panel ──────────────────────────────────────────────────────
+
+function CollaboratorsPanel({
+  collaborators,
+  isOwner,
+  onInvite,
+  onRemove,
+}: {
+  collaborators: Collaborator[]
+  isOwner: boolean
+  onInvite: () => void
+  onRemove: (collaborator: Collaborator) => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className="mb-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg overflow-hidden">
+      <button
+        onClick={() => setIsOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-[var(--theme-surface-hover)] transition-colors"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-[var(--theme-fg-muted)]" />
+          <span className="text-sm font-medium text-[var(--theme-fg)]">
+            Collaborators
+            {collaborators.length > 0 && (
+              <span className="ml-2 text-[var(--theme-fg-muted)]">({collaborators.length})</span>
+            )}
+          </span>
+        </div>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-[var(--theme-fg-muted)]" /> : <ChevronDown className="w-4 h-4 text-[var(--theme-fg-muted)]" />}
+      </button>
+
+      {isOpen && (
+        <div className="border-t border-[var(--theme-border)] px-4 py-3 space-y-2">
+          {collaborators.length === 0 ? (
+            <p className="text-sm text-[var(--theme-fg-muted)]">No collaborators yet.</p>
+          ) : (
+            collaborators.map((collab) => (
+              <div key={collab.id} className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm text-[var(--theme-fg)]">{collab.name}</span>
+                  <span className="ml-2 text-xs text-[var(--theme-fg-muted)] capitalize">{collab.role}</span>
+                </div>
+                {isOwner && (
+                  <button
+                    onClick={() => onRemove(collab)}
+                    className="text-xs text-[var(--theme-fg-subtle)] hover:text-red-500 transition-colors"
+                    aria-label={`Remove ${collab.name}`}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+          {isOwner && (
+            <button
+              onClick={onInvite}
+              className="mt-2 text-sm text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
+            >
+              + Invite collaborator
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Invite Collaborator Modal ────────────────────────────────────────────────
+
+function InviteCollaboratorModal({
+  cookbookId: _cookbookId,
+  isPending,
+  onInvite,
+  onClose,
+}: {
+  cookbookId: string
+  isPending: boolean
+  onInvite: (userId: string, role: 'editor' | 'viewer') => void
+  onClose: () => void
+}) {
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string } | null>(null)
+  const [role, setRole] = useState<'editor' | 'viewer'>('editor')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput), 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  const { data: searchResults = [] } = useQuery({
+    ...trpc.users.search.queryOptions({ query: debouncedSearch }),
+    enabled: debouncedSearch.length >= 2,
+  })
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedUser) return
+    onInvite(selectedUser.id, role)
+  }
+
+  return (
+    <DialogOverlay labelId="invite-collaborator-title" onClose={onClose} isPending={isPending}>
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md">
+        <ModalHeader title="Invite Collaborator" titleId="invite-collaborator-title" onClose={onClose} />
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">Search by email or name</label>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => { setSearchInput(e.target.value); setSelectedUser(null) }}
+              placeholder="Type to search…"
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
+              autoFocus
+              aria-label="Search users"
+            />
+            {debouncedSearch.length >= 2 && searchResults.length > 0 && !selectedUser && (
+              <ul className="mt-1 border border-[var(--theme-border)] rounded-lg overflow-hidden">
+                {searchResults.map((u) => (
+                  <li key={u.id}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedUser(u); setSearchInput(u.name || u.email) }}
+                      className="w-full text-left px-3 py-2 text-sm bg-[var(--theme-surface-raised)] hover:bg-[var(--theme-surface-hover)] transition-colors"
+                    >
+                      <span className="font-medium text-[var(--theme-fg)]">{u.name}</span>
+                      <span className="ml-2 text-[var(--theme-fg-muted)]">{u.email}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {debouncedSearch.length >= 2 && searchResults.length === 0 && !selectedUser && (
+              <p className="mt-1 text-sm text-[var(--theme-fg-muted)]">No users found.</p>
+            )}
+          </div>
+
+          <fieldset>
+            <legend className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">Role</legend>
+            <div className="flex gap-4">
+              {(['editor', 'viewer'] as const).map((r) => (
+                <label key={r} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="role"
+                    value={r}
+                    checked={role === r}
+                    onChange={() => setRole(r)}
+                    className="text-[var(--theme-accent)]"
+                  />
+                  <span className="text-sm text-[var(--theme-fg)] capitalize">{r}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={!selectedUser || isPending}
+              className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            >
+              {isPending ? 'Inviting…' : 'Invite'}
+            </button>
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </DialogOverlay>
+  )
+}
+
 // Named exports for testing
-export { ChapterHeader, AddRecipeModal }
+export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal }

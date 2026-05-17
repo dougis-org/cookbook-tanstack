@@ -67,6 +67,31 @@ export function transformUserDoc(
 }
 
 export const usersRouter = router({
+  search: protectedProcedure
+    .input(z.object({ query: z.string().min(2) }))
+    .query(async ({ ctx, input }) => {
+      const usersCollection = getMongoClient().db().collection("user")
+      const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(escaped, 'i')
+      const callerObjectId = new ObjectId(ctx.user.id)
+      const docs = await usersCollection
+        .find({
+          $and: [
+            { _id: { $ne: callerObjectId } },
+            { $or: [{ email: regex }, { name: regex }] },
+          ],
+        })
+        .limit(10)
+        .toArray()
+      return docs
+        .map((d) => ({
+          id: toHexString(d._id as Parameters<typeof toHexString>[0]) ?? '',
+          name: typeof d.name === 'string' ? d.name : '',
+          email: typeof d.email === 'string' ? d.email : '',
+        }))
+        .filter((u) => u.id !== '')
+    }),
+
   me: protectedProcedure.query(async ({ ctx }) => {
     // ctx.user is already populated from Better-Auth's session
     // Return it directly without additional database queries

@@ -41,6 +41,7 @@ describe("users router", () => {
         const anonCaller = appRouter.createCaller({
           session: null,
           user: null,
+          collabCookbookIds: [],
         });
 
         // protectedProcedure should throw UNAUTHORIZED before reaching the handler
@@ -211,6 +212,7 @@ describe("users router", () => {
         const caller = appRouter.createCaller({
           session: { id: "s1" } as never,
           user: { id: fakeUserId, email: "fake@test.com" } as never,
+          collabCookbookIds: [],
         });
 
         const result = await caller.users.updateProfile({ name: "Test" });
@@ -242,6 +244,7 @@ describe("users router - error cases", () => {
       const caller = appRouter.createCaller({
         session: { id: "s1" } as never,
         user: { id: invalidUserId, email: "test@test.com" } as never,
+        collabCookbookIds: [],
       });
 
       // Should throw an error due to invalid ObjectId

@@ -3,7 +3,9 @@ import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
-import { Cookbook, Recipe } from "@/db/models";
+import { Cookbook, Recipe, Collaborator } from "@/db/models";
+import { ObjectId } from "mongodb";
+import { hasAtLeastTier } from "@/types/user";
 // Side-effect imports register models needed for Recipe.populate() chains
 import "@/db/models/classification";
 import "@/db/models/source";
@@ -11,6 +13,7 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
+import { getMongoClient } from "@/db";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pluckIds(arr: unknown): string[] {
@@ -100,6 +103,14 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
   return stub;
 }
 
+/** Procedure requiring email verification and executive-chef tier. */
+const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
+  if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
+    throw new TRPCError({ code: 'FORBIDDEN' })
+  }
+  return next({ ctx })
+})
+
 /** Fetch a cookbook by ID and verify ownership. Returns the full lean doc. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchOwnedCookbook(cookbookId: string, userId: string): Promise<any> {
@@ -140,9 +151,21 @@ async function fetchCookbookWithOrderedStubs(
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    const docs = await Cookbook.find(visibilityFilter(ctx.user))
-      .sort({ name: 1 })
-      .lean();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docs = await Cookbook.aggregate<any>([
+      { $match: visibilityFilter(ctx.user, ctx.collabCookbookIds) },
+      { $sort: { name: 1 } },
+      {
+        $lookup: {
+          from: 'collaborators',
+          localField: '_id',
+          foreignField: 'cookbookId',
+          as: '_collabs',
+        },
+      },
+      { $addFields: { collaboratorCount: { $size: '$_collabs' } } },
+      { $project: { _collabs: 0 } },
+    ])
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return docs.map((cb: any) => ({
@@ -155,13 +178,14 @@ export const cookbooksRouter = router({
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
       chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
       userId: cb.userId?.toString() as string,
+      collaboratorCount: (cb.collaboratorCount ?? 0) as number,
     }));
   }),
 
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user);
+      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
@@ -204,6 +228,29 @@ export const cookbooksRouter = router({
       const cb = cookbook as any;
       const chapters = transformChapters(cb);
 
+      // Join collaborators with user names via aggregation (user collection managed by Better-Auth)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const collaboratorDocs = await Collaborator.aggregate<any>([
+        { $match: { cookbookId: new Types.ObjectId(input.id) } },
+        {
+          $lookup: {
+            from: 'user',
+            localField: 'userId',
+            foreignField: '_id',
+            as: '_user',
+          },
+        },
+        { $unwind: { path: '$_user', preserveNullAndEmptyArrays: true } },
+      ])
+
+      const collaborators = collaboratorDocs.map((c) => ({
+        id: (c._id as Types.ObjectId).toString(),
+        userId: (c.userId as Types.ObjectId).toString(),
+        name: typeof c._user?.name === 'string' ? (c._user.name as string) : '',
+        role: c.role as 'editor' | 'viewer',
+        addedAt: c.addedAt as Date,
+      }))
+
       return {
         ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
@@ -213,13 +260,15 @@ export const cookbooksRouter = router({
         updatedAt: cb.updatedAt as Date,
         recipes,
         chapters,
+        collaborators,
+        collaboratorCount: collaborators.length,
       };
     }),
 
   printById: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user);
+      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
@@ -370,6 +419,72 @@ export const cookbooksRouter = router({
       await Cookbook.findByIdAndDelete(input.id);
       return { success: true };
     }),
+
+  addCollaborator: execChefProcedure
+    .input(z.object({
+      cookbookId: objectId,
+      userId: objectId,
+      role: z.enum(['editor', 'viewer']),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+
+      const targetUser = await getMongoClient().db().collection('user').findOne(
+        { _id: new ObjectId(input.userId) },
+        { projection: { _id: 1 } },
+      )
+      if (!targetUser) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
+      }
+
+      try {
+        await new Collaborator({
+          cookbookId: input.cookbookId,
+          userId: input.userId,
+          role: input.role,
+          addedAt: new Date(),
+          addedBy: ctx.user.id,
+        }).save()
+      } catch (err: unknown) {
+        if (typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'User is already a collaborator' })
+        }
+        throw err
+      }
+
+      return { success: true }
+    }),
+
+  removeCollaborator: execChefProcedure
+    .input(z.object({ cookbookId: objectId, userId: objectId }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+      await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
+      return { success: true }
+    }),
+
+  myCollaborations: protectedProcedure.query(async ({ ctx }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docs = await Collaborator.aggregate<any>([
+      { $match: { userId: new Types.ObjectId(ctx.user.id) } },
+      {
+        $lookup: {
+          from: 'cookbooks',
+          localField: 'cookbookId',
+          foreignField: '_id',
+          as: '_cookbook',
+        },
+      },
+      { $unwind: '$_cookbook' },
+      { $match: { '_cookbook.hiddenByTier': { $ne: true } } },
+    ])
+
+    return docs.map((d) => ({
+      id: (d.cookbookId as Types.ObjectId).toString(),
+      name: typeof d._cookbook?.name === 'string' ? (d._cookbook.name as string) : '',
+      role: d.role as 'editor' | 'viewer',
+    }))
+  }),
 
   addRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))

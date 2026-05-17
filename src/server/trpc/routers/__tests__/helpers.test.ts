@@ -15,8 +15,25 @@ describe("visibilityFilter", () => {
     expect(visibilityFilter(null)).toEqual({ isPublic: true, hiddenByTier: { $ne: true } })
   })
 
-  it("returns { $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId, hiddenByTier: { $ne: true } }] } for authenticated users", async () => {
-    expect(visibilityFilter({ id: "u1" })).toEqual({ $or: [{ isPublic: true, hiddenByTier: { $ne: true } }, { userId: "u1", hiddenByTier: { $ne: true } }] })
+  it("returns $or with two clauses for authenticated user and no collabCookbookIds", async () => {
+    const result = visibilityFilter({ id: "a".repeat(24) }) as { $or: object[] }
+    expect(result.$or).toHaveLength(2)
+  })
+
+  it("does not include collaborator clause when collabCookbookIds is empty", async () => {
+    const result = visibilityFilter({ id: "a".repeat(24) }, []) as { $or: object[] }
+    expect(result.$or).toHaveLength(2)
+    const hasCollabClause = result.$or.some((c) => '_id' in c)
+    expect(hasCollabClause).toBe(false)
+  })
+
+  it("includes collaborator clause when collabCookbookIds is non-empty", async () => {
+    const id = "b".repeat(24)
+    const result = visibilityFilter({ id: "a".repeat(24) }, [id]) as { $or: object[] }
+    expect(result.$or).toHaveLength(3)
+    const collabClause = result.$or.find((c) => '_id' in c) as { _id: { $in: unknown[] } } | undefined
+    expect(collabClause).toBeDefined()
+    expect(collabClause!._id.$in).toContain(id)
   })
 })
 

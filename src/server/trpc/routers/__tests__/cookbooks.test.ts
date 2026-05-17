@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation } from "@/db/models";
+import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, Collaborator } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   uid,
@@ -1030,6 +1030,184 @@ describe("cookbooks.byId — hiddenByTier in response", () => {
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result).not.toBeNull();
       expect(result!.hiddenByTier).toBe(false);
+    });
+  });
+});
+
+describe("cookbooks.addCollaborator", () => {
+  it("adds a collaborator and returns { success: true }", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const result = await caller.cookbooks.addCollaborator({
+        cookbookId: cb.id,
+        userId: target.id,
+        role: "editor",
+      });
+
+      expect(result).toEqual({ success: true });
+      const collab = await Collaborator.findOne({ cookbookId: cb._id, userId: target.id });
+      expect(collab).not.toBeNull();
+      expect(collab!.role).toBe("editor");
+    });
+  });
+
+  it("throws CONFLICT when user is already a collaborator", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      await caller.cookbooks.addCollaborator({ cookbookId: cb.id, userId: target.id, role: "viewer" });
+
+      await expect(
+        caller.cookbooks.addCollaborator({ cookbookId: cb.id, userId: target.id, role: "editor" })
+      ).rejects.toMatchObject({ code: "CONFLICT" });
+    });
+  });
+
+  it("throws NOT_FOUND when target user does not exist", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+      const fakeUserId = "a".repeat(24);
+
+      await expect(
+        caller.cookbooks.addCollaborator({ cookbookId: cb.id, userId: fakeUserId, role: "editor" })
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    });
+  });
+
+  it("throws FORBIDDEN when caller is not the owner", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(other.id, { tier: "executive-chef" });
+
+      await expect(
+        caller.cookbooks.addCollaborator({ cookbookId: cb.id, userId: target.id, role: "editor" })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+
+  it("throws FORBIDDEN when caller is not executive-chef tier", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "home-cook" });
+
+      await expect(
+        caller.cookbooks.addCollaborator({ cookbookId: cb.id, userId: target.id, role: "editor" })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+});
+
+describe("cookbooks.removeCollaborator", () => {
+  it("removes a collaborator and returns { success: true }", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: target.id, role: "editor", addedBy: owner.id }).save();
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const result = await caller.cookbooks.removeCollaborator({ cookbookId: cb.id, userId: target.id });
+
+      expect(result).toEqual({ success: true });
+      const collab = await Collaborator.findOne({ cookbookId: cb._id, userId: target.id });
+      expect(collab).toBeNull();
+    });
+  });
+
+  it("returns success even when collaborator does not exist", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const result = await caller.cookbooks.removeCollaborator({ cookbookId: cb.id, userId: target.id });
+
+      expect(result).toEqual({ success: true });
+    });
+  });
+
+  it("throws FORBIDDEN when caller is not the owner", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: target.id, role: "editor", addedBy: owner.id }).save();
+      const caller = await makeAuthCaller(other.id, { tier: "executive-chef" });
+
+      await expect(
+        caller.cookbooks.removeCollaborator({ cookbookId: cb.id, userId: target.id })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    });
+  });
+});
+
+describe("cookbooks.myCollaborations", () => {
+  it("returns cookbooks the user is collaborating on", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collab = await seedUser();
+      const cb = await new Cookbook({ name: "Shared CB", userId: owner.id, isPublic: false }).save();
+      await new Collaborator({ cookbookId: cb._id, userId: collab.id, role: "editor", addedBy: owner.id }).save();
+      const caller = await makeAuthCaller(collab.id);
+
+      const result = await caller.cookbooks.myCollaborations();
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ id: cb.id, name: "Shared CB", role: "editor" });
+    });
+  });
+
+  it("excludes hiddenByTier cookbooks from collaborations", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collab = await seedUser();
+      const cb = await new Cookbook({
+        name: "Hidden CB",
+        userId: owner.id,
+        isPublic: false,
+        hiddenByTier: true,
+        recipes: [],
+      }).save();
+      await new Collaborator({ cookbookId: cb._id, userId: collab.id, role: "viewer", addedBy: owner.id }).save();
+      const caller = await makeAuthCaller(collab.id);
+
+      const result = await caller.cookbooks.myCollaborations();
+
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  it("returns empty array when user has no collaborations", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+
+      const result = await caller.cookbooks.myCollaborations();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  it("throws UNAUTHORIZED for unauthenticated caller", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(caller.cookbooks.myCollaborations()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     });
   });
 });

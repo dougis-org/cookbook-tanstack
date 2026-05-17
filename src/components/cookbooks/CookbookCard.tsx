@@ -1,4 +1,4 @@
-import { BookOpen, User } from 'lucide-react'
+import { BookOpen, User, Users } from 'lucide-react'
 import CardImage from '@/components/ui/CardImage'
 
 interface CookbookCardProps {
@@ -10,11 +10,13 @@ interface CookbookCardProps {
     imageUrl?: string | null
     recipeCount?: number
     chapterCount?: number
+    collaboratorCount?: number
   }
   isOwner?: boolean
+  isCollaborator?: boolean
 }
 
-export default function CookbookCard({ cookbook, isOwner }: CookbookCardProps) {
+export default function CookbookCard({ cookbook, isOwner, isCollaborator: _isCollaborator }: CookbookCardProps) {
   return (
     <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow cursor-pointer">
       <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-[var(--theme-surface-hover)]" />
@@ -35,6 +37,13 @@ export default function CookbookCard({ cookbook, isOwner }: CookbookCardProps) {
                 className="w-4 h-4 shrink-0 text-[var(--theme-accent)] print:hidden"
                 role="img"
                 aria-label="You own this"
+              />
+            )}
+            {(cookbook.collaboratorCount ?? 0) > 0 && (
+              <Users
+                className="w-3.5 h-3.5 shrink-0 text-[var(--theme-fg-muted)] print:hidden"
+                role="img"
+                aria-label={`${cookbook.collaboratorCount} ${cookbook.collaboratorCount === 1 ? 'collaborator' : 'collaborators'}`}
               />
             )}
             <p className="text-sm text-[var(--theme-fg-subtle)]">

@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ChapterHeader, AddRecipeModal } from '@/routes/cookbooks.$cookbookId'
+import { ChapterHeader, AddRecipeModal, CollaboratorsPanel } from '@/routes/cookbooks.$cookbookId'
 
 // ─── Router mocks ────────────────────────────────────────────────────────────
 
@@ -96,8 +96,11 @@ vi.mock('@/lib/trpc', () => ({
       renameChapter: { mutationOptions: (o: unknown) => o },
       deleteChapter: { mutationOptions: (o: unknown) => o },
       reorderChapters: { mutationOptions: (o: unknown) => o },
+      addCollaborator: { mutationOptions: (o: unknown) => o },
+      removeCollaborator: { mutationOptions: (o: unknown) => o },
     },
     recipes: { list: { queryOptions: () => ({}) } },
+    users: { search: { queryOptions: () => ({}) } },
   },
 }))
 
@@ -310,5 +313,130 @@ describe('AddRecipeModal — infinite scroll', () => {
       <AddRecipeModal cookbookId="cb-1" existingRecipeIds={[]} chapters={[]} onClose={vi.fn()} />
     )
     expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
+  })
+})
+
+// ─── CollaboratorsPanel tests ─────────────────────────────────────────────────
+
+function makeCollaborator(overrides: Partial<{ id: string; userId: string; name: string; role: 'editor' | 'viewer'; addedAt: Date }> = {}) {
+  return {
+    id: 'collab-1',
+    userId: 'user-2',
+    name: 'Alice',
+    role: 'editor' as const,
+    addedAt: new Date(),
+    ...overrides,
+  }
+}
+
+describe('CollaboratorsPanel', () => {
+  it('renders collapsed by default with collaborator count', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[makeCollaborator(), makeCollaborator({ id: 'collab-2', userId: 'user-3', name: 'Bob', role: 'viewer' })]}
+        isOwner={false}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    expect(screen.getByText(/Collaborators/)).toBeInTheDocument()
+    expect(screen.getByText('(2)')).toBeInTheDocument()
+    expect(screen.queryByText('Alice')).not.toBeInTheDocument()
+  })
+
+  it('expands to show collaborators when clicked', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[makeCollaborator({ name: 'Alice' })]}
+        isOwner={false}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+  })
+
+  it('shows Remove button for each collaborator when isOwner', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[makeCollaborator({ name: 'Alice' })]}
+        isOwner={true}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    expect(screen.getByLabelText('Remove Alice')).toBeInTheDocument()
+  })
+
+  it('does not show Remove button for non-owner', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[makeCollaborator({ name: 'Alice' })]}
+        isOwner={false}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    expect(screen.queryByLabelText('Remove Alice')).not.toBeInTheDocument()
+  })
+
+  it('shows invite link when isOwner', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[]}
+        isOwner={true}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    expect(screen.getByText(/Invite collaborator/)).toBeInTheDocument()
+  })
+
+  it('does not show invite link for non-owner', () => {
+    render(
+      <CollaboratorsPanel
+        collaborators={[]}
+        isOwner={false}
+        onInvite={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    expect(screen.queryByText(/Invite collaborator/)).not.toBeInTheDocument()
+  })
+
+  it('calls onRemove with correct collaborator when Remove is clicked', () => {
+    const onRemove = vi.fn()
+    const collab = makeCollaborator({ name: 'Alice' })
+    render(
+      <CollaboratorsPanel
+        collaborators={[collab]}
+        isOwner={true}
+        onInvite={vi.fn()}
+        onRemove={onRemove}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    fireEvent.click(screen.getByLabelText('Remove Alice'))
+    expect(onRemove).toHaveBeenCalledWith(collab)
+  })
+
+  it('calls onInvite when invite link is clicked', () => {
+    const onInvite = vi.fn()
+    render(
+      <CollaboratorsPanel
+        collaborators={[]}
+        isOwner={true}
+        onInvite={onInvite}
+        onRemove={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    fireEvent.click(screen.getByText(/Invite collaborator/))
+    expect(onInvite).toHaveBeenCalledOnce()
   })
 })

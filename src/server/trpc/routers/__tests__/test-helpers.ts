@@ -76,12 +76,12 @@ export function uid() {
 
 export async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null });
+  return appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
 }
 
 export async function makeAuthCaller(
   userId: string,
-  opts: { email?: string; tier?: string; isAdmin?: boolean; emailVerified?: boolean } = {},
+  opts: { email?: string; tier?: string; isAdmin?: boolean; emailVerified?: boolean; collabCookbookIds?: string[] } = {},
 ) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
@@ -93,6 +93,7 @@ export async function makeAuthCaller(
       tier: opts.tier,
       isAdmin: opts.isAdmin ?? false,
     } as never,
+    collabCookbookIds: opts.collabCookbookIds ?? [],
   });
 }
 

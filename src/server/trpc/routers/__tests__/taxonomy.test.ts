@@ -31,7 +31,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
         await new ModelMap[routerName]({ name: "Breakfast", slug }).save();
 
         const { appRouter } = await import("@/server/trpc/router");
-        const caller = appRouter.createCaller({ session: null, user: null });
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
         const result = await (
           caller[routerName] as { list: () => Promise<unknown[]> }
         ).list();
@@ -57,7 +57,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
         await new ModelMap[routerName]({ name: "Beta", slug: slugB }).save();
 
         const { appRouter } = await import("@/server/trpc/router");
-        const caller = appRouter.createCaller({ session: null, user: null });
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
         const result = await (
           caller[routerName] as { list: () => Promise<unknown[]> }
         ).list();
@@ -74,7 +74,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
     it("returns an array (route is publicly accessible without auth)", async () => {
       await withCleanDb(async () => {
         const { appRouter } = await import("@/server/trpc/router");
-        const caller = appRouter.createCaller({ session: null, user: null });
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
         const result = await (
           caller[routerName] as { list: () => Promise<unknown[]> }
         ).list();
@@ -88,7 +88,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
         await new ModelMap[routerName]({ name: "Unused", slug }).save();
 
         const { appRouter } = await import("@/server/trpc/router");
-        const caller = appRouter.createCaller({ session: null, user: null });
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
         const result = await (
           caller[routerName] as {
             list: () => Promise<{ slug: string; recipeCount: number }[]>;
@@ -123,7 +123,7 @@ describe.each(["meals", "courses", "preparations"] as const)(
         }).save();
 
         const { appRouter } = await import("@/server/trpc/router");
-        const caller = appRouter.createCaller({ session: null, user: null });
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
         const result = await (
           caller[routerName] as {
             list: () => Promise<{ slug: string; recipeCount: number }[]>;
