@@ -291,7 +291,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fraunces:SOFT,WONK,ital,opsz,wght@0..100,0..1,0..1,9..144,300..900&family=Inter:wght@400;500;600;700;800;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap"
         />
         {import.meta.env.DEV ? (
           <script
