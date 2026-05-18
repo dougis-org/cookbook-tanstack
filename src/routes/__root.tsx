@@ -227,10 +227,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
-        title: 'My CookBooks - Recipe Management',
+        charSet: 'utf-8',
       },
       {
-        charSet: 'utf-8',
+        title: 'My CookBooks - Recipe Management',
       },
       {
         name: 'viewport',
