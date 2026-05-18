@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T13:02:19.774Z
-> Files: 676 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:00:14.672Z
+> Files: 677 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
 
@@ -1065,6 +1065,7 @@
 
 ## src/server/trpc/__tests__/
 
+- `context.test.ts` — API routes: GET (2 endpoints) (~1398 tok)
 - `error-formatter.test.ts` — Declares cause (~1414 tok)
 - `init.test.ts` — tRPC router: 14 procedures (~1769 tok)
 - `integration.test.ts` — tRPC integration tests. (~1531 tok)
@@ -1072,7 +1073,7 @@
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8538 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8541 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)

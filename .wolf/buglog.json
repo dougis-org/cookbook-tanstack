@@ -2363,6 +2363,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-18T02:26:42.635Z"
+    },
+    {
+      "id": "bug-148",
+      "timestamp": "2026-05-18T18:00:04.962Z",
+      "error_message": "Type error",
+      "file": "src/server/trpc/__tests__/context.test.ts",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-18T18:00:04.962Z"
     }
   ]
 }

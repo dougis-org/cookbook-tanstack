@@ -441,7 +441,7 @@ export const cookbooksRouter = router({
       await verifyCookbookOwner(input.cookbookId, ctx.user.id)
 
       const targetUser = await getMongoClient().db().collection('user').findOne(
-        { _id: new ObjectId(input.userId) },
+        { _id: new ObjectId(String(input.userId)) },
         { projection: { _id: 1 } },
       )
       if (!targetUser) {

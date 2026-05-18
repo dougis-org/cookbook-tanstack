@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockGetSession = vi.fn();
+const mockCollaboratorFind = vi.fn();
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: mockGetSession } },
+}));
+
+vi.mock("@/db/models", () => ({
+  Collaborator: { find: mockCollaboratorFind },
 }));
 
 const fetchOpts = {
@@ -13,7 +18,10 @@ const fetchOpts = {
 };
 
 describe("createContext", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCollaboratorFind.mockReturnValue({ lean: () => Promise.resolve([]) });
+  });
 
   it("returns session and user when authenticated", async () => {
     const { createContext } = await import("@/server/trpc/context");
@@ -68,5 +76,80 @@ describe("createContext", () => {
     const ctx = await createContext(fetchOpts);
 
     expect(ctx).not.toHaveProperty("db");
+  });
+
+  describe("collabCookbookIds", () => {
+    const VALID_USER_ID = "aaaaaaaaaaaaaaaaaaaaaaaa";
+
+    it("returns empty array when unauthenticated", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockGetSession.mockResolvedValue(null);
+
+      const ctx = await createContext(fetchOpts);
+
+      expect(ctx.collabCookbookIds).toEqual([]);
+      expect(mockCollaboratorFind).not.toHaveBeenCalled();
+    });
+
+    it("returns empty array when user id is not a valid ObjectId", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockGetSession.mockResolvedValue({
+        session: { id: "s1" },
+        user: { id: "not-an-object-id" },
+      });
+
+      const ctx = await createContext(fetchOpts);
+
+      expect(ctx.collabCookbookIds).toEqual([]);
+      expect(mockCollaboratorFind).not.toHaveBeenCalled();
+    });
+
+    it("returns empty array when user has no collaborations", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockGetSession.mockResolvedValue({
+        session: { id: "s1" },
+        user: { id: VALID_USER_ID },
+      });
+      mockCollaboratorFind.mockReturnValue({ lean: () => Promise.resolve([]) });
+
+      const ctx = await createContext(fetchOpts);
+
+      expect(ctx.collabCookbookIds).toEqual([]);
+    });
+
+    it("returns cookbook ids when user is a collaborator", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      const cbId1 = "bbbbbbbbbbbbbbbbbbbbbbbb";
+      const cbId2 = "cccccccccccccccccccccccc";
+      mockGetSession.mockResolvedValue({
+        session: { id: "s1" },
+        user: { id: VALID_USER_ID },
+      });
+      mockCollaboratorFind.mockReturnValue({
+        lean: () => Promise.resolve([
+          { cookbookId: { toString: () => cbId1 } },
+          { cookbookId: { toString: () => cbId2 } },
+        ]),
+      });
+
+      const ctx = await createContext(fetchOpts);
+
+      expect(ctx.collabCookbookIds).toEqual([cbId1, cbId2]);
+    });
+
+    it("queries Collaborator by the authenticated user id", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockGetSession.mockResolvedValue({
+        session: { id: "s1" },
+        user: { id: VALID_USER_ID },
+      });
+
+      await createContext(fetchOpts);
+
+      expect(mockCollaboratorFind).toHaveBeenCalledWith(
+        { userId: VALID_USER_ID },
+        { cookbookId: 1 },
+      );
+    });
   });
 });
