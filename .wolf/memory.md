@@ -1065,3 +1065,10 @@
 | 11:33 | Edited src/server/trpc/routers/__tests__/users.test.ts | 5→5 lines | ~87 |
 | 11:34 | Edited src/server/trpc/routers/__tests__/users.test.ts | modified for() | ~765 |
 | 11:35 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 111→111 lines | ~990 |
+| 11:38 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | added 1 condition(s) | ~779 |
+| 11:38 | Edited src/lib/__tests__/reconcile-user-content.test.ts | modified seedOwnerWithCollaboratedCookbooks() | ~600 |
+| 11:38 | Edited src/server/trpc/__tests__/context.test.ts | modified mockSessionWithUser() | ~664 |
+| 11:38 | Edited src/server/trpc/routers/cookbooks.ts | removed 32 lines | ~21 |
+| 11:39 | Edited src/server/trpc/routers/cookbooks.ts | added optional chaining | ~354 |
+| 11:39 | Edited src/server/trpc/routers/cookbooks.ts | modified isDuplicateKeyError() | ~97 |
+| 11:39 | Edited src/server/trpc/routers/cookbooks.ts | modified catch() | ~122 |

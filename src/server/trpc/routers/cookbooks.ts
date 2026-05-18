@@ -103,6 +103,37 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
   return stub;
 }
 
+/** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
+function isDuplicateKeyError(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000
+}
+
+/** Lookup user docs by id field on the source collection. Used to join Better-Auth user names. */
+function userLookupStages(localField: string, alias: string) {
+  return [
+    { $lookup: { from: 'user', localField, foreignField: '_id', as: alias } },
+    { $unwind: { path: `$${alias}`, preserveNullAndEmptyArrays: true } },
+  ]
+}
+
+/** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
+async function fetchCollaboratorsWithUsers(cookbookId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const docs = await Collaborator.aggregate<any>([
+    { $match: { cookbookId: new Types.ObjectId(cookbookId) } },
+    ...userLookupStages('userId', '_user'),
+    ...userLookupStages('addedBy', '_addedByUser'),
+  ])
+  return docs.map((c) => ({
+    id: (c._id as Types.ObjectId).toString(),
+    userId: (c.userId as Types.ObjectId).toString(),
+    name: typeof c._user?.name === 'string' ? (c._user.name as string) : '',
+    role: c.role as 'editor' | 'viewer',
+    addedAt: c.addedAt as Date,
+    addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
+  }))
+}
+
 /** Procedure requiring email verification and executive-chef tier. */
 const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
   if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
@@ -231,38 +262,7 @@ export const cookbooksRouter = router({
       const cb = cookbook as any;
       const chapters = transformChapters(cb);
 
-      // Join collaborators with user names via aggregation (user collection managed by Better-Auth)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const collaboratorDocs = await Collaborator.aggregate<any>([
-        { $match: { cookbookId: new Types.ObjectId(input.id) } },
-        {
-          $lookup: {
-            from: 'user',
-            localField: 'userId',
-            foreignField: '_id',
-            as: '_user',
-          },
-        },
-        { $unwind: { path: '$_user', preserveNullAndEmptyArrays: true } },
-        {
-          $lookup: {
-            from: 'user',
-            localField: 'addedBy',
-            foreignField: '_id',
-            as: '_addedByUser',
-          },
-        },
-        { $unwind: { path: '$_addedByUser', preserveNullAndEmptyArrays: true } },
-      ])
-
-      const collaborators = collaboratorDocs.map((c) => ({
-        id: (c._id as Types.ObjectId).toString(),
-        userId: (c.userId as Types.ObjectId).toString(),
-        name: typeof c._user?.name === 'string' ? (c._user.name as string) : '',
-        role: c.role as 'editor' | 'viewer',
-        addedAt: c.addedAt as Date,
-        addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
-      }))
+      const collaborators = await fetchCollaboratorsWithUsers(input.id)
 
       return {
         ...cookbookCoreFields(cb),
@@ -463,7 +463,7 @@ export const cookbooksRouter = router({
           addedBy: ctx.user.id,
         }).save()
       } catch (err: unknown) {
-        if (typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000) {
+        if (isDuplicateKeyError(err)) {
           throw new TRPCError({ code: 'CONFLICT', message: 'User is already a collaborator' })
         }
         throw err

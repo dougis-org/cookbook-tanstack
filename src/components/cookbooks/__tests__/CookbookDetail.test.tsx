@@ -330,113 +330,81 @@ function makeCollaborator(overrides: Partial<{ id: string; userId: string; name:
   }
 }
 
+type Collab = ReturnType<typeof makeCollaborator>
+
+function renderPanel(opts: {
+  collaborators?: Collab[]
+  isOwner?: boolean
+  onInvite?: () => void
+  onRemove?: (c: Collab) => void
+  expand?: boolean
+} = {}) {
+  const {
+    collaborators = [],
+    isOwner = false,
+    onInvite = vi.fn(),
+    onRemove = vi.fn(),
+    expand = false,
+  } = opts
+  render(
+    <CollaboratorsPanel
+      collaborators={collaborators}
+      isOwner={isOwner}
+      onInvite={onInvite}
+      onRemove={onRemove}
+    />
+  )
+  if (expand) fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+  return { onInvite, onRemove }
+}
+
 describe('CollaboratorsPanel', () => {
   it('renders collapsed by default with collaborator count', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[makeCollaborator(), makeCollaborator({ id: 'collab-2', userId: 'user-3', name: 'Bob', role: 'viewer' })]}
-        isOwner={false}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
+    renderPanel({
+      collaborators: [
+        makeCollaborator(),
+        makeCollaborator({ id: 'collab-2', userId: 'user-3', name: 'Bob', role: 'viewer' }),
+      ],
+    })
     expect(screen.getByText(/Collaborators/)).toBeInTheDocument()
     expect(screen.getByText('(2)')).toBeInTheDocument()
     expect(screen.queryByText('Alice')).not.toBeInTheDocument()
   })
 
   it('expands to show collaborators when clicked', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[makeCollaborator({ name: 'Alice' })]}
-        isOwner={false}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    renderPanel({ collaborators: [makeCollaborator({ name: 'Alice' })], expand: true })
     expect(screen.getByText('Alice')).toBeInTheDocument()
   })
 
   it('shows Remove button for each collaborator when isOwner', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[makeCollaborator({ name: 'Alice' })]}
-        isOwner={true}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    renderPanel({ collaborators: [makeCollaborator({ name: 'Alice' })], isOwner: true, expand: true })
     expect(screen.getByLabelText('Remove Alice')).toBeInTheDocument()
   })
 
   it('does not show Remove button for non-owner', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[makeCollaborator({ name: 'Alice' })]}
-        isOwner={false}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    renderPanel({ collaborators: [makeCollaborator({ name: 'Alice' })], expand: true })
     expect(screen.queryByLabelText('Remove Alice')).not.toBeInTheDocument()
   })
 
   it('shows invite link when isOwner', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[]}
-        isOwner={true}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    renderPanel({ isOwner: true, expand: true })
     expect(screen.getByText(/Invite collaborator/)).toBeInTheDocument()
   })
 
   it('does not show invite link for non-owner', () => {
-    render(
-      <CollaboratorsPanel
-        collaborators={[]}
-        isOwner={false}
-        onInvite={vi.fn()}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    renderPanel({ expand: true })
     expect(screen.queryByText(/Invite collaborator/)).not.toBeInTheDocument()
   })
 
   it('calls onRemove with correct collaborator when Remove is clicked', () => {
-    const onRemove = vi.fn()
     const collab = makeCollaborator({ name: 'Alice' })
-    render(
-      <CollaboratorsPanel
-        collaborators={[collab]}
-        isOwner={true}
-        onInvite={vi.fn()}
-        onRemove={onRemove}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    const { onRemove } = renderPanel({ collaborators: [collab], isOwner: true, expand: true })
     fireEvent.click(screen.getByLabelText('Remove Alice'))
     expect(onRemove).toHaveBeenCalledWith(collab)
   })
 
   it('calls onInvite when invite link is clicked', () => {
-    const onInvite = vi.fn()
-    render(
-      <CollaboratorsPanel
-        collaborators={[]}
-        isOwner={true}
-        onInvite={onInvite}
-        onRemove={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /Collaborators/i }))
+    const { onInvite } = renderPanel({ isOwner: true, expand: true })
     fireEvent.click(screen.getByText(/Invite collaborator/))
     expect(onInvite).toHaveBeenCalledOnce()
   })

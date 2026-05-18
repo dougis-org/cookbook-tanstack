@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:35:29.434Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:39:18.873Z
 > Files: 677 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -933,7 +933,7 @@
 ## src/components/cookbooks/__tests__/
 
 - `CookbookCard.test.tsx` — makeCookbook (~1706 tok)
-- `CookbookDetail.test.tsx` — Unit tests for cookbook detail page chapter UI: (~4053 tok)
+- `CookbookDetail.test.tsx` — Unit tests for cookbook detail page chapter UI: (~3842 tok)
 - `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
 
 ## src/components/layout/
@@ -994,7 +994,7 @@
 - `playwright-ci-performance.test.ts` — Guards Playwright CI workflow/config contracts with static assertions (~521 tok)
 - `rate-limiter.test.ts` — Declares mockTime (~1283 tok)
 - `recipe-url-import.test.ts` — mockAIExtractor: mockFetch, mockAIResponse, ldJson, extractSchema (~4886 tok)
-- `reconcile-user-content.test.ts` — BASE: doc, makeRecipe, makeCookbook + 6 more (~3728 tok)
+- `reconcile-user-content.test.ts` — BASE: doc, makeRecipe, makeCookbook + 7 more (~3535 tok)
 - `tier-entitlements.test.ts` — Declares EntitlementTier (~817 tok)
 - `wait-for-ai-reviews.test.ts` — Guards the AI review wait workflow against regressing to check-run-only detection (~334 tok)
 
@@ -1065,7 +1065,7 @@
 
 ## src/server/trpc/__tests__/
 
-- `context.test.ts` — API routes: GET (2 endpoints) (~1398 tok)
+- `context.test.ts` — API routes: GET (2 endpoints) (~1352 tok)
 - `error-formatter.test.ts` — Declares cause (~1414 tok)
 - `init.test.ts` — tRPC router: 14 procedures (~1769 tok)
 - `integration.test.ts` — tRPC integration tests. (~1531 tok)
@@ -1073,7 +1073,7 @@
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8639 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8678 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)

@@ -240,65 +240,55 @@ describe('reconcileUserContent idempotent re-run', () => {
 
 // ─── collaboration downgrade ──────────────────────────────────────────────
 
+async function seedOwnerWithCollaboratedCookbooks(cookbookCount: number) {
+  const owner = await seedUserWithBetterAuth()
+  const collaborator = await seedUserWithBetterAuth()
+  const uid = new Types.ObjectId(owner.id as string)
+  const collabUid = new Types.ObjectId(collaborator.id as string)
+
+  const inserted = await Promise.all(
+    Array.from({ length: cookbookCount }, () => Cookbook.collection.insertOne(makeCookbook(uid))),
+  )
+  const cookbookIds = inserted.map((r) => r.insertedId)
+
+  await Collaborator.collection.insertMany(
+    cookbookIds.map((cookbookId, i) => ({
+      cookbookId,
+      userId: collabUid,
+      role: i === 0 ? 'editor' : 'viewer',
+      addedAt: new Date(),
+      addedBy: uid,
+    })),
+  )
+
+  return { ownerId: owner.id as string, cookbookIds }
+}
+
 describe('reconcileUserContent collaboration downgrade', () => {
   it('removes collaborators from owner cookbooks when downgrading from executive-chef', async () => {
     await withCleanDb(async () => {
-      const owner = await seedUserWithBetterAuth()
-      const collaborator = await seedUserWithBetterAuth()
-      const uid = new Types.ObjectId(owner.id as string)
-      const collabUid = new Types.ObjectId(collaborator.id as string)
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(2)
+      expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(2)
 
-      const [cb1, cb2] = await Promise.all([
-        Cookbook.collection.insertOne(makeCookbook(uid)),
-        Cookbook.collection.insertOne(makeCookbook(uid)),
-      ])
+      await reconcileUserContent(ownerId, 'executive-chef', 'sous-chef')
 
-      await Collaborator.collection.insertMany([
-        { cookbookId: cb1.insertedId, userId: collabUid, role: 'editor', addedAt: new Date(), addedBy: uid },
-        { cookbookId: cb2.insertedId, userId: collabUid, role: 'viewer', addedAt: new Date(), addedBy: uid },
-      ])
-
-      expect(await Collaborator.countDocuments({ cookbookId: { $in: [cb1.insertedId, cb2.insertedId] } })).toBe(2)
-
-      await reconcileUserContent(owner.id as string, 'executive-chef', 'sous-chef')
-
-      expect(await Collaborator.countDocuments({ cookbookId: { $in: [cb1.insertedId, cb2.insertedId] } })).toBe(0)
+      expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(0)
     })
   })
 
   it('does not remove collaborators when downgrading between non-executive-chef tiers', async () => {
     await withCleanDb(async () => {
-      const owner = await seedUserWithBetterAuth()
-      const collaborator = await seedUserWithBetterAuth()
-      const uid = new Types.ObjectId(owner.id as string)
-      const collabUid = new Types.ObjectId(collaborator.id as string)
-
-      const cb = await Cookbook.collection.insertOne(makeCookbook(uid))
-      await Collaborator.collection.insertOne(
-        { cookbookId: cb.insertedId, userId: collabUid, role: 'editor', addedAt: new Date(), addedBy: uid },
-      )
-
-      await reconcileUserContent(owner.id as string, 'sous-chef', 'home-cook')
-
-      expect(await Collaborator.countDocuments({ cookbookId: cb.insertedId })).toBe(1)
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(1)
+      await reconcileUserContent(ownerId, 'sous-chef', 'home-cook')
+      expect(await Collaborator.countDocuments({ cookbookId: cookbookIds[0] })).toBe(1)
     })
   })
 
   it('does not remove collaborators when upgrading', async () => {
     await withCleanDb(async () => {
-      const owner = await seedUserWithBetterAuth()
-      const collaborator = await seedUserWithBetterAuth()
-      const uid = new Types.ObjectId(owner.id as string)
-      const collabUid = new Types.ObjectId(collaborator.id as string)
-
-      const cb = await Cookbook.collection.insertOne(makeCookbook(uid))
-      await Collaborator.collection.insertOne(
-        { cookbookId: cb.insertedId, userId: collabUid, role: 'editor', addedAt: new Date(), addedBy: uid },
-      )
-
-      await reconcileUserContent(owner.id as string, 'sous-chef', 'executive-chef')
-
-      expect(await Collaborator.countDocuments({ cookbookId: cb.insertedId })).toBe(1)
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(1)
+      await reconcileUserContent(ownerId, 'sous-chef', 'executive-chef')
+      expect(await Collaborator.countDocuments({ cookbookId: cookbookIds[0] })).toBe(1)
     })
   })
 })

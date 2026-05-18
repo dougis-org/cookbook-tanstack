@@ -81,6 +81,10 @@ describe("createContext", () => {
   describe("collabCookbookIds", () => {
     const VALID_USER_ID = "aaaaaaaaaaaaaaaaaaaaaaaa";
 
+    function mockSessionWithUser(userId: string) {
+      mockGetSession.mockResolvedValue({ session: { id: "s1" }, user: { id: userId } });
+    }
+
     it("returns empty array when unauthenticated", async () => {
       const { createContext } = await import("@/server/trpc/context");
       mockGetSession.mockResolvedValue(null);
@@ -93,10 +97,7 @@ describe("createContext", () => {
 
     it("returns empty array when user id is not a valid ObjectId", async () => {
       const { createContext } = await import("@/server/trpc/context");
-      mockGetSession.mockResolvedValue({
-        session: { id: "s1" },
-        user: { id: "not-an-object-id" },
-      });
+      mockSessionWithUser("not-an-object-id");
 
       const ctx = await createContext(fetchOpts);
 
@@ -106,10 +107,7 @@ describe("createContext", () => {
 
     it("returns empty array when user has no collaborations", async () => {
       const { createContext } = await import("@/server/trpc/context");
-      mockGetSession.mockResolvedValue({
-        session: { id: "s1" },
-        user: { id: VALID_USER_ID },
-      });
+      mockSessionWithUser(VALID_USER_ID);
       mockCollaboratorFind.mockReturnValue({ lean: () => Promise.resolve([]) });
 
       const ctx = await createContext(fetchOpts);
@@ -121,10 +119,7 @@ describe("createContext", () => {
       const { createContext } = await import("@/server/trpc/context");
       const cbId1 = "bbbbbbbbbbbbbbbbbbbbbbbb";
       const cbId2 = "cccccccccccccccccccccccc";
-      mockGetSession.mockResolvedValue({
-        session: { id: "s1" },
-        user: { id: VALID_USER_ID },
-      });
+      mockSessionWithUser(VALID_USER_ID);
       mockCollaboratorFind.mockReturnValue({
         lean: () => Promise.resolve([
           { cookbookId: { toString: () => cbId1 } },
@@ -139,10 +134,7 @@ describe("createContext", () => {
 
     it("queries Collaborator by the authenticated user id", async () => {
       const { createContext } = await import("@/server/trpc/context");
-      mockGetSession.mockResolvedValue({
-        session: { id: "s1" },
-        user: { id: VALID_USER_ID },
-      });
+      mockSessionWithUser(VALID_USER_ID);
 
       await createContext(fetchOpts);
 

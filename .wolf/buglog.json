@@ -2443,6 +2443,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-18T18:34:11.615Z"
+    },
+    {
+      "id": "bug-153",
+      "timestamp": "2026-05-18T18:38:04.108Z",
+      "error_message": "CSS fix: name",
+      "file": "src/components/cookbooks/__tests__/CookbookDetail.test.tsx",
+      "root_cause": "name: /Collaborators/i → 'Alice'",
+      "fix": "Changed name: /Collaborators/i → 'Alice'",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-18T18:38:04.108Z"
+    },
+    {
+      "id": "bug-154",
+      "timestamp": "2026-05-18T18:39:06.305Z",
+      "error_message": "Null/undefined access in ",
+      "file": "src/server/trpc/routers/cookbooks.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: /** True if a thrown error is a MongoDB duplicate-key (E1100; function isDuplicateKeyError(err: unknown): boolean {",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-18T18:39:12.528Z"
     }
   ]
 }
