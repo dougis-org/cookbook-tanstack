@@ -66,6 +66,21 @@ export async function seedUserWithBetterAuth() {
   };
 }
 
+/**
+ * Seed a user with a specific name prefix (for limit/search tests).
+ */
+export async function seedNamedUser(name: string, email: string) {
+  const userId = new Types.ObjectId();
+  const now = new Date();
+  if (mongoose.connection.readyState !== 1) throw new Error("MongoDB connection not ready");
+  const db = mongoose.connection.db;
+  if (!db) throw new Error("MongoDB connection has no active database");
+  await db.collection("user").insertOne({
+    _id: userId, email, emailVerified: false, name, image: null, createdAt: now, updatedAt: now,
+  });
+  return { id: userId.toHexString(), email, name };
+}
+
 // Shared test helpers for TRPC router tests.
 const RUN_ID = Date.now();
 let seq = 0;

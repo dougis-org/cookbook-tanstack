@@ -194,10 +194,10 @@ export const cookbooksRouter = router({
           localField: '_id',
           foreignField: 'cookbookId',
           as: '_collabs',
-          pipeline: [{ $project: { _id: 1 } }],
+          pipeline: [{ $count: 'n' }],
         },
       },
-      { $addFields: { collaboratorCount: { $size: '$_collabs' } } },
+      { $addFields: { collaboratorCount: { $ifNull: [{ $arrayElemAt: ['$_collabs.n', 0] }, 0] } } },
       { $project: { _collabs: 0 } },
     ])
 
