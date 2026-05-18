@@ -2,13 +2,14 @@ import { describe, it, expect, vi } from "vitest"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
-const anonCtx = { session: null, user: null }
-const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never }
+const anonCtx = { session: null, user: null, collabCookbookIds: [] as string[] }
+const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never, collabCookbookIds: [] as string[] }
 
 function makeUserCtx(tier: string | undefined, isAdmin: boolean) {
   return {
     session: { id: "s1" } as never,
     user: { id: "u1", tier, isAdmin } as never,
+    collabCookbookIds: [] as string[],
   }
 }
 
@@ -104,6 +105,7 @@ describe("verifiedProcedure", () => {
     return {
       session: { id: "s1" } as never,
       user: { id: "u1", emailVerified } as never,
+      collabCookbookIds: [] as string[],
     }
   }
 

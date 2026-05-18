@@ -49,6 +49,7 @@ async function makeAdminCaller(userId: string, email = 'admin@test.com') {
   return appRouter.createCaller({
     session: { id: 's1' } as never,
     user: { id: userId, email, isAdmin: true } as never,
+    collabCookbookIds: [],
   })
 }
 
@@ -57,12 +58,13 @@ async function makeNonAdminCaller(userId: string, email = 'user@test.com') {
   return appRouter.createCaller({
     session: { id: 's1' } as never,
     user: { id: userId, email, isAdmin: false } as never,
+    collabCookbookIds: [],
   })
 }
 
 async function makeAnonCaller() {
   const { appRouter } = await import('@/server/trpc/router')
-  return appRouter.createCaller({ session: null, user: null })
+  return appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] })
 }
 
 const ADMIN_ID = '0'.repeat(24)

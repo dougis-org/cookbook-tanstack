@@ -16,9 +16,9 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
 // A valid 24-hex-char ObjectId string that will not match any document
 const VALID_OBJECT_ID = "000000000000000000000000"
-const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never }
-const anonCtx = { session: null, user: null }
-const unverifiedCtx = { session: { id: "s1" } as never, user: { id: "u1", emailVerified: false } as never }
+const authCtx = { session: { id: "s1" } as never, user: { id: "u1" } as never, collabCookbookIds: [] as string[] }
+const anonCtx = { session: null, user: null, collabCookbookIds: [] as string[] }
+const unverifiedCtx = { session: { id: "s1" } as never, user: { id: "u1", emailVerified: false } as never, collabCookbookIds: [] as string[] }
 
 // Unique prefix per test run for slug-based uniqueness
 const RUN_ID = Date.now()

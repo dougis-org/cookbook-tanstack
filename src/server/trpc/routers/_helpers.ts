@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { publicProcedure, router } from "../init";
 import { Recipe, Cookbook } from "@/db/models";
 import { getRecipeLimit, getCookbookLimit, TIER_LIMITS } from "@/lib/tier-entitlements";
@@ -16,16 +16,22 @@ export const objectId = z
  * Public docs are visible only when not hidden by tier; private docs are visible
  * to their owner only when not hidden by tier. Documents with hiddenByTier: true
  * are excluded for all users (including the owner) so hidden content is invisible
- * to everyone.
+ * to everyone. Collaborative cookbooks are accessible via the third $or clause.
  */
-export function visibilityFilter(user: { id: string } | null) {
+export function visibilityFilter(user: { id: string } | null, collabCookbookIds: string[] = []) {
   if (user) {
-    return {
-      $or: [
-        { isPublic: true, hiddenByTier: { $ne: true } },
-        { userId: user.id, hiddenByTier: { $ne: true } },
-      ],
+    const userId = Types.ObjectId.isValid(user.id) ? new Types.ObjectId(user.id) : user.id
+    const orClauses: object[] = [
+      { isPublic: true, hiddenByTier: { $ne: true } },
+      { userId, hiddenByTier: { $ne: true } },
+    ]
+    if (collabCookbookIds.length > 0) {
+      const collabIds = collabCookbookIds
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id))
+      orClauses.push({ _id: { $in: collabIds }, hiddenByTier: { $ne: true } })
     }
+    return { $or: orClauses }
   }
   return { isPublic: true, hiddenByTier: { $ne: true } }
 }

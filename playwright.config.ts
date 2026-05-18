@@ -15,6 +15,8 @@ const workerCount =
   Number.isFinite(configuredWorkers) && configuredWorkers > 0
     ? configuredWorkers
     : defaultWorkerCount;
+const appPort = process.env.APP_PORT ?? "3000";
+const appUrl = `http://localhost:${appPort}`;
 const runtimeReportOutput = join(
   __dirname,
   process.env.PLAYWRIGHT_RUNTIME_REPORT ?? "playwright-report/results.json",
@@ -43,7 +45,7 @@ export default defineConfig({
   workers: workerCount,
   reporter,
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: appUrl,
     trace: "on-first-retry",
   },
 
@@ -59,9 +61,9 @@ export default defineConfig({
     // Using the Nitro production server eliminates Vite's lazy module compilation,
     // which can take >30 s per route on a cold cache and causes test timeouts.
     command: process.env.CI
-      ? "PORT=3000 node .output/server/index.mjs"
-      : "npm run dev -- --mode test",
-    url: "http://localhost:3000",
+      ? `PORT=${appPort} node .output/server/index.mjs`
+      : `npm run dev -- --mode test --port ${appPort}`,
+    url: appUrl,
     reuseExistingServer: true,
     // Nitro production server lazy-loads the SSR bundle (~2.5 MB mongoose+auth) on first
     // request. The health-check URL responds before that load completes, so Playwright can

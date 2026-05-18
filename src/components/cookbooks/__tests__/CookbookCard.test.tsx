@@ -115,4 +115,26 @@ describe("CookbookCard", () => {
       expect(screen.queryByRole("img", { name: "You own this" })).not.toBeInTheDocument()
     })
   })
+
+  describe("collaboratorCount prop", () => {
+    it("shows Users icon when collaboratorCount > 0", () => {
+      render(<CookbookCard cookbook={makeCookbook({ collaboratorCount: 2 })} />)
+      expect(screen.getByRole("img", { name: "2 collaborators" })).toBeInTheDocument()
+    })
+
+    it("shows singular label for collaboratorCount of 1", () => {
+      render(<CookbookCard cookbook={makeCookbook({ collaboratorCount: 1 })} />)
+      expect(screen.getByRole("img", { name: "1 collaborator" })).toBeInTheDocument()
+    })
+
+    it("does not show Users icon when collaboratorCount is 0", () => {
+      render(<CookbookCard cookbook={makeCookbook({ collaboratorCount: 0 })} />)
+      expect(screen.queryByRole("img", { name: /collaborator/ })).not.toBeInTheDocument()
+    })
+
+    it("does not show Users icon when collaboratorCount is omitted", () => {
+      render(<CookbookCard cookbook={makeCookbook()} />)
+      expect(screen.queryByRole("img", { name: /collaborator/ })).not.toBeInTheDocument()
+    })
+  })
 })

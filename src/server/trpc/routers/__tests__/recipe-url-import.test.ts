@@ -49,7 +49,7 @@ describe('recipes.importFromUrl', () => {
 
   it('throws UNAUTHORIZED when user is not authenticated', async () => {
     const { appRouter } = await import('@/server/trpc/router')
-    const caller = appRouter.createCaller({ session: null, user: null })
+    const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] })
     await expect(
       caller.recipes.importFromUrl({ url: 'https://example.com/recipe' })
     ).rejects.toMatchObject({ code: 'UNAUTHORIZED' })

@@ -3,7 +3,9 @@ import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
-import { Cookbook, Recipe } from "@/db/models";
+import { Cookbook, Recipe, Collaborator } from "@/db/models";
+import { ObjectId } from "mongodb";
+import { hasAtLeastTier } from "@/types/user";
 // Side-effect imports register models needed for Recipe.populate() chains
 import "@/db/models/classification";
 import "@/db/models/source";
@@ -11,6 +13,7 @@ import "@/db/models/meal";
 import "@/db/models/course";
 import "@/db/models/preparation";
 import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
+import { getMongoClient } from "@/db";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pluckIds(arr: unknown): string[] {
@@ -100,16 +103,44 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
   return stub;
 }
 
-/** Fetch a cookbook by ID and verify ownership. Returns the full lean doc. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchOwnedCookbook(cookbookId: string, userId: string): Promise<any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return verifyOwnership(
-    async () => (await Cookbook.findById(cookbookId).lean()) as any,
-    userId,
-    "Cookbook",
-  );
+/** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
+function isDuplicateKeyError(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000
 }
+
+/** Lookup user docs by id field on the source collection. Used to join Better-Auth user names. */
+function userLookupStages(localField: string, alias: string) {
+  return [
+    { $lookup: { from: 'user', localField, foreignField: '_id', as: alias } },
+    { $unwind: { path: `$${alias}`, preserveNullAndEmptyArrays: true } },
+  ]
+}
+
+/** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
+async function fetchCollaboratorsWithUsers(cookbookId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const docs = await Collaborator.aggregate<any>([
+    { $match: { cookbookId: new Types.ObjectId(cookbookId) } },
+    ...userLookupStages('userId', '_user'),
+    ...userLookupStages('addedBy', '_addedByUser'),
+  ])
+  return docs.map((c) => ({
+    id: (c._id as Types.ObjectId).toString(),
+    userId: (c.userId as Types.ObjectId).toString(),
+    name: typeof c._user?.name === 'string' ? (c._user.name as string) : '',
+    role: c.role as 'editor' | 'viewer',
+    addedAt: c.addedAt as Date,
+    addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
+  }))
+}
+
+/** Procedure requiring email verification and executive-chef tier. */
+const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
+  if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
+    throw new TRPCError({ code: 'FORBIDDEN' })
+  }
+  return next({ ctx })
+})
 
 /** Verify cookbook ownership without returning the document. */
 async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<void> {
@@ -118,6 +149,19 @@ async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<
     userId,
     "Cookbook",
   );
+}
+
+/** Fetch a cookbook and verify the user has edit access (owner or editor collaborator). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchEditableCookbook(cookbookId: string, userId: string): Promise<any> {
+  if (!Types.ObjectId.isValid(userId)) throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your cookbook' })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cookbook = (await Cookbook.findById(cookbookId).lean()) as any
+  if (!cookbook) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
+  if (cookbook.userId?.toString() === userId) return cookbook
+  const collab = await Collaborator.findOne({ cookbookId, userId: new Types.ObjectId(userId), role: 'editor' }).lean()
+  if (!collab) throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your cookbook' })
+  return cookbook
 }
 
 async function fetchCookbookWithOrderedStubs(
@@ -140,9 +184,22 @@ async function fetchCookbookWithOrderedStubs(
 
 export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
-    const docs = await Cookbook.find(visibilityFilter(ctx.user))
-      .sort({ name: 1 })
-      .lean();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docs = await Cookbook.aggregate<any>([
+      { $match: visibilityFilter(ctx.user, ctx.collabCookbookIds) },
+      { $sort: { name: 1 } },
+      {
+        $lookup: {
+          from: 'collaborators',
+          localField: '_id',
+          foreignField: 'cookbookId',
+          as: '_collabs',
+          pipeline: [{ $count: 'n' }],
+        },
+      },
+      { $addFields: { collaboratorCount: { $ifNull: [{ $arrayElemAt: ['$_collabs.n', 0] }, 0] } } },
+      { $project: { _collabs: 0 } },
+    ])
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return docs.map((cb: any) => ({
@@ -155,13 +212,14 @@ export const cookbooksRouter = router({
       recipeCount: Array.isArray(cb.recipes) ? cb.recipes.length : 0,
       chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
       userId: cb.userId?.toString() as string,
+      collaboratorCount: (cb.collaboratorCount ?? 0) as number,
     }));
   }),
 
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user);
+      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
@@ -204,6 +262,8 @@ export const cookbooksRouter = router({
       const cb = cookbook as any;
       const chapters = transformChapters(cb);
 
+      const collaborators = await fetchCollaboratorsWithUsers(input.id)
+
       return {
         ...cookbookCoreFields(cb),
         imageUrl: (cb.imageUrl ?? null) as string | null,
@@ -213,13 +273,15 @@ export const cookbooksRouter = router({
         updatedAt: cb.updatedAt as Date,
         recipes,
         chapters,
+        collaborators,
+        collaboratorCount: collaborators.length,
       };
     }),
 
   printById: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user);
+      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
@@ -371,10 +433,81 @@ export const cookbooksRouter = router({
       return { success: true };
     }),
 
+  addCollaborator: execChefProcedure
+    .input(z.object({
+      cookbookId: objectId,
+      userId: objectId,
+      role: z.enum(['editor', 'viewer']),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+
+      if (input.userId === ctx.user.id) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot invite yourself as a collaborator' })
+      }
+
+      const targetUser = await getMongoClient().db().collection('user').findOne(
+        { _id: new ObjectId(String(input.userId)) },
+        { projection: { _id: 1 } },
+      )
+      if (!targetUser) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
+      }
+
+      try {
+        await new Collaborator({
+          cookbookId: input.cookbookId,
+          userId: input.userId,
+          role: input.role,
+          addedAt: new Date(),
+          addedBy: ctx.user.id,
+        }).save()
+      } catch (err: unknown) {
+        if (isDuplicateKeyError(err)) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'User is already a collaborator' })
+        }
+        throw err
+      }
+
+      return { success: true }
+    }),
+
+  removeCollaborator: execChefProcedure
+    .input(z.object({ cookbookId: objectId, userId: objectId }))
+    .mutation(async ({ ctx, input }) => {
+      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+      await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
+      return { success: true }
+    }),
+
+  myCollaborations: protectedProcedure.query(async ({ ctx }) => {
+    if (!Types.ObjectId.isValid(ctx.user.id)) return []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const docs = await Collaborator.aggregate<any>([
+      { $match: { userId: new Types.ObjectId(ctx.user.id) } },
+      {
+        $lookup: {
+          from: 'cookbooks',
+          localField: 'cookbookId',
+          foreignField: '_id',
+          as: '_cookbook',
+        },
+      },
+      { $unwind: '$_cookbook' },
+      { $match: { '_cookbook.hiddenByTier': { $ne: true } } },
+    ])
+
+    return docs.map((d) => ({
+      id: (d.cookbookId as Types.ObjectId).toString(),
+      name: typeof d._cookbook?.name === 'string' ? (d._cookbook.name as string) : '',
+      role: d.role as 'editor' | 'viewer',
+    }))
+  }),
+
   addRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
 
       const recipeVisFilter = visibilityFilter(ctx.user);
       const accessible = await Recipe.findOne({
@@ -420,7 +553,7 @@ export const cookbooksRouter = router({
   removeRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
+      await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $pull: { recipes: { recipeId: input.recipeId } },
       });
@@ -455,7 +588,7 @@ export const cookbooksRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const existingStubs = getRecipeStubs(cookbook);
 
       if (input.chapters !== undefined) {
@@ -522,7 +655,7 @@ export const cookbooksRouter = router({
   createChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const isFirstChapter = chapters.length === 0;
       const newChapterId = new Types.ObjectId();
@@ -553,7 +686,7 @@ export const cookbooksRouter = router({
   renameChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId, name: z.string().min(1).max(255) }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
+      await fetchEditableCookbook(input.cookbookId, ctx.user.id);
 
       const updated = await Cookbook.findOneAndUpdate(
         { _id: input.cookbookId, "chapters._id": input.chapterId },
@@ -570,7 +703,7 @@ export const cookbooksRouter = router({
   deleteChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const chapterExists = chapters.some((ch) => String(ch._id) === input.chapterId);
       if (!chapterExists) {
@@ -614,7 +747,7 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const existingIds = new Set(chapters.map((ch) => String(ch._id)));
       if (new Set(input.chapterIds).size !== chapters.length || input.chapterIds.some((id) => !existingIds.has(id))) {

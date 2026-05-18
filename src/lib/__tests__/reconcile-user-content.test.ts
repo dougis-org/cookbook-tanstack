@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Types } from 'mongoose'
 import { withCleanDb } from '@/test-helpers/with-clean-db'
-import { Recipe, Cookbook } from '@/db/models'
+import { Recipe, Cookbook, Collaborator } from '@/db/models'
 import { seedUserWithBetterAuth } from '@/server/trpc/routers/__tests__/test-helpers'
 import { reconcileUserContent, getTierChangeDirection } from '@/lib/reconcile-user-content'
 
@@ -234,6 +234,61 @@ describe('reconcileUserContent idempotent re-run', () => {
       await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
       const result = await reconcileUserContent(user.id as string, 'sous-chef', 'home-cook')
       expect(result).toEqual({ recipesUpdated: 0, cookbooksUpdated: 0, recipesHidden: 0, cookbooksHidden: 0, madePublic: 0 })
+    })
+  })
+})
+
+// ─── collaboration downgrade ──────────────────────────────────────────────
+
+async function seedOwnerWithCollaboratedCookbooks(cookbookCount: number) {
+  const owner = await seedUserWithBetterAuth()
+  const collaborator = await seedUserWithBetterAuth()
+  const uid = new Types.ObjectId(owner.id as string)
+  const collabUid = new Types.ObjectId(collaborator.id as string)
+
+  const inserted = await Promise.all(
+    Array.from({ length: cookbookCount }, () => Cookbook.collection.insertOne(makeCookbook(uid))),
+  )
+  const cookbookIds = inserted.map((r) => r.insertedId)
+
+  await Collaborator.collection.insertMany(
+    cookbookIds.map((cookbookId, i) => ({
+      cookbookId,
+      userId: collabUid,
+      role: i === 0 ? 'editor' : 'viewer',
+      addedAt: new Date(),
+      addedBy: uid,
+    })),
+  )
+
+  return { ownerId: owner.id as string, cookbookIds }
+}
+
+describe('reconcileUserContent collaboration downgrade', () => {
+  it('removes collaborators from owner cookbooks when downgrading from executive-chef', async () => {
+    await withCleanDb(async () => {
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(2)
+      expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(2)
+
+      await reconcileUserContent(ownerId, 'executive-chef', 'sous-chef')
+
+      expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(0)
+    })
+  })
+
+  it('does not remove collaborators when downgrading between non-executive-chef tiers', async () => {
+    await withCleanDb(async () => {
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(1)
+      await reconcileUserContent(ownerId, 'sous-chef', 'home-cook')
+      expect(await Collaborator.countDocuments({ cookbookId: cookbookIds[0] })).toBe(1)
+    })
+  })
+
+  it('does not remove collaborators when upgrading', async () => {
+    await withCleanDb(async () => {
+      const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(1)
+      await reconcileUserContent(ownerId, 'sous-chef', 'executive-chef')
+      expect(await Collaborator.countDocuments({ cookbookId: cookbookIds[0] })).toBe(1)
     })
   })
 })

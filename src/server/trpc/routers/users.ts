@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { TRPCError } from "@trpc/server";
-import { protectedProcedure, router } from "../init";
+import { protectedProcedure, verifiedProcedure, router } from "../init";
 import { getMongoClient, toHexString } from "@/db";
 import type { UserTier } from "@/types/user";
-import { TIER_RANK } from "@/types/user";
+import { TIER_RANK, hasAtLeastTier } from "@/types/user";
 
 interface UserDocument {
   _id: ObjectId;
@@ -67,6 +67,37 @@ export function transformUserDoc(
 }
 
 export const usersRouter = router({
+  search: verifiedProcedure
+    .input(z.object({ query: z.string().min(2) }))
+    .query(async ({ ctx, input }) => {
+      if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
+        throw new TRPCError({ code: 'FORBIDDEN' })
+      }
+      if (!ObjectId.isValid(ctx.user.id)) return []
+      const usersCollection = getMongoClient().db().collection("user")
+      const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const callerObjectId = new ObjectId(ctx.user.id)
+      const docs = await usersCollection
+        .find({
+          $and: [
+            { _id: { $ne: callerObjectId } },
+            { $or: [
+              { email: { $regex: `^${escaped}`, $options: 'i' } },
+              { name: { $regex: `^${escaped}`, $options: 'i' } },
+            ] },
+          ],
+        })
+        .limit(10)
+        .toArray()
+      return docs
+        .map((d) => ({
+          id: toHexString(d._id as Parameters<typeof toHexString>[0]) ?? '',
+          name: typeof d.name === 'string' ? d.name : '',
+          email: typeof d.email === 'string' ? d.email : '',
+        }))
+        .filter((u) => u.id !== '')
+    }),
+
   me: protectedProcedure.query(async ({ ctx }) => {
     // ctx.user is already populated from Better-Auth's session
     // Return it directly without additional database queries

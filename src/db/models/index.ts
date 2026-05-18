@@ -8,3 +8,4 @@ export { Recipe } from "./recipe";
 export { Cookbook } from "./cookbook";
 export { RecipeLike } from "./recipe-like";
 export { AdminAuditLog } from "./admin-audit-log";
+export { Collaborator } from "./collaborator";
