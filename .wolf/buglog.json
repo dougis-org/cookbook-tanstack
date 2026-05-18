@@ -2475,6 +2475,22 @@
       "related_bugs": [],
       "occurrences": 2,
       "last_seen": "2026-05-18T18:39:12.528Z"
+    },
+    {
+      "id": "bug-155",
+      "timestamp": "2026-05-18T19:05:35.210Z",
+      "error_message": "Missing guard clause",
+      "file": "src/server/trpc/routers/__tests__/test-helpers.ts",
+      "root_cause": "No early return/throw for edge case: mongoose.connection.readyState !== 1",
+      "fix": "Added guard clause: if (mongoose.connection.readyState !== 1)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-18T19:05:35.210Z"
     }
   ]
 }

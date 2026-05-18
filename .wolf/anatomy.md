@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:39:18.873Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T19:05:44.951Z
 > Files: 677 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -1073,7 +1073,7 @@
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8678 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8685 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
@@ -1086,10 +1086,10 @@
 - `helpers.test.ts` — result: withECLCtx (~2900 tok)
 - `recipe-url-import.test.ts` — Declares mockFetchAndNormalize (~1082 tok)
 - `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
-- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~989 tok)
+- `test-helpers.ts` — Test helper for seeding users via MongoDB. (~1164 tok)
 - `test-router.test.ts` — Declares user (~320 tok)
 - `usage.test.ts` — Declares user (~853 tok)
-- `users.test.ts` — withLoggedIn: expectUpdateProfile (~3985 tok)
+- `users.test.ts` — withLoggedIn: expectUpdateProfile (~3939 tok)
 
 ## src/test-helpers/
 
