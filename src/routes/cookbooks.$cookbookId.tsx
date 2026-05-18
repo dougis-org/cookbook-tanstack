@@ -112,6 +112,7 @@ interface Collaborator {
   name: string
   role: 'editor' | 'viewer'
   addedAt: Date
+  addedByName: string | null
 }
 
 /** Discriminated union replaces four separate boolean/nullable modal states. */
@@ -1103,6 +1104,9 @@ function CollaboratorsPanel({
                 <div>
                   <span className="text-sm text-[var(--theme-fg)]">{collab.name}</span>
                   <span className="ml-2 text-xs text-[var(--theme-fg-muted)] capitalize">{collab.role}</span>
+                  {collab.addedByName && (
+                    <span className="ml-2 text-xs text-[var(--theme-fg-subtle)]">· Invited by {collab.addedByName}</span>
+                  )}
                 </div>
                 {isOwner && (
                   <button

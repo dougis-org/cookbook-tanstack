@@ -2,14 +2,14 @@
   "version": 1,
   "created_at": "2026-04-18T14:10:03.941Z",
   "lifetime": {
-    "total_tokens_estimated": 1696531,
-    "total_reads": 2581,
-    "total_writes": 1988,
-    "total_sessions": 41,
-    "anatomy_hits": 535,
-    "anatomy_misses": 2046,
-    "repeated_reads_blocked": 2702,
-    "estimated_savings_vs_bare_cli": 2163630
+    "total_tokens_estimated": 1720040,
+    "total_reads": 2599,
+    "total_writes": 2000,
+    "total_sessions": 42,
+    "anatomy_hits": 542,
+    "anatomy_misses": 2057,
+    "repeated_reads_blocked": 2711,
+    "estimated_savings_vs_bare_cli": 2266425
   },
   "sessions": [
     {
@@ -28120,6 +28120,191 @@
       "id": "session-2026-05-17-0814",
       "started": "2026-05-17T15:14:14.427Z",
       "ended": "2026-05-17T17:58:24.190Z",
+      "reads": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tests.md",
+          "tokens_estimated": 1415,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tasks.md",
+          "tokens_estimated": 2079,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-auth.spec.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/auth.ts",
+          "tokens_estimated": 931,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/cookbooks.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/admin.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/db.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks.$cookbookId.tsx",
+          "tokens_estimated": 13891,
+          "was_repeated": true,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/owner-icon.spec.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/helpers/app.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 702,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/auth.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/cookbooks/index.tsx",
+          "tokens_estimated": 2268,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/hooks/useAuth.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/get-session.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/lib/auth-client.ts",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/routes/api/auth/$.tsx",
+          "tokens_estimated": 0,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/vite.config.ts",
+          "tokens_estimated": 215,
+          "was_repeated": false,
+          "anatomy_had_description": false
+        }
+      ],
+      "writes": [
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-collaboration.spec.ts",
+          "tokens_estimated": 1433,
+          "action": "create"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-collaboration.spec.ts",
+          "tokens_estimated": 21,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tasks.md",
+          "tokens_estimated": 48,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tasks.md",
+          "tokens_estimated": 40,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 65,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 18,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/playwright.config.ts",
+          "tokens_estimated": 45,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/vite.config.ts",
+          "tokens_estimated": 139,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-collaboration.spec.ts",
+          "tokens_estimated": 57,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-collaboration.spec.ts",
+          "tokens_estimated": 78,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/src/e2e/cookbooks-collaboration.spec.ts",
+          "tokens_estimated": 49,
+          "action": "edit"
+        },
+        {
+          "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tasks.md",
+          "tokens_estimated": 15,
+          "action": "edit"
+        }
+      ],
+      "totals": {
+        "input_tokens_estimated": 21501,
+        "output_tokens_estimated": 2008,
+        "reads_count": 18,
+        "writes_count": 12,
+        "repeated_reads_blocked": 9,
+        "anatomy_lookups": 7
+      }
+    },
+    {
+      "id": "session-2026-05-17-0814",
+      "started": "2026-05-17T15:14:14.427Z",
+      "ended": "2026-05-18T00:08:19.986Z",
       "reads": [
         {
           "file": "/home/doug/dev/cookbook-tanstack/openspec/changes/collaborative-cookbooks/tests.md",

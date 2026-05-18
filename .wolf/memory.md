@@ -1022,3 +1022,29 @@
 | 10:57 | Edited openspec/changes/collaborative-cookbooks/tasks.md | inline fix | ~14 |
 | 18:10 | Fixed E2E tests for collaborative cookbooks (all 3 passing) | src/e2e/cookbooks-collaboration.spec.ts, vite.config.ts, playwright.config.ts | done | ~5k |
 | 10:58 | Session end: 12 writes across 4 files (cookbooks-collaboration.spec.ts, tasks.md, playwright.config.ts, vite.config.ts) | 18 reads | ~23509 tok |
+| 17:08 | Session end: 12 writes across 4 files (cookbooks-collaboration.spec.ts, tasks.md, playwright.config.ts, vite.config.ts) | 18 reads | ~23509 tok |
+| 19:22 | Edited src/server/trpc/routers/_helpers.ts | modified if() | ~76 |
+| 19:22 | Edited src/components/cookbooks/CookbookCard.tsx | inline fix | ~23 |
+| 19:23 | Edited src/server/trpc/routers/cookbooks.ts | added optional chaining | ~297 |
+
+## Session: 2026-05-18 19:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | fetchOwnedCookbook() → fetchEditableCookbook() | ~41 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | verifyCookbookOwner() → fetchEditableCookbook() | ~55 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | fetchOwnedCookbook() → fetchEditableCookbook() | ~39 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | fetchOwnedCookbook() → fetchEditableCookbook() | ~52 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | verifyCookbookOwner() → fetchEditableCookbook() | ~35 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | fetchOwnedCookbook() → fetchEditableCookbook() | ~62 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | fetchOwnedCookbook() → fetchEditableCookbook() | ~58 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | added 1 condition(s) | ~87 |
+| 19:25 | Edited src/server/trpc/routers/cookbooks.ts | expanded (+10 lines) | ~333 |
+| 19:26 | Edited src/server/trpc/routers/users.ts | 7→7 lines | ~95 |
+| 19:26 | Edited src/server/trpc/routers/users.ts | added 2 condition(s) | ~338 |
+| 19:26 | Edited src/lib/reconcile-user-content.ts | modified if() | ~208 |
+| 19:27 | Edited src/routes/cookbooks.$cookbookId.tsx | CSS: addedByName | ~42 |
+| 19:27 | Edited src/routes/cookbooks.$cookbookId.tsx | 4→7 lines | ~123 |
+| 19:28 | Edited src/server/trpc/routers/cookbooks.ts | removed 12 lines | ~19 |
+| 19:28 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | CSS: addedByName, addedByName | ~98 |
+| 06:02 | Edited src/server/trpc/routers/__tests__/helpers.test.ts | 3→3 lines | ~58 |

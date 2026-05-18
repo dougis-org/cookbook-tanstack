@@ -26,7 +26,10 @@ export function visibilityFilter(user: { id: string } | null, collabCookbookIds:
       { userId, hiddenByTier: { $ne: true } },
     ]
     if (collabCookbookIds.length > 0) {
-      orClauses.push({ _id: { $in: collabCookbookIds }, hiddenByTier: { $ne: true } })
+      const collabIds = collabCookbookIds
+        .filter((id) => Types.ObjectId.isValid(id))
+        .map((id) => new Types.ObjectId(id))
+      orClauses.push({ _id: { $in: collabIds }, hiddenByTier: { $ne: true } })
     }
     return { $or: orClauses }
   }

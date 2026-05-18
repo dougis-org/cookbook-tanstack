@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-17T17:57:58.129Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T13:02:19.774Z
 > Files: 676 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -928,12 +928,12 @@
 
 ## src/components/cookbooks/
 
-- `CookbookCard.tsx` — CookbookCard (~748 tok)
+- `CookbookCard.tsx` — CookbookCard (~738 tok)
 
 ## src/components/cookbooks/__tests__/
 
 - `CookbookCard.test.tsx` — makeCookbook (~1706 tok)
-- `CookbookDetail.test.tsx` — Unit tests for cookbook detail page chapter UI: (~4038 tok)
+- `CookbookDetail.test.tsx` — Unit tests for cookbook detail page chapter UI: (~4053 tok)
 - `CookbooksPage.test.tsx` — mockUseAuth (~2468 tok)
 
 ## src/components/layout/
@@ -983,7 +983,7 @@
 - `google-adsense.ts` — Google AdSense slot IDs are numeric strings issued per ad unit. (~344 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~538 tok)
 - `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2747 tok)
-- `reconcile-user-content.ts` — Exports TierChangeDirection, getTierChangeDirection, ReconcileUserContentResult, reconcileUserConten (~1302 tok)
+- `reconcile-user-content.ts` — Exports TierChangeDirection, getTierChangeDirection, ReconcileUserContentResult, reconcileUserConten (~1296 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
@@ -1003,7 +1003,7 @@
 - `__root.tsx` — minifyInlineCss (~3676 tok)
 - `account.tsx` — Route (~1481 tok)
 - `change-tier.tsx` — Route (~289 tok)
-- `cookbooks.$cookbookId.tsx` — Discriminated union replaces four separate boolean/nullable modal states. (~13891 tok)
+- `cookbooks.$cookbookId.tsx` — Discriminated union replaces four separate boolean/nullable modal states. (~13952 tok)
 - `home.tsx` — Route (~840 tok)
 - `index.tsx` — Route (~1077 tok)
 - `pricing.tsx` — Route (~1018 tok)
@@ -1071,18 +1071,18 @@
 
 ## src/server/trpc/routers/
 
-- `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1631 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8324 tok)
+- `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8538 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
-- `users.ts` — Exports transformUserDoc, usersRouter (~1443 tok)
+- `users.ts` — Exports transformUserDoc, usersRouter (~1534 tok)
 
 ## src/server/trpc/routers/__tests__/
 
 - `admin.test.ts` — ─── Module-level mocks ──────────────────────────────────────────────────── (~2288 tok)
 - `cookbooks.test.ts` — Attach recipes to a cookbook with sequential orderIndex values (0, 1, 2, …). (~13102 tok)
-- `helpers.test.ts` — result: withECLCtx (~2897 tok)
+- `helpers.test.ts` — result: withECLCtx (~2900 tok)
 - `recipe-url-import.test.ts` — Declares mockFetchAndNormalize (~1082 tok)
 - `recipes.test.ts` — VALID_OBJECT_ID: uid (~18539 tok)
 - `test-helpers.ts` — Test helper for seeding users via MongoDB. (~989 tok)

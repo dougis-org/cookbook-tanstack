@@ -33,7 +33,7 @@ describe("visibilityFilter", () => {
     expect(result.$or).toHaveLength(3)
     const collabClause = result.$or.find((c) => '_id' in c) as { _id: { $in: unknown[] } } | undefined
     expect(collabClause).toBeDefined()
-    expect(collabClause!._id.$in).toContain(id)
+    expect(collabClause!._id.$in.map(String)).toContain(id)
   })
 })
 

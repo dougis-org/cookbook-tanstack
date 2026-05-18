@@ -111,17 +111,6 @@ const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
   return next({ ctx })
 })
 
-/** Fetch a cookbook by ID and verify ownership. Returns the full lean doc. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchOwnedCookbook(cookbookId: string, userId: string): Promise<any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return verifyOwnership(
-    async () => (await Cookbook.findById(cookbookId).lean()) as any,
-    userId,
-    "Cookbook",
-  );
-}
-
 /** Verify cookbook ownership without returning the document. */
 async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<void> {
   await verifyOwnership(
@@ -129,6 +118,18 @@ async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<
     userId,
     "Cookbook",
   );
+}
+
+/** Fetch a cookbook and verify the user has edit access (owner or editor collaborator). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchEditableCookbook(cookbookId: string, userId: string): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cookbook = (await Cookbook.findById(cookbookId).lean()) as any
+  if (!cookbook) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
+  if (cookbook.userId?.toString() === userId) return cookbook
+  const collab = await Collaborator.findOne({ cookbookId, userId, role: 'editor' }).lean()
+  if (!collab) throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your cookbook' })
+  return cookbook
 }
 
 async function fetchCookbookWithOrderedStubs(
@@ -241,6 +242,15 @@ export const cookbooksRouter = router({
           },
         },
         { $unwind: { path: '$_user', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'user',
+            localField: 'addedBy',
+            foreignField: '_id',
+            as: '_addedByUser',
+          },
+        },
+        { $unwind: { path: '$_addedByUser', preserveNullAndEmptyArrays: true } },
       ])
 
       const collaborators = collaboratorDocs.map((c) => ({
@@ -249,6 +259,7 @@ export const cookbooksRouter = router({
         name: typeof c._user?.name === 'string' ? (c._user.name as string) : '',
         role: c.role as 'editor' | 'viewer',
         addedAt: c.addedAt as Date,
+        addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
       }))
 
       return {
@@ -464,6 +475,7 @@ export const cookbooksRouter = router({
     }),
 
   myCollaborations: protectedProcedure.query(async ({ ctx }) => {
+    if (!Types.ObjectId.isValid(ctx.user.id)) return []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docs = await Collaborator.aggregate<any>([
       { $match: { userId: new Types.ObjectId(ctx.user.id) } },
@@ -489,7 +501,7 @@ export const cookbooksRouter = router({
   addRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId, chapterId: objectId.optional() }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
 
       const recipeVisFilter = visibilityFilter(ctx.user);
       const accessible = await Recipe.findOne({
@@ -535,7 +547,7 @@ export const cookbooksRouter = router({
   removeRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
+      await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $pull: { recipes: { recipeId: input.recipeId } },
       });
@@ -570,7 +582,7 @@ export const cookbooksRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const existingStubs = getRecipeStubs(cookbook);
 
       if (input.chapters !== undefined) {
@@ -637,7 +649,7 @@ export const cookbooksRouter = router({
   createChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const isFirstChapter = chapters.length === 0;
       const newChapterId = new Types.ObjectId();
@@ -668,7 +680,7 @@ export const cookbooksRouter = router({
   renameChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId, name: z.string().min(1).max(255) }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id);
+      await fetchEditableCookbook(input.cookbookId, ctx.user.id);
 
       const updated = await Cookbook.findOneAndUpdate(
         { _id: input.cookbookId, "chapters._id": input.chapterId },
@@ -685,7 +697,7 @@ export const cookbooksRouter = router({
   deleteChapter: verifiedProcedure
     .input(z.object({ cookbookId: objectId, chapterId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const chapterExists = chapters.some((ch) => String(ch._id) === input.chapterId);
       if (!chapterExists) {
@@ -729,7 +741,7 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const cookbook = await fetchOwnedCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
       const chapters = getChapters(cookbook);
       const existingIds = new Set(chapters.map((ch) => String(ch._id)));
       if (new Set(input.chapterIds).size !== chapters.length || input.chapterIds.some((id) => !existingIds.has(id))) {

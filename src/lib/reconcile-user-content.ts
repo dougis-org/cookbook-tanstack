@@ -121,24 +121,21 @@ export async function reconcileUserContent(
     let madePublic = 0
 
     await session.withTransaction(async () => {
-      const r = await reconcileCollection(session, userId, direction, newTier, getRecipeLimit, Recipe)
-      recipesUpdated = r.updated
-      recipesHidden = r.hidden
-      madePublic += r.madePublic
-    })
+      const [rRecipes, rCookbooks] = await Promise.all([
+        reconcileCollection(session, userId, direction, newTier, getRecipeLimit, Recipe),
+        reconcileCollection(session, userId, direction, newTier, getCookbookLimit, Cookbook),
+      ])
+      recipesUpdated = rRecipes.updated
+      recipesHidden = rRecipes.hidden
+      madePublic += rRecipes.madePublic
+      cookbooksUpdated = rCookbooks.updated
+      cookbooksHidden = rCookbooks.hidden
+      madePublic += rCookbooks.madePublic
 
-    await session.withTransaction(async () => {
-      const r = await reconcileCollection(session, userId, direction, newTier, getCookbookLimit, Cookbook)
-      cookbooksUpdated = r.updated
-      cookbooksHidden = r.hidden
-      madePublic += r.madePublic
-    })
-
-    if (direction === 'downgrade' && oldTier === 'executive-chef' && newTier !== 'executive-chef') {
-      await session.withTransaction(async () => {
+      if (direction === 'downgrade' && oldTier === 'executive-chef' && newTier !== 'executive-chef') {
         await reconcileCollaborationOnDowngrade(session, userId)
-      })
-    }
+      }
+    })
 
     return { recipesUpdated, cookbooksUpdated, recipesHidden, cookbooksHidden, madePublic }
   } finally {

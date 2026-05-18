@@ -318,13 +318,14 @@ describe('AddRecipeModal — infinite scroll', () => {
 
 // ─── CollaboratorsPanel tests ─────────────────────────────────────────────────
 
-function makeCollaborator(overrides: Partial<{ id: string; userId: string; name: string; role: 'editor' | 'viewer'; addedAt: Date }> = {}) {
+function makeCollaborator(overrides: Partial<{ id: string; userId: string; name: string; role: 'editor' | 'viewer'; addedAt: Date; addedByName: string | null }> = {}) {
   return {
     id: 'collab-1',
     userId: 'user-2',
     name: 'Alice',
     role: 'editor' as const,
     addedAt: new Date(),
+    addedByName: null,
     ...overrides,
   }
 }
