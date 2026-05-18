@@ -123,11 +123,12 @@ async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<
 /** Fetch a cookbook and verify the user has edit access (owner or editor collaborator). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchEditableCookbook(cookbookId: string, userId: string): Promise<any> {
+  if (!Types.ObjectId.isValid(userId)) throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your cookbook' })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cookbook = (await Cookbook.findById(cookbookId).lean()) as any
   if (!cookbook) throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
   if (cookbook.userId?.toString() === userId) return cookbook
-  const collab = await Collaborator.findOne({ cookbookId, userId, role: 'editor' }).lean()
+  const collab = await Collaborator.findOne({ cookbookId, userId: new Types.ObjectId(userId), role: 'editor' }).lean()
   if (!collab) throw new TRPCError({ code: 'FORBIDDEN', message: 'Not your cookbook' })
   return cookbook
 }
@@ -162,6 +163,7 @@ export const cookbooksRouter = router({
           localField: '_id',
           foreignField: 'cookbookId',
           as: '_collabs',
+          pipeline: [{ $project: { _id: 1 } }],
         },
       },
       { $addFields: { collaboratorCount: { $size: '$_collabs' } } },
@@ -439,6 +441,10 @@ export const cookbooksRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+
+      if (input.userId === ctx.user.id) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot invite yourself as a collaborator' })
+      }
 
       const targetUser = await getMongoClient().db().collection('user').findOne(
         { _id: new ObjectId(String(input.userId)) },

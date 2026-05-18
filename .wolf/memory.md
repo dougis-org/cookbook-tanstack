@@ -1053,3 +1053,15 @@
 | 11:00 | Edited src/server/trpc/__tests__/context.test.ts | 7→12 lines | ~88 |
 | 11:00 | Edited src/server/trpc/__tests__/context.test.ts | 2→5 lines | ~47 |
 | 11:00 | Edited src/server/trpc/__tests__/context.test.ts | expanded (+75 lines) | ~792 |
+| 11:01 | Session end: 21 writes across 7 files (cookbooks.ts, users.ts, reconcile-user-content.ts, cookbooks.$cookbookId.tsx, CookbookDetail.test.tsx) | 11 reads | ~39389 tok |
+| 11:32 | Edited src/server/trpc/routers/cookbooks.ts | added 1 condition(s) | ~249 |
+| 11:32 | Edited src/server/trpc/routers/cookbooks.ts | added 1 condition(s) | ~98 |
+| 11:32 | Edited src/server/trpc/routers/cookbooks.ts | 10→11 lines | ~94 |
+| 11:32 | Edited src/lib/reconcile-user-content.ts | modified if() | ~202 |
+| 11:33 | Edited src/routes/cookbooks.$cookbookId.tsx | CSS: canEdit | ~108 |
+| 11:33 | Edited src/routes/cookbooks.$cookbookId.tsx | 3→3 lines | ~31 |
+| 11:33 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 2→2 lines | ~5 |
+| 11:33 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 2→2 lines | ~5 |
+| 11:33 | Edited src/server/trpc/routers/__tests__/users.test.ts | 5→5 lines | ~87 |
+| 11:34 | Edited src/server/trpc/routers/__tests__/users.test.ts | modified for() | ~765 |
+| 11:35 | Edited src/components/cookbooks/__tests__/CookbookDetail.test.tsx | 111→111 lines | ~990 |

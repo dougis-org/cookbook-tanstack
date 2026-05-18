@@ -629,7 +629,7 @@ function CookbookDetailPage() {
                 <div key={chapter.id} className="space-y-2" data-testid={`chapter-section-${chapter.id}`}>
                   <ChapterHeader
                     chapter={chapter}
-                    isOwner={canEdit}
+                    canEdit={canEdit}
                     onRename={() => setModal({ kind: 'renameChapter', chapter })}
                     onDelete={() => setModal({ kind: 'deleteChapter', chapter })}
                   />
@@ -722,19 +722,19 @@ function EmptyChapterDropZone({ chapterId }: { chapterId: string }) {
 
 function ChapterHeader({
   chapter,
-  isOwner,
+  canEdit,
   onRename,
   onDelete,
 }: {
   chapter: Chapter
-  isOwner: boolean
+  canEdit: boolean
   onRename: () => void
   onDelete: () => void
 }) {
   return (
     <div className="flex items-center gap-2 mt-4 mb-1 group">
       <h3 className="text-sm font-semibold text-[var(--theme-fg-muted)] uppercase tracking-wider">{chapter.name}</h3>
-      {isOwner && (
+      {canEdit && (
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <button
             onClick={onRename}

@@ -121,13 +121,12 @@ export async function reconcileUserContent(
     let madePublic = 0
 
     await session.withTransaction(async () => {
-      const [rRecipes, rCookbooks] = await Promise.all([
-        reconcileCollection(session, userId, direction, newTier, getRecipeLimit, Recipe),
-        reconcileCollection(session, userId, direction, newTier, getCookbookLimit, Cookbook),
-      ])
+      const rRecipes = await reconcileCollection(session, userId, direction, newTier, getRecipeLimit, Recipe)
       recipesUpdated = rRecipes.updated
       recipesHidden = rRecipes.hidden
       madePublic += rRecipes.madePublic
+
+      const rCookbooks = await reconcileCollection(session, userId, direction, newTier, getCookbookLimit, Cookbook)
       cookbooksUpdated = rCookbooks.updated
       cookbooksHidden = rCookbooks.hidden
       madePublic += rCookbooks.madePublic

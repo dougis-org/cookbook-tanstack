@@ -131,7 +131,7 @@ describe('ChapterHeader', () => {
     render(
       <ChapterHeader
         chapter={makeChapter({ name: 'Starters' })}
-        isOwner={false}
+        canEdit={false}
         onRename={vi.fn()}
         onDelete={vi.fn()}
       />
@@ -143,7 +143,7 @@ describe('ChapterHeader', () => {
     render(
       <ChapterHeader
         chapter={makeChapter()}
-        isOwner={true}
+        canEdit={true}
         onRename={vi.fn()}
         onDelete={vi.fn()}
       />
@@ -156,7 +156,7 @@ describe('ChapterHeader', () => {
     render(
       <ChapterHeader
         chapter={makeChapter()}
-        isOwner={false}
+        canEdit={false}
         onRename={vi.fn()}
         onDelete={vi.fn()}
       />
@@ -170,7 +170,7 @@ describe('ChapterHeader', () => {
     render(
       <ChapterHeader
         chapter={makeChapter()}
-        isOwner={true}
+        canEdit={true}
         onRename={onRename}
         onDelete={vi.fn()}
       />
@@ -184,7 +184,7 @@ describe('ChapterHeader', () => {
     render(
       <ChapterHeader
         chapter={makeChapter()}
-        isOwner={true}
+        canEdit={true}
         onRename={vi.fn()}
         onDelete={onDelete}
       />

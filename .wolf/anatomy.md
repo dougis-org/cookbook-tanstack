@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:00:14.672Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-18T18:35:29.434Z
 > Files: 677 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -983,7 +983,7 @@
 - `google-adsense.ts` — Google AdSense slot IDs are numeric strings issued per ad unit. (~344 tok)
 - `rate-limiter.ts` — Exports RateLimiter, urlImportRateLimiter (~538 tok)
 - `recipe-url-import.ts` — Exports validateImportUrl, fetchAndNormalizeRecipe (~2747 tok)
-- `reconcile-user-content.ts` — Exports TierChangeDirection, getTierChangeDirection, ReconcileUserContentResult, reconcileUserConten (~1296 tok)
+- `reconcile-user-content.ts` — Exports TierChangeDirection, getTierChangeDirection, ReconcileUserContentResult, reconcileUserConten (~1289 tok)
 - `tier-entitlements.ts` — Source of truth for all tier limit values: docs/user-tier-feature-sets.md (~554 tok)
 
 ## src/lib/__tests__/
@@ -1073,7 +1073,7 @@
 ## src/server/trpc/routers/
 
 - `_helpers.ts` — Validates a MongoDB ObjectId: a 24-character hexadecimal string. (~1669 tok)
-- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8541 tok)
+- `cookbooks.ts` — Build a lookup map from recipe docs keyed by stringified _id. (~8639 tok)
 - `recipes.ts` — Escapes regex metacharacters so user input is treated as a literal substring. (~4987 tok)
 - `test.ts` — tRPC router: 1 procedures (~367 tok)
 - `usage.ts` — Exports usageRouter (~70 tok)
@@ -1089,7 +1089,7 @@
 - `test-helpers.ts` — Test helper for seeding users via MongoDB. (~989 tok)
 - `test-router.test.ts` — Declares user (~320 tok)
 - `usage.test.ts` — Declares user (~853 tok)
-- `users.test.ts` — withLoggedIn: expectUpdateProfile (~3242 tok)
+- `users.test.ts` — withLoggedIn: expectUpdateProfile (~3985 tok)
 
 ## src/test-helpers/
 
