@@ -284,11 +284,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <style data-id="critical-startup">{criticalCss}</style>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: bootLoaderScript }} />
-        {/* Google Fonts — loaded without precedence so React 19 doesn't hoist it before
-            the theme-init script above. Fonts are non-critical; appCss defines fallbacks. */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        {/* eslint-disable-next-line react/no-unknown-property -- crossOrigin is valid on link */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Google Fonts — no <link rel="preconnect"> here: React 19 hoists preconnects to
+            before the theme-init script, widening the race window on waitUntil:'commit'
+            E2E tests. The font stylesheet loads fine without explicit preconnects. */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap"

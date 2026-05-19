@@ -853,3 +853,9 @@
 | 13:41 | Edited openspec/changes/refactor-site-title-engagement/design.md | inline fix | ~5 |
 | 13:41 | Edited design-system/handoff/issues/F11-brand-name-hero.md | 5→7 lines | ~71 |
 | 13:49 | Edited src/e2e/owner-icon.spec.ts | inline fix | ~27 |
+| 13:41 | Edited src/routes/__root.tsx | CSS: here, waitUntil | ~140 |
+
+## Session: 2026-05-19 13:47
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|

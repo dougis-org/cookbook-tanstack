@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-16T20:49:29.055Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T20:41:51.052Z
 > Files: 657 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/
@@ -969,7 +969,7 @@
 
 ## src/routes/
 
-- `__root.tsx` — minifyInlineCss (~3676 tok)
+- `__root.tsx` — minifyInlineCss (~3817 tok)
 - `account.tsx` — Route (~1481 tok)
 - `change-tier.tsx` — Route (~289 tok)
 - `home.tsx` — Route (~840 tok)
