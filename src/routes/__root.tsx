@@ -230,11 +230,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         charSet: 'utf-8',
       },
       {
-        title: 'My CookBooks - Recipe Management',
-      },
-      {
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
+      },
+      {
+        title: 'CookBook - Recipe Management',
       },
       {
         name: 'google-adsense-account',
@@ -284,13 +284,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <style data-id="critical-startup">{criticalCss}</style>
         {/* eslint-disable-next-line react/no-danger -- static string, no XSS surface */}
         <script dangerouslySetInnerHTML={{ __html: bootLoaderScript }} />
-        {/* Google Fonts — no <link rel="preconnect"> here: React 19 hoists preconnects to
-            before the theme-init script, widening the race window on waitUntil:'commit'
-            E2E tests. The font stylesheet loads fine without explicit preconnects. */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap"
-        />
         {import.meta.env.DEV ? (
           <script
             type="module"
