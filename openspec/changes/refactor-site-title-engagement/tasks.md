@@ -15,7 +15,8 @@
 - [x] **Implement Typography:** Update `src/routes/__root.tsx` to load brand fonts and `src/styles.css` to apply them.
   - [x] Add `<link>` tags for Fraunces and Inter from Google Fonts in `src/routes/__root.tsx`.
   - [x] Define `--font-display: 'Fraunces', serif;` and update `--font-sans` in `src/styles.css`.
-  - [x] Apply `.font-display` utility to `h1`, `h2`, and `h3` where appropriate.
+  - [x] Split `.font-display` utility: headings (WONK 0) vs wordmark (WONK 1).
+  - [x] Apply `.font-display` utility to `h1`, `h2`, and `h3`.
 - [x] **Update Header:** Refactor `src/components/Header.tsx`.
   - [x] Update "CookBook" text to "My CookBooks" in both mobile and desktop views.
   - [x] Apply the branded gradient and Fraunces font to the logo text.
