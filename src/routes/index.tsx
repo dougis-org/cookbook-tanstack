@@ -43,7 +43,7 @@ export function HomePage() {
         <div className="relative max-w-5xl mx-auto">
           <div className="flex items-center justify-center gap-6 mb-6">
             <ChefHat className="w-24 h-24 md:w-32 md:h-32 text-[var(--theme-accent)]" />
-            <h1 className="text-5xl md:text-7xl font-bold brand-wordmark">
+            <h1 className="text-5xl md:text-7xl font-semibold brand-wordmark">
               My CookBooks
             </h1>
           </div>

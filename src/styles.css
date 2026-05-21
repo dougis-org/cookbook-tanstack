@@ -34,7 +34,17 @@ body {
 
 @utility font-display {
   font-family: var(--font-display);
+  font-variation-settings: "SOFT" 80, "WONK" 0;
+}
+
+@utility brand-wordmark {
+  font-family: var(--font-display);
   font-variation-settings: "SOFT" 80, "WONK" 1;
+  background: linear-gradient(90deg, var(--theme-accent), var(--theme-accent-hover));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.035em;
 }
 
 h1,
@@ -43,16 +53,8 @@ h3 {
   @apply font-display;
 }
 
-@utility brand-gradient {
-  background: linear-gradient(90deg, var(--theme-accent), var(--theme-accent-hover));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 .brand-wordmark {
-  @apply font-display brand-gradient;
-  letter-spacing: -0.035em;
+  @apply brand-wordmark;
 }
 
 @media (forced-colors: active) {

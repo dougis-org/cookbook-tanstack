@@ -43,8 +43,8 @@ echo "→ Creating issues in $REPO"
 gh label create "ux-audit"    --color "fbca04" --description "Findings from the May 2026 UX audit" 2>/dev/null || true
 gh label create "claude-task" --color "5319e7" --description "Tagged for Claude Code GitHub App" 2>/dev/null || true
 
-echo "→ Fetching existing ux-audit issues..."
-EXISTING_TITLES="$(gh issue list --label "ux-audit" --state all --limit 1000 --json title --jq '.[].title' || true)"
+echo "→ Fetching existing issues..."
+EXISTING_TITLES="$(gh issue list --state all --limit 1000 --json title --jq '.[].title' || true)"
 
 count=0
 skipped=0
