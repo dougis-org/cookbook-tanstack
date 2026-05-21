@@ -28,7 +28,7 @@
 
 ### Decision 2: Typography Implementation
 
-- **Chosen:** Import Fraunces and Inter in `src/styles.css`. Apply Fraunces specifically to `h1`, `h2`, and headers with a `.font-display` utility. Set Inter as the primary `--font-sans`.
+- **Chosen:** Load Fraunces and Inter via Google Fonts `<link>` tags in `src/routes/__root.tsx`. Apply Fraunces specifically to `h1`, `h2`, and headers with a `.font-display` utility. Set Inter as the primary `--font-sans`.
 - **Alternatives considered:** Apply Fraunces globally or keep system fonts.
 - **Rationale:** Fraunces is a high-personality serif that works best for display. Inter is a robust, legible sans-serif for body text.
 - **Trade-offs:** Adds two external font dependencies.

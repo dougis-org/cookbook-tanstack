@@ -12,10 +12,10 @@
   - [x] `cp design-system/assets/favicon-*.png public/`
   - [x] `cp design-system/assets/logo-lockup.svg public/logo-lockup.svg`
   - [x] `cp design-system/assets/logo-mark.svg public/logo-mark.svg`
-- [x] **Implement Typography:** Update `src/styles.css` to import and apply brand fonts.
-  - [x] Add `@import` for Fraunces and Inter from Google Fonts.
-  - [x] Define `--font-display: 'Fraunces', serif;` and update `--font-sans`.
-  - [x] Apply `.font-display` to `h1`, `h2`, and `h3` where appropriate.
+- [x] **Implement Typography:** Update `src/routes/__root.tsx` to load brand fonts and `src/styles.css` to apply them.
+  - [x] Add `<link>` tags for Fraunces and Inter from Google Fonts in `src/routes/__root.tsx`.
+  - [x] Define `--font-display: 'Fraunces', serif;` and update `--font-sans` in `src/styles.css`.
+  - [x] Apply `.font-display` utility to `h1`, `h2`, and `h3` where appropriate.
 - [x] **Update Header:** Refactor `src/components/Header.tsx`.
   - [x] Update "CookBook" text to "My CookBooks" in both mobile and desktop views.
   - [x] Apply the branded gradient and Fraunces font to the logo text.
@@ -39,7 +39,7 @@ Suggested start-of-work commands: `git checkout main` â†’ `git pull --ff-only` â
 - [x] **Asset Verification:** Confirm favicons and logos are updated in the browser.
 - [x] **Automated Tests:**
   - [x] Run `npm test` (unit tests).
-  - [ ] Run `npm run test:e2e` (Playwright tests).
+  - [x] Run `npm run test:e2e` (Playwright tests).
 - [x] **Build & Lint:**
   - [x] Run `npm run build`.
   - [x] Run `npm run lint:route-outlet`.

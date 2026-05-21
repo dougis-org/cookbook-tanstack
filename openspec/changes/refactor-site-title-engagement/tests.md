@@ -21,29 +21,29 @@ For each task in `tasks.md`:
 
 ### Branding & Identity
 
-- [ ] **Test Header Text (Unit):**
+- [x] **Test Header Text (Unit):**
   - **Task:** Update Header
   - **Spec:** MODIFIED Application Branding (Scenario: Header Logo)
   - **Check:** `src/components/__tests__/Header.test.tsx` should be updated to expect "My CookBooks" instead of "CookBook".
-- [ ] **Test Home Page Heading (E2E):**
+- [x] **Test Home Page Heading (E2E):**
   - **Task:** Update Tests
   - **Spec:** MODIFIED Application Branding (Scenario: Home Page Hero)
   - **Check:** `src/e2e/home-page-revamp.spec.ts` should fail when looking for "CookBook" and pass after the heading is updated.
-- [ ] **Test Document Title (E2E):**
+- [x] **Test Document Title (E2E):**
   - **Task:** Update Metadata
   - **Spec:** MODIFIED Application Branding (Scenario: Browser Tab Title)
   - **Check:** Add a Playwright test to verify `document.title` contains "My CookBooks".
 
 ### Typography
 
-- [ ] **Test Font Family Application (Unit):**
+- [x] **Test Font Family Application (Unit):**
   - **Task:** Implement Typography
   - **Spec:** MODIFIED Global Typography (Scenario: Font Application)
   - **Check:** Use `vitest` with `jsdom` to verify that `h1` elements have `font-family: Fraunces` in their computed styles.
 
 ### Responsive Stability
 
-- [ ] **Test Mobile Layout (E2E):**
+- [x] **Test Mobile Layout (E2E):**
   - **Task:** Update Header
   - **Spec:** Non-Functional Acceptance Criteria (Scenario: Mobile Header Integrity)
   - **Check:** Playwright test at 375px width to ensure the "My CookBooks" title is visible and does not overlap the menu button or search trigger.
