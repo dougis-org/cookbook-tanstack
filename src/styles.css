@@ -53,10 +53,6 @@ h3 {
   @apply font-display;
 }
 
-.brand-wordmark {
-  @apply brand-wordmark;
-}
-
 @media (forced-colors: active) {
   .brand-wordmark {
     color: revert;

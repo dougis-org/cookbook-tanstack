@@ -3,7 +3,7 @@ import { test, expect } from '@bgotink/playwright-coverage'
 test.describe('Home Page Revamp', () => {
   test('document title reflects brand name', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveTitle(/My CookBooks/)
+    await expect(page).toHaveTitle(/^My CookBooks/)
   })
 
   test('anonymous visitor sees public landing page on /', async ({ page }) => {
