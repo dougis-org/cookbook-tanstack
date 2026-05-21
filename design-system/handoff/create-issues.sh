@@ -43,11 +43,21 @@ echo "→ Creating issues in $REPO"
 gh label create "ux-audit"    --color "fbca04" --description "Findings from the May 2026 UX audit" 2>/dev/null || true
 gh label create "claude-task" --color "5319e7" --description "Tagged for Claude Code GitHub App" 2>/dev/null || true
 
+echo "→ Fetching existing ux-audit issues..."
+EXISTING_TITLES="$(gh issue list --label "ux-audit" --state all --limit 1000 --json title --jq '.[].title' || true)"
+
 count=0
+skipped=0
 for md in "$ISSUES_DIR"/*.md; do
   # First line is "# Title" — strip the marker.
   title="$(head -n 1 "$md" | sed -E 's/^#[[:space:]]+//')"
-  echo ""
+  
+  if echo "$EXISTING_TITLES" | grep -qFx "$title"; then
+    echo "→ Skipping (already exists): $title"
+    skipped=$((skipped + 1))
+    continue
+  fi
+
   echo "→ Creating: $title"
   gh issue create \
     --title "$title" \
@@ -58,4 +68,4 @@ for md in "$ISSUES_DIR"/*.md; do
 done
 
 echo ""
-echo "✓ Created $count issues. View: gh issue list --label ux-audit"
+echo "✓ Created $count issues, skipped $skipped duplicates. View: gh issue list --label ux-audit"
