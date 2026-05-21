@@ -234,7 +234,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'CookBook - Recipe Management',
+        title: 'My CookBooks - Recipe Management',
       },
       {
         name: 'google-adsense-account',
