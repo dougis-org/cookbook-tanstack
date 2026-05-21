@@ -17,11 +17,18 @@ src/routeTree.gen.ts
 test-results/
 playwright-report/
 .playwright/
+trace/
 
 # Test coverage
 coverage/
 /e2e-coverage/
 *.lcov
+
+# Debugging Artifacts
+data/*.md
+data/*.zip
+!data/legacy-migration/**/*.md
+!data/legacy-migration/**/*.zip
 .env.prod
 .env.test
 .env.local
