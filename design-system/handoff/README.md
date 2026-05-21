@@ -78,7 +78,6 @@ usual.
 | `F08-defer-email-verify.md` | Verify blocks first value | Medium | 4 |
 | `F09-pricing-v2.md` | Pricing page is sparse | Medium | 2 |
 | `F10-register-benefits.md` | Register form is dry | Low | 4 |
-| `F11-brand-name-hero.md` | "CookBook" not "My CookBooks" | Low | 1 |
 
 F4 ("decide whether Import + Private stay at top tiers") is a
 **strategic** decision, not a build task — no issue. Discuss it instead.
