@@ -28,10 +28,8 @@ bash path/to/this/folder/create-issues.sh
 ```
 
 The script reads every `.md` file in `issues/` and creates one GitHub issue
-per file, using the filename for the issue title prefix. Run it once.
-
-The script is idempotent only in the sense that it will create duplicate
-issues if run twice — review `gh issue list` before re-running.
+per file. It includes a title-based existence check to prevent creating
+duplicate issues for the same finding. Run it once.
 
 ---
 
