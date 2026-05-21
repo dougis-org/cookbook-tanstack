@@ -44,7 +44,7 @@ h3 {
 }
 
 @utility brand-gradient {
-  background: linear-gradient(90deg, var(--theme-accent), #60a5fa);
+  background: linear-gradient(90deg, var(--theme-accent), var(--theme-accent-hover));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
