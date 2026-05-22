@@ -36,10 +36,10 @@ For each task in `tasks.md`:
 
 ### Typography
 
-- [x] **Test Font Family Application (Unit):**
+- [ ] **Test Font Family Application (Unit):**
   - **Task:** Implement Typography
   - **Spec:** MODIFIED Global Typography (Scenario: Font Application)
-  - **Check:** Use `vitest` with `jsdom` to verify that `h1` elements have `font-family: Fraunces` in their computed styles.
+  - **Check:** Use `vitest` with `jsdom` to verify that `h1` elements have `font-family: Fraunces` in their computed styles. (Skipped: standard jsdom unit test environment does not load or compile global CSS; verified visually in browser and in production CSS).
 
 ### Responsive Stability
 
