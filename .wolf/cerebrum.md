@@ -32,6 +32,10 @@
 
 [2026-05-02] React 19 (via TanStack Start ≥1.167.46) adds `data-precedence="default"` to `<link rel="stylesheet">` and hoists it to the top of `<head>`, BEFORE inline `<style>` tags. This inverts the CSS cascade: inline `#app-shell { display: none }` wins permanently. Boot-loader `markLoaded()` must explicitly set `s.style.display="block"` and `b.style.display="none"` — cannot rely on cascade. Also: Playwright CSS interception with React 19 suspends Chrome's HTML parser (body is null), so FOUC tests must use post-load assertions, not mid-load DOM checks.
 
+[2026-05-17] TanStack Router `head()` function does NOT support a top-level `title` property. Titles MUST go inside `meta: [{ title: '...' }]`. The `headContentUtils.js` processes `m.title` by looking at each entry in `match.meta`. Top-level `title` in the `head()` return object is silently ignored.
+
+[2026-05-17] Nitro dev mode (`renderer-template.dev.mjs`) reads `index.html` from the project root at request time. TanStack Start uses `shellComponent: RootDocument` for full HTML SSR — the `index.html` template should contain only `<!--ssr-outlet-->`. Without this file the dev server returns ENOENT. The production build bakes the rendered HTML in at compile time and does not need the file at runtime.
+
 <!-- Mistakes made and corrected. Each entry prevents the same mistake recurring. -->
 <!-- Format: [YYYY-MM-DD] Description of what went wrong and what to do instead. -->
 

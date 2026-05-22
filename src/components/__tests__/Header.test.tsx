@@ -433,3 +433,18 @@ describe("Header sidebar Pricing link", () => {
     expect(document.querySelector('div[aria-hidden="true"].fixed')).not.toBeInTheDocument()
   })
 })
+
+describe("Header brand wordmark", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuthResult = { session: null, isPending: false }
+    mockCurrentTheme = "dark"
+    mockSetTheme = vi.fn()
+    document.documentElement.className = "dark"
+  })
+
+  it("renders 'My CookBooks' as the wordmark text", () => {
+    render(<Header />)
+    expect(screen.getAllByText("My CookBooks").length).toBeGreaterThan(0)
+  })
+})
