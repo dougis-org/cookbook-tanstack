@@ -89,35 +89,49 @@ test.describe('Theme system', () => {
   test('no flash: html has light-cool class before hydration when light-cool stored', async ({
     page,
   }) => {
-    // Pre-set localStorage before navigation
+    // Pre-set localStorage and listen to HTML class mutations before any elements are parsed
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light-cool')
-    })
+      localStorage.setItem('cookbook-theme', 'light-cool');
+      (window as any).__htmlClassMutations = [];
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.attributeName === 'class' && m.target === document.documentElement) {
+            (window as any).__htmlClassMutations.push(document.documentElement.className);
+          }
+        }
+      });
+      observer.observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
 
-    // Use 'commit' to inspect the very first paint — before React hydration
-    await page.goto('/', { waitUntil: 'commit' })
+    await gotoAndWaitForHydration(page, '/');
 
-    const htmlClass = await page.evaluate(
-      () => document.documentElement.className,
-    )
-    expect(htmlClass).toContain('light-cool')
+    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations[0]).toContain('light-cool');
   })
 
   test('migration shim: stored "light" is migrated to "light-cool" on page load', async ({
     page,
   }) => {
-    // Pre-set legacy 'light' value to simulate a user who had the old theme stored
+    // Pre-set legacy 'light' value and track class mutations before page parse
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light')
-    })
+      localStorage.setItem('cookbook-theme', 'light');
+      (window as any).__htmlClassMutations = [];
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.attributeName === 'class' && m.target === document.documentElement) {
+            (window as any).__htmlClassMutations.push(document.documentElement.className);
+          }
+        }
+      });
+      observer.observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
 
-    await page.goto('/', { waitUntil: 'commit' })
+    await gotoAndWaitForHydration(page, '/');
 
-    // Should have migrated to light-cool
-    const htmlClass = await page.evaluate(
-      () => document.documentElement.className,
-    )
-    expect(htmlClass).toBe('light-cool')
+    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations[0]).toBe('light-cool');
 
     // localStorage should be updated
     const storedTheme = await page.evaluate(() =>
@@ -370,15 +384,23 @@ test.describe('Theme system', () => {
     page,
   }) => {
     await page.addInitScript(() => {
-      localStorage.setItem('cookbook-theme', 'light-warm')
-    })
+      localStorage.setItem('cookbook-theme', 'light-warm');
+      (window as any).__htmlClassMutations = [];
+      const observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.attributeName === 'class' && m.target === document.documentElement) {
+            (window as any).__htmlClassMutations.push(document.documentElement.className);
+          }
+        }
+      });
+      observer.observe(document, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    });
 
-    await page.goto('/', { waitUntil: 'commit' })
+    await gotoAndWaitForHydration(page, '/');
 
-    const htmlClass = await page.evaluate(
-      () => document.documentElement.className,
-    )
-    expect(htmlClass).toContain('light-warm')
+    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations[0]).toContain('light-warm');
   })
 
   test('switching theme changes key surface colors', async ({ page }) => {

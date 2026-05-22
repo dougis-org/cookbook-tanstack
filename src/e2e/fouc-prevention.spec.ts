@@ -250,7 +250,7 @@ test.describe('FOUC prevention', () => {
     await page.evaluate(() => {
       const b = document.getElementById('boot-loader')!
       const s = document.getElementById('app-shell')!
-      b.style.display = ''
+      b.style.display = 'grid'
       s.style.display = 'none'
       b.setAttribute('data-status', 'failed')
     })
@@ -271,7 +271,7 @@ test.describe('FOUC prevention', () => {
     await page.evaluate(() => {
       const b = document.getElementById('boot-loader')!
       const s = document.getElementById('app-shell')!
-      b.style.display = ''
+      b.style.display = 'grid'
       s.style.display = 'none'
       b.setAttribute('data-status', 'failed')
     })

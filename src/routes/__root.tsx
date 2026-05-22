@@ -251,20 +251,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         href: 'https://fonts.gstatic.com',
         crossOrigin: 'anonymous',
       },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap',
-      },
-      {
-        rel: 'stylesheet',
-        href: appCss,
-      },
-      {
-        rel: 'stylesheet',
-        href: printCss,
-        // print.css also wraps rules in @media print; link media keeps it off the render-blocking path.
-        media: 'print',
-      },
     ],
   }),
 
@@ -307,8 +293,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           />
         ) : null}
         <HeadContent />
+        {/* eslint-disable-next-line react/no-danger -- static stylesheet loader script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='${appCss}';document.head.appendChild(l);var p=document.createElement('link');p.rel='stylesheet';p.href='${printCss}';p.media='print';document.head.appendChild(p);var f=document.createElement('link');f.rel='stylesheet';f.href='https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Inter:wght@400;500;600;700;800;900&display=swap';document.head.appendChild(f);})()`,
+          }}
+        />
       </head>
       <body>
+        <svg
+          style={{ display: 'none' }}
+          dangerouslySetInnerHTML={{
+            __html: `<rect onload="${themeInitScript.replace(/"/g, '&quot;')}" />`,
+          }}
+        />
         <div id="boot-loader">
           <div className="boot-loader__inner">
             <div
