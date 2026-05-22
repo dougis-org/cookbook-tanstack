@@ -67,7 +67,9 @@
     "defu": "6.1.5",
     "srvx": "0.11.15",
     "h3": "2.0.1-rc.21",
-    "h3-v2": "npm:h3@2.0.1-rc.21"
+    "h3-v2": "npm:h3@2.0.1-rc.21",
+    "kysely": "^0.28.17",
+    "@tanstack/start-server-core": "^1.167.30"
   },
   "devDependencies": {
     "@bgotink/playwright-coverage": "^0.3.2",

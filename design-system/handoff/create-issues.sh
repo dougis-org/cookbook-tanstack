@@ -16,6 +16,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
 ISSUES_DIR="${SCRIPT_DIR}/issues"
 
 if ! command -v gh >/dev/null 2>&1; then

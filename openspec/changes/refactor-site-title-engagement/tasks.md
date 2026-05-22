@@ -64,7 +64,7 @@ Verification requirements (all must pass before PR or pushing updates to a PR):
 - [x] Enable auto-merge: `gh pr merge --auto --merge`
 - [x] **Monitor PR comments** — poll for new comments autonomously; address, validate, and push fixes.
 - [x] **Monitor CI checks** — poll for check status; fix, validate, and push on failure.
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; proceed when `MERGED`.
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; proceed when `MERGED`.
 
 Ownership metadata:
 
@@ -80,12 +80,12 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/refactor-site-title-engagement/` to `openspec/changes/archive/$(date +%Y-%m-%d)-refactor-site-title-engagement/`
-- [ ] Confirm archive exists and original is gone
-- [ ] Commit and push the archive to `main` in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d refactor/my-cookbooks-branding`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/refactor-site-title-engagement/` to `openspec/changes/archive/$(date +%Y-%m-%d)-refactor-site-title-engagement/`
+- [x] Confirm archive exists and original is gone
+- [x] Commit and push the archive to `main` in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d refactor/my-cookbooks-branding`
