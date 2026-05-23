@@ -54,7 +54,7 @@ function NewRecipePage() {
         />
       )}
 
-      <RecipeForm />
+      {!isBlocked && <RecipeForm />}
     </PageLayout>
   )
 }
