@@ -8,18 +8,6 @@ vi.mock('@tanstack/react-router', async () => {
   return createRouterMock()
 })
 
-// Mocks for hooks
-const mockUseAuth = vi.fn()
-const mockUseTierEntitlements = vi.fn()
-
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => mockUseAuth(),
-}))
-
-vi.mock('@/hooks/useTierEntitlements', () => ({
-  useTierEntitlements: () => mockUseTierEntitlements(),
-}))
-
 import UsageNudge from '../UsageNudge'
 import { getLoudNudgeCTA } from '@/lib/nudgeCopy'
 
@@ -27,41 +15,47 @@ describe('UsageNudge Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     sessionStorage.clear()
-
-    // Default logged in user on home-cook plan
-    mockUseAuth.mockReturnValue({
-      isLoggedIn: true,
-      session: { user: { tier: 'home-cook' } },
-    })
-
-    mockUseTierEntitlements.mockReturnValue({
-      tier: 'home-cook',
-      recipeLimit: 10,
-      cookbookLimit: 1,
-    })
   })
 
   it('renders nothing when ratio is below 70%', () => {
-    const { container } = render(<UsageNudge count={6} limit={10} resourceName="recipe" />)
+    const { container } = render(
+      <UsageNudge
+        count={6}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
+    )
     expect(container.firstChild).toBeNull()
   })
 
   it('renders nothing when ratio is 100% or above', () => {
-    const { container } = render(<UsageNudge count={10} limit={10} resourceName="recipe" />)
-    expect(container.firstChild).toBeNull()
-  })
-
-  it('renders nothing if the user is not logged in', () => {
-    mockUseAuth.mockReturnValue({
-      isLoggedIn: false,
-      session: null,
-    })
-    const { container } = render(<UsageNudge count={7} limit={10} resourceName="recipe" />)
+    const { container } = render(
+      <UsageNudge
+        count={10}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
+    )
     expect(container.firstChild).toBeNull()
   })
 
   it('renders Soft Nudge when count is at 70% to 89% capacity', () => {
-    render(<UsageNudge count={7} limit={10} resourceName="recipe" />)
+    render(
+      <UsageNudge
+        count={7}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
+    )
 
     expect(
       screen.getByText(/You've saved 7 of 10 recipes\. Plenty of room to keep going\./i)
@@ -72,7 +66,14 @@ describe('UsageNudge Component', () => {
 
   it('handles soft nudge session dismissal correctly', async () => {
     const { container, rerender } = render(
-      <UsageNudge count={7} limit={10} resourceName="recipe" />
+      <UsageNudge
+        count={7}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
     )
 
     expect(
@@ -86,34 +87,67 @@ describe('UsageNudge Component', () => {
     expect(container.firstChild).toBeNull()
 
     // Rerendering should still result in null (hidden)
-    rerender(<UsageNudge count={7} limit={10} resourceName="recipe" />)
+    rerender(
+      <UsageNudge
+        count={7}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
+    )
     expect(container.firstChild).toBeNull()
   })
 
-  it('renders Loud Nudge at 90% to 99% capacity with no dismiss button', () => {
-    render(<UsageNudge count={9} limit={10} resourceName="recipe" />)
+  it('renders Loud Nudge at 90% to 99% capacity with no dismiss button, warning tokens, and correct progress width', () => {
+    const { container } = render(
+      <UsageNudge
+        count={9}
+        limit={10}
+        resourceName="recipe"
+        tier="home-cook"
+        nextTier="prep-cook"
+        tierDisplayName="Home Cook"
+      />
+    )
 
+    // Verify main copy
     expect(screen.getByText(/1 recipe left on the Home Cook plan/i)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /dismiss warning/i })).not.toBeInTheDocument()
 
+    // Verify upgrade description copy
+    expect(
+      screen.getByText(/Upgrade to Prep Cook to unlock up to 100 recipes and 10 cookbooks/i)
+    ).toBeInTheDocument()
+
+    // Verify CTA button and link
     const link = screen.getByRole('link', { name: /upgrade — \$2\.99\/mo/i })
     expect(link).toHaveAttribute('href', '/pricing')
+
+    // Verify warning-tone tokens applied to the banner
+    const innerContainer = container.querySelector('.border-\\[var\\(--theme-warning-border\\)\\]')
+    expect(innerContainer).toBeInTheDocument()
+    expect(innerContainer).toHaveClass('bg-[var(--theme-warning-bg)]')
+    expect(innerContainer).toHaveClass('text-[var(--theme-fg)]')
+
+    // Verify progress bar style width reflects ratio (90%)
+    const progressBar = screen.getByTestId('nudge-progress')
+    expect(progressBar).toHaveStyle('width: 90%')
   })
 
   it('hides CTA button for executive-chef (highest tier)', () => {
-    mockUseAuth.mockReturnValue({
-      isLoggedIn: true,
-      session: { user: { tier: 'executive-chef' } },
-    })
-
-    mockUseTierEntitlements.mockReturnValue({
-      tier: 'executive-chef',
-      recipeLimit: 2500,
-      cookbookLimit: 200,
-    })
-
     // 2400 out of 2500 is 96%, which triggers loud nudge
-    render(<UsageNudge count={2400} limit={2500} resourceName="recipe" />)
+    render(
+      <UsageNudge
+        count={2400}
+        limit={2500}
+        resourceName="recipe"
+        tier="executive-chef"
+        nextTier={null}
+        tierDisplayName="Executive Chef"
+      />
+    )
 
     expect(screen.getByText(/100 recipes left on the Executive Chef plan/i)).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /upgrade/i })).not.toBeInTheDocument()
@@ -123,3 +157,4 @@ describe('UsageNudge Component', () => {
     expect(getLoudNudgeCTA('home-cook')).toBe('Upgrade')
   })
 })
+

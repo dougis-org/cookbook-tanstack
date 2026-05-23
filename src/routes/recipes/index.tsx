@@ -12,6 +12,8 @@ import TierWall from '@/components/ui/TierWall'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
 import { FilterDropdowns } from '@/components/recipes/filters/FilterDropdowns'
 import UsageNudge from '@/components/ui/UsageNudge'
+import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
+import { getNextTier } from '@/lib/nudgeCopy'
 
 const searchSchema = z.object({
   search: z.string().optional(),
@@ -65,7 +67,8 @@ export function RecipesPage() {
   } = Route.useSearch()
 
 const { isLoggedIn, userId, session } = useAuth()
-const { recipeLimit, canImport } = useTierEntitlements()
+const { tier, recipeLimit, canImport } = useTierEntitlements()
+const nextTier = getNextTier(tier)
 const { data: profile } = useQuery({
   ...trpc.users.me.queryOptions(),
   enabled: isLoggedIn && session?.user?.emailVerified === false,
@@ -181,9 +184,14 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
   return (
     <PageLayout role="public-content" title="Recipes" description="Browse and discover delicious recipes">
       {isLoggedIn && !isUsageLoading && ownedUsageData && (
-        <div className="mb-6 print:hidden">
-          <UsageNudge count={myRecipeCount} limit={recipeLimit} resourceName="recipe" />
-        </div>
+        <UsageNudge
+          count={myRecipeCount}
+          limit={recipeLimit}
+          resourceName="recipe"
+          tier={tier}
+          nextTier={nextTier}
+          tierDisplayName={TIER_DISPLAY_NAMES[tier]}
+        />
       )}
       {/* Sort + Page-size bar */}
       <div className="print:hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

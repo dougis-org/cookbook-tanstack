@@ -83,6 +83,19 @@ describe('NewRecipePage component blockage at 100% capacity', () => {
     expect(screen.queryByText(/Plan limit reached/i)).not.toBeInTheDocument()
   })
 
+  it('renders loading state while usage data is loading', () => {
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+    })
+
+    if (!NewRecipePageComponent) throw new Error('NewRecipePageComponent is undefined')
+    render(<NewRecipePageComponent />)
+
+    expect(screen.getByText(/Loading plan details/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Plan limit reached/i)).not.toBeInTheDocument()
+  })
+
   it('blocks page entry and immediately renders TierWall modal when at 100% capacity, and redirects when dismissed', async () => {
     mockUseQuery.mockReturnValue({
       data: { recipeCount: 10, cookbookCount: 1 },

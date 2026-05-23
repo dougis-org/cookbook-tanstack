@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import TierWall from '@/components/ui/TierWall'
 import UsageNudge from '@/components/ui/UsageNudge'
+import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
+import { getNextTier } from '@/lib/nudgeCopy'
 
 export const Route = createFileRoute('/recipes/new')({
   component: NewRecipePage,
@@ -18,15 +20,35 @@ export const Route = createFileRoute('/recipes/new')({
 function NewRecipePage() {
   const navigate = useNavigate()
   const { isLoggedIn } = useAuth()
-  const { recipeLimit } = useTierEntitlements()
+  const { tier, recipeLimit } = useTierEntitlements()
+  const nextTier = getNextTier(tier)
 
   const { data: ownedUsageData, isLoading } = useQuery({
     ...trpc.usage.getOwned.queryOptions(),
     enabled: isLoggedIn,
   })
 
+  if (isLoading) {
+    return (
+      <PageLayout>
+        <div className="mb-6">
+          <Link
+            to="/recipes"
+            className="inline-flex items-center gap-2 text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Recipes
+          </Link>
+        </div>
+        <div className="text-center py-12">
+          <p className="text-[var(--theme-fg-muted)] animate-pulse">Loading plan details...</p>
+        </div>
+      </PageLayout>
+    )
+  }
+
   const myRecipeCount = ownedUsageData?.recipeCount ?? 0
-  const isBlocked = isLoggedIn && !isLoading && ownedUsageData && myRecipeCount >= recipeLimit
+  const isBlocked = isLoggedIn && ownedUsageData && myRecipeCount >= recipeLimit
 
   return (
     <PageLayout>
@@ -40,10 +62,15 @@ function NewRecipePage() {
         </Link>
       </div>
 
-      {isLoggedIn && !isLoading && ownedUsageData && !isBlocked && (
-        <div className="mb-6">
-          <UsageNudge count={myRecipeCount} limit={recipeLimit} resourceName="recipe" />
-        </div>
+      {isLoggedIn && ownedUsageData && !isBlocked && (
+        <UsageNudge
+          count={myRecipeCount}
+          limit={recipeLimit}
+          resourceName="recipe"
+          tier={tier}
+          nextTier={nextTier}
+          tierDisplayName={TIER_DISPLAY_NAMES[tier]}
+        />
       )}
 
       {isBlocked && (
@@ -58,4 +85,5 @@ function NewRecipePage() {
     </PageLayout>
   )
 }
+
 

@@ -1,4 +1,4 @@
-import { TIER_DISPLAY_NAMES, TIER_ORDER, TIER_PRICING, type EntitlementTier } from '@/lib/tier-entitlements'
+import { TIER_DISPLAY_NAMES, TIER_ORDER, TIER_PRICING, TIER_LIMITS, type EntitlementTier } from '@/lib/tier-entitlements'
 
 /**
  * Returns the text for the soft nudge (70% - 89% capacity).
@@ -9,6 +9,20 @@ export function getSoftNudgeText(count: number, limit: number, resourceName: str
 }
 
 /**
+ * Returns the text for the soft nudge link CTA.
+ */
+export function getSoftNudgeCTA(_resourceName: string): string {
+  return 'View plan'
+}
+
+/**
+ * Returns the aria-label text for the soft nudge dismiss button.
+ */
+export function getSoftNudgeAria(_resourceName: string): string {
+  return 'Dismiss warning'
+}
+
+/**
  * Returns the text for the loud nudge (90% - 99% capacity).
  */
 export function getLoudNudgeText(count: number, limit: number, tier: EntitlementTier, resourceName: string): string {
@@ -16,6 +30,15 @@ export function getLoudNudgeText(count: number, limit: number, tier: Entitlement
   const unit = remaining === 1 ? resourceName : (resourceName === 'recipe' ? 'recipes' : 'cookbooks')
   const planName = TIER_DISPLAY_NAMES[tier]
   return `${remaining} ${unit} left on the ${planName} plan`
+}
+
+/**
+ * Returns the description sentence referencing the next tier in the loud nudge.
+ */
+export function getLoudNudgeDescription(nextTier: EntitlementTier): string {
+  const limit = TIER_LIMITS[nextTier]
+  const displayName = TIER_DISPLAY_NAMES[nextTier]
+  return `Upgrade to ${displayName} to unlock up to ${limit.recipes} recipes and ${limit.cookbooks} cookbooks.`
 }
 
 /**
@@ -39,3 +62,4 @@ export function getNextTier(currentTier: EntitlementTier): EntitlementTier | nul
   }
   return TIER_ORDER[currentIndex + 1]
 }
+
