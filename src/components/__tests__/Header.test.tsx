@@ -447,4 +447,20 @@ describe("Header brand wordmark", () => {
     render(<Header />)
     expect(screen.getAllByText("My CookBooks").length).toBeGreaterThan(0)
   })
+
+  it("renders LogoMark instead of ChefHat for desktop header and mobile drawer header", () => {
+    const { container } = render(<Header />)
+    
+    // Should render two LogoMark components in the brand positions
+    const logoMarks = container.querySelectorAll('svg[aria-label="My CookBooks"]')
+    expect(logoMarks.length).toBe(2)
+    
+    // Both brand titles (Desktop and Mobile Drawer) should contain a LogoMark and not ChefHat
+    const brandHeadings = screen.getAllByText("My CookBooks")
+    brandHeadings.forEach((heading) => {
+      const parent = heading.parentElement
+      expect(parent?.querySelector('svg[aria-label="My CookBooks"]')).toBeInTheDocument()
+      expect(parent?.querySelector('svg.lucide-chef-hat')).not.toBeInTheDocument()
+    })
+  })
 })

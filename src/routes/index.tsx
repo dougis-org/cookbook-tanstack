@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { ChefHat, BookOpen, Search } from 'lucide-react'
 import PageLayout from '@/components/layout/PageLayout'
+import LogoMark from '@/components/ui/LogoMark'
 
 export const Route = createFileRoute('/')({
   beforeLoad: ({ context }) => {
@@ -42,7 +43,7 @@ export function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
         <div className="relative max-w-5xl mx-auto">
           <div className="flex items-center justify-center gap-6 mb-6">
-            <ChefHat className="w-24 h-24 md:w-32 md:h-32 text-[var(--theme-accent)]" />
+            <LogoMark className="w-24 h-24 md:w-32 md:h-32 text-[var(--theme-accent)]" size="auto" />
             <h1 className="text-5xl md:text-7xl font-semibold brand-wordmark">
               My CookBooks
             </h1>

@@ -33,4 +33,17 @@ test.describe('Home Page Revamp', () => {
     // Should be redirected to /auth/login
     await expect(page).toHaveURL(/\/auth\/login/)
   })
+
+  test('hero brand mark renders custom SVG and not ChefHat', async ({ page }) => {
+    await page.goto('/')
+    
+    // The LogoMark should be visible and have aria-label="My CookBooks"
+    const heroContainer = page.locator('div:has(> h1.brand-wordmark)')
+    const logoMark = heroContainer.locator('svg[aria-label="My CookBooks"]')
+    await expect(logoMark).toBeVisible()
+    
+    // The Lucide ChefHat icon should not be rendered in the hero h1 container
+    const chefHat = heroContainer.locator('svg.lucide-chef-hat')
+    await expect(chefHat).toHaveCount(0)
+  })
 })

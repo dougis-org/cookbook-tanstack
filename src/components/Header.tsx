@@ -16,6 +16,7 @@ import {
   DollarSign,
   FileUp,
 } from 'lucide-react'
+import LogoMark from '@/components/ui/LogoMark'
 import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
@@ -241,7 +242,7 @@ export default function Header() {
                 <Menu size={24} />
               </button>
               <Link to="/" className="ml-4 flex items-center gap-2">
-                <ChefHat className="w-8 h-8 text-[var(--theme-accent)]" />
+                <LogoMark size={32} className="text-[var(--theme-accent)]" />
                 <h1 className="text-xl font-semibold brand-wordmark">My CookBooks</h1>
               </Link>
             </div>
@@ -354,7 +355,7 @@ export default function Header() {
       >
         <div className="flex items-center justify-between p-4 border-b border-[var(--theme-border)]">
           <div className="flex items-center gap-3">
-            <ChefHat className="w-6 h-6 text-[var(--theme-accent)]" />
+            <LogoMark size={24} className="text-[var(--theme-accent)]" />
             <h2 className="text-xl font-bold brand-wordmark">My CookBooks</h2>
           </div>
           <button
