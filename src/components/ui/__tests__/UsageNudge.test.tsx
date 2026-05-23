@@ -21,6 +21,7 @@ vi.mock('@/hooks/useTierEntitlements', () => ({
 }))
 
 import UsageNudge from '../UsageNudge'
+import { getLoudNudgeCTA } from '@/lib/nudgeCopy'
 
 describe('UsageNudge Component', () => {
   beforeEach(() => {
@@ -116,5 +117,9 @@ describe('UsageNudge Component', () => {
 
     expect(screen.getByText(/100 recipes left on the Executive Chef plan/i)).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /upgrade/i })).not.toBeInTheDocument()
+  })
+
+  it('returns default CTA text when next tier has null price', () => {
+    expect(getLoudNudgeCTA('home-cook')).toBe('Upgrade')
   })
 })
