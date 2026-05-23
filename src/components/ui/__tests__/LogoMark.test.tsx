@@ -1,3 +1,4 @@
+import React from "react"
 import { describe, it, expect } from "vitest"
 import { render } from "@testing-library/react"
 import LogoMark from "../LogoMark"
@@ -19,5 +20,19 @@ describe("LogoMark", () => {
     expect(svg).toHaveAttribute("width", "48")
     expect(svg).toHaveAttribute("height", "48")
     expect(svg).toHaveClass("text-cyan-400")
+  })
+
+  it("omits width and height attributes when size is 'auto'", () => {
+    const { container } = render(<LogoMark size="auto" />)
+    const svg = container.querySelector("svg")
+    expect(svg).toBeInTheDocument()
+    expect(svg).not.toHaveAttribute("width")
+    expect(svg).not.toHaveAttribute("height")
+  })
+
+  it("supports ref forwarding", () => {
+    const ref = React.createRef<SVGSVGElement>()
+    render(<LogoMark ref={ref} />)
+    expect(ref.current).toBeInstanceOf(SVGSVGElement)
   })
 })

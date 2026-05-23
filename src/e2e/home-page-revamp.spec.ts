@@ -42,8 +42,8 @@ test.describe('Home Page Revamp', () => {
     const logoMark = heroContainer.locator('svg[aria-label="My CookBooks"]')
     await expect(logoMark).toBeVisible()
     
-    // The Lucide ChefHat icon should not be visible in the hero h1 container
+    // The Lucide ChefHat icon should not be rendered in the hero h1 container
     const chefHat = heroContainer.locator('svg.lucide-chef-hat')
-    await expect(chefHat).not.toBeVisible()
+    await expect(chefHat).toHaveCount(0)
   })
 })
