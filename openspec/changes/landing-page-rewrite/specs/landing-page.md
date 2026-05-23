@@ -112,4 +112,4 @@ Reason for removal: The original feature cards ("Recipe Collection", "Categories
 
 - **Given** a visitor with an active adblocker (e.g. uBlock Origin) loaded with standard filter rules
 - **When** the page renders the screenshot slot or CTAs
-- **Then** no element SHALL have the class, ID, or custom attribute matching `.ad-*`, `.promo-*`, or `.sponsor-*` so that the entire layout renders completely without hidden regions.
+- **Then** no element in the screenshot slot, CTA blocks, or features row SHALL have the class, ID, or custom attribute matching `.ad-*`, `.promo-*`, or `.sponsor-*` so that these promotional areas render completely without hidden regions.
