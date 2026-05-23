@@ -51,7 +51,7 @@
 ## What Changes
 
 - **Route component** `src/routes/index.tsx`: Completely rewritten structure for marketing copy, CTAs, features mapping, and screenshot slots.
-- **Imports** `src/routes/index.tsx`: Cleaned up to avoid unused imports (removal of `ChefHat` and `Search`, addition of `Save`, `Download`, `Printer`).
+- **Imports** `src/routes/index.tsx`: Cleaned up to avoid unused imports (removal of `ChefHat` and `Search`, addition of `Save`, `ArrowUpRight`, `Printer`).
 - **Tests** `src/e2e/home-page-revamp.spec.ts`: Test assertions updated to match new CTA text and DOM presence of `image-slot` and feature links.
 
 ## Risks
