@@ -11,6 +11,7 @@ import RecipeCard from '@/components/recipes/RecipeCard'
 import TierWall from '@/components/ui/TierWall'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
 import { FilterDropdowns } from '@/components/recipes/filters/FilterDropdowns'
+import UsageNudge from '@/components/ui/UsageNudge'
 
 const searchSchema = z.object({
   search: z.string().optional(),
@@ -179,6 +180,11 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
 
   return (
     <PageLayout role="public-content" title="Recipes" description="Browse and discover delicious recipes">
+      {isLoggedIn && !isUsageLoading && ownedUsageData && (
+        <div className="mb-6 print:hidden">
+          <UsageNudge count={myRecipeCount} limit={recipeLimit} resourceName="recipe" />
+        </div>
+      )}
       {/* Sort + Page-size bar */}
       <div className="print:hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3 flex-wrap">

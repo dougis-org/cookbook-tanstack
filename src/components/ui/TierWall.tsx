@@ -1,6 +1,9 @@
 import { useEffect, useRef, useId } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { TierWallReason } from '@/lib/trpc-error'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
+import { TIER_LIMITS, TIER_PRICING, TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
+import { getNextTier } from '@/lib/nudgeCopy'
 
 interface TierWallProps {
   reason: TierWallReason
@@ -20,6 +23,10 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
   const id = useId()
   const titleId = `tw-title-${id}`
   const descId = `tw-desc-${id}`
+
+  const { tier } = useTierEntitlements()
+  const nextTier = getNextTier(tier)
+  const showComparison = reason === 'count-limit' && display === 'modal' && nextTier
 
   useEffect(() => {
     if (display !== 'modal') return
@@ -69,6 +76,40 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
         <p id={descId} className="text-[var(--theme-fg-muted)] mb-6">
           {body}
         </p>
+        {showComparison && (
+          <div className="border border-[var(--theme-border)] rounded-lg overflow-hidden mb-6 bg-[var(--theme-surface-hover)]">
+            <table className="w-full text-xs border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[var(--theme-border)] bg-[var(--theme-surface-raised)]">
+                  <th className="p-2 font-semibold text-[var(--theme-fg-muted)]">Feature</th>
+                  <th className="p-2 font-semibold text-[var(--theme-fg-muted)]">Today</th>
+                  <th className="p-2 font-semibold text-[var(--theme-fg)]">Today vs {TIER_DISPLAY_NAMES[nextTier]}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-[var(--theme-border)]">
+                  <td className="p-2 text-[var(--theme-fg-muted)]">Recipes</td>
+                  <td className="p-2 text-[var(--theme-fg-muted)]">{TIER_LIMITS[tier].recipes}</td>
+                  <td className="p-2 text-[var(--theme-fg)] font-semibold">{TIER_LIMITS[nextTier].recipes}</td>
+                </tr>
+                <tr className="border-b border-[var(--theme-border)]">
+                  <td className="p-2 text-[var(--theme-fg-muted)]">Cookbooks</td>
+                  <td className="p-2 text-[var(--theme-fg-muted)]">{TIER_LIMITS[tier].cookbooks}</td>
+                  <td className="p-2 text-[var(--theme-fg)] font-semibold">{TIER_LIMITS[nextTier].cookbooks}</td>
+                </tr>
+                <tr>
+                  <td className="p-2 text-[var(--theme-fg-muted)]">Price</td>
+                  <td className="p-2 text-[var(--theme-fg-muted)]">
+                    {TIER_PRICING[tier].monthly === null ? 'Free' : `$${TIER_PRICING[tier].monthly}/mo`}
+                  </td>
+                  <td className="p-2 text-[var(--theme-fg)] font-semibold">
+                    {TIER_PRICING[nextTier].monthly === null ? 'Free' : `$${TIER_PRICING[nextTier].monthly}/mo`}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
         <div className="flex gap-3 justify-end">
           {onDismiss && (
             <button

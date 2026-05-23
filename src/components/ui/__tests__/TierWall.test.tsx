@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
@@ -7,7 +7,30 @@ vi.mock("@tanstack/react-router", async () => {
   return createRouterMock()
 })
 
+const mockUseAuth = vi.fn()
+const mockUseTierEntitlements = vi.fn()
+
+vi.mock("@/hooks/useAuth", () => ({
+  useAuth: () => mockUseAuth(),
+}))
+
+vi.mock("@/hooks/useTierEntitlements", () => ({
+  useTierEntitlements: () => mockUseTierEntitlements(),
+}))
+
 import TierWall from "../TierWall"
+
+beforeEach(() => {
+  mockUseAuth.mockReturnValue({
+    isLoggedIn: true,
+    session: { user: { tier: 'home-cook' } },
+  })
+  mockUseTierEntitlements.mockReturnValue({
+    tier: 'home-cook',
+    recipeLimit: 10,
+    cookbookLimit: 1,
+  })
+})
 
 describe("TierWall — inline display", () => {
   it("renders count-limit message and /pricing link", () => {
@@ -62,5 +85,43 @@ describe("TierWall — resilience", () => {
   it("renders without crashing when onDismiss is omitted in modal mode", () => {
     render(<TierWall reason="count-limit" display="modal" />)
     expect(screen.getByRole("link", { name: /upgrade/i })).toBeInTheDocument()
+  })
+})
+
+describe("TierWall — progressive paywall upgrades", () => {
+  it("renders comparison table when display is modal and reason is count-limit", () => {
+    mockUseAuth.mockReturnValue({
+      isLoggedIn: true,
+      session: { user: { tier: "home-cook" } },
+    })
+    mockUseTierEntitlements.mockReturnValue({
+      tier: "home-cook",
+      recipeLimit: 10,
+      cookbookLimit: 1,
+    })
+
+    render(<TierWall reason="count-limit" display="modal" onDismiss={vi.fn()} />)
+    
+    // Check for "Today vs Prep Cook"
+    expect(screen.getByText(/Today vs Prep Cook/i)).toBeInTheDocument()
+    
+    // Check comparing recipes (10 vs 100)
+    expect(screen.getByText("Recipes")).toBeInTheDocument()
+    expect(screen.getAllByText("10")).toHaveLength(2) // Today's recipe limit and next tier's cookbook limit are both 10
+    expect(screen.getByText("100")).toBeInTheDocument()
+
+    // Check comparing cookbooks (1 vs 10)
+    expect(screen.getByText("Cookbooks")).toBeInTheDocument()
+    expect(screen.getByText("1")).toBeInTheDocument()
+
+    // Check comparing price (Free vs $2.99/mo)
+    expect(screen.getByText("Price")).toBeInTheDocument()
+    expect(screen.getByText("Free")).toBeInTheDocument()
+    expect(screen.getByText("$2.99/mo")).toBeInTheDocument()
+  })
+
+  it("does not render comparison table for other reasons (regression check)", () => {
+    render(<TierWall reason="import" display="modal" onDismiss={vi.fn()} />)
+    expect(screen.queryByText(/Today vs Prep Cook/i)).not.toBeInTheDocument()
   })
 })
