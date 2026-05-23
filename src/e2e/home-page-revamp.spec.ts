@@ -54,7 +54,7 @@ test.describe('Home Page Revamp', () => {
       await expect(featureLinks.nth(i)).toHaveAttribute('href', '/auth/register')
     }
 
-    const featureTitles = ['Save', 'Organise', 'Import', 'Print']
+    const featureTitles = ['Save', 'Organize', 'Import', 'Print']
     for (const title of featureTitles) {
       await expect(featuresContainer.locator(`h3:has-text("${title}")`)).toBeVisible()
     }

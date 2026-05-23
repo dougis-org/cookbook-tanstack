@@ -20,7 +20,7 @@
 - Correct landing page title and wordmark styling to "My CookBooks" using proper typography tokens (Fraunces 600, Soft 80, Wonk 1).
 - Set action-oriented, conversion-focused sub-tagline, primary CTA, and secondary CTA.
 - Provide a clear, visual application screenshot placeholder using `<image-slot id="landing-screenshot">`.
-- Offer four distinct, verb-led feature cards (Save, Organise, Import, Print) that act as live links to drive registration.
+- Offer four distinct, verb-led feature cards (Save, Organize, Import, Print) that act as live links to drive registration.
 - Maintain full compatibility with all four active application themes (`dark`, `dark-greens`, `light-cool`, `light-warm`).
 - Ensure E2E tests pass successfully by updating assertions to match the new copywriting.
 
@@ -49,7 +49,7 @@
 
 - **Chosen**: Replace the three existing duplicate feature cards with four distinct verb-led feature cards:
   - **Save**: "Capture any recipe in seconds. Title, ingredients, steps, your own notes." (Icon: `Save` Lucide)
-  - **Organise**: "Sort into cookbooks. Tag by meal, course, prep. Find anything in a click." (Icon: `BookOpen` Lucide)
+  - **Organize**: "Sort into cookbooks. Tag by meal, course, prep. Find anything in a click." (Icon: `BookOpen` Lucide)
   - **Import**: "Bring recipes in from JSON exports or paste a URL. Available on Executive Chef." (Icon: `ArrowUpRight` Lucide)
   - **Print**: "Recipe and cookbook print layouts that look good on paper." (Icon: `Printer` Lucide)
   All four cards will be wrapped in `<Link to="/auth/register">` tags with sleek hover animations to encourage registration.

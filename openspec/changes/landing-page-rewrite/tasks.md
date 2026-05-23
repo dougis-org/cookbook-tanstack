@@ -22,7 +22,7 @@
 - [x] **Task 4 — Implement Verb-Led Live Feature Cards:**
   - Replace current feature list items with four new action-led cards:
     - **Save** (Lucide `Save` icon): "Capture any recipe in seconds. Title, ingredients, steps, your own notes."
-    - **Organise** (Lucide `BookOpen` icon): "Sort into cookbooks. Tag by meal, course, prep. Find anything in a click."
+    - **Organize** (Lucide `BookOpen` icon): "Sort into cookbooks. Tag by meal, course, prep. Find anything in a click."
     - **Import** (Lucide `ArrowUpRight` icon): "Bring recipes in from JSON exports or paste a URL. Available on Executive Chef."
     - **Print** (Lucide `Printer` icon): "Recipe and cookbook print layouts that look good on paper."
   - Wrap cards in `<Link to="/auth/register">` with rich hover effects.

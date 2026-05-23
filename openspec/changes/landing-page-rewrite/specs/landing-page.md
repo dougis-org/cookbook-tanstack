@@ -4,13 +4,13 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED Product Value Feature Links
 
-The system SHALL render four distinct, verb-led cards representing key product workflows (Save, Organise, Import, Print) as active clickable links driving users to registration to maximize sign-up conversion.
+The system SHALL render four distinct, verb-led cards representing key product workflows (Save, Organize, Import, Print) as active clickable links driving users to registration to maximize sign-up conversion.
 
 #### Scenario: Verify features list structure and interactivity
 
 - **Given** an anonymous visitor lands on the public homepage `/`
 - **When** they scroll down to the "Features" section
-- **Then** they SHALL see exactly four cards with verb titles: Save, Organise, Import, Print
+- **Then** they SHALL see exactly four cards with verb titles: Save, Organize, Import, Print
 - **And** each card SHALL use its custom brand-approved Lucide icon (Save, BookOpen, ArrowUpRight, Printer)
 - **And** clicking any of the four cards SHALL navigate the user to `/auth/register`
 

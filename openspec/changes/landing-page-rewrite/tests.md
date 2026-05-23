@@ -57,6 +57,6 @@ For each task in `tasks.md`:
 
 - [ ] **Test Case 7 (for Task 4) — Features Row Casing and Count:**
   - **Type:** Playwright E2E
-  - **Failing state:** Test fails if the feature cards do not render exactly 4 links, or if their titles (Save, Organise, Import, Print) and descriptions are incorrect.
+  - **Failing state:** Test fails if the feature cards do not render exactly 4 links, or if their titles (Save, Organize, Import, Print) and descriptions are incorrect.
   - **Success state:** Locator parses 4 features links that navigate to `/auth/register` with correct Title Case headers.
   - **Scenario link:** `specs/landing-page.md` -> Scenario: Verify features list structure and interactivity

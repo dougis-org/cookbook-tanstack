@@ -1,10 +1,19 @@
+import React from 'react'
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Save, BookOpen, ArrowUpRight, Printer } from 'lucide-react'
 import PageLayout from '@/components/layout/PageLayout'
 import LogoMark from '@/components/ui/LogoMark'
 import { TIER_PRICING } from '@/lib/tier-entitlements'
 
-const ImageSlot = 'image-slot' as any
+interface ImageSlotProps extends React.HTMLAttributes<HTMLElement> {
+  placeholder?: string
+  children?: React.ReactNode
+  id?: string
+}
+
+function ImageSlot({ children, ...props }: ImageSlotProps) {
+  return React.createElement('image-slot', props, children)
+}
 
 const features = [
   {
@@ -16,7 +25,7 @@ const features = [
   },
   {
     icon: <BookOpen className="w-12 h-12 text-[var(--theme-accent)]" />,
-    title: 'Organise',
+    title: 'Organize',
     description:
       'Sort into cookbooks. Tag by meal, course, prep. Find anything in a click.',
     link: '/auth/register',
@@ -110,9 +119,9 @@ export function HomePage() {
           Features
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Link
-              key={index}
+              key={feature.title}
               to={feature.link}
               className="bg-[var(--theme-surface)] shadow-[var(--theme-shadow-sm)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-[var(--theme-accent)]/50 transition-shadow hover:shadow-[var(--theme-shadow-md)]"
             >
