@@ -2,8 +2,40 @@ import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { Save, BookOpen, ArrowUpRight, Printer } from 'lucide-react'
 import PageLayout from '@/components/layout/PageLayout'
 import LogoMark from '@/components/ui/LogoMark'
+import { TIER_PRICING } from '@/lib/tier-entitlements'
 
 const ImageSlot = 'image-slot' as any
+
+const features = [
+  {
+    icon: <Save className="w-12 h-12 text-[var(--theme-accent)]" />,
+    title: 'Save',
+    description:
+      'Capture any recipe in seconds. Title, ingredients, steps, your own notes.',
+    link: '/auth/register',
+  },
+  {
+    icon: <BookOpen className="w-12 h-12 text-[var(--theme-accent)]" />,
+    title: 'Organise',
+    description:
+      'Sort into cookbooks. Tag by meal, course, prep. Find anything in a click.',
+    link: '/auth/register',
+  },
+  {
+    icon: <ArrowUpRight className="w-12 h-12 text-[var(--theme-accent)]" />,
+    title: 'Import',
+    description:
+      'Bring recipes in from JSON exports or paste a URL. Available on Executive Chef.',
+    link: '/auth/register',
+  },
+  {
+    icon: <Printer className="w-12 h-12 text-[var(--theme-accent)]" />,
+    title: 'Print',
+    description:
+      'Recipe and cookbook print layouts that look good on paper.',
+    link: '/auth/register',
+  },
+]
 
 export const Route = createFileRoute('/')({
   beforeLoad: ({ context }) => {
@@ -15,36 +47,7 @@ export const Route = createFileRoute('/')({
 })
 
 export function HomePage() {
-  const features = [
-    {
-      icon: <Save className="w-12 h-12 text-[var(--theme-accent)]" />,
-      title: 'Save',
-      description:
-        'Capture any recipe in seconds. Title, ingredients, steps, your own notes.',
-      link: '/auth/register',
-    },
-    {
-      icon: <BookOpen className="w-12 h-12 text-[var(--theme-accent)]" />,
-      title: 'Organise',
-      description:
-        'Sort into cookbooks. Tag by meal, course, prep. Find anything in a click.',
-      link: '/auth/register',
-    },
-    {
-      icon: <ArrowUpRight className="w-12 h-12 text-[var(--theme-accent)]" />,
-      title: 'Import',
-      description:
-        'Bring recipes in from JSON exports or paste a URL. Available on Executive Chef.',
-      link: '/auth/register',
-    },
-    {
-      icon: <Printer className="w-12 h-12 text-[var(--theme-accent)]" />,
-      title: 'Print',
-      description:
-        'Recipe and cookbook print layouts that look good on paper.',
-      link: '/auth/register',
-    },
-  ]
+  const prepCookMonthlyPrice = TIER_PRICING['prep-cook'].monthly?.toFixed(2) ?? '2.99'
 
   return (
     <PageLayout role="public-marketing">
@@ -78,7 +81,7 @@ export function HomePage() {
             </Link>
           </div>
           <p className="mt-4 text-sm text-[var(--theme-fg-muted)]">
-            Plans start at $2.99/mo.{' '}
+            Plans start at ${prepCookMonthlyPrice}/mo.{' '}
             <Link to="/pricing" className="text-[var(--theme-accent)] hover:underline font-medium">
               View Plans
             </Link>
@@ -87,7 +90,7 @@ export function HomePage() {
           <ImageSlot
             id="landing-screenshot"
             placeholder="Add a screenshot of /recipes"
-            className="block mt-12 md:mt-16 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-md)] p-8 max-w-3xl mx-auto transition-all duration-300 hover:shadow-[var(--theme-shadow-lg)]"
+            className="block mt-12 md:mt-16 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-md)] p-8 max-w-3xl mx-auto transition-shadow hover:shadow-[var(--theme-shadow-lg)]"
           >
             <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
               <BookOpen className="w-16 h-16 text-[var(--theme-accent)] mb-4 opacity-80" />
@@ -111,7 +114,7 @@ export function HomePage() {
             <Link
               key={index}
               to={feature.link}
-              className="bg-[var(--theme-surface)] shadow-[var(--theme-shadow-sm)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-[var(--theme-accent)]/50 transition-all duration-300 hover:shadow-[var(--theme-shadow-md)]"
+              className="bg-[var(--theme-surface)] shadow-[var(--theme-shadow-sm)] backdrop-blur-sm border border-[var(--theme-border)] rounded-xl p-6 hover:border-[var(--theme-accent)]/50 transition-shadow hover:shadow-[var(--theme-shadow-md)]"
             >
               <div className="mb-4">{feature.icon}</div>
               <h3 className="text-xl font-semibold text-[var(--theme-fg)] mb-3">
