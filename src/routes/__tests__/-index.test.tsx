@@ -54,33 +54,33 @@ describe('/', () => {
       expect(screen.queryByText(techCopy)).not.toBeInTheDocument()
     })
 
-    it('includes a path to browse public recipes or cookbooks', () => {
+    it('includes a path to browse public recipes', () => {
       render(<HomePage />)
-      const browseLink = screen.getByRole('link', { name: /browse recipes/i })
+      const browseLink = screen.getByRole('link', { name: /browse public recipes/i })
       expect(browseLink).toBeInTheDocument()
       expect(browseLink).toHaveAttribute('href', '/recipes')
     })
 
-    it('renders "View Plans and Pricing" button for anonymous visitors', () => {
+    it('renders "View Plans" link for anonymous visitors', () => {
       render(<HomePage />)
-      const pricingLink = screen.getByRole('link', { name: /view plans and pricing/i })
+      const pricingLink = screen.getByRole('link', { name: /view plans/i })
       expect(pricingLink).toBeInTheDocument()
       expect(pricingLink).toHaveAttribute('href', '/pricing')
     })
 
-    it('pricing button uses outline style', () => {
+    it('secondary CTA button uses outline style', () => {
       render(<HomePage />)
-      const pricingLink = screen.getByRole('link', { name: /view plans and pricing/i })
-      expect(pricingLink.className).toContain('border-2')
-      expect(pricingLink.className).toContain('border-[var(--theme-accent)]')
-      expect(pricingLink.className).toContain('text-[var(--theme-accent)]')
+      const browseLink = screen.getByRole('link', { name: /browse public recipes/i })
+      expect(browseLink.className).toContain('border-2')
+      expect(browseLink.className).toContain('border-[var(--theme-accent)]')
+      expect(browseLink.className).toContain('text-[var(--theme-accent)]')
       // Should not have bg-[var(--theme-accent)] without hover prefix
-      expect(pricingLink.className.split(' ')).not.toContain('bg-[var(--theme-accent)]')
+      expect(browseLink.className.split(' ')).not.toContain('bg-[var(--theme-accent)]')
     })
 
     it('CTA container uses responsive flex classes', () => {
       render(<HomePage />)
-      const ctaContainer = screen.getByRole('link', { name: /browse recipes/i }).parentElement
+      const ctaContainer = screen.getByRole('link', { name: /browse public recipes/i }).parentElement
       expect(ctaContainer).toHaveClass('flex-col', 'sm:flex-row')
     })
 
