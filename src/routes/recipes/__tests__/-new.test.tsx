@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
 
 const mockNavigate = vi.fn()
@@ -47,7 +48,7 @@ describe('/recipes/new — beforeLoad', () => {
   it('enforces verified authentication', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
-    testVerifiedAuthGuard(beforeLoad as any, '/recipes/new')
+    testVerifiedAuthGuard(beforeLoad, '/recipes/new')
   })
 })
 
@@ -82,7 +83,7 @@ describe('NewRecipePage component blockage at 100% capacity', () => {
     expect(screen.queryByText(/Plan limit reached/i)).not.toBeInTheDocument()
   })
 
-  it('blocks page entry and immediately renders TierWall modal when at 100% capacity', () => {
+  it('blocks page entry and immediately renders TierWall modal when at 100% capacity, and redirects when dismissed', async () => {
     mockUseQuery.mockReturnValue({
       data: { recipeCount: 10, cookbookCount: 1 },
       isLoading: false,
@@ -94,5 +95,10 @@ describe('NewRecipePage component blockage at 100% capacity', () => {
     // Plan limit warning modal should be shown
     expect(screen.getByText(/Plan limit reached/i)).toBeInTheDocument()
     expect(screen.getByText(/Today vs Prep Cook/i)).toBeInTheDocument()
+
+    // Clicking "Not now" redirects the user back to /recipes
+    const notNowBtn = screen.getByRole('button', { name: /not now/i })
+    await userEvent.click(notNowBtn)
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/recipes' })
   })
 })

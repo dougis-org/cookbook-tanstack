@@ -1,18 +1,19 @@
-import { TIER_DISPLAY_NAMES, TIER_ORDER, TIER_PRICING, type EntitlementTier } from './tier-entitlements'
+import { TIER_DISPLAY_NAMES, TIER_ORDER, TIER_PRICING, type EntitlementTier } from '@/lib/tier-entitlements'
 
 /**
  * Returns the text for the soft nudge (70% - 89% capacity).
  */
-export function getSoftNudgeText(count: number, limit: number): string {
-  return `You've saved ${count} of ${limit} recipes. Plenty of room to keep going.`
+export function getSoftNudgeText(count: number, limit: number, resourceName: string): string {
+  const unit = resourceName === 'recipe' ? 'recipes' : 'cookbooks'
+  return `You've saved ${count} of ${limit} ${unit}. Plenty of room to keep going.`
 }
 
 /**
  * Returns the text for the loud nudge (90% - 99% capacity).
  */
-export function getLoudNudgeText(count: number, limit: number, tier: EntitlementTier): string {
+export function getLoudNudgeText(count: number, limit: number, tier: EntitlementTier, resourceName: string): string {
   const remaining = limit - count
-  const unit = remaining === 1 ? 'recipe' : 'recipes'
+  const unit = remaining === 1 ? resourceName : (resourceName === 'recipe' ? 'recipes' : 'cookbooks')
   const planName = TIER_DISPLAY_NAMES[tier]
   return `${remaining} ${unit} left on the ${planName} plan`
 }

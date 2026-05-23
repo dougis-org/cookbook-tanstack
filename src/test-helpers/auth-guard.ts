@@ -3,7 +3,7 @@ import type { redirect } from '@tanstack/react-router'
 import type { RouterContext } from '@/types/router'
 
 export function expectRedirect(
-  guard: (args: { context: RouterContext; location: { href: string } }) => void,
+  guard: (args: any) => void,
   context: RouterContext,
   location: { href: string },
   expectedTo: string,
@@ -29,7 +29,7 @@ export function expectRedirect(
 }
 
 export function testVerifiedAuthGuard(
-  beforeLoad: (args: { context: RouterContext; location: { href: string } }) => void,
+  beforeLoad: (args: any) => void,
   href: string,
 ) {
   expectRedirect(

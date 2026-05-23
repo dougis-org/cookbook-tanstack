@@ -57,7 +57,7 @@ export default function UsageNudge({ count, limit, resourceName }: UsageNudgePro
       >
         <div className="flex items-center gap-2">
           <span>
-            {getSoftNudgeText(count, limit)}{' '}
+            {getSoftNudgeText(count, limit, resourceName)}{' '}
             <Link
               to="/pricing"
               className="underline font-semibold hover:opacity-80 transition-opacity"
@@ -88,7 +88,7 @@ export default function UsageNudge({ count, limit, resourceName }: UsageNudgePro
             <AlertTriangle className="h-5 w-5 text-[var(--theme-warning)] shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-semibold text-sm leading-none">
-                {getLoudNudgeText(count, limit, tier)}
+                {getLoudNudgeText(count, limit, tier, resourceName)}
               </p>
               <div className="w-full bg-[color-mix(in srgb,var(--theme-warning)20%,transparent)] h-2 rounded-full overflow-hidden mt-2">
                 <div

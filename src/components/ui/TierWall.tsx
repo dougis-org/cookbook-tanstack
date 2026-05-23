@@ -26,7 +26,7 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
 
   const { tier } = useTierEntitlements()
   const nextTier = getNextTier(tier)
-  const showComparison = reason === 'count-limit' && display === 'modal' && nextTier
+  const showComparison = reason === 'count-limit' && display === 'modal' && nextTier !== null
 
   useEffect(() => {
     if (display !== 'modal') return
@@ -76,7 +76,7 @@ export default function TierWall({ reason, display, onDismiss }: TierWallProps) 
         <p id={descId} className="text-[var(--theme-fg-muted)] mb-6">
           {body}
         </p>
-        {showComparison && (
+        {showComparison && nextTier && (
           <div className="border border-[var(--theme-border)] rounded-lg overflow-hidden mb-6 bg-[var(--theme-surface-hover)]">
             <table className="w-full text-xs border-collapse text-left">
               <thead>
