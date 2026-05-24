@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UrlImportInput } from '../UrlImportInput'
+import type { UrlImportInputProps } from '../UrlImportInput'
 
 describe('UrlImportInput', () => {
-  let onSubmit: ReturnType<typeof vi.fn>
+  let onSubmit: UrlImportInputProps['onSubmit']
 
   beforeEach(() => {
     onSubmit = vi.fn()

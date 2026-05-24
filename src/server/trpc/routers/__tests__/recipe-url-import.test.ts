@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Types } from 'mongoose'
 import { TRPCError } from '@trpc/server'
 import { withCleanDb } from '@/test-helpers/with-clean-db'
+import { RECIPE_EXPORT_VERSION } from '@/lib/export'
 import { seedUserWithBetterAuth, makeAuthCaller, makeTieredCaller } from './test-helpers'
 
 vi.mock('@/lib/auth', () => ({ auth: { api: { getSession: vi.fn() } } }))
@@ -28,6 +28,7 @@ const PARSED_RECIPE = {
   mealIds: [],
   courseIds: [],
   preparationIds: [],
+  _version: RECIPE_EXPORT_VERSION,
 }
 
 describe('recipes.importFromUrl', () => {
