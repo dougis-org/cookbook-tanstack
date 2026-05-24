@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
+import { createRouterMock } from '@/test-helpers/mocks'
 
 const mockNavigate = vi.fn()
-vi.mock('@tanstack/react-router', async () => {
-  const { createRouterMock } = await import('@/test-helpers/mocks')
-  return {
-    ...createRouterMock(),
-    useNavigate: () => mockNavigate,
-  }
-})
+vi.mock('@tanstack/react-router', () => ({
+  ...createRouterMock(),
+  useNavigate: () => mockNavigate,
+}))
 
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
