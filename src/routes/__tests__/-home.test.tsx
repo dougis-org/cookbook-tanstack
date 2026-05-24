@@ -158,7 +158,7 @@ describe('/home', () => {
       setupMocks()
       render(<HomePageComponent />)
       const expected = new Intl.DateTimeFormat('en-US', { dateStyle: 'full' }).format(new Date('2026-05-24T12:00:00Z'))
-      expect(screen.getByText(new RegExp(expected))).toBeInTheDocument()
+      expect(screen.getByText(expected, { exact: false })).toBeInTheDocument()
     })
   })
 
