@@ -324,5 +324,6 @@ describe("pricing route validation", () => {
     expect(validateSearch({ focus: "prep-cook" })).toEqual({ focus: "prep-cook" })
     expect(validateSearch({})).toEqual({ focus: undefined })
     expect(validateSearch({ focus: 123 })).toEqual({ focus: undefined })
+    expect(validateSearch({ focus: "invalid-tier" })).toEqual({ focus: undefined })
   })
 })

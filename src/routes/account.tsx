@@ -55,6 +55,9 @@ export function AccountPage() {
   const nextTier: EntitlementTier | null =
     nextTierIndex < USER_TIER_ORDER.length ? USER_TIER_ORDER[nextTierIndex] : null
 
+  const monthlyPrice = nextTier ? (TIER_PRICING[nextTier]?.monthly ?? 0) : 0
+  const priceDisplay = `$${monthlyPrice}`
+
   const { data: usage, isLoading, isError } = useQuery({
     ...trpc.usage.getOwned.queryOptions(),
     enabled: !!session,
@@ -125,16 +128,16 @@ export function AccountPage() {
               <Link
                 to="/pricing"
                 search={{ focus: nextTier }}
-                className="w-full text-center rounded-md bg-[var(--theme-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                className="block w-full text-center rounded-lg bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] px-4 py-2.5 text-sm font-semibold text-white transition-colors"
               >
-                Upgrade to {TIER_DISPLAY_NAMES[nextTier]} — ${TIER_PRICING[nextTier]?.monthly}/mo
+                Upgrade to {TIER_DISPLAY_NAMES[nextTier]} — {priceDisplay}/mo
               </Link>
               <div className="text-center">
                 <Link
                   to="/pricing"
                   className="inline-block text-xs font-semibold text-[var(--theme-accent)] hover:underline"
                 >
-                  Compare all plans
+                  Compare all plans →
                 </Link>
               </div>
             </div>

@@ -119,7 +119,7 @@ describe('/account — tier section', () => {
   it('renders a link to /pricing', () => {
     mockUseAuth.mockReturnValue(tierSession('home-cook'))
     render(<AccountPage />)
-    const pricingLink = screen.getByRole('link', { name: /compare all plans/i })
+    const pricingLink = screen.getByRole('link', { name: /compare all plans →/i })
     expect(pricingLink).toBeInTheDocument()
     expect(pricingLink.getAttribute('href')).toBe('/pricing')
   })
@@ -132,7 +132,7 @@ describe('/account — tier section', () => {
     expect(upgradeButton).toBeInTheDocument()
     expect(upgradeButton.getAttribute('href')).toBe('/pricing?focus=prep-cook')
     
-    const compareLink = screen.getByRole('link', { name: /Compare all plans/i })
+    const compareLink = screen.getByRole('link', { name: /Compare all plans →/i })
     expect(compareLink).toBeInTheDocument()
     expect(compareLink.getAttribute('href')).toBe('/pricing')
   })

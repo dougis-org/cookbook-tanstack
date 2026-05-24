@@ -87,14 +87,14 @@ export function createRouterMock(opts?: RouterMockOptions) {
       useSearch: () => search,
     }),
     Link: ({ children, to, params: linkParams, search: linkSearch, activeProps, activeOptions, inactiveProps, inactiveOptions, ...props }: { children: React.ReactNode; to?: string; params?: Record<string, string>; search?: Record<string, unknown>; [key: string]: unknown }) => {
-      let href = linkParams && to ? to.replace(/\$(\w+)/g, (_, k) => linkParams[k] ?? '') : to
+      let href = (linkParams && to ? to.replace(/\$(\w+)/g, (_, k) => linkParams[k] ?? '') : to) || ''
       if (linkSearch && Object.keys(linkSearch).length > 0) {
         const searchStr = Object.entries(linkSearch)
           .filter(([_, v]) => v !== undefined)
           .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
           .join('&')
         if (searchStr) {
-          href = `${href}?${searchStr}`
+          href = href + (href.includes('?') ? '&' : '?') + searchStr
         }
       }
       return React.createElement('a', { href, ...props }, children)
