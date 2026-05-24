@@ -11,6 +11,7 @@ import {
   TIER_DESCRIPTIONS,
   TIER_ORDER,
   TIER_DISPLAY_NAMES,
+  TIER_PRICING,
   type EntitlementTier,
 } from "@/lib/tier-entitlements"
 
@@ -112,6 +113,33 @@ export function AccountPage() {
             </div>
           )}
 
+          {/* Upgrade CTA Section */}
+          {tier === 'executive-chef' ? (
+            <div className="rounded-lg bg-[var(--theme-bg)] p-4 text-center border border-[var(--theme-border)]">
+              <p className="font-semibold text-[var(--theme-fg)]">
+                You're on the top plan
+              </p>
+            </div>
+          ) : nextTier ? (
+            <div className="flex flex-col gap-3">
+              <Link
+                to="/pricing"
+                search={{ focus: nextTier }}
+                className="w-full text-center rounded-md bg-[var(--theme-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+              >
+                Upgrade to {TIER_DISPLAY_NAMES[nextTier]} — ${TIER_PRICING[nextTier]?.monthly}/mo
+              </Link>
+              <div className="text-center">
+                <Link
+                  to="/pricing"
+                  className="inline-block text-xs font-semibold text-[var(--theme-accent)] hover:underline"
+                >
+                  Compare all plans
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
           {nextTier && (
             <div data-testid="next-tier-preview" className="rounded-lg bg-[var(--theme-bg)] p-4 text-sm">
               <p className="font-semibold text-[var(--theme-fg)] mb-1">
@@ -122,13 +150,6 @@ export function AccountPage() {
               </p>
             </div>
           )}
-
-          <Link
-            to="/pricing"
-            className="inline-block text-sm text-[var(--theme-accent)] hover:underline"
-          >
-            View pricing plans
-          </Link>
         </div>
       </div>
     </PageLayout>
