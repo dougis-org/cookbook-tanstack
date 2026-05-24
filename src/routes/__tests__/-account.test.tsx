@@ -119,9 +119,41 @@ describe('/account — tier section', () => {
   it('renders a link to /pricing', () => {
     mockUseAuth.mockReturnValue(tierSession('home-cook'))
     render(<AccountPage />)
-    const pricingLink = screen.getByRole('link', { name: /pricing/i })
+    const pricingLink = screen.getByRole('link', { name: /compare all plans →/i })
     expect(pricingLink).toBeInTheDocument()
     expect(pricingLink.getAttribute('href')).toBe('/pricing')
+  })
+
+  it('renders primary upgrade CTA button and secondary link for home-cook', () => {
+    mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    render(<AccountPage />)
+    
+    const upgradeButton = screen.getByRole('link', { name: /Upgrade to Prep Cook — \$2.99\/mo/i })
+    expect(upgradeButton).toBeInTheDocument()
+    expect(upgradeButton.getAttribute('href')).toBe('/pricing?focus=prep-cook')
+    
+    const compareLink = screen.getByRole('link', { name: /Compare all plans →/i })
+    expect(compareLink).toBeInTheDocument()
+    expect(compareLink.getAttribute('href')).toBe('/pricing')
+  })
+
+  it('renders friendly banner and no upgrade button for executive-chef (top-tier)', () => {
+    mockUseAuth.mockReturnValue(tierSession('executive-chef'))
+    render(<AccountPage />)
+    
+    expect(screen.queryByRole('link', { name: /Upgrade to/i })).not.toBeInTheDocument()
+    expect(screen.getByText(/You're on the top plan/i)).toBeInTheDocument()
+  })
+
+  it('renders the upgrade CTA above the next tier preview card', () => {
+    mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    render(<AccountPage />)
+    
+    const upgradeButton = screen.getByRole('link', { name: /Upgrade to Prep Cook — \$2.99\/mo/i })
+    const nextTierPreview = screen.getByTestId('next-tier-preview')
+    
+    const position = upgradeButton.compareDocumentPosition(nextTierPreview)
+    expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it('does not render "coming soon" stub text', () => {

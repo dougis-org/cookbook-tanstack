@@ -13,7 +13,12 @@ import {
   canImport,
 } from "@/lib/tier-entitlements"
 
-export const Route = createFileRoute("/pricing")({ component: PricingPage })
+export const Route = createFileRoute("/pricing")({
+  validateSearch: (search: Record<string, unknown>): { focus?: EntitlementTier } => ({
+    focus: TIER_ORDER.find((t) => t === search.focus),
+  }),
+  component: PricingPage,
+})
 
 interface TierCardProps {
   tier: EntitlementTier

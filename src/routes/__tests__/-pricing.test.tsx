@@ -16,7 +16,7 @@ vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
-import { PricingPage } from '@/routes/pricing'
+import { PricingPage, Route } from '@/routes/pricing'
 
 function anonSession() {
   return { session: null }
@@ -314,5 +314,16 @@ describe("Pricing page sidebar active state", () => {
     expect(screen.getByTestId("tier-card-prep-cook")).toBeInTheDocument()
     expect(screen.getByTestId("tier-card-sous-chef")).toBeInTheDocument()
     expect(screen.getByTestId("tier-card-executive-chef")).toBeInTheDocument()
+  })
+})
+
+describe("pricing route validation", () => {
+  it("validates search query params", () => {
+    const validateSearch = Route.options.validateSearch as any
+    if (!validateSearch) throw new Error("validateSearch not defined")
+    expect(validateSearch({ focus: "prep-cook" })).toEqual({ focus: "prep-cook" })
+    expect(validateSearch({})).toEqual({ focus: undefined })
+    expect(validateSearch({ focus: 123 })).toEqual({ focus: undefined })
+    expect(validateSearch({ focus: "invalid-tier" })).toEqual({ focus: undefined })
   })
 })
