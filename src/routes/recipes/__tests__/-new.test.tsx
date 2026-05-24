@@ -2,27 +2,30 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
-import { createRouterMock } from '@/test-helpers/mocks'
 
-const mockNavigate = vi.fn()
-vi.mock('@tanstack/react-router', () => ({
-  ...createRouterMock(),
-  useNavigate: () => mockNavigate,
-}))
+const mockNavigate = vi.hoisted(() => vi.fn())
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return {
+    ...createRouterMock(),
+    useNavigate: () => mockNavigate,
+  }
+})
 
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 vi.mock('@/components/recipes/RecipeForm', () => ({ default: () => null }))
 
-const mockUseAuth = vi.fn()
+const spyOnAuth = vi.fn()
+const spyOnEntitlements = vi.fn()
+
 vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => mockUseAuth(),
+  useAuth: () => spyOnAuth(),
 }))
 
-const mockUseTierEntitlements = vi.fn()
 vi.mock('@/hooks/useTierEntitlements', () => ({
-  useTierEntitlements: () => mockUseTierEntitlements(),
+  useTierEntitlements: () => spyOnEntitlements(),
 }))
 
 const mockUseQuery = vi.fn()
@@ -54,16 +57,21 @@ describe('NewRecipePage component blockage at 100% capacity', () => {
   const NewRecipePageComponent = Route.options.component
 
   function mockHomeCookPlan() {
-    mockUseAuth.mockReturnValue({
+    const authState = {
       isLoggedIn: true,
       session: { user: { tier: 'home-cook' } },
-    })
-
-    mockUseTierEntitlements.mockReturnValue({
+      userId: 'user-1',
+      loading: false,
+    }
+    const entitlements = {
       tier: 'home-cook',
+      canCreatePrivate: false,
+      canImport: false,
       recipeLimit: 10,
       cookbookLimit: 1,
-    })
+    }
+    spyOnAuth.mockReturnValue(authState as any)
+    spyOnEntitlements.mockReturnValue(entitlements)
   }
 
   beforeEach(() => {

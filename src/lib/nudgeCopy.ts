@@ -1,10 +1,7 @@
 import { TIER_DISPLAY_NAMES, TIER_ORDER, TIER_PRICING, TIER_LIMITS, type EntitlementTier } from '@/lib/tier-entitlements'
 
-/**
- * Returns the text for the soft nudge (70% - 89% capacity).
- */
 export function getSoftNudgeText(count: number, limit: number, resourceName: string): string {
-  const unit = resourceName === 'recipe' ? 'recipes' : 'cookbooks'
+  const unit = count === 1 ? resourceName : (resourceName === 'recipe' ? 'recipes' : 'cookbooks')
   return `You've saved ${count} of ${limit} ${unit}. Plenty of room to keep going.`
 }
 

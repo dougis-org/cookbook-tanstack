@@ -17,7 +17,6 @@ interface UsageNudgeProps {
   resourceName: 'recipe' | 'cookbook'
   tier: EntitlementTier
   nextTier: EntitlementTier | null
-  tierDisplayName: string
 }
 
 export default function UsageNudge({
@@ -26,7 +25,6 @@ export default function UsageNudge({
   resourceName,
   tier,
   nextTier,
-  tierDisplayName: _tierDisplayName,
 }: UsageNudgeProps) {
   const [dismissed, setDismissed] = useState(true) // Default to true, check in useEffect to avoid hydration mismatch
 

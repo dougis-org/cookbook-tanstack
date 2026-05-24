@@ -12,7 +12,6 @@ import TierWall from '@/components/ui/TierWall'
 import { FilterRow1Quick } from '@/components/recipes/filters/FilterRow1Quick'
 import { FilterDropdowns } from '@/components/recipes/filters/FilterDropdowns'
 import UsageNudge from '@/components/ui/UsageNudge'
-import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
 import { getNextTier } from '@/lib/nudgeCopy'
 
 const searchSchema = z.object({
@@ -66,24 +65,24 @@ export function RecipesPage() {
     hasImage,
   } = Route.useSearch()
 
-const { isLoggedIn, userId, session } = useAuth()
-const { tier, recipeLimit, canImport } = useTierEntitlements()
-const nextTier = getNextTier(tier)
-const { data: profile } = useQuery({
-  ...trpc.users.me.queryOptions(),
-  enabled: isLoggedIn && session?.user?.emailVerified === false,
-})
-// Use fresh profile data to bypass stale BetterAuth cookie cache after verification
-const isVerified = typeof profile?.emailVerified === 'boolean'
-  ? profile.emailVerified
-  : session?.user?.emailVerified !== false
+  const { isLoggedIn, userId, session } = useAuth()
+  const { tier, recipeLimit, canImport } = useTierEntitlements()
+  const nextTier = getNextTier(tier)
+  const { data: profile } = useQuery({
+    ...trpc.users.me.queryOptions(),
+    enabled: isLoggedIn && session?.user?.emailVerified === false,
+  })
+  // Use fresh profile data to bypass stale BetterAuth cookie cache after verification
+  const isVerified = typeof profile?.emailVerified === 'boolean'
+    ? profile.emailVerified
+    : session?.user?.emailVerified !== false
 
-const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
-  ...trpc.usage.getOwned.queryOptions(),
-  enabled: isLoggedIn,
-})
-const myRecipeCount = ownedUsageData?.recipeCount ?? 0
-const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecipeCount >= recipeLimit
+  const { data: ownedUsageData, isLoading: isUsageLoading } = useQuery({
+    ...trpc.usage.getOwned.queryOptions(),
+    enabled: isLoggedIn,
+  })
+  const myRecipeCount = ownedUsageData?.recipeCount ?? 0
+  const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecipeCount >= recipeLimit
   const { data, isLoading } = useQuery(
     trpc.recipes.list.queryOptions({
       search: search || undefined,
@@ -190,7 +189,6 @@ const atRecipeLimit = isLoggedIn && !isUsageLoading && ownedUsageData && myRecip
           resourceName="recipe"
           tier={tier}
           nextTier={nextTier}
-          tierDisplayName={TIER_DISPLAY_NAMES[tier]}
         />
       )}
       {/* Sort + Page-size bar */}

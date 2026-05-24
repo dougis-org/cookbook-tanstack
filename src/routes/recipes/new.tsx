@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import TierWall from '@/components/ui/TierWall'
 import UsageNudge from '@/components/ui/UsageNudge'
-import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
 import { getNextTier } from '@/lib/nudgeCopy'
 
 export const Route = createFileRoute('/recipes/new')({
@@ -69,7 +68,6 @@ function NewRecipePage() {
           resourceName="recipe"
           tier={tier}
           nextTier={nextTier}
-          tierDisplayName={TIER_DISPLAY_NAMES[tier]}
         />
       )}
 

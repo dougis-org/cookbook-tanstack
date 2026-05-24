@@ -2,26 +2,30 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-const mockUseAuth = vi.fn()
-const mockUseTierEntitlements = vi.fn()
+const authMockFn = vi.fn()
+const tierMockFn = vi.fn()
 
 vi.mock("@/hooks/useAuth", () => ({
-  useAuth: () => mockUseAuth(),
+  useAuth: () => authMockFn(),
 }))
 
 vi.mock("@/hooks/useTierEntitlements", () => ({
-  useTierEntitlements: () => mockUseTierEntitlements(),
+  useTierEntitlements: () => tierMockFn(),
 }))
 
 import TierWall from "../TierWall"
 
 function mockHomeCookPlan() {
-  mockUseAuth.mockReturnValue({
+  authMockFn.mockReturnValue({
     isLoggedIn: true,
     session: { user: { tier: 'home-cook' } },
+    userId: 'user-1',
+    loading: false,
   })
-  mockUseTierEntitlements.mockReturnValue({
+  tierMockFn.mockReturnValue({
     tier: 'home-cook',
+    canCreatePrivate: false,
+    canImport: false,
     recipeLimit: 10,
     cookbookLimit: 1,
   })
