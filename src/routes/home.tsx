@@ -126,12 +126,16 @@ export function HomePageComponent() {
             <h2 className="text-3xl font-extrabold text-[var(--theme-fg)] tracking-tight">
               Welcome back, <span className="text-[var(--theme-accent)]">{firstName}</span>
             </h2>
-            {isMounted && (
-              <p className="text-sm text-[var(--theme-fg-subtle)] flex items-center gap-2">
-                <ChefHat className="w-4 h-4 text-[var(--theme-accent)]" />
-                Today is {formattedDate}
-              </p>
-            )}
+            <div className="h-5 flex items-center">
+              {isMounted ? (
+                <p className="text-sm text-[var(--theme-fg-subtle)] flex items-center gap-2">
+                  <ChefHat className="w-4 h-4 text-[var(--theme-accent)]" />
+                  Today is {formattedDate}
+                </p>
+              ) : (
+                <div className="h-4 w-48 bg-[var(--theme-border)]/30 animate-pulse rounded" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -307,7 +311,7 @@ export function HomePageComponent() {
 
         {/* Dynamic Contextual Nudge Banner */}
         {showNudge && (
-          <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-[var(--theme-accent)]/30 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 hover:border-[var(--theme-accent)]/60 transition-all duration-300">
+          <div className="p-6 bg-gradient-to-r from-[var(--theme-surface)] to-[var(--theme-surface-hover)] border border-[var(--theme-accent)]/30 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 hover:border-[var(--theme-accent)]/60 transition-all duration-300">
             <div className="space-y-2 text-center md:text-left">
               <h3 className="text-lg font-extrabold text-[var(--theme-fg)] tracking-tight">Upgrade Your Plan</h3>
               <p className="text-sm text-[var(--theme-fg-subtle)] font-medium">{nudgeMessage}</p>
