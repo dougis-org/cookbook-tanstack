@@ -26,4 +26,17 @@ describe("AuthPageLayout", () => {
     expect(icon).toHaveClass("w-6", "h-6")
     expect(icon).toHaveAttribute("class", expect.stringContaining("text-[var(--theme-accent)]"))
   })
+
+  it("supports customizable maxWidth wrapper class", () => {
+    const { container } = render(
+      <AuthPageLayout icon={User} title="Sign in" maxWidth="max-w-3xl">
+        <p>Continue to your account</p>
+      </AuthPageLayout>,
+    )
+
+    // Find the wrapper div inside PageLayout that should receive the class
+    const wrapper = container.querySelector("[data-testid='page-layout'] > div")
+    expect(wrapper).toHaveClass("max-w-3xl")
+    expect(wrapper).not.toHaveClass("max-w-md")
+  })
 })

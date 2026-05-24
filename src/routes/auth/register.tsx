@@ -9,7 +9,7 @@ export const Route = createFileRoute("/auth/register")({
 
 function RegisterPage() {
   return (
-    <AuthPageLayout icon={UserPlus} title="Create Account">
+    <AuthPageLayout icon={UserPlus} title="Create Account" maxWidth="max-w-3xl">
       <RegisterForm />
     </AuthPageLayout>
   )
