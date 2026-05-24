@@ -51,28 +51,45 @@ export function HomePageComponent() {
     enabled: isLoggedIn,
   })
 
-  // Query recent recipes (and all user's recipes for monthly calculation)
-  const { data: recipesData, isLoading: isRecipesLoading } = useQuery({
-    ...trpc.recipes.list.queryOptions({ userId: session?.user?.id, sort: 'newest' }),
+  // Query recent recipes (paginated to 4 for performance / overfetching prevention)
+  const { data: recentRecipesData, isLoading: isRecentLoading } = useQuery({
+    ...trpc.recipes.list.queryOptions({ userId: session?.user?.id, sort: 'newest', pageSize: 4 }),
     enabled: isLoggedIn,
   })
+
+  // Query all user recipes for accurate "This Month" count (safe to fetch up to 100 for plan limits)
+  const { data: allRecipesData, isLoading: isAllLoading } = useQuery({
+    ...trpc.recipes.list.queryOptions({ userId: session?.user?.id, sort: 'newest', pageSize: 100 }),
+    enabled: isLoggedIn,
+  })
+
+  // Combined Loading state to prevent flashing incorrect counts
+  const isLoading = isUsageLoading || isAllLoading
 
   // Recipes saved in the current calendar month
   const now = new Date()
   const currentYear = now.getUTCFullYear()
   const currentMonth = now.getUTCMonth() // 0-indexed
-  const thisMonthRecipes = (recipesData?.items ?? []).filter((r) => {
+  const thisMonthRecipes = (allRecipesData?.items ?? []).filter((r) => {
     if (!r.createdAt) return false
     const d = new Date(r.createdAt)
     return d.getUTCFullYear() === currentYear && d.getUTCMonth() === currentMonth
   })
   const thisMonthCount = thisMonthRecipes.length
 
-  // Slice top 4 recipes for recently saved list
-  const recentRecipes = (recipesData?.items ?? []).slice(0, 4)
+  // Sliced recipes for display
+  const recentRecipes = recentRecipesData?.items ?? []
 
   // Contextual Nudge Logic
-  const lastPaidAttemptStr = isMounted ? localStorage.getItem('last_paid_action_attempt') : null
+  let lastPaidAttemptStr = null
+  if (isMounted) {
+    try {
+      lastPaidAttemptStr = localStorage.getItem('last_paid_action_attempt')
+    } catch (e) {
+      // Handle blocked/disabled storage in privacy modes
+    }
+  }
+
   let attemptedPaidActionRecently = false
   if (lastPaidAttemptStr) {
     const attemptDate = new Date(lastPaidAttemptStr)
@@ -95,7 +112,9 @@ export function HomePageComponent() {
     nudgeMessage = 'Unlock premium capabilities with Prep Cook.'
   }
 
-  const showNudge = isMounted && nudgeMessage !== ''
+  // Restrict nudge visibility to home-cook tier to avoid showing downgrade recommendations to higher tiers
+  const isHomeCook = tier === 'home-cook'
+  const showNudge = isMounted && isHomeCook && nudgeMessage !== ''
 
   return (
     <PageLayout role="authenticated-home" title="Welcome Home">
@@ -104,9 +123,9 @@ export function HomePageComponent() {
         {/* Header Greeting Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--theme-border)] pb-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-[var(--theme-fg)] tracking-tight">
+            <h2 className="text-3xl font-extrabold text-[var(--theme-fg)] tracking-tight">
               Welcome back, <span className="text-[var(--theme-accent)]">{firstName}</span>
-            </h1>
+            </h2>
             {isMounted && (
               <p className="text-sm text-[var(--theme-fg-subtle)] flex items-center gap-2">
                 <ChefHat className="w-4 h-4 text-[var(--theme-accent)]" />
@@ -117,7 +136,7 @@ export function HomePageComponent() {
         </div>
 
         {/* Usage Card Metrics Section */}
-        {isUsageLoading ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6" data-testid="usage-loading">
             <div className="h-32 bg-[var(--theme-surface)] rounded-xl border border-[var(--theme-border)] animate-pulse" />
             <div className="h-32 bg-[var(--theme-surface)] rounded-xl border border-[var(--theme-border)] animate-pulse" />
@@ -196,6 +215,7 @@ export function HomePageComponent() {
                 <div
                   data-testid="import-recipe-link"
                   aria-disabled="true"
+                  role="link"
                   className="flex items-start gap-4 p-5 bg-[var(--theme-surface)]/40 border border-[var(--theme-border)] rounded-xl shadow-inner pointer-events-none opacity-60 relative overflow-hidden"
                 >
                   <div className="p-3 bg-[var(--theme-fg-muted)]/10 text-[var(--theme-fg-muted)] rounded-lg">
@@ -205,7 +225,7 @@ export function HomePageComponent() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-[var(--theme-fg-muted)]">Import Recipe</h3>
                       <span data-testid="executive-chef-badge" className="px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase bg-[var(--theme-accent)]/20 text-[var(--theme-accent)] rounded-full">
-                        Executive Chef
+                        {TIER_DISPLAY_NAMES['executive-chef']}
                       </span>
                     </div>
                     <p className="text-xs text-[var(--theme-fg-muted)] mt-1">Import from a URL</p>
@@ -252,7 +272,7 @@ export function HomePageComponent() {
               </Link>
             </div>
 
-            {isRecipesLoading ? (
+            {isRecentLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-pulse">
                 <div className="h-64 bg-[var(--theme-surface)] rounded-xl border border-[var(--theme-border)]" />
                 <div className="h-64 bg-[var(--theme-surface)] rounded-xl border border-[var(--theme-border)]" />
