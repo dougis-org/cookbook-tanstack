@@ -1,6 +1,10 @@
 import "@testing-library/jest-dom/vitest"
 import { cleanup } from "@testing-library/react"
-import { afterEach } from "vitest"
+import { afterEach, vi } from "vitest"
+import { createRouterMock } from "./test-helpers/mocks"
+
+// Mock react-router globally for all unit tests to avoid duplicate mock declarations across test files
+vi.mock("@tanstack/react-router", () => createRouterMock())
 
 // Mock localStorage for jsdom if needed
 if (typeof window !== "undefined") {

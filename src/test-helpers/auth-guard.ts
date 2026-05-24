@@ -2,8 +2,9 @@ import { expect } from 'vitest'
 import type { redirect } from '@tanstack/react-router'
 import type { RouterContext } from '@/types/router'
 
-export function expectRedirect(
-  guard: (args: { context: RouterContext; location: { href: string } }) => void,
+
+export function expectRedirect<T extends { context: RouterContext; location: { href: string } }>(
+  guard: (args: T) => void,
   context: RouterContext,
   location: { href: string },
   expectedTo: string,
@@ -11,7 +12,7 @@ export function expectRedirect(
 ) {
   let thrown: unknown
   try {
-    guard({ context, location } as never)
+    guard({ context, location } as unknown as T)
   } catch (e) {
     thrown = e
   }
@@ -28,8 +29,8 @@ export function expectRedirect(
   }
 }
 
-export function testVerifiedAuthGuard(
-  beforeLoad: (args: { context: RouterContext; location: { href: string } }) => void,
+export function testVerifiedAuthGuard<T extends { context: RouterContext; location: { href: string } }>(
+  beforeLoad: (args: T) => void,
   href: string,
 ) {
   expectRedirect(
@@ -52,6 +53,6 @@ export function testVerifiedAuthGuard(
     beforeLoad({
       context: { session: { user: { id: 'u1', emailVerified: true } } } as never,
       location: { href },
-    }),
+    } as unknown as T),
   ).not.toThrow()
 }

@@ -121,6 +121,11 @@ export function createRouterMock(opts?: RouterMockOptions) {
         },
       })
     },
+    getRouteApi: (_routeId?: string) => ({
+      useParams: () => params,
+      useSearch: () => search,
+      useRouteContext: () => ({}),
+    }),
     ...extras,
   }
 }
