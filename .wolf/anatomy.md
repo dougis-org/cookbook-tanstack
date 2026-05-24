@@ -15,7 +15,8 @@
 ## ../../.claude/projects/-home-doug-dev-cookbook-tanstack/memory/
 
 - `e2e_server_startup_issue.md` — Issue (~383 tok)
-- `MEMORY.md` — Memory Index (~66 tok)
+- `feedback_opsx_closing_tasks.md` (~235 tok)
+- `MEMORY.md` — Memory Index (~106 tok)
 - `tanstack_upgrade_completed.md` — Completion Summary (May 1, 2026) (~523 tok)
 
 ## ../../.claude/projects/-home-doug-dev2-cookbook-tanstack/memory/
