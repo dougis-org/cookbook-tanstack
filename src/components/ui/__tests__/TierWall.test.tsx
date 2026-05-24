@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { createRouterMock } from "@/test-helpers/mocks"
-
-vi.mock("@tanstack/react-router", () => createRouterMock())
 
 const mockUseAuth = vi.fn()
 const mockUseTierEntitlements = vi.fn()

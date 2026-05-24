@@ -1,10 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createRouterMock } from '@/test-helpers/mocks'
-
-// Mock react-router
-vi.mock('@tanstack/react-router', () => createRouterMock())
 
 import UsageNudge from '../UsageNudge'
 import { getLoudNudgeCTA } from '@/lib/nudgeCopy'
