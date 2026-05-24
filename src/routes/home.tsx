@@ -85,7 +85,7 @@ export function HomePageComponent() {
   if (isMounted) {
     try {
       lastPaidAttemptStr = localStorage.getItem('last_paid_action_attempt')
-    } catch (e) {
+    } catch {
       // Handle blocked/disabled storage in privacy modes
     }
   }
