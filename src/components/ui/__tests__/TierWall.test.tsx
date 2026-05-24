@@ -15,7 +15,7 @@ vi.mock("@/hooks/useTierEntitlements", () => ({
 
 import TierWall from "../TierWall"
 
-beforeEach(() => {
+function mockHomeCookPlan() {
   mockUseAuth.mockReturnValue({
     isLoggedIn: true,
     session: { user: { tier: 'home-cook' } },
@@ -25,6 +25,10 @@ beforeEach(() => {
     recipeLimit: 10,
     cookbookLimit: 1,
   })
+}
+
+beforeEach(() => {
+  mockHomeCookPlan()
 })
 
 describe("TierWall — inline display", () => {
@@ -85,16 +89,6 @@ describe("TierWall — resilience", () => {
 
 describe("TierWall — progressive paywall upgrades", () => {
   it("renders comparison table when display is modal and reason is count-limit", () => {
-    mockUseAuth.mockReturnValue({
-      isLoggedIn: true,
-      session: { user: { tier: "home-cook" } },
-    })
-    mockUseTierEntitlements.mockReturnValue({
-      tier: "home-cook",
-      recipeLimit: 10,
-      cookbookLimit: 1,
-    })
-
     render(<TierWall reason="count-limit" display="modal" onDismiss={vi.fn()} />)
     
     // Check for "Today vs Prep Cook"

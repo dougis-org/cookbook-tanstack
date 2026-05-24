@@ -5,6 +5,15 @@ import userEvent from '@testing-library/user-event'
 import UsageNudge from '../UsageNudge'
 import { getLoudNudgeCTA } from '@/lib/nudgeCopy'
 
+const BASE_PROPS = {
+  count: 7,
+  limit: 10,
+  resourceName: 'recipe' as const,
+  tier: 'home-cook' as const,
+  nextTier: 'prep-cook' as const,
+  tierDisplayName: 'Home Cook',
+}
+
 describe('UsageNudge Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -12,44 +21,17 @@ describe('UsageNudge Component', () => {
   })
 
   it('renders nothing when ratio is below 70%', () => {
-    const { container } = render(
-      <UsageNudge
-        count={6}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    const { container } = render(<UsageNudge {...BASE_PROPS} count={6} />)
     expect(container.firstChild).toBeNull()
   })
 
   it('renders nothing when ratio is 100% or above', () => {
-    const { container } = render(
-      <UsageNudge
-        count={10}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    const { container } = render(<UsageNudge {...BASE_PROPS} count={10} />)
     expect(container.firstChild).toBeNull()
   })
 
   it('renders Soft Nudge when count is at 70% to 89% capacity', () => {
-    render(
-      <UsageNudge
-        count={7}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    render(<UsageNudge {...BASE_PROPS} count={7} />)
 
     expect(
       screen.getByText(/You've saved 7 of 10 recipes\. Plenty of room to keep going\./i)
@@ -59,16 +41,7 @@ describe('UsageNudge Component', () => {
   })
 
   it('handles soft nudge session dismissal correctly', async () => {
-    const { container, rerender } = render(
-      <UsageNudge
-        count={7}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    const { container, rerender } = render(<UsageNudge {...BASE_PROPS} count={7} />)
 
     expect(
       screen.getByText(/You've saved 7 of 10 recipes\. Plenty of room to keep going\./i)
@@ -81,30 +54,12 @@ describe('UsageNudge Component', () => {
     expect(container.firstChild).toBeNull()
 
     // Rerendering should still result in null (hidden)
-    rerender(
-      <UsageNudge
-        count={7}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    rerender(<UsageNudge {...BASE_PROPS} count={7} />)
     expect(container.firstChild).toBeNull()
   })
 
   it('renders Loud Nudge at 90% to 99% capacity with no dismiss button, warning tokens, and correct progress width', () => {
-    const { container } = render(
-      <UsageNudge
-        count={9}
-        limit={10}
-        resourceName="recipe"
-        tier="home-cook"
-        nextTier="prep-cook"
-        tierDisplayName="Home Cook"
-      />
-    )
+    const { container } = render(<UsageNudge {...BASE_PROPS} count={9} />)
 
     // Verify main copy
     expect(screen.getByText(/1 recipe left on the Home Cook plan/i)).toBeInTheDocument()
@@ -134,9 +89,9 @@ describe('UsageNudge Component', () => {
     // 2400 out of 2500 is 96%, which triggers loud nudge
     render(
       <UsageNudge
+        {...BASE_PROPS}
         count={2400}
         limit={2500}
-        resourceName="recipe"
         tier="executive-chef"
         nextTier={null}
         tierDisplayName="Executive Chef"
@@ -151,4 +106,5 @@ describe('UsageNudge Component', () => {
     expect(getLoudNudgeCTA('home-cook')).toBe('Upgrade')
   })
 })
+
 

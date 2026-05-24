@@ -53,9 +53,7 @@ describe('/recipes/new — beforeLoad', () => {
 describe('NewRecipePage component blockage at 100% capacity', () => {
   const NewRecipePageComponent = Route.options.component
 
-  beforeEach(() => {
-    vi.clearAllMocks()
-
+  function mockHomeCookPlan() {
     mockUseAuth.mockReturnValue({
       isLoggedIn: true,
       session: { user: { tier: 'home-cook' } },
@@ -66,6 +64,11 @@ describe('NewRecipePage component blockage at 100% capacity', () => {
       recipeLimit: 10,
       cookbookLimit: 1,
     })
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockHomeCookPlan()
   })
 
   it('renders correctly and does not display TierWall when under 100% capacity', () => {
