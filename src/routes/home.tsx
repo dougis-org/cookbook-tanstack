@@ -149,24 +149,32 @@ export function HomePageComponent() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Recipes Usage */}
-            <div className="p-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-sm space-y-4 hover:border-[var(--theme-accent)]/50 transition-colors">
+            <Link
+              to="/recipes"
+              data-testid="recipes-usage-tile-link"
+              className="block p-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-sm space-y-4 hover:border-[var(--theme-accent)]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg)] transition-colors"
+            >
               <div className="flex justify-between items-start">
                 <span className="text-sm font-semibold text-[var(--theme-fg-subtle)] uppercase tracking-wider">Recipes</span>
                 <span className="text-lg font-bold text-[var(--theme-fg)]">{usage?.recipeCount ?? 0} of {recipeLimit}</span>
               </div>
               <ProgressBar value={usage?.recipeCount ?? 0} max={recipeLimit} />
               <p className="text-xs text-[var(--theme-fg-muted)]">{displayName}</p>
-            </div>
+            </Link>
 
             {/* Cookbooks Usage */}
-            <div className="p-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-sm space-y-4 hover:border-[var(--theme-accent)]/50 transition-colors">
+            <Link
+              to="/cookbooks"
+              data-testid="cookbooks-usage-tile-link"
+              className="block p-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-sm space-y-4 hover:border-[var(--theme-accent)]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg)] transition-colors"
+            >
               <div className="flex justify-between items-start">
                 <span className="text-sm font-semibold text-[var(--theme-fg-subtle)] uppercase tracking-wider">Cookbooks</span>
                 <span className="text-lg font-bold text-[var(--theme-fg)]">{usage?.cookbookCount ?? 0} of {cookbookLimit}</span>
               </div>
               <ProgressBar value={usage?.cookbookCount ?? 0} max={cookbookLimit} />
               <p className="text-xs text-[var(--theme-fg-muted)]">{displayName}</p>
-            </div>
+            </Link>
 
             {/* Creations This Month */}
             <div className="p-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-sm flex flex-col justify-between hover:border-[var(--theme-accent)]/50 transition-colors min-h-[120px]">

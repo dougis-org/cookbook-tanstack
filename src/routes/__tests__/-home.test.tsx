@@ -198,6 +198,30 @@ describe('/home', () => {
       render(<HomePageComponent />)
       expect(screen.getByText('1 saved')).toBeInTheDocument()
     })
+
+    it('renders recipes usage tile as a full link to /recipes', () => {
+      setupMocks({ recipeCount: 7, tier: 'home-cook' })
+      render(<HomePageComponent />)
+
+      const recipesTile = screen.getByTestId('recipes-usage-tile-link')
+      expect(recipesTile).toHaveAttribute('href', '/recipes')
+    })
+
+    it('renders cookbooks usage tile as a full link to /cookbooks', () => {
+      setupMocks({ cookbookCount: 1, tier: 'home-cook' })
+      render(<HomePageComponent />)
+
+      const cookbooksTile = screen.getByTestId('cookbooks-usage-tile-link')
+      expect(cookbooksTile).toHaveAttribute('href', '/cookbooks')
+    })
+
+    it('keeps discovery links to recipes and cookbooks', () => {
+      setupMocks({ tier: 'home-cook' })
+      render(<HomePageComponent />)
+
+      expect(screen.getByRole('link', { name: 'All Recipes' })).toHaveAttribute('href', '/recipes')
+      expect(screen.getByRole('link', { name: 'Cookbooks' })).toHaveAttribute('href', '/cookbooks')
+    })
   })
 
   describe('HomePageComponent — Quick Actions Row', () => {
