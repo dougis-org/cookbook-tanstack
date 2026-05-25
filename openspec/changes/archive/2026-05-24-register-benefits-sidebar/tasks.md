@@ -45,13 +45,13 @@ Use the project's documented commands for each of the above (see project README 
 ## PR and Merge
 
 - [x] Ensure the `openspec-review-code` sub-agent was run before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from working branch to `main`. **The PR body MUST explicitly state "Closes #454".**
-- [ ] **IMMEDIATELY** enable auto-merge: `gh pr merge --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post their comments
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, and explicitly ensure threads are resolved to allow the process to progress. Follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously using `gh pr checks --json isRequired,state`; when any **required (blocking)** CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all required checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from working branch to `main`. **The PR body MUST explicitly state "Closes #454".**
+- [x] **IMMEDIATELY** enable auto-merge: `gh pr merge --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, and explicitly ensure threads are resolved to allow the process to progress. Follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
+- [x] **Monitor CI checks** — poll for check status autonomously using `gh pr checks --json isRequired,state`; when any **required (blocking)** CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all required checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 180 seconds → re-check → poll for merge → repeat until the PR merges.
 
@@ -69,14 +69,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the main branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/register-benefits-sidebar/` to `openspec/changes/archive/2026-05-24-register-benefits-sidebar/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/2026-05-24-register-benefits-sidebar/` exists and `openspec/changes/register-benefits-sidebar/` is gone
-- [ ] Commit and push the archive to the main branch in one commit
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/register-benefits-sidebar`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the main branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/register-benefits-sidebar/` to `openspec/changes/archive/2026-05-24-register-benefits-sidebar/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/2026-05-24-register-benefits-sidebar/` exists and `openspec/changes/register-benefits-sidebar/` is gone
+- [x] Commit and push the archive to the main branch in one commit
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d feat/register-benefits-sidebar`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feat/register-benefits-sidebar`
