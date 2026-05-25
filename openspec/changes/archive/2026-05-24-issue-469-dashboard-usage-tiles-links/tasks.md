@@ -55,9 +55,9 @@ Use the project's documented commands for each of the above (see `README.md`, `C
 - [x] Open PR from working branch to `main`.
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post comments.
 - [x] Enable auto-merge: `gh pr merge <PR-URL> --auto --merge`.
-- [ ] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], push to the same branch, wait 180 seconds, and repeat until no unresolved comments remain.
-- [ ] **Monitor CI checks** — poll check status autonomously; when any check fails, diagnose and fix, commit, follow all steps in [Remote push validation], push, wait 180 seconds, and repeat until all checks pass.
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED`, proceed to Post-Merge; if `CLOSED`, exit and notify the user.
+- [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, follow all steps in [Remote push validation], push to the same branch, wait 180 seconds, and repeat until no unresolved comments remain.
+- [x] **Monitor CI checks** — poll check status autonomously; when any check fails, diagnose and fix, commit, follow all steps in [Remote push validation], push, wait 180 seconds, and repeat until all checks pass.
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED`, proceed to Post-Merge; if `CLOSED`, exit and notify the user.
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 180 seconds → re-check → poll for merge → repeat until merged.
 
@@ -75,14 +75,16 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify merged changes appear on `main`.
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify merged changes appear on `main`.
 - [ ] Mark all remaining tasks as complete (`- [x]`).
-- [ ] Update repository documentation impacted by the change.
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec).
-- [ ] Archive the change by moving `openspec/changes/issue-469-dashboard-usage-tiles-links/` to `openspec/changes/archive/YYYY-MM-DD-issue-469-dashboard-usage-tiles-links/` and stage both add+delete in a single commit.
-- [ ] Confirm archived directory exists and original change directory is removed.
-- [ ] Commit and push the archive to `main` in one commit.
+- [x] Update repository documentation impacted by the change.
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec).
+- [x] Archive the change by moving `openspec/changes/issue-469-dashboard-usage-tiles-links/` to `openspec/changes/archive/YYYY-MM-DD-issue-469-dashboard-usage-tiles-links/` and stage both add+delete in a single commit.
+- [x] Confirm archived directory exists and original change directory is removed.
+- [x] Commit and push the archive to `main` in one commit.
 - [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d issue-469-dashboard-usage-tiles-links`.
+
+Prune note: branch deletion is currently blocked because `issue-469-dashboard-usage-tiles-links` is still checked out in worktree `/home/doug/dev/cookbook-tanstack`.
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d issue-469-dashboard-usage-tiles-links`

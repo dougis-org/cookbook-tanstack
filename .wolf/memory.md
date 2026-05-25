@@ -188,6 +188,13 @@
 | 16:37 | Edited src/routes/__tests__/-account.test.tsx | added error handling | ~281 |
 | 16:37 | Edited src/routes/__tests__/-pricing.test.tsx | expanded (+7 lines) | ~179 |
 
+## Session: 2026-05-24 01:46
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 01:46 | Synced global OpenSpec home-page requirements for issue-469 dashboard tile links | openspec/specs/home-page-experience/spec.md | post-merge spec deltas captured | ~420 |
+| 01:46 | Updated OpenWolf tracking files after post-merge edits | .wolf/anatomy.md, .wolf/memory.md | tracking requirements satisfied | ~110 |
+
 ## Session: 2026-04-24 18:22
 
 | Time | Action | File(s) | Outcome | ~Tokens |

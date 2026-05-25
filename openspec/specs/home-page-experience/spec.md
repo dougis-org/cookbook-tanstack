@@ -74,6 +74,23 @@ discovery routes while withholding content-creation actions.
 - **When** the visitor reaches a public browsing surface
 - **Then** protected creation, import, or edit affordances are not shown
 
+### Requirement: MODIFIED Authenticated Home Route Dashboard Affordances
+
+The system SHALL keep Discovery links while also exposing direct full-tile link navigation for Recipes and Cookbooks usage cards on `/home`.
+
+#### Scenario: Usage tiles navigate to collection routes
+
+- **Given** an authenticated user is on `/home`
+- **When** the user activates the Recipes usage tile
+- **Then** the app navigates to `/recipes`
+- **And** when the user activates the Cookbooks usage tile the app navigates to `/cookbooks`
+
+#### Scenario: Discovery links remain after tile-link enhancement
+
+- **Given** an authenticated user is on `/home`
+- **When** usage tiles are rendered as full-tile links
+- **Then** Discovery links to `/recipes` and `/cookbooks` remain available and usable
+
 ## REMOVED Requirements
 
 ### Requirement: REMOVED Root Route as Universal Feature Dashboard
@@ -105,12 +122,14 @@ public landing page is misleading.
   Route Redirect.
 - Proposal element -> Requirement: `/home` includes global discovery and workflow shortcuts -> ADDED
   Authenticated Home Route.
+- Proposal element -> Requirement: Dashboard usage tiles for Recipes and Cookbooks are full-card links -> MODIFIED Authenticated Home Route Dashboard Affordances.
 - Proposal element -> Requirement: Anonymous visitors can browse but not add content -> MODIFIED Public Browsing Access.
 - Proposal element -> Requirement: Remove tech-stack copy and anonymous create CTA -> MODIFIED Public Landing
   Content and REMOVED Anonymous Create CTA on Landing Page.
 - Design decision -> Requirement: Decision 1 -> ADDED Public Landing Route Redirect and ADDED Authenticated Home Route.
 - Design decision -> Requirement: Decision 4 -> ADDED Authenticated Home Route.
 - Requirement -> Task(s): implementation tasks 1 through 4; validation tasks in `tests.md`.
+- Requirement -> Task(s): issue-469 dashboard tile-link implementation, tests, and post-merge archival tasks.
 
 ## Non-Functional Acceptance Criteria
 
