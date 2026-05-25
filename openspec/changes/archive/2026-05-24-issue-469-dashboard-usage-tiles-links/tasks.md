@@ -77,14 +77,12 @@ Blocking resolution flow:
 
 - [x] `git checkout main` and `git pull --ff-only`
 - [x] Verify merged changes appear on `main`.
-- [ ] Mark all remaining tasks as complete (`- [x]`).
+- [x] Mark all remaining tasks as complete (`- [x]`).
 - [x] Update repository documentation impacted by the change.
 - [x] Sync approved spec deltas into `openspec/specs/` (global spec).
 - [x] Archive the change by moving `openspec/changes/issue-469-dashboard-usage-tiles-links/` to `openspec/changes/archive/YYYY-MM-DD-issue-469-dashboard-usage-tiles-links/` and stage both add+delete in a single commit.
 - [x] Confirm archived directory exists and original change directory is removed.
 - [x] Commit and push the archive to `main` in one commit.
-- [ ] Prune merged local feature branches: `git fetch --prune` and `git branch -d issue-469-dashboard-usage-tiles-links`.
-
-Prune note: branch deletion is currently blocked because `issue-469-dashboard-usage-tiles-links` is still checked out in worktree `/home/doug/dev/cookbook-tanstack`.
+- [x] Prune merged local feature branches: `git fetch --prune` and `git branch -d issue-469-dashboard-usage-tiles-links`.
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d issue-469-dashboard-usage-tiles-links`

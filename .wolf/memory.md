@@ -3,6 +3,13 @@
 > Chronological action log. Hooks and AI append to this file automatically.
 > Old sessions are consolidated by the daemon weekly.
 
+## Session: 2026-05-24 02:05
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:05 | Completed issue-469 OpenSpec apply post-merge flow on main; pruned local feature branch | openspec/changes/archive/2026-05-24-issue-469-dashboard-usage-tiles-links/tasks.md | all checklist items marked complete | ~280 |
+| 02:05 | Updated OpenWolf tracking metadata after archive checklist edits | .wolf/anatomy.md, .wolf/memory.md | compliance updates recorded | ~90 |
+
 ## Session: 2026-04-18 11:32
 
 | Time | Action | File(s) | Outcome | ~Tokens |
