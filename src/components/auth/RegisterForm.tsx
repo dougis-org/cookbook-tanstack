@@ -15,11 +15,11 @@ interface FieldErrors {
 }
 
 const BENEFITS = [
-  "Organize recipes in custom cookbooks",
-  "Print high-fidelity recipe cards & lists",
-  "Keep recipes private or share with the public",
-  "Plan weekly meals and shopping lists",
-  "Access your kitchen dashboard from any device",
+  "Free forever — no credit card required",
+  "Save up to 10 recipes",
+  "Build a cookbook",
+  "Print any recipe",
+  "Browse hundreds of public recipes",
 ]
 
 export default function RegisterForm() {
@@ -89,10 +89,10 @@ export default function RegisterForm() {
           Why join My CookBooks?
         </h3>
         <ul className="space-y-4">
-          {BENEFITS.map((benefit, idx) => (
-            <li key={idx} className="group flex items-start gap-3">
+          {BENEFITS.map((benefit) => (
+            <li key={benefit} className="group flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--theme-accent-subtle-bg)] flex items-center justify-center border border-[var(--theme-border-muted)] transition-transform duration-200 group-hover:scale-110">
-                <Check className="w-3.5 h-3.5 text-[var(--theme-accent)]" />
+                <Check className="w-3.5 h-3.5 text-[var(--theme-accent)]" aria-hidden="true" />
               </div>
               <span className="text-sm text-[var(--theme-fg-subtle)] transition-colors duration-200 group-hover:text-[var(--theme-fg)]">
                 {benefit}
@@ -111,20 +111,18 @@ export default function RegisterForm() {
         <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
         <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
         
-        {/* TODO: Wire these links to actual Terms and Privacy Policy routes once created */}
+        {/* TODO: Replace <a> with <Link> once /terms and /privacy-policy routes are created */}
         <p className="text-center text-xs text-[var(--theme-fg-subtle)] leading-relaxed">
           By creating an account you agree to our{" "}
           <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
+            href="/terms"
             className="underline hover:text-[var(--theme-accent)] transition-colors"
           >
             Terms
           </a>{" "}
           and{" "}
           <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
+            href="/privacy-policy"
             className="underline hover:text-[var(--theme-accent)] transition-colors"
           >
             Privacy Policy
