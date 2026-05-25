@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "@tanstack/react-router"
+import { Check } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { validateEmail, validatePassword, validateUsername } from "@/lib/validation"
 import FormInput from "@/components/ui/FormInput"
@@ -12,6 +13,14 @@ interface FieldErrors {
   email?: string
   password?: string
 }
+
+const BENEFITS = [
+  "Free forever — no credit card required",
+  "Save up to 10 recipes",
+  "Build a cookbook",
+  "Print any recipe",
+  "Browse hundreds of public recipes",
+]
 
 export default function RegisterForm() {
   const [name, setName] = useState("")
@@ -73,17 +82,59 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <FormError message={error} />
-      <FormInput id="name" label="Name" value={name} onChange={setName} placeholder="Your display name (optional)" />
-      <FormInput id="username" label="Username" value={username} onChange={setUsername} placeholder="Choose a unique username" required error={fieldErrors.username} />
-      <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldErrors.email} />
-      <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
-      <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
-      <p className="text-center text-[var(--theme-fg-subtle)] text-sm">
-        Already have an account?{" "}
-        <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Sign in</Link>
-      </p>
-    </form>
+    <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 items-start">
+      {/* Benefits Sidebar (first in JSX for mobile layout ordering) */}
+      <div className="order-first md:order-last bg-[var(--theme-surface-raised)] border border-[var(--theme-border-muted)] rounded-xl p-6 space-y-6">
+        <h3 className="text-lg font-bold text-[var(--theme-fg)]">
+          Why join My CookBooks?
+        </h3>
+        <ul className="space-y-4">
+          {BENEFITS.map((benefit) => (
+            <li key={benefit} className="group flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[var(--theme-accent-subtle-bg)] flex items-center justify-center border border-[var(--theme-border-muted)] transition-transform duration-200 group-hover:scale-110">
+                <Check className="w-3.5 h-3.5 text-[var(--theme-accent)]" aria-hidden="true" />
+              </div>
+              <span className="text-sm text-[var(--theme-fg-subtle)] transition-colors duration-200 group-hover:text-[var(--theme-fg)]">
+                {benefit}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Form (second in JSX for desktop layout ordering) */}
+      <form onSubmit={handleSubmit} className="order-last md:order-first space-y-5" noValidate>
+        <FormError message={error} />
+        <FormInput id="name" label="Name" value={name} onChange={setName} placeholder="Your display name (optional)" />
+        <FormInput id="username" label="Username" value={username} onChange={setUsername} placeholder="Choose a unique username" required error={fieldErrors.username} />
+        <FormInput id="email" label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required error={fieldErrors.email} />
+        <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
+        <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
+        
+        {/* TODO: Replace <a> with <Link> once /terms and /privacy-policy routes are created */}
+        <p className="text-center text-xs text-[var(--theme-fg-subtle)] leading-relaxed">
+          By creating an account you agree to our{" "}
+          <a
+            href="/terms"
+            className="underline hover:text-[var(--theme-accent)] transition-colors"
+          >
+            Terms
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy-policy"
+            className="underline hover:text-[var(--theme-accent)] transition-colors"
+          >
+            Privacy Policy
+          </a>
+          .
+        </p>
+
+        <p className="text-center text-[var(--theme-fg-subtle)] text-sm border-t border-[var(--theme-border-muted)] pt-4 mt-2">
+          Already have an account?{" "}
+          <Link to="/auth/login" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)] transition-colors">Sign in</Link>
+        </p>
+      </form>
+    </div>
   )
 }

@@ -159,4 +159,33 @@ describe("RegisterForm", () => {
     render(<RegisterForm />)
     expect(screen.getByText("Sign in")).toHaveAttribute("href", "/auth/login")
   })
+
+  it("renders benefits sidebar with 5 bullet points and check icons", () => {
+    render(<RegisterForm />)
+    expect(screen.getByText("Why join My CookBooks?")).toBeInTheDocument()
+
+    // Check for the 5 benefits matching the tier-0 free plan from Issue #454
+    expect(screen.getByText("Free forever — no credit card required")).toBeInTheDocument()
+    expect(screen.getByText("Save up to 10 recipes")).toBeInTheDocument()
+    expect(screen.getByText("Build a cookbook")).toBeInTheDocument()
+    expect(screen.getByText("Print any recipe")).toBeInTheDocument()
+    expect(screen.getByText("Browse hundreds of public recipes")).toBeInTheDocument()
+
+    // Assert that exactly 5 list items exist in the benefits list
+    const benefitItems = screen.getAllByRole("listitem")
+    expect(benefitItems).toHaveLength(5)
+  })
+
+  it("renders legal consent links pointing to /terms and /privacy-policy", () => {
+    render(<RegisterForm />)
+    const termsLink = screen.getByRole("link", { name: "Terms" })
+    const privacyLink = screen.getByRole("link", { name: "Privacy Policy" })
+
+    expect(termsLink).toBeInTheDocument()
+    expect(termsLink).toHaveAttribute("href", "/terms")
+    expect(privacyLink).toBeInTheDocument()
+    expect(privacyLink).toHaveAttribute("href", "/privacy-policy")
+
+    expect(screen.getByText(/By creating an account you agree to our/i)).toBeInTheDocument()
+  })
 })
