@@ -115,7 +115,10 @@ export const recipesRouter = router({
       if (input?.isPublic !== undefined) {
         filter.isPublic = input.isPublic
         filter.hiddenByTier = { $ne: true }
-        filter.pendingVerification = { $ne: true }
+        const isOwnRecipes = ctx.user && input?.userId === ctx.user.id
+        if (!isOwnRecipes) {
+          filter.pendingVerification = { $ne: true }
+        }
       } else {
         Object.assign(filter, visibilityFilter(ctx.user));
       }
@@ -310,7 +313,7 @@ export const recipesRouter = router({
       };
     }),
 
-  update: verifiedProcedure
+  update: protectedProcedure
     .input(
       z
         .object({ id: objectId })

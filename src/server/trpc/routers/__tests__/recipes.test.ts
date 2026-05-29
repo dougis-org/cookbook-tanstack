@@ -572,13 +572,17 @@ describe("recipes.update", () => {
     });
   });
 
-  it("rejects requests from users with unverified email", async () => {
+  it("allows unverified users to update their own pending recipes", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Old Name",
+        userId: user.id,
+        pendingVerification: true,
+      }).save();
       const caller = await makeAuthCaller(user.id, { emailVerified: false });
-      await expect(
-        caller.recipes.update({ id: VALID_OBJECT_ID, name: "Updated" }),
-      ).rejects.toThrow("Email verification required");
+      const result = await caller.recipes.update({ id: recipe.id, name: "Updated" });
+      expect(result).toMatchObject({ name: "Updated" });
     });
   });
 
@@ -2028,6 +2032,30 @@ describe("recipes.list — pending recipe filtering", () => {
       expect(result.items).toHaveLength(2);
       const names = result.items.map((r) => r.name).sort();
       expect(names).toEqual(["Pending", "Published"]);
+    });
+  });
+
+  it("T2.5 — isPublic:true filter excludes pending recipes for non-owners but not the owner", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const anonResult = await (await makeAnonCaller()).recipes.list({ isPublic: true, userId: owner.id });
+      expect(anonResult.items).toHaveLength(1);
+      expect(anonResult.items[0]).toMatchObject({ name: "Published" });
+
+      const otherResult = await (await makeAuthCaller(other.id)).recipes.list({ isPublic: true, userId: owner.id });
+      expect(otherResult.items).toHaveLength(1);
+
+      const ownerResult = await (await makeAuthCaller(owner.id)).recipes.list({ isPublic: true, userId: owner.id });
+      expect(ownerResult.items).toHaveLength(2);
     });
   });
 });
