@@ -307,7 +307,6 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         const created = await createMutation.mutateAsync({
           ...payload,
           ...taxonomyIds,
-          ...(isUnverified ? { pendingVerification: true } : {}),
         })
         await afterSaveSuccess()
         if (isUnverified) {

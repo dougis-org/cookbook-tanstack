@@ -753,8 +753,8 @@ describe("RecipeForm — unverified submit path", () => {
       expect(mockCreateMutationFn).toHaveBeenCalled()
     })
 
-    // Mutation must be called with pendingVerification: true
-    expect(mockCreateMutationFn.mock.calls[0]?.[0]).toMatchObject({ pendingVerification: true })
+    // pendingVerification is set server-side; client does not include it
+    expect(mockCreateMutationFn.mock.calls[0]?.[0]?.pendingVerification).toBeUndefined()
 
     // PostSubmitVerifyGate should be shown
     await waitFor(() => {

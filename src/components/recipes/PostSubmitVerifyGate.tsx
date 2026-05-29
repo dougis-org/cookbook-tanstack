@@ -20,6 +20,7 @@ export default function PostSubmitVerifyGate({
   const [resendError, setResendError] = useState("")
 
   async function handleResend() {
+    if (!email) return
     setResendStatus("loading")
     setResendError("")
     try {
@@ -39,11 +40,10 @@ export default function PostSubmitVerifyGate({
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-[var(--theme-fg)]">
-            Recipe saved — verify to publish
+            {recipeName}
           </h2>
           <p className="max-w-md text-[var(--theme-fg-muted)]">
-            <strong className="text-[var(--theme-fg)]">{recipeName}</strong> has been saved.
-            It will be published automatically once you verify your email address.
+            One more step — verify your email to publish this recipe.
           </p>
         </div>
       </div>

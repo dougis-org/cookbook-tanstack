@@ -36,9 +36,10 @@ describe("PostSubmitVerifyGate", () => {
     expect(screen.getByText(/Grandma's Lasagna/)).toBeInTheDocument()
   })
 
-  it("renders copy with no emoji", () => {
+  it("renders the spec copy with no emoji", () => {
     render(<PostSubmitVerifyGate {...TEST_PROPS} />)
 
+    expect(screen.getByText("One more step — verify your email to publish this recipe.")).toBeInTheDocument()
     const gate = screen.getByTestId("post-submit-verify-gate")
     expect(gate.textContent).not.toMatch(/[\u{1F300}-\u{1FAFF}]/u)
   })

@@ -65,7 +65,6 @@ const recipeFields = z.object({
   protein: z.number().nonnegative().optional(),
   imageUrl: z.string().url().nullable().optional(),
   isPublic: z.boolean().default(true),
-  pendingVerification: z.boolean().optional(),
 });
 
 const taxonomyIds = z.object({
@@ -287,7 +286,7 @@ export const recipesRouter = router({
       if (!isUnverified) {
         await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
       }
-      const { mealIds, courseIds, preparationIds, pendingVerification: _ignored, ...fields } = input;
+      const { mealIds, courseIds, preparationIds, ...fields } = input;
 
       let isPublic = fields.isPublic;
       if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier)) {
