@@ -6,7 +6,7 @@ import { getVerificationEmailErrorMessage, requestVerificationEmail } from "@/co
 interface PostSubmitVerifyGateProps {
   recipeId: string
   recipeName: string
-  email: string
+  email?: string
 }
 
 type ResendStatus = "idle" | "loading" | "success" | "error"
@@ -14,7 +14,7 @@ type ResendStatus = "idle" | "loading" | "success" | "error"
 export default function PostSubmitVerifyGate({
   recipeId,
   recipeName,
-  email,
+  email = "",
 }: PostSubmitVerifyGateProps) {
   const [resendStatus, setResendStatus] = useState<ResendStatus>("idle")
   const [resendError, setResendError] = useState("")

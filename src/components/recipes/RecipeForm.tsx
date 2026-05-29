@@ -345,7 +345,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       <PostSubmitVerifyGate
         recipeId={pendingGate.id}
         recipeName={pendingGate.name}
-        email={session?.user?.email ?? ""}
+        email={session?.user?.email}
       />
     )
   }
