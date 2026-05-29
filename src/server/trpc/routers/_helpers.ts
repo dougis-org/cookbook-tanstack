@@ -22,18 +22,18 @@ export function visibilityFilter(user: { id: string } | null, collabCookbookIds:
   if (user) {
     const userId = Types.ObjectId.isValid(user.id) ? new Types.ObjectId(user.id) : user.id
     const orClauses: object[] = [
-      { isPublic: true, hiddenByTier: { $ne: true } },
+      { isPublic: true, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } },
       { userId, hiddenByTier: { $ne: true } },
     ]
     if (collabCookbookIds.length > 0) {
       const collabIds = collabCookbookIds
         .filter((id) => Types.ObjectId.isValid(id))
         .map((id) => new Types.ObjectId(id))
-      orClauses.push({ _id: { $in: collabIds }, hiddenByTier: { $ne: true } })
+      orClauses.push({ _id: { $in: collabIds }, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } })
     }
     return { $or: orClauses }
   }
-  return { isPublic: true, hiddenByTier: { $ne: true } }
+  return { isPublic: true, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } }
 }
 
 /**
@@ -58,9 +58,9 @@ export async function verifyOwnership<T extends { userId: unknown }>(
   return existing;
 }
 
-/** Shared predicate for counting non-hidden user-owned documents. */
+/** Shared predicate for counting non-hidden, non-pending user-owned documents. */
 function userContentFilter(userId: string) {
-  return { userId, hiddenByTier: { $ne: true } }
+  return { userId, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } }
 }
 
 /**
@@ -130,7 +130,7 @@ export function createTaxonomyRouter(Model: any, arrayField: 'mealIds' | 'course
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           Model.find().lean() as Promise<any[]>,
           Recipe.aggregate<{ _id: unknown; count: number }>([
-            { $match: { isPublic: true } },
+            { $match: { isPublic: true, pendingVerification: { $ne: true } } },
             { $unwind: `$${arrayField}` },
             { $group: { _id: `$${arrayField}`, count: { $sum: 1 } } },
           ]),

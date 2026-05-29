@@ -134,5 +134,42 @@ describe.each(["meals", "courses", "preparations"] as const)(
         expect(inserted?.recipeCount).toBe(2);
       });
     });
+
+    it("T2.6 — taxonomy count excludes pending recipes in public context", async () => {
+      await withCleanDb(async () => {
+        const slug = `${routerName}-pending-${RUN_ID}`;
+        const taxDoc = await new ModelMap[routerName]({ name: "T2.6 Test", slug }).save();
+        const user = await seedUserWithBetterAuth();
+
+        // Published recipe with this taxonomy
+        await new Recipe({
+          name: "Published Recipe",
+          userId: user.id,
+          isPublic: true,
+          [fieldMap[routerName]]: [taxDoc._id],
+        }).save();
+
+        // Pending recipe with same taxonomy — should NOT be counted
+        await new Recipe({
+          name: "Pending Recipe",
+          userId: user.id,
+          isPublic: true,
+          pendingVerification: true,
+          [fieldMap[routerName]]: [taxDoc._id],
+        }).save();
+
+        const { appRouter } = await import("@/server/trpc/router");
+        const caller = appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
+        const result = await (
+          caller[routerName] as {
+            list: () => Promise<{ slug: string; recipeCount: number }[]>;
+          }
+        ).list();
+
+        const inserted = result.find((r) => r.slug === slug);
+        // Only the published recipe should count
+        expect(inserted?.recipeCount).toBe(1);
+      });
+    });
   },
 );

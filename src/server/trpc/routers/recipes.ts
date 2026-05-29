@@ -65,6 +65,7 @@ const recipeFields = z.object({
   protein: z.number().nonnegative().optional(),
   imageUrl: z.string().url().nullable().optional(),
   isPublic: z.boolean().default(true),
+  pendingVerification: z.boolean().optional(),
 });
 
 const taxonomyIds = z.object({
@@ -114,6 +115,7 @@ export const recipesRouter = router({
       if (input?.isPublic !== undefined) {
         filter.isPublic = input.isPublic
         filter.hiddenByTier = { $ne: true }
+        filter.pendingVerification = { $ne: true }
       } else {
         Object.assign(filter, visibilityFilter(ctx.user));
       }
@@ -274,16 +276,23 @@ export const recipesRouter = router({
       };
     }),
 
-  create: verifiedProcedure
+  create: protectedProcedure
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
-      await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
-      const { mealIds, courseIds, preparationIds, ...fields } = input;
+      // Pending recipes don't count against tier limits.
+      const isUnverified = ctx.user.emailVerified === false;
+      if (!isUnverified) {
+        await enforceContentLimit(ctx.user.id, ctx.user.tier ?? undefined, ctx.user.isAdmin ?? false, "recipes");
+      }
+      const { mealIds, courseIds, preparationIds, pendingVerification: _ignored, ...fields } = input;
 
       let isPublic = fields.isPublic;
       if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier)) {
         isPublic = true;
       }
+
+      // Always set server-side; client input is discarded to prevent API bypass.
+      const pendingVerification = isUnverified ? true : undefined;
 
       const recipe = await new Recipe({
         ...fields,
@@ -292,6 +301,7 @@ export const recipesRouter = router({
         mealIds: mealIds ?? [],
         courseIds: courseIds ?? [],
         preparationIds: preparationIds ?? [],
+        ...(pendingVerification ? { pendingVerification } : {}),
       }).save();
       return {
         ...recipe.toObject(),

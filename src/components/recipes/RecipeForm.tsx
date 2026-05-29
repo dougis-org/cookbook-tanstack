@@ -15,6 +15,8 @@ import { useAutoSave } from "@/hooks/useAutoSave"
 import { useTierEntitlements } from "@/hooks/useTierEntitlements"
 import TierWall from "@/components/ui/TierWall"
 import StatusIndicator from "./StatusIndicator"
+import { useAuth } from "@/hooks/useAuth"
+import PostSubmitVerifyGate from "./PostSubmitVerifyGate"
 
 function sortedEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false
@@ -149,6 +151,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const isPending = createMutation.isPending || updateMutation.isPending
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [tierWallReason, setTierWallReason] = useState<'count-limit' | 'private-content' | 'import' | null>(null)
+  const [pendingGate, setPendingGate] = useState<{ id: string; name: string } | null>(null)
+  const { session } = useAuth()
 
   function toNum(v: string | undefined): number | undefined {
     if (v == null) return undefined
@@ -299,9 +303,18 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
-        const created = await createMutation.mutateAsync({ ...payload, ...taxonomyIds })
+        const isUnverified = session?.user?.emailVerified === false
+        const created = await createMutation.mutateAsync({
+          ...payload,
+          ...taxonomyIds,
+          ...(isUnverified ? { pendingVerification: true } : {}),
+        })
         await afterSaveSuccess()
-        navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
+        if (isUnverified) {
+          setPendingGate({ id: created.id, name: created.name as string })
+        } else {
+          navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })
+        }
       }
     } catch (error) {
       const tierWall = getTierWallReason(error)
@@ -325,6 +338,16 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setSelectedSourceName(initialSourceName)
     purgeDraft()
     resetStatus()
+  }
+
+  if (pendingGate) {
+    return (
+      <PostSubmitVerifyGate
+        recipeId={pendingGate.id}
+        recipeName={pendingGate.name}
+        email={session?.user?.email ?? ""}
+      />
+    )
   }
 
   return (

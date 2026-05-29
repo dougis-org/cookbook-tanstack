@@ -16,6 +16,12 @@ const {
   mockFetch: vi.fn(),
 }))
 
+const mockUseAuth = vi.hoisted(() => vi.fn())
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => mockUseAuth(),
+}))
+
 vi.mock('@/hooks/useTierEntitlements', () => ({
   useTierEntitlements: () => ({
     tier: 'sous-chef',
@@ -100,6 +106,14 @@ vi.mock("@/components/ui/ImageUploadField", () => ({
   },
 }))
 
+vi.mock("@/components/recipes/PostSubmitVerifyGate", () => ({
+  default: ({ recipeId, recipeName }: { recipeId: string; recipeName: string }) => (
+    <div data-testid="post-submit-verify-gate" data-recipe-id={recipeId}>
+      Verify to publish: {recipeName}
+    </div>
+  ),
+}))
+
 import RecipeForm from "@/components/recipes/RecipeForm"
 
 function renderWithProviders(ui: React.ReactElement) {
@@ -137,6 +151,13 @@ describe("RecipeForm", () => {
     mockUpdateMutationFn.mockResolvedValue({})
     mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
     vi.stubGlobal("fetch", mockFetch)
+    // Default: verified user
+    mockUseAuth.mockReturnValue({
+      session: { user: { emailVerified: true, email: 'test@example.com' } },
+      isLoggedIn: true,
+      userId: 'user-1',
+      isPending: false,
+    })
   })
 
   describe("rendering", () => {
@@ -703,3 +724,67 @@ function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
     ...overrides,
   } as Recipe
 }
+
+describe("RecipeForm — unverified submit path", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockBlocker.status = "idle"
+    capturedShouldBlockFn = undefined
+    mockCreateMutationFn.mockResolvedValue({ id: "pending-id", name: "My Pending Recipe" })
+    mockUpdateMutationFn.mockResolvedValue({})
+    mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", mockFetch)
+  })
+
+  it("T5.3 — unverified user submitting RecipeForm triggers pending-save path and shows PostSubmitVerifyGate", async () => {
+    mockUseAuth.mockReturnValue({
+      session: { user: { emailVerified: false, email: 'unverified@example.com' } },
+      isLoggedIn: true,
+      userId: 'user-unverified',
+      isPending: false,
+    })
+
+    renderWithProviders(<RecipeForm />)
+
+    await userEvent.type(screen.getByLabelText(/recipe name/i), "My Pending Recipe")
+    await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+    await waitFor(() => {
+      expect(mockCreateMutationFn).toHaveBeenCalled()
+    })
+
+    // Mutation must be called with pendingVerification: true
+    expect(mockCreateMutationFn.mock.calls[0]?.[0]).toMatchObject({ pendingVerification: true })
+
+    // PostSubmitVerifyGate should be shown
+    await waitFor(() => {
+      expect(screen.getByTestId("post-submit-verify-gate")).toBeInTheDocument()
+    })
+  })
+
+  it("T5.4 — verified user submitting RecipeForm uses existing flow (no pendingVerification, no gate)", async () => {
+    mockUseAuth.mockReturnValue({
+      session: { user: { emailVerified: true, email: 'verified@example.com' } },
+      isLoggedIn: true,
+      userId: 'user-verified',
+      isPending: false,
+    })
+    mockCreateMutationFn.mockResolvedValue({ id: "created-id" })
+
+    renderWithProviders(<RecipeForm />)
+
+    await userEvent.type(screen.getByLabelText(/recipe name/i), "Verified Recipe")
+    await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+    await waitFor(() => {
+      expect(mockCreateMutationFn).toHaveBeenCalled()
+    })
+
+    // Must NOT include pendingVerification
+    const payload = mockCreateMutationFn.mock.calls[0]?.[0]
+    expect(payload?.pendingVerification).toBeUndefined()
+
+    // PostSubmitVerifyGate must NOT appear
+    expect(screen.queryByTestId("post-submit-verify-gate")).not.toBeInTheDocument()
+  })
+})

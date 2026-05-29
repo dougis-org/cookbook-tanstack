@@ -4,6 +4,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { username } from "better-auth/plugins";
 import { getMongoClient } from "@/db";
 import { sendEmail } from "@/lib/mail";
+import { publishPendingRecipes } from "@/server/recipes/pendingRecipes";
 
 export const auth = betterAuth({
   trustedOrigins:
@@ -40,6 +41,9 @@ export const auth = betterAuth({
       }).catch((error) => {
         console.error("Failed to send verification email:", error);
       });
+    },
+    afterEmailVerification: async (user) => {
+      await publishPendingRecipes(user.id);
     },
   },
   user: {
