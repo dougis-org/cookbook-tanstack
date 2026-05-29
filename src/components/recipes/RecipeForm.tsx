@@ -303,13 +303,12 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
         await afterSaveSuccess()
         navigate({ to: "/recipes/$recipeId", params: { recipeId: initialData.id } })
       } else {
-        const isUnverified = session?.user?.emailVerified === false
         const created = await createMutation.mutateAsync({
           ...payload,
           ...taxonomyIds,
         })
         await afterSaveSuccess()
-        if (isUnverified) {
+        if (created.pendingVerification) {
           setPendingGate({ id: created.id, name: created.name as string })
         } else {
           navigate({ to: "/recipes/$recipeId", params: { recipeId: created.id } })

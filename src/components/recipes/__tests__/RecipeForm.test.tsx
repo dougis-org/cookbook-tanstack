@@ -730,7 +730,7 @@ describe("RecipeForm — unverified submit path", () => {
     vi.clearAllMocks()
     mockBlocker.status = "idle"
     capturedShouldBlockFn = undefined
-    mockCreateMutationFn.mockResolvedValue({ id: "pending-id", name: "My Pending Recipe" })
+    mockCreateMutationFn.mockResolvedValue({ id: "pending-id", name: "My Pending Recipe", pendingVerification: true })
     mockUpdateMutationFn.mockResolvedValue({})
     mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
     vi.stubGlobal("fetch", mockFetch)
