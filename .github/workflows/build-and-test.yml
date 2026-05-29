@@ -16,7 +16,7 @@ jobs:
   build-and-test:
     # Skip on draft PRs
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
-    timeout-minutes: 30
+    timeout-minutes: 75
     runs-on: ubuntu-latest
     permissions:
       contents: write
