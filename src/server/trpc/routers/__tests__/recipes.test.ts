@@ -532,13 +532,12 @@ describe("recipes.create", () => {
     });
   });
 
-  it("rejects requests from users with unverified email", async () => {
+  it("creates a pending recipe for users with unverified email", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
       const caller = await makeAuthCaller(user.id, { emailVerified: false });
-      await expect(caller.recipes.create({ name: "Test" })).rejects.toThrow(
-        "Email verification required",
-      );
+      const result = await caller.recipes.create({ name: "Test" });
+      expect(result).toMatchObject({ name: "Test", pendingVerification: true });
     });
   });
 
@@ -573,13 +572,17 @@ describe("recipes.update", () => {
     });
   });
 
-  it("rejects requests from users with unverified email", async () => {
+  it("allows unverified users to update their own pending recipes", async () => {
     await withCleanDb(async () => {
       const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Old Name",
+        userId: user.id,
+        pendingVerification: true,
+      }).save();
       const caller = await makeAuthCaller(user.id, { emailVerified: false });
-      await expect(
-        caller.recipes.update({ id: VALID_OBJECT_ID, name: "Updated" }),
-      ).rejects.toThrow("Email verification required");
+      const result = await caller.recipes.update({ id: recipe.id, name: "Updated" });
+      expect(result).toMatchObject({ name: "Updated" });
     });
   });
 
@@ -1986,6 +1989,109 @@ describe("recipes.byId — hiddenByTier (owner exclusion)", () => {
       const caller = await makeAuthCaller(owner.id);
       const result = await caller.recipes.byId({ id: inserted.id });
       expect(result).toBeNull();
+    });
+  });
+});
+
+// ─── pendingVerification — visibility filtering (T2.1–T2.4) ──────────────────
+
+describe("recipes.list — pending recipe filtering", () => {
+  it("T2.1 — REQUIRED: public list excludes pending recipes", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const caller = await makeAnonCaller();
+      const result = await caller.recipes.list({ userId: owner.id });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0]).toMatchObject({ name: "Published" });
+    });
+  });
+
+  it("T2.2 — owner-scoped query includes own pending recipes", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.recipes.list({ userId: owner.id });
+
+      expect(result.items).toHaveLength(2);
+      const names = result.items.map((r) => r.name).sort();
+      expect(names).toEqual(["Pending", "Published"]);
+    });
+  });
+
+  it("T2.5 — isPublic:true filter excludes pending recipes for non-owners but not the owner", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const anonResult = await (await makeAnonCaller()).recipes.list({ isPublic: true, userId: owner.id });
+      expect(anonResult.items).toHaveLength(1);
+      expect(anonResult.items[0]).toMatchObject({ name: "Published" });
+
+      const otherResult = await (await makeAuthCaller(other.id)).recipes.list({ isPublic: true, userId: owner.id });
+      expect(otherResult.items).toHaveLength(1);
+
+      const ownerResult = await (await makeAuthCaller(owner.id)).recipes.list({ isPublic: true, userId: owner.id });
+      expect(ownerResult.items).toHaveLength(2);
+    });
+  });
+});
+
+describe("recipes.byId — pending recipe access control", () => {
+  it("T2.3 — non-owner gets not-found for a pending recipe", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      const pending = await new Recipe({
+        name: "Pending Recipe",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const caller = await makeAuthCaller(other.id);
+      const result = await caller.recipes.byId({ id: pending.id });
+      expect(result).toBeNull();
+    });
+  });
+
+  it("T2.4 — owner can view their own pending recipe by ID", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const pending = await new Recipe({
+        name: "My Pending Recipe",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
+
+      const caller = await makeAuthCaller(owner.id);
+      const result = await caller.recipes.byId({ id: pending.id });
+      expect(result).not.toBeNull();
+      expect(result?.name).toBe("My Pending Recipe");
     });
   });
 });

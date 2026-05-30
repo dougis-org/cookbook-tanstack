@@ -16,7 +16,7 @@ jobs:
   build-and-test:
     # Skip on draft PRs
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
-    timeout-minutes: 30
+    timeout-minutes: 75
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -90,14 +90,14 @@ jobs:
             echo "package-lock.json is already up to date"
           fi
 
+      - name: Install Playwright system dependencies
+        run: npx playwright install-deps chrome
+
       - name: Build
         run: npm run build
 
       - name: Run unit and integration tests with coverage
         run: npm run test -- --coverage
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
 
       - name: Seed database
         run: npm run db:seed

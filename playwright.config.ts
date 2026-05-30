@@ -52,7 +52,11 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        // In CI use the pre-installed system Chrome to avoid downloading a ~500 MB binary.
+        ...(process.env.CI ? { channel: "chrome" } : {}),
+      },
     },
   ],
 

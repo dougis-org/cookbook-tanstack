@@ -11,8 +11,8 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 // ─── Pure-logic unit tests (no DB required) ─────────────────────────────────
 
 describe("visibilityFilter", () => {
-  it("returns { isPublic: true, hiddenByTier: { $ne: true } } for anonymous users", async () => {
-    expect(visibilityFilter(null)).toEqual({ isPublic: true, hiddenByTier: { $ne: true } })
+  it("returns { isPublic: true, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } } for anonymous users", async () => {
+    expect(visibilityFilter(null)).toEqual({ isPublic: true, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } })
   })
 
   it("returns $or with two clauses for authenticated user and no collabCookbookIds", async () => {

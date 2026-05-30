@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { testVerifiedAuthGuard } from '@/test-helpers/auth-guard'
+import { expectRedirect } from '@/test-helpers/auth-guard'
 
 const mockNavigate = vi.hoisted(() => vi.fn())
 vi.mock('@tanstack/react-router', async () => {
@@ -46,10 +46,28 @@ vi.mock('@/lib/trpc', () => ({
 import { Route } from '@/routes/recipes/new'
 
 describe('/recipes/new — beforeLoad', () => {
-  it('enforces verified authentication', () => {
+  it('T5.1 — unverified authenticated user can access the page (no redirect)', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
-    testVerifiedAuthGuard(beforeLoad, '/recipes/new')
+    // Unverified user (emailVerified: false) must NOT be redirected
+    expect(() =>
+      beforeLoad({
+        context: { session: { user: { id: 'u1', emailVerified: false } } } as never,
+        location: { href: '/recipes/new' },
+      } as never),
+    ).not.toThrow()
+  })
+
+  it('T5.2 — unauthenticated user is redirected to login', () => {
+    const beforeLoad = Route.options.beforeLoad
+    if (!beforeLoad) throw new Error('beforeLoad not defined')
+    expectRedirect(
+      beforeLoad,
+      { session: null } as never,
+      { href: '/recipes/new' },
+      '/auth/login',
+      { reason: 'auth-required', from: '/recipes/new' },
+    )
   })
 })
 

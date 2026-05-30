@@ -73,4 +73,16 @@ describe("usage.getOwned", () => {
       await expect(caller.usage.getOwned()).rejects.toMatchObject({ code: "UNAUTHORIZED" })
     })
   })
+
+  it("T2.5 — excludes pendingVerification recipes from recipeCount", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUserWithBetterAuth()
+      const caller = await makeAuthCaller(user.id)
+      await new Recipe({ name: "Published1", userId: user.id, isPublic: true }).save()
+      await new Recipe({ name: "Published2", userId: user.id, isPublic: true }).save()
+      await new Recipe({ name: "Pending", userId: user.id, isPublic: true, pendingVerification: true }).save()
+      const result = await caller.usage.getOwned()
+      expect(result).toEqual({ recipeCount: 2, cookbookCount: 0 })
+    })
+  })
 })

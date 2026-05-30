@@ -158,4 +158,25 @@ describe("auth configuration", () => {
       expect(config.trustedOrigins).toEqual([])
     })
   })
+
+  describe("emailVerification — afterEmailVerification hook (T4.1)", () => {
+    it("calls publishPendingRecipes with the verified user's id", async () => {
+      const mockPublishPendingRecipes = vi.fn().mockResolvedValue(undefined)
+
+      vi.doMock("@/server/recipes/pendingRecipes", () => ({
+        publishPendingRecipes: mockPublishPendingRecipes,
+      }))
+
+      await import("@/lib/auth")
+
+      const config = mockBetterAuth.mock.calls[0]?.[0]
+      const hook = config?.emailVerification?.afterEmailVerification
+      expect(typeof hook).toBe("function")
+
+      await hook({ id: "user-123" })
+
+      expect(mockPublishPendingRecipes).toHaveBeenCalledOnce()
+      expect(mockPublishPendingRecipes).toHaveBeenCalledWith("user-123")
+    })
+  })
 })
