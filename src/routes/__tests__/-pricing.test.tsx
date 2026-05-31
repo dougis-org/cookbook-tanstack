@@ -185,6 +185,24 @@ describe('/pricing', () => {
       expect(prepCard.textContent).not.toContain('Billed annually')
       expect(screen.getByTestId('tier-card-home-cook').textContent).toContain('FREE')
     })
+
+    it('supports keyboard navigation via Arrow keys', () => {
+      render(<PricingPage />)
+      const radiogroup = screen.getByRole('radiogroup', { name: /billing frequency/i })
+      const annualBtn = screen.getByRole('radio', { name: /annual/i })
+      const monthlyBtn = screen.getByRole('radio', { name: /monthly/i })
+
+      expect(annualBtn).toHaveAttribute('aria-checked', 'true')
+
+      // Keydown ArrowLeft or ArrowRight toggles the state
+      fireEvent.keyDown(radiogroup, { key: 'ArrowLeft' })
+      expect(monthlyBtn).toHaveAttribute('aria-checked', 'true')
+      expect(annualBtn).toHaveAttribute('aria-checked', 'false')
+
+      fireEvent.keyDown(radiogroup, { key: 'ArrowRight' })
+      expect(annualBtn).toHaveAttribute('aria-checked', 'true')
+      expect(monthlyBtn).toHaveAttribute('aria-checked', 'false')
+    })
   })
 
   describe('Prep Cook visual highlight', () => {
@@ -250,6 +268,22 @@ describe('/pricing', () => {
       
       expect(screen.getByText(/If you are not completely satisfied/i)).toBeVisible()
       expect(screen.queryByText(/You can cancel your subscription at any time/i)).not.toBeInTheDocument()
+    })
+
+    it('applies aria-controls conditionally based on expanded state', () => {
+      render(<PricingPage />)
+      const firstHeader = screen.getByText('Can I cancel my subscription at any time?').closest('button')!
+      const secondHeader = screen.getByText('What is the 30-day money-back guarantee?').closest('button')!
+
+      // First is expanded by default, so it should have aria-controls
+      expect(firstHeader).toHaveAttribute('aria-controls')
+      // Second is collapsed, so it should NOT have aria-controls
+      expect(secondHeader).not.toHaveAttribute('aria-controls')
+
+      // Click second to expand it
+      fireEvent.click(secondHeader)
+      expect(secondHeader).toHaveAttribute('aria-controls')
+      expect(firstHeader).not.toHaveAttribute('aria-controls')
     })
   })
 

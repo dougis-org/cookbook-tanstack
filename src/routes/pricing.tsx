@@ -181,6 +181,15 @@ export function PricingPage() {
             role="radiogroup"
             aria-labelledby="billing-frequency-label"
             className="inline-flex rounded-lg bg-[var(--theme-surface)] border border-[var(--theme-border)] p-1"
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                e.preventDefault()
+                setIsAnnual(!isAnnual)
+                const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
+                const nextIndex = isAnnual ? 0 : 1
+                buttons[nextIndex]?.focus()
+              }
+            }}
           >
             <button
               type="button"
@@ -285,7 +294,7 @@ export function PricingPage() {
                   onClick={() => setOpenFaqIndex(isOpen ? null : index)}
                   className="w-full flex justify-between items-center px-6 py-4 text-left font-semibold text-[var(--theme-fg)] hover:bg-[var(--theme-border)]/5 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
                   aria-expanded={isOpen}
-                  aria-controls={panelId}
+                  aria-controls={isOpen ? panelId : undefined}
                 >
                   <span>{item.q}</span>
                   {isOpen ? (
