@@ -79,6 +79,8 @@ Recipes embed taxonomy references as ObjectId arrays, replacing the old junction
   imageUrl: string,
   isPublic: boolean,
   marked: boolean,
+  hiddenByTier: boolean,       // true when owner's tier drops below recipe limit
+  pendingVerification: boolean, // true while owner's email is unverified; excludes from public listings
   mealIds: ObjectId[],       // ref: Meal (replaces recipe_meals junction)
   courseIds: ObjectId[],     // ref: Course (replaces recipe_courses junction)
   preparationIds: ObjectId[], // ref: Preparation (replaces recipe_preparations junction)
