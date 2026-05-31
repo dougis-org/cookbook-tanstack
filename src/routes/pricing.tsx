@@ -80,7 +80,7 @@ function TierCard({ tier, isCurrentTier, isAnnual, currentTier, isFocused }: Tie
         {isPaidTier ? (
           <>
             <p className="text-base font-bold text-[var(--theme-fg)]">
-              {'$' + (isAnnual ? (pricing.annual! / 12).toFixed(2) : pricing.monthly!.toFixed(2)) + '/mo'}
+              {'$' + (isAnnual ? pricing.annual! / 12 : pricing.monthly!).toFixed(2) + '/mo'}
             </p>
             {isAnnual && (
               <p className="text-xs text-[var(--theme-fg-muted)]">
