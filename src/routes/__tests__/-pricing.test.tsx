@@ -186,7 +186,7 @@ describe('/pricing', () => {
       expect(screen.getByTestId('tier-card-home-cook').textContent).toContain('FREE')
     })
 
-    it('supports keyboard navigation via Arrow keys', () => {
+    it('supports keyboard navigation via Arrow keys (horizontal and vertical, specific selection)', () => {
       render(<PricingPage />)
       const radiogroup = screen.getByRole('radiogroup', { name: /billing frequency/i })
       const annualBtn = screen.getByRole('radio', { name: /annual/i })
@@ -194,12 +194,27 @@ describe('/pricing', () => {
 
       expect(annualBtn).toHaveAttribute('aria-checked', 'true')
 
-      // Keydown ArrowLeft or ArrowRight toggles the state
+      // Keydown ArrowLeft specifically selects Monthly
       fireEvent.keyDown(radiogroup, { key: 'ArrowLeft' })
       expect(monthlyBtn).toHaveAttribute('aria-checked', 'true')
       expect(annualBtn).toHaveAttribute('aria-checked', 'false')
 
+      // Keydown ArrowLeft again does nothing (Monthly stays active)
+      fireEvent.keyDown(radiogroup, { key: 'ArrowLeft' })
+      expect(monthlyBtn).toHaveAttribute('aria-checked', 'true')
+
+      // Keydown ArrowRight specifically selects Annual
       fireEvent.keyDown(radiogroup, { key: 'ArrowRight' })
+      expect(annualBtn).toHaveAttribute('aria-checked', 'true')
+      expect(monthlyBtn).toHaveAttribute('aria-checked', 'false')
+
+      // Keydown ArrowUp specifically selects Monthly
+      fireEvent.keyDown(radiogroup, { key: 'ArrowUp' })
+      expect(monthlyBtn).toHaveAttribute('aria-checked', 'true')
+      expect(annualBtn).toHaveAttribute('aria-checked', 'false')
+
+      // Keydown ArrowDown specifically selects Annual
+      fireEvent.keyDown(radiogroup, { key: 'ArrowDown' })
       expect(annualBtn).toHaveAttribute('aria-checked', 'true')
       expect(monthlyBtn).toHaveAttribute('aria-checked', 'false')
     })
@@ -236,11 +251,11 @@ describe('/pricing', () => {
       
       const homeLink = within(homeCard).getByRole('link')
       expect(homeLink.getAttribute('href')).toBe('/change-tier')
-      expect(homeLink.textContent).toMatch(/upgrade|get started/i)
+      expect(homeLink.textContent).toBe('Select Plan')
 
       const sousLink = within(sousCard).getByRole('link')
       expect(sousLink.getAttribute('href')).toBe('/change-tier')
-      expect(sousLink.textContent).toMatch(/upgrade|get started/i)
+      expect(sousLink.textContent).toBe('Upgrade')
     })
   })
 
