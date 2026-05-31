@@ -26,16 +26,20 @@ interface TierCardProps {
   tier: EntitlementTier
   isCurrentTier: boolean
   isAnnual: boolean
+  currentTier: EntitlementTier
   isFocused?: boolean
 }
 
-function TierCard({ tier, isCurrentTier, isAnnual, isFocused }: TierCardProps) {
+function TierCard({ tier, isCurrentTier, isAnnual, currentTier, isFocused }: TierCardProps) {
   const limits = TIER_LIMITS[tier]
   const pricing = TIER_PRICING[tier]
   const isPaidTier = pricing.annual !== null
   const isPrepCook = tier === "prep-cook"
 
-  const ctaText = tier === "home-cook" ? "Get Started" : "Upgrade"
+  const ctaText =
+    currentTier === "anonymous"
+      ? (tier === "home-cook" ? "Get Started" : "Select Plan")
+      : (TIER_ORDER.indexOf(tier) > TIER_ORDER.indexOf(currentTier) ? "Upgrade" : "Select Plan")
 
   return (
     <div
@@ -76,11 +80,11 @@ function TierCard({ tier, isCurrentTier, isAnnual, isFocused }: TierCardProps) {
         {isPaidTier ? (
           <>
             <p className="text-base font-bold text-[var(--theme-fg)]">
-              ${isAnnual ? (pricing.annual! / 12).toFixed(2) : pricing.monthly!.toFixed(2)}/mo
+              {'$' + (isAnnual ? pricing.annual! / 12 : pricing.monthly!).toFixed(2) + '/mo'}
             </p>
             {isAnnual && (
               <p className="text-xs text-[var(--theme-fg-muted)]">
-                Billed annually · ${pricing.annual}/yr
+                Billed annually · {'$' + pricing.annual}/yr
               </p>
             )}
           </>
@@ -182,12 +186,20 @@ export function PricingPage() {
             aria-labelledby="billing-frequency-label"
             className="inline-flex rounded-lg bg-[var(--theme-surface)] border border-[var(--theme-border)] p-1"
             onKeyDown={(e) => {
-              if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
                 e.preventDefault()
-                setIsAnnual(!isAnnual)
-                const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
-                const nextIndex = isAnnual ? 0 : 1
-                buttons[nextIndex]?.focus()
+                if (isAnnual) {
+                  setIsAnnual(false)
+                  const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
+                  buttons[0]?.focus()
+                }
+              } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                e.preventDefault()
+                if (!isAnnual) {
+                  setIsAnnual(true)
+                  const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
+                  buttons[1]?.focus()
+                }
               }
             }}
           >
@@ -237,6 +249,7 @@ export function PricingPage() {
             tier={tier}
             isCurrentTier={tier === currentTier}
             isAnnual={isAnnual}
+            currentTier={currentTier}
             isFocused={tier === focus}
           />
         ))}
