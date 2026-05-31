@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: build-output
-          path: .output/
+          path: .output
           retention-days: 1
 
       - name: Upload coverage to Codacy
@@ -183,7 +183,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: build-output
-          path: .output/
+          path: .output
 
       - name: Install Playwright system dependencies
         run: npx playwright install-deps chrome
