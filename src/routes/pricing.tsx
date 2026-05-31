@@ -49,7 +49,7 @@ function TierCard({ tier, isCurrentTier, isAnnual, isFocused }: TierCardProps) {
           : isCurrentTier
           ? "border-[var(--theme-accent)] bg-[var(--theme-accent)]/5 ring-2 ring-[var(--theme-accent)]"
           : isFocused
-          ? "border-[var(--theme-accent)] ring-2 ring-[var(--theme-accent)]/50 bg-[var(--theme-accent)]/2 scale-102"
+          ? "border-[var(--theme-accent)] ring-2 ring-[var(--theme-accent)]/50 bg-[var(--theme-accent)]/2 scale-[1.02]"
           : "border-[var(--theme-border)] bg-[var(--theme-surface)] hover:border-[var(--theme-border)]/80",
       ].join(" ")}
     >
@@ -76,7 +76,7 @@ function TierCard({ tier, isCurrentTier, isAnnual, isFocused }: TierCardProps) {
         {isPaidTier ? (
           <>
             <p className="text-base font-bold text-[var(--theme-fg)]">
-              ${isAnnual ? (pricing.annual! / 12).toFixed(2) : pricing.monthly}/mo
+              ${isAnnual ? (pricing.annual! / 12).toFixed(2) : pricing.monthly!.toFixed(2)}/mo
             </p>
             {isAnnual && (
               <p className="text-xs text-[var(--theme-fg-muted)]">
