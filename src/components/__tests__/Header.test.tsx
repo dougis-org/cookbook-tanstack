@@ -29,6 +29,10 @@ vi.mock("@/hooks/useTierEntitlements", () => ({
   useTierEntitlements: () => ({ canImport: mockCanImport }),
 }))
 
+vi.mock("@/components/notifications/NotificationBell", () => ({
+  default: () => <div data-testid="notification-bell">NotificationBell</div>
+}))
+
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>

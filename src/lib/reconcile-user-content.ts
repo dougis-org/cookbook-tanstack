@@ -1,5 +1,5 @@
 import { Types, Model, ClientSession } from 'mongoose'
-import { Recipe, Cookbook, Collaborator } from '@/db/models'
+import { Recipe, Cookbook, Collaborator, Notification } from '@/db/models'
 import { getMongoClient } from '@/db'
 import { TIER_RANK, type UserTier } from '@/types/user'
 import { canCreatePrivate, getRecipeLimit, getCookbookLimit } from '@/lib/tier-entitlements'
@@ -92,10 +92,34 @@ export type ReconcileUserContentResult = {
 
 async function reconcileCollaborationOnDowngrade(session: ClientSession, userId: string): Promise<void> {
   const userObjId = new Types.ObjectId(userId)
-  const cookbooks = await Cookbook.find({ userId: userObjId }, { _id: 1 }).lean().session(session)
+  const cookbooks = await Cookbook.find({ userId: { $eq: userObjId } }, { _id: 1, name: 1 }).lean().session(session)
   if (cookbooks.length > 0) {
     const cookbookIds = cookbooks.map((cb) => cb._id)
+    const cookbookMap = new Map(cookbooks.map((cb) => [cb._id.toString(), cb]))
+
+    // Find collaborators first before deleting them
+    const collaborators = await Collaborator.find({ cookbookId: { $in: cookbookIds } }).session(session)
+
     await Collaborator.deleteMany({ cookbookId: { $in: cookbookIds } }, { session })
+
+    // Create a notification for each evicted collaborator explaining their access has ended
+    if (collaborators.length > 0) {
+      const notificationDocs = collaborators.map((c) => {
+        const cbDoc = cookbookMap.get(c.cookbookId.toString())
+        const cookbookTitle = cbDoc ? cbDoc.name : "a cookbook"
+        return {
+          userId: c.userId,
+          senderId: userObjId,
+          type: 'collaboration_removed',
+          data: {
+            cookbookId: c.cookbookId,
+            cookbookTitle,
+          },
+          read: false,
+        }
+      })
+      await Notification.insertMany(notificationDocs, { session })
+    }
   }
 }
 

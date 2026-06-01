@@ -21,6 +21,7 @@ import { signOut } from '@/lib/auth-client'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import { useTheme, THEMES } from '@/contexts/ThemeContext'
+import NotificationBell from '@/components/notifications/NotificationBell'
 
 type ThemeId = (typeof THEMES)[number]['id']
 
@@ -302,6 +303,7 @@ export default function Header() {
               )}
               {isPending ? null : session ? (
                 <>
+                  <NotificationBell />
                   <Link
                     to="/auth/profile"
                     className="flex items-center gap-2 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
