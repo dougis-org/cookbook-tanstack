@@ -92,7 +92,7 @@ export type ReconcileUserContentResult = {
 
 async function reconcileCollaborationOnDowngrade(session: ClientSession, userId: string): Promise<void> {
   const userObjId = new Types.ObjectId(userId)
-  const cookbooks = await Cookbook.find({ userId: userObjId }, { _id: 1, name: 1 }).lean().session(session)
+  const cookbooks = await Cookbook.find({ userId: { $eq: userObjId } }, { _id: 1, name: 1 }).lean().session(session)
   if (cookbooks.length > 0) {
     const cookbookIds = cookbooks.map((cb) => cb._id)
     const cookbookMap = new Map(cookbooks.map((cb) => [cb._id.toString(), cb]))

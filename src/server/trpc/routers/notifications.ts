@@ -9,15 +9,15 @@ export const notificationsRouter = router({
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
     // Highly optimized index-only query using compound index { userId: 1, read: 1 }
     const count = await Notification.countDocuments({
-      userId: ctx.user.id,
-      read: false,
+      userId: { $eq: ctx.user.id },
+      read: { $eq: false },
     });
     return count;
   }),
 
   list: protectedProcedure.query(async ({ ctx }) => {
     // Query returning the 10 most recent notifications for the authenticated user, sorted by createdAt descending
-    const docs = await Notification.find({ userId: ctx.user.id })
+    const docs = await Notification.find({ userId: { $eq: ctx.user.id } })
       .sort({ createdAt: -1 })
       .limit(10)
       .lean();
@@ -75,12 +75,12 @@ export const notificationsRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (input.id) {
         await Notification.updateOne(
-          { _id: new ObjectId(input.id), userId: ctx.user.id },
+          { _id: { $eq: new ObjectId(input.id) }, userId: { $eq: ctx.user.id } },
           { $set: { read: true } }
         );
       } else {
         await Notification.updateMany(
-          { userId: ctx.user.id, read: false },
+          { userId: { $eq: ctx.user.id }, read: { $eq: false } },
           { $set: { read: true } }
         );
       }

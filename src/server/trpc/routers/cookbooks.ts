@@ -458,7 +458,7 @@ export const cookbooksRouter = router({
       }
 
       const targetUser = await getMongoClient().db().collection('user').findOne(
-        { _id: new ObjectId(String(input.userId)) },
+        { _id: { $eq: new ObjectId(String(input.userId)) } },
         { projection: { _id: 1, email: 1, name: 1 } },
       )
       if (!targetUser) {
@@ -545,7 +545,10 @@ export const cookbooksRouter = router({
       }
       const cookbookTitle = cookbookDoc.name;
 
-      const deleteResult = await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
+      const deleteResult = await Collaborator.deleteOne({
+        cookbookId: { $eq: input.cookbookId },
+        userId: { $eq: input.userId },
+      })
 
       if (deleteResult.deletedCount > 0) {
         // Create in-app notification for the removed collaborator
