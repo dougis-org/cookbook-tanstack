@@ -44,6 +44,7 @@ export default function NotificationBell() {
   return (
     <div ref={containerRef} className="relative inline-block">
       <button
+        type="button"
         onClick={toggleDropdown}
         aria-label="Toggle notifications"
         className="relative flex items-center justify-center p-2 rounded-lg text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)] transition-all duration-200 focus:outline-none hover:scale-105 active:scale-95 cursor-pointer"

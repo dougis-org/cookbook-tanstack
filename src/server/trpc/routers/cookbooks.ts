@@ -503,10 +503,12 @@ export const cookbooksRouter = router({
           }
           const directLink = `${cleanBaseUrl}/cookbooks/${input.cookbookId}`;
           const inviterName = ctx.user.name || "A user";
-          const escapedInviterName = escapeHtml(inviterName);
-          const escapedCookbookTitle = escapeHtml(cookbookTitle);
-          const subject = `You've been invited to collaborate on ${cookbookTitle}`;
-          const text = `${inviterName} has invited you to collaborate on the cookbook "${cookbookTitle}" as a ${input.role}.\n\nView it here: ${directLink}`;
+          const sanitizedInviterName = inviterName.replace(/[\r\n]+/g, " ");
+          const sanitizedCookbookTitle = cookbookTitle.replace(/[\r\n]+/g, " ");
+          const escapedInviterName = escapeHtml(sanitizedInviterName);
+          const escapedCookbookTitle = escapeHtml(sanitizedCookbookTitle);
+          const subject = `You've been invited to collaborate on ${sanitizedCookbookTitle}`;
+          const text = `${sanitizedInviterName} has invited you to collaborate on the cookbook "${sanitizedCookbookTitle}" as a ${input.role}.\n\nView it here: ${directLink}`;
           const html = `<p><strong>${escapedInviterName}</strong> has invited you to collaborate on the cookbook <strong>"${escapedCookbookTitle}"</strong> as a ${input.role}.</p><p><a href="${directLink}">Click here to view the cookbook</a></p>`;
 
           void sendEmail({
@@ -543,18 +545,20 @@ export const cookbooksRouter = router({
       }
       const cookbookTitle = cookbookDoc.name;
 
-      await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
+      const deleteResult = await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
 
-      // Create in-app notification for the removed collaborator
-      await new Notification({
-        userId: input.userId,
-        senderId: ctx.user.id,
-        type: 'collaboration_removed',
-        data: {
-          cookbookId: input.cookbookId,
-          cookbookTitle,
-        },
-      }).save();
+      if (deleteResult.deletedCount > 0) {
+        // Create in-app notification for the removed collaborator
+        await new Notification({
+          userId: input.userId,
+          senderId: ctx.user.id,
+          type: 'collaboration_removed',
+          data: {
+            cookbookId: input.cookbookId,
+            cookbookTitle,
+          },
+        }).save();
+      }
 
       return { success: true }
     }),

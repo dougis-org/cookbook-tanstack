@@ -140,6 +140,7 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
         <h3 className="font-semibold text-slate-200 text-sm">Notifications</h3>
         {hasUnread && (
           <button
+            type="button"
             onClick={handleMarkAllAsRead}
             disabled={markReadMutation.isPending}
             className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium cursor-pointer"
