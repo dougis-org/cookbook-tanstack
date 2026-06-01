@@ -441,7 +441,17 @@ export const cookbooksRouter = router({
       role: z.enum(['editor', 'viewer']),
     }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+      const cookbookDoc = await Cookbook.findById(input.cookbookId).lean();
+      if (!cookbookDoc) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
+      }
+      if (cookbookDoc.userId?.toString() !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not your cookbook',
+        });
+      }
+      const cookbookTitle = cookbookDoc.name;
 
       if (input.userId === ctx.user.id) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'Cannot invite yourself as a collaborator' })
@@ -454,12 +464,6 @@ export const cookbooksRouter = router({
       if (!targetUser) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
       }
-
-      const cookbookDoc = await Cookbook.findById(input.cookbookId).lean();
-      if (!cookbookDoc) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
-      }
-      const cookbookTitle = cookbookDoc.name;
 
       try {
         await new Collaborator({
@@ -491,8 +495,13 @@ export const cookbooksRouter = router({
               .replace(/"/g, "&quot;")
               .replace(/'/g, "&#039;");
           };
-          const baseUrl = process.env.APP_PRIMARY_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000";
-          const directLink = `${baseUrl}/cookbooks/${input.cookbookId}`;
+          let cleanBaseUrl = process.env.APP_PRIMARY_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000";
+          try {
+            cleanBaseUrl = new URL(cleanBaseUrl).origin;
+          } catch {
+            cleanBaseUrl = cleanBaseUrl.replace(/\/+$/, "");
+          }
+          const directLink = `${cleanBaseUrl}/cookbooks/${input.cookbookId}`;
           const inviterName = ctx.user.name || "A user";
           const escapedInviterName = escapeHtml(inviterName);
           const escapedCookbookTitle = escapeHtml(cookbookTitle);
@@ -522,10 +531,17 @@ export const cookbooksRouter = router({
   removeCollaborator: execChefProcedure
     .input(z.object({ cookbookId: objectId, userId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await verifyCookbookOwner(input.cookbookId, ctx.user.id)
-      
       const cookbookDoc = await Cookbook.findById(input.cookbookId).lean();
-      const cookbookTitle = cookbookDoc ? cookbookDoc.name : "a cookbook";
+      if (!cookbookDoc) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
+      }
+      if (cookbookDoc.userId?.toString() !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Not your cookbook',
+        });
+      }
+      const cookbookTitle = cookbookDoc.name;
 
       await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
 
@@ -610,7 +626,7 @@ export const cookbooksRouter = router({
         });
 
         // Trigger notification if editor collaborator adds recipe
-        if (cookbook.userId.toString() !== ctx.user.id) {
+        if (cookbook.userId?.toString() !== ctx.user.id) {
           await new Notification({
             userId: cookbook.userId,
             senderId: ctx.user.id,
@@ -641,7 +657,7 @@ export const cookbooksRouter = router({
       });
 
       // Trigger notification if editor collaborator removes recipe
-      if (cookbook.userId.toString() !== ctx.user.id) {
+      if (cookbook.userId?.toString() !== ctx.user.id) {
         await new Notification({
           userId: cookbook.userId,
           senderId: ctx.user.id,

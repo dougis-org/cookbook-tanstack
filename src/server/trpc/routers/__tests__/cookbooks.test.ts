@@ -1232,9 +1232,9 @@ describe("cookbooks collaboration notifications triggers", () => {
 
       // Verify in-app notification
       const notification = await Notification.findOne({
-        userId: target.id,
-        senderId: owner.id,
-        type: "collaboration_invited",
+        userId: { $eq: target.id },
+        senderId: { $eq: owner.id },
+        type: { $eq: "collaboration_invited" },
       });
       expect(notification).not.toBeNull();
       expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
@@ -1262,9 +1262,9 @@ describe("cookbooks collaboration notifications triggers", () => {
       await caller.cookbooks.removeCollaborator({ cookbookId: cb.id, userId: target.id });
 
       const notification = await Notification.findOne({
-        userId: target.id,
-        senderId: owner.id,
-        type: "collaboration_removed",
+        userId: { $eq: target.id },
+        senderId: { $eq: owner.id },
+        type: { $eq: "collaboration_removed" },
       });
       expect(notification).not.toBeNull();
       expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
@@ -1287,7 +1287,7 @@ describe("cookbooks collaboration notifications triggers", () => {
       await ownerCaller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: recipe.id });
 
       // Owner should not get notifications for their own edit
-      let notifCount = await Notification.countDocuments({ type: "recipe_added" });
+      let notifCount = await Notification.countDocuments({ type: { $eq: "recipe_added" } });
       expect(notifCount).toBe(0);
 
       // Remove the recipe first so we can add it back as collaborator
@@ -1300,9 +1300,9 @@ describe("cookbooks collaboration notifications triggers", () => {
 
       // Owner should get a notification
       const notification = await Notification.findOne({
-        userId: owner.id,
-        senderId: collaborator.id,
-        type: "recipe_added",
+        userId: { $eq: owner.id },
+        senderId: { $eq: collaborator.id },
+        type: { $eq: "recipe_added" },
       });
       expect(notification).not.toBeNull();
       expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
@@ -1328,9 +1328,9 @@ describe("cookbooks collaboration notifications triggers", () => {
 
       // Owner should get a notification
       const notification = await Notification.findOne({
-        userId: owner.id,
-        senderId: collaborator.id,
-        type: "recipe_removed",
+        userId: { $eq: owner.id },
+        senderId: { $eq: collaborator.id },
+        type: { $eq: "recipe_removed" },
       });
       expect(notification).not.toBeNull();
       expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);

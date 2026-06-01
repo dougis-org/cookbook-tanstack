@@ -29,6 +29,18 @@ interface NotificationDropdownProps {
   onClose: () => void;
 }
 
+export const formatTimeAgo = (dateStr: Date | string) => {
+  const date = new Date(dateStr);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+};
+
 export function NotificationDropdown({ notifications, isLoading, onClose }: NotificationDropdownProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -42,7 +54,11 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
 
   const handleNotificationClick = async (notif: NotificationItem) => {
     if (!notif.read) {
-      await markReadMutation.mutateAsync({ id: notif.id });
+      try {
+        await markReadMutation.mutateAsync({ id: notif.id });
+      } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+      }
     }
     onClose();
     if (notif.data?.cookbookId) {
@@ -51,7 +67,11 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
   };
 
   const handleMarkAllAsRead = async () => {
-    await markReadMutation.mutateAsync({});
+    try {
+      await markReadMutation.mutateAsync({});
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+    }
   };
 
   const hasUnread = notifications.some((n) => !n.read);
@@ -111,18 +131,6 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
     }
   };
 
-  const formatTimeAgo = (dateStr: Date | string) => {
-    const date = new Date(dateStr);
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    if (seconds < 60) return "just now";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
-
   return (
     <div 
       id="notification-dropdown"
@@ -157,10 +165,11 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
           notifications.map((notif) => {
             const { icon, message } = getNotificationContent(notif);
             return (
-              <div
+              <button
+                type="button"
                 key={notif.id}
                 onClick={() => handleNotificationClick(notif)}
-                className={`flex gap-3 p-4 hover:bg-slate-800/40 transition-all duration-150 cursor-pointer ${
+                className={`w-full text-left flex gap-3 p-4 hover:bg-slate-800/40 focus:bg-slate-800/40 focus:outline-none transition-all duration-150 cursor-pointer ${
                   !notif.read ? "bg-slate-800/15 border-l-2 border-cyan-400/80" : ""
                 }`}
               >
@@ -180,7 +189,7 @@ export function NotificationDropdown({ notifications, isLoading, onClose }: Noti
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })
         )}

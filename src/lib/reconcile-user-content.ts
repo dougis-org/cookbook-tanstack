@@ -103,19 +103,22 @@ async function reconcileCollaborationOnDowngrade(session: ClientSession, userId:
     await Collaborator.deleteMany({ cookbookId: { $in: cookbookIds } }, { session })
 
     // Create a notification for each evicted collaborator explaining their access has ended
-    for (const c of collaborators) {
-      const cbDoc = cookbookMap.get(c.cookbookId.toString())
-      const cookbookTitle = cbDoc ? cbDoc.name : "a cookbook"
-
-      await new Notification({
-        userId: c.userId,
-        senderId: userObjId,
-        type: 'collaboration_removed',
-        data: {
-          cookbookId: c.cookbookId,
-          cookbookTitle,
-        },
-      }).save({ session })
+    if (collaborators.length > 0) {
+      const notificationDocs = collaborators.map((c) => {
+        const cbDoc = cookbookMap.get(c.cookbookId.toString())
+        const cookbookTitle = cbDoc ? cbDoc.name : "a cookbook"
+        return {
+          userId: c.userId,
+          senderId: userObjId,
+          type: 'collaboration_removed',
+          data: {
+            cookbookId: c.cookbookId,
+            cookbookTitle,
+          },
+          read: false,
+        }
+      })
+      await Notification.insertMany(notificationDocs, { session })
     }
   }
 }

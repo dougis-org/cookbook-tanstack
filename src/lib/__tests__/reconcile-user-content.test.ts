@@ -279,10 +279,10 @@ describe('reconcileUserContent collaboration downgrade', () => {
       // Assert notifications were created for each evicted collaborator
       for (const col of collaboratorsBefore) {
         const notif = await Notification.findOne({
-          userId: col.userId,
-          senderId: new Types.ObjectId(ownerId),
-          type: 'collaboration_removed',
-          'data.cookbookId': col.cookbookId,
+          userId: { $eq: col.userId },
+          senderId: { $eq: new Types.ObjectId(ownerId) },
+          type: { $eq: 'collaboration_removed' },
+          'data.cookbookId': { $eq: col.cookbookId },
         })
         expect(notif).not.toBeNull()
         expect(notif!.data?.cookbookId?.toString()).toBe(col.cookbookId.toString())

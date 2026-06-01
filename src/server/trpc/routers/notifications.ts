@@ -26,14 +26,15 @@ export const notificationsRouter = router({
       return [];
     }
 
-    // Populate sender details (username, name) from the 'user' collection
-    // Stringify ObjectIds first to ensure correct deduplication via Set reference check
+    // Populate sender details (name, email) from the 'user' collection
+    // Stringify ObjectIds first to ensure correct deduplication by string value
     const uniqueSenderIds = Array.from(new Set(docs.map((doc) => doc.senderId.toString())));
     const senderIds = uniqueSenderIds.map((id) => new ObjectId(id));
     const usersCollection = getMongoClient().db().collection("user");
     
     const senders = await usersCollection
       .find({ _id: { $in: senderIds } })
+      .project({ name: 1, email: 1 })
       .toArray();
 
     const senderMap = new Map(
