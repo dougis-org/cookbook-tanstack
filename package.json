@@ -16,6 +16,8 @@
     "migration:verify-import": "tsx scripts/migration/verify-import.ts",
     "migration:validate-extraction": "tsx scripts/migration/validate-extraction.ts",
     "test": "vitest run",
+    "test:unit": "vitest run --exclude \"**/e2e/**\" --exclude \"**/*.integration.test.ts\" --exclude \"**/*.integration.spec.ts\" --exclude \"**/integration.test.ts\" --exclude \"**/integration.spec.ts\"",
+    "test:integration": "vitest run \"**/*.integration.{test,spec}.ts\" \"integration\" --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
