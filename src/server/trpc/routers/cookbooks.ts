@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
-import { Cookbook, Recipe, Collaborator } from "@/db/models";
+import { Cookbook, Recipe, Collaborator, Notification } from "@/db/models";
 import { ObjectId } from "mongodb";
 import { hasAtLeastTier } from "@/types/user";
 // Side-effect imports register models needed for Recipe.populate() chains
@@ -14,6 +14,7 @@ import "@/db/models/course";
 import "@/db/models/preparation";
 import { canCreatePrivate, type EntitlementTier } from "@/lib/tier-entitlements";
 import { getMongoClient } from "@/db";
+import { sendEmail } from "@/lib/mail";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function pluckIds(arr: unknown): string[] {
@@ -448,11 +449,17 @@ export const cookbooksRouter = router({
 
       const targetUser = await getMongoClient().db().collection('user').findOne(
         { _id: new ObjectId(String(input.userId)) },
-        { projection: { _id: 1 } },
+        { projection: { _id: 1, email: 1, name: 1 } },
       )
       if (!targetUser) {
         throw new TRPCError({ code: 'NOT_FOUND', message: 'User not found' })
       }
+
+      const cookbookDoc = await Cookbook.findById(input.cookbookId).lean();
+      if (!cookbookDoc) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Cookbook not found' })
+      }
+      const cookbookTitle = cookbookDoc.name;
 
       try {
         await new Collaborator({
@@ -462,6 +469,36 @@ export const cookbooksRouter = router({
           addedAt: new Date(),
           addedBy: ctx.user.id,
         }).save()
+
+        // Create in-app notification
+        await new Notification({
+          userId: input.userId,
+          senderId: ctx.user.id,
+          type: 'collaboration_invited',
+          data: {
+            cookbookId: input.cookbookId,
+            cookbookTitle,
+          },
+        }).save();
+
+        // Send email asynchronously (fire-and-forget)
+        if (typeof targetUser.email === 'string') {
+          const baseUrl = process.env.APP_PRIMARY_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000";
+          const directLink = `${baseUrl}/cookbooks/${input.cookbookId}`;
+          const inviterName = ctx.user.name || "A user";
+          const subject = `You've been invited to collaborate on ${cookbookTitle}`;
+          const text = `${inviterName} has invited you to collaborate on the cookbook "${cookbookTitle}" as a ${input.role}.\n\nView it here: ${directLink}`;
+          const html = `<p><strong>${inviterName}</strong> has invited you to collaborate on the cookbook <strong>"${cookbookTitle}"</strong> as a ${input.role}.</p><p><a href="${directLink}">Click here to view the cookbook</a></p>`;
+
+          void sendEmail({
+            to: targetUser.email,
+            subject,
+            text,
+            html,
+          }).catch((err) => {
+            console.error("Failed to send collaboration invite email asynchronously:", err);
+          });
+        }
       } catch (err: unknown) {
         if (isDuplicateKeyError(err)) {
           throw new TRPCError({ code: 'CONFLICT', message: 'User is already a collaborator' })
@@ -476,7 +513,23 @@ export const cookbooksRouter = router({
     .input(z.object({ cookbookId: objectId, userId: objectId }))
     .mutation(async ({ ctx, input }) => {
       await verifyCookbookOwner(input.cookbookId, ctx.user.id)
+      
+      const cookbookDoc = await Cookbook.findById(input.cookbookId).lean();
+      const cookbookTitle = cookbookDoc ? cookbookDoc.name : "a cookbook";
+
       await Collaborator.deleteOne({ cookbookId: input.cookbookId, userId: input.userId })
+
+      // Create in-app notification for the removed collaborator
+      await new Notification({
+        userId: input.userId,
+        senderId: ctx.user.id,
+        type: 'collaboration_removed',
+        data: {
+          cookbookId: input.cookbookId,
+          cookbookTitle,
+        },
+      }).save();
+
       return { success: true }
     }),
 
@@ -514,7 +567,7 @@ export const cookbooksRouter = router({
         _id: input.recipeId,
         ...recipeVisFilter,
       })
-        .select("_id")
+        .select("_id name")
         .lean();
       if (!accessible) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" });
@@ -545,6 +598,21 @@ export const cookbooksRouter = router({
         await Cookbook.findByIdAndUpdate(input.cookbookId, {
           $push: { recipes: newEntry },
         });
+
+        // Trigger notification if editor collaborator adds recipe
+        if (cookbook.userId.toString() !== ctx.user.id) {
+          await new Notification({
+            userId: cookbook.userId,
+            senderId: ctx.user.id,
+            type: 'recipe_added',
+            data: {
+              cookbookId: input.cookbookId,
+              cookbookTitle: cookbook.name,
+              recipeId: input.recipeId,
+              recipeTitle: accessible.name,
+            },
+          }).save();
+        }
       }
 
       return { success: true };
@@ -553,10 +621,30 @@ export const cookbooksRouter = router({
   removeRecipe: verifiedProcedure
     .input(z.object({ cookbookId: objectId, recipeId: objectId }))
     .mutation(async ({ ctx, input }) => {
-      await fetchEditableCookbook(input.cookbookId, ctx.user.id);
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
+      
+      const recipeDoc = await Recipe.findById(input.recipeId).select("name").lean();
+      const recipeTitle = recipeDoc ? recipeDoc.name : "a recipe";
+
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $pull: { recipes: { recipeId: input.recipeId } },
       });
+
+      // Trigger notification if editor collaborator removes recipe
+      if (cookbook.userId.toString() !== ctx.user.id) {
+        await new Notification({
+          userId: cookbook.userId,
+          senderId: ctx.user.id,
+          type: 'recipe_removed',
+          data: {
+            cookbookId: input.cookbookId,
+            cookbookTitle: cookbook.name,
+            recipeId: input.recipeId,
+            recipeTitle,
+          },
+        }).save();
+      }
+
       return { success: true };
     }),
 

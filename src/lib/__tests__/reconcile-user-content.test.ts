@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Types } from 'mongoose'
 import { withCleanDb } from '@/test-helpers/with-clean-db'
-import { Recipe, Cookbook, Collaborator } from '@/db/models'
+import { Recipe, Cookbook, Collaborator, Notification } from '@/db/models'
 import { seedUserWithBetterAuth } from '@/server/trpc/routers/__tests__/test-helpers'
 import { reconcileUserContent, getTierChangeDirection } from '@/lib/reconcile-user-content'
 
@@ -265,14 +265,28 @@ async function seedOwnerWithCollaboratedCookbooks(cookbookCount: number) {
 }
 
 describe('reconcileUserContent collaboration downgrade', () => {
-  it('removes collaborators from owner cookbooks when downgrading from executive-chef', async () => {
+  it('removes collaborators from owner cookbooks when downgrading from executive-chef and creates notifications', async () => {
     await withCleanDb(async () => {
       const { ownerId, cookbookIds } = await seedOwnerWithCollaboratedCookbooks(2)
       expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(2)
 
+      const collaboratorsBefore = await Collaborator.find({ cookbookId: { $in: cookbookIds } })
+
       await reconcileUserContent(ownerId, 'executive-chef', 'sous-chef')
 
       expect(await Collaborator.countDocuments({ cookbookId: { $in: cookbookIds } })).toBe(0)
+
+      // Assert notifications were created for each evicted collaborator
+      for (const col of collaboratorsBefore) {
+        const notif = await Notification.findOne({
+          userId: col.userId,
+          senderId: new Types.ObjectId(ownerId),
+          type: 'collaboration_removed',
+          'data.cookbookId': col.cookbookId,
+        })
+        expect(notif).not.toBeNull()
+        expect(notif!.data?.cookbookId?.toString()).toBe(col.cookbookId.toString())
+      }
     })
   })
 

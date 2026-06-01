@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, Collaborator } from "@/db/models";
+import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, Collaborator, Notification } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   uid,
@@ -11,6 +11,7 @@ import {
 } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
+vi.mock("@/lib/mail", () => ({ sendEmail: vi.fn().mockResolvedValue({ messageId: "123" }) }));
 
 const seedUser = seedUserWithBetterAuth;
 
@@ -1211,3 +1212,131 @@ describe("cookbooks.myCollaborations", () => {
     });
   });
 });
+
+describe("cookbooks collaboration notifications triggers", () => {
+  it("Test Case 3.1 & 3.2 — Invite Notification & Email Trigger", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const { sendEmail } = await import("@/lib/mail");
+      vi.mocked(sendEmail).mockClear();
+
+      await caller.cookbooks.addCollaborator({
+        cookbookId: cb.id,
+        userId: target.id,
+        role: "editor",
+      });
+
+      // Verify in-app notification
+      const notification = await Notification.findOne({
+        userId: target.id,
+        senderId: owner.id,
+        type: "collaboration_invited",
+      });
+      expect(notification).not.toBeNull();
+      expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
+      expect(notification!.data?.cookbookTitle).toBe(cb.name);
+
+      // Verify email was sent
+      expect(sendEmail).toHaveBeenCalledTimes(1);
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: target.email,
+          subject: expect.stringContaining(cb.name),
+        })
+      );
+    });
+  });
+
+  it("Test Case 3.3 — Remove Notification Trigger", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const target = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: target.id, role: "editor", addedBy: owner.id }).save();
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      await caller.cookbooks.removeCollaborator({ cookbookId: cb.id, userId: target.id });
+
+      const notification = await Notification.findOne({
+        userId: target.id,
+        senderId: owner.id,
+        type: "collaboration_removed",
+      });
+      expect(notification).not.toBeNull();
+      expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
+      expect(notification!.data?.cookbookTitle).toBe(cb.name);
+    });
+  });
+
+  it("Test Case 3.4 & 3.5 — Collaborative Edit vs Owner Edit Recipe Add", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collaborator = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const recipe = await seedRecipe(collaborator.id);
+
+      // Add collaborator
+      await new Collaborator({ cookbookId: cb._id, userId: collaborator.id, role: "editor", addedBy: owner.id }).save();
+
+      // Owner edit adds recipe
+      const ownerCaller = await makeAuthCaller(owner.id);
+      await ownerCaller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: recipe.id });
+
+      // Owner should not get notifications for their own edit
+      let notifCount = await Notification.countDocuments({ type: "recipe_added" });
+      expect(notifCount).toBe(0);
+
+      // Remove the recipe first so we can add it back as collaborator
+      await Cookbook.findByIdAndUpdate(cb.id, { $pull: { recipes: { recipeId: recipe.id } } });
+
+      // Collaborator edit adds recipe
+      // We pass collabCookbookIds so they have access to the collaborative cookbook
+      const collabCaller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+      await collabCaller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: recipe.id });
+
+      // Owner should get a notification
+      const notification = await Notification.findOne({
+        userId: owner.id,
+        senderId: collaborator.id,
+        type: "recipe_added",
+      });
+      expect(notification).not.toBeNull();
+      expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
+      expect(notification!.data?.recipeId?.toString()).toBe(recipe.id);
+      expect(notification!.data?.recipeTitle).toBe(recipe.name);
+    });
+  });
+
+  it("Collaborative Recipe Remove Trigger", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collaborator = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      const recipe = await seedRecipe(collaborator.id);
+
+      // Add collaborator and add recipe to cookbook
+      await new Collaborator({ cookbookId: cb._id, userId: collaborator.id, role: "editor", addedBy: owner.id }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, { $push: { recipes: { recipeId: recipe.id, orderIndex: 0 } } });
+
+      // Collaborator removes recipe
+      const collabCaller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+      await collabCaller.cookbooks.removeRecipe({ cookbookId: cb.id, recipeId: recipe.id });
+
+      // Owner should get a notification
+      const notification = await Notification.findOne({
+        userId: owner.id,
+        senderId: collaborator.id,
+        type: "recipe_removed",
+      });
+      expect(notification).not.toBeNull();
+      expect(notification!.data?.cookbookId?.toString()).toBe(cb.id);
+      expect(notification!.data?.recipeId?.toString()).toBe(recipe.id);
+      expect(notification!.data?.recipeTitle).toBe(recipe.name);
+    });
+  });
+});
+

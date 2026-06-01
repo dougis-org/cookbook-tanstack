@@ -35,6 +35,10 @@ vi.mock("@/contexts/ThemeContext", () => ({
   ],
 }))
 
+vi.mock("@/components/notifications/NotificationBell", () => ({
+  default: () => <div data-testid="notification-bell">NotificationBell</div>
+}))
+
 import Header from "../../Header"
 
 const defaultAuth = { session: null, isPending: false, isLoggedIn: false, userId: null }
