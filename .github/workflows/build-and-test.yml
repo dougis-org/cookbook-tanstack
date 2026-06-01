@@ -88,20 +88,10 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        env:
-          CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-          CODACY_ORGANIZATION_PROVIDER: gh
-          CODACY_USERNAME: dougis-org
-          CODACY_PROJECT_NAME: cookbook-tanstack
-        run: |
-          if [ -f coverage/lcov.info ]; then
-            curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
-            chmod +x codacy-coverage-reporter.sh
-            ./codacy-coverage-reporter.sh report --partial -l Javascript -r coverage/lcov.info
-            ./codacy-coverage-reporter.sh report --partial -l TypeScript -r coverage/lcov.info
-          else
-            echo "No Vitest coverage report found at coverage/lcov.info"
-          fi
+        uses: ./.github/actions/codacy-reporter
+        with:
+          codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-file: coverage/lcov.info
 
   integration:
     needs: build-and-unit
@@ -131,20 +121,10 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        env:
-          CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-          CODACY_ORGANIZATION_PROVIDER: gh
-          CODACY_USERNAME: dougis-org
-          CODACY_PROJECT_NAME: cookbook-tanstack
-        run: |
-          if [ -f coverage/lcov.info ]; then
-            curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
-            chmod +x codacy-coverage-reporter.sh
-            ./codacy-coverage-reporter.sh report --partial -l Javascript -r coverage/lcov.info
-            ./codacy-coverage-reporter.sh report --partial -l TypeScript -r coverage/lcov.info
-          else
-            echo "No Vitest coverage report found at coverage/lcov.info"
-          fi
+        uses: ./.github/actions/codacy-reporter
+        with:
+          codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-file: coverage/lcov.info
 
   e2e:
     needs: build-and-unit
@@ -244,24 +224,14 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        env:
-          CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-          CODACY_ORGANIZATION_PROVIDER: gh
-          CODACY_USERNAME: dougis-org
-          CODACY_PROJECT_NAME: cookbook-tanstack
-        run: |
-          if [ -f e2e-coverage/lcov.info ] && [ -s e2e-coverage/lcov.info ]; then
-            curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
-            chmod +x codacy-coverage-reporter.sh
-            ./codacy-coverage-reporter.sh report --partial -l Javascript -r e2e-coverage/lcov.info
-            ./codacy-coverage-reporter.sh report --partial -l TypeScript -r e2e-coverage/lcov.info
-          else
-            echo "No E2E coverage report found or file is empty at e2e-coverage/lcov.info"
-          fi
+        uses: ./.github/actions/codacy-reporter
+        with:
+          codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-file: e2e-coverage/lcov.info
 
   finalize-coverage:
     needs: [build-and-unit, integration, e2e]
-    if: always()
+    if: always() && needs.build-and-unit.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -269,15 +239,10 @@ jobs:
 
       - name: Finalize coverage on Codacy
         continue-on-error: true
-        env:
-          CODACY_API_TOKEN: ${{ secrets.CODACY_API_TOKEN }}
-          CODACY_ORGANIZATION_PROVIDER: gh
-          CODACY_USERNAME: dougis-org
-          CODACY_PROJECT_NAME: cookbook-tanstack
-        run: |
-          curl -Ls https://coverage.codacy.com/get.sh -o codacy-coverage-reporter.sh
-          chmod +x codacy-coverage-reporter.sh
-          ./codacy-coverage-reporter.sh final
+        uses: ./.github/actions/codacy-reporter
+        with:
+          codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          final: 'true'
 
   notify-failure:
     needs: [build-and-unit, integration, e2e]
