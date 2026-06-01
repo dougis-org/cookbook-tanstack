@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "../init";
 import { Notification } from "@/db/models";
 import { getMongoClient } from "@/db";
 import { ObjectId } from "mongodb";
+import { objectId } from "./_helpers";
 
 export const notificationsRouter = router({
   unreadCount: protectedProcedure.query(async ({ ctx }) => {
@@ -67,7 +68,7 @@ export const notificationsRouter = router({
   markRead: protectedProcedure
     .input(
       z.object({
-        id: z.string().optional(),
+        id: objectId.optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

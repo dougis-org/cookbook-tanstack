@@ -483,12 +483,22 @@ export const cookbooksRouter = router({
 
         // Send email asynchronously (fire-and-forget)
         if (typeof targetUser.email === 'string') {
+          const escapeHtml = (str: string): string => {
+            return str
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          };
           const baseUrl = process.env.APP_PRIMARY_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000";
           const directLink = `${baseUrl}/cookbooks/${input.cookbookId}`;
           const inviterName = ctx.user.name || "A user";
+          const escapedInviterName = escapeHtml(inviterName);
+          const escapedCookbookTitle = escapeHtml(cookbookTitle);
           const subject = `You've been invited to collaborate on ${cookbookTitle}`;
           const text = `${inviterName} has invited you to collaborate on the cookbook "${cookbookTitle}" as a ${input.role}.\n\nView it here: ${directLink}`;
-          const html = `<p><strong>${inviterName}</strong> has invited you to collaborate on the cookbook <strong>"${cookbookTitle}"</strong> as a ${input.role}.</p><p><a href="${directLink}">Click here to view the cookbook</a></p>`;
+          const html = `<p><strong>${escapedInviterName}</strong> has invited you to collaborate on the cookbook <strong>"${escapedCookbookTitle}"</strong> as a ${input.role}.</p><p><a href="${directLink}">Click here to view the cookbook</a></p>`;
 
           void sendEmail({
             to: targetUser.email,
