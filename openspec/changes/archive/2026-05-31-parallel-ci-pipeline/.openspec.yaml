@@ -1,0 +1,14 @@
+# ==============================================================================
+# ARCHIVED OPEN SPEC CONFIGURATION
+# ==============================================================================
+# Change Name: parallel-ci-pipeline
+# Date Archived: 2026-05-31
+# Status: Successfully Merged & Closed
+# Target Branch: main
+# Author: Doug Hubbard <doug@dougis.com>
+# Co-Authors: Gemini Code Assist, Copilot (AI), Codacy Production
+# Description: This configuration is preserved as a historical record of the OpenSpec process.
+# ==============================================================================
+
+schema: sdd-with-feedback-loop
+created: 2026-05-31
