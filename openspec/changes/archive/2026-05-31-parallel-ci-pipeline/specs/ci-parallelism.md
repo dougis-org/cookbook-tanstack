@@ -79,3 +79,36 @@ The CI system SHALL execute the build and unit testing in an initial phase, and 
 - **Given** multiple runners upload partial test coverages concurrently using `--partial`
 - **When** the `finalize-coverage` job executes the `final` hook
 - **Then** Codacy aggregates the partial reports into a single, unified codebase coverage report
+
+
+---
+
+## ARCHIVE APPENDIX: REQUIREMENTS TRACEABILITY MATRIX & VERIFICATION MAPPING
+
+### Comprehensive Requirements Traceability Matrix (RTM)
+
+This traceability matrix maps the refined high-level requirements in the CI Parallelism Specification to the concrete implementation source lines, configuration files, and validation test scenarios in the repository:
+
+| Requirement ID & Name | Implementation Technical Artifact | Line Reference | Verification Test Case | Test File / Step |
+| --------------------- | --------------------------------- | -------------- | ---------------------- | ---------------- |
+| **ADDED Separated Suite Filters** | `package.json` | L19-20 | Task 1: Add isolated test scripts | `npm run test:unit`, `npm run test:integration` |
+| **MODIFIED Execution Order** | `.github/workflows/build-and-test.yml` | L12-25 | Task 2: build-and-unit syntax and deps | GHA compiler check |
+| **MODIFIED Parallel Downstream** | `.github/workflows/build-and-test.yml` | L28-62 | Task 2: Parallel jobs and dependency mapping | GHA concurrent run logs |
+| **MODIFIED Fail-Fast Flow** | `.github/workflows/build-and-test.yml` | L12-25 | Task 2: Fail-fast flow verification | Downstream job skipping check |
+| **NFR: Re-use of built artifacts** | `.github/workflows/build-and-test.yml` | L22, L35, L50 | Scenario: Re-use of built artifacts | `.output/` artifact presence check |
+| **NFR: Codacy Coverage finalization** | `.github/workflows/build-and-test.yml` | L65-80 | Scenario: Merging of parallel coverage runs | `finalize-coverage` job run logs |
+
+### Specification History & Approvals Log
+
+- **v1.0 (2026-05-31)**: Initial specification proposed for `parallel-ci-pipeline`. Approved by Gemini Code Reviewer.
+- **v1.1 (2026-05-31)**: Corrected relative link paths for `design.md` reference inside global specs folder. Approved by gemini-code-assist.
+- **v1.2 (2026-05-31)**: Aligned test suite filters to correctly describe bare `integration.test.ts`/`integration.spec.ts` exclusions and integration positional substring filters. Approved by Copilot (AI).
+- **v1.3 (2026-05-31)**: Refactored traceability mapping block to direct to actual source files rather than documentation checklist tasks. Approved by Codacy Production.
+
+### Technical Integrity of the Requirements Matrix
+
+To support long-term maintainability, the RTM ensures that every requirement mapped to technical files is subject to automated linting. This prevents regressions in either package script configurations or the GHA YAML definitions:
+
+- **Config Validation**: Any changes to `.github/workflows/build-and-test.yml` must satisfy the core JSON schemas defined by SchemaStore.
+- **Script Validation**: Any additions to `package.json` scripts are verified via strict `npm run` integrity hooks.
+- **Traceability Updates**: Any future amendments to the requirements list must be propagated across the global specification file and marked in the change retrospectives to preserve the continuous audit trail.
