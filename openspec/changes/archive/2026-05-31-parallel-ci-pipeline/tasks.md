@@ -11,8 +11,8 @@ Ensure a BDD/TDD workflow: you MUST define the desired behavior in the `tests.md
 
 - [x] **Task 1: Add isolated test scripts in `package.json`**
   - Edit `package.json` to add:
-    - `"test:unit": "vitest run --exclude \"**/e2e/**\" --exclude \"**/*.integration.test.ts\" --exclude \"**/*.integration.spec.ts\""`
-    - `"test:integration": "vitest run \"**/*.integration.test.ts\" \"**/*.integration.spec.ts\""`
+    - `"test:unit": "vitest run --exclude \"**/e2e/**\" --exclude \"**/*.integration.test.ts\" --exclude \"**/*.integration.spec.ts\" --exclude \"**/integration.test.ts\" --exclude \"**/integration.spec.ts\""`
+    - `"test:integration": "vitest run \"**/*.integration.{test,spec}.ts\" \"integration\" --passWithNoTests"`
   - *Verification command*: Run `npm run test:unit` locally and verify only unit tests run. Run `npm run test:integration` locally and verify only 3 integration files run.
 
 - [x] **Task 2: Deconstruct `.github/workflows/build-and-test.yml` into parallel jobs**

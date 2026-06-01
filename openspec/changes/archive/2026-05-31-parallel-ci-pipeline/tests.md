@@ -26,7 +26,7 @@ For each task in `tasks.md`:
   - **Spec Scenario Link**: `specs/ci-parallelism.md` -> Scenario: Running unit tests only
   - **Validation Steps**:
     1. Run `npm run test:unit`.
-    2. Verify it only runs unit test files (118 files) and excludes `**/*.integration.test.ts` or `**/*.integration.spec.ts`.
+    2. Verify it only runs unit test files (118 files) and excludes `**/*.integration.test.ts`, `**/*.integration.spec.ts`, or bare `integration.test.ts`/`integration.spec.ts` (e.g., `**/integration.test.ts`).
 - [x] **Test Case 2: Run integration tests only**
   - **Task Link**: Task 1 (Add isolated test scripts)
   - **Spec Scenario Link**: `specs/ci-parallelism.md` -> Scenario: Running integration tests only

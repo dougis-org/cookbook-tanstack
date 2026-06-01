@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
+This document details *changes* to requirements and is additive to the [design.md](../design.md) document, not a replacement.
 
 ### Requirement: ADDED Separated CI test suite filters
 
@@ -9,12 +9,12 @@ The system SHALL provide distinct script targets in `package.json` to filter and
 #### Scenario: Running unit tests only
 - **Given** the repository contains both unit and integration test files
 - **When** executing the `npm run test:unit` script
-- **Then** only fast unit tests are executed and files matching `**/*.integration.test.ts` or `**/*.integration.spec.ts` are excluded
+- **Then** only fast unit tests are executed and files matching `**/*.integration.test.ts`, `**/*.integration.spec.ts`, or bare `integration.test.ts`/`integration.spec.ts` (e.g., `**/integration.test.ts`) are excluded
 
 #### Scenario: Running integration tests only
 - **Given** the repository contains both unit and integration test files
 - **When** executing the `npm run test:integration` script
-- **Then** only integration test files matching `**/*.integration.test.ts` or `**/*.integration.spec.ts` are executed
+- **Then** only integration test files matching `**/*.integration.{test,spec}.ts` or matching the positional substring filter `integration` (e.g. `src/server/trpc/__tests__/integration.test.ts`) are executed
 
 ---
 
@@ -59,8 +59,8 @@ The CI system SHALL execute the build and unit testing in an initial phase, and 
 - **Design decision**: Decision 3 (Partial coverage uploads)
   - -> **Requirement**: MODIFIED CI Workflow Execution Order
 - **Requirement** -> **Task(s)**:
-  - ADDED Separated CI test suite filters -> Task 1: Refactor `package.json`
-  - MODIFIED CI Workflow Execution Order -> Task 2: Refactor `.github/workflows/build-and-test.yml`
+  - ADDED Separated CI test suite filters -> `package.json`
+  - MODIFIED CI Workflow Execution Order -> `.github/workflows/build-and-test.yml`
 
 ---
 
