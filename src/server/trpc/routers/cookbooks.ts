@@ -897,11 +897,11 @@ export const cookbooksRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const collaborator = await Collaborator.findOne({
-        cookbookId: new Types.ObjectId(input.cookbookId),
-        userId: new Types.ObjectId(ctx.user.id),
+        cookbookId: { $eq: new Types.ObjectId(input.cookbookId) },
+        userId: { $eq: new Types.ObjectId(ctx.user.id) },
       });
       if (!collaborator) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+        throw new TRPCError({ code: "FORBIDDEN" });
       }
 
       if (collaborator.onboarded) {

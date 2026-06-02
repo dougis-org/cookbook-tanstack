@@ -1388,7 +1388,7 @@ describe("cookbooks collaboration notifications triggers", () => {
       });
     });
 
-    it("throws NOT_FOUND when user is not a collaborator on the cookbook", async () => {
+    it("throws FORBIDDEN when user is not a collaborator on the cookbook", async () => {
       await withCleanDb(async () => {
         const owner = await seedUser();
         const other = await seedUser();
@@ -1398,7 +1398,32 @@ describe("cookbooks collaboration notifications triggers", () => {
         const caller = await makeAuthCaller(other.id);
         await expect(
           caller.cookbooks.onboardCollaborator({ cookbookId: cb.id })
-        ).rejects.toThrow("NOT_FOUND");
+        ).rejects.toThrow("FORBIDDEN");
+      });
+    });
+
+    it("is idempotent when the collaborator is already onboarded", async () => {
+      await withCleanDb(async () => {
+        const owner = await seedUser();
+        const collaborator = await seedUser();
+        const cb = await seedCookbook(owner.id);
+
+        await new Collaborator({
+          cookbookId: cb._id,
+          userId: collaborator.id,
+          role: "editor",
+          addedBy: owner.id,
+          onboarded: true,
+        }).save();
+
+        const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+        const result = await caller.cookbooks.onboardCollaborator({ cookbookId: cb.id });
+
+        expect(result).toEqual({ success: true });
+
+        const updated = await Collaborator.findOne({ cookbookId: cb._id, userId: collaborator.id });
+        expect(updated).not.toBeNull();
+        expect(updated!.onboarded).toBe(true);
       });
     });
   });

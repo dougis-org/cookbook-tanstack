@@ -500,4 +500,13 @@ describe('CookbookDetailPage — onboarding integration', () => {
     fireEvent.click(screen.getByRole('button', { name: /Got it!/i }))
     expect(mockOnboardFn).toHaveBeenCalledWith({ cookbookId: 'cb-1' })
   })
+
+  it('does not display for collaborators who are already onboarded', () => {
+    mockCookbookData.collaborators[0].onboarded = true
+
+    render(<CookbookDetailPage />)
+
+    // The onboarding modal should NOT be in the document
+    expect(screen.queryByText(/Editor ✏️/)).not.toBeInTheDocument()
+  })
 })
