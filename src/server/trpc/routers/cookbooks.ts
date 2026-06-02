@@ -119,6 +119,7 @@ function userLookupStages(localField: string, alias: string) {
 
 /** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
 async function fetchCollaboratorsWithUsers(cookbookId: string) {
+  if (!Types.ObjectId.isValid(cookbookId)) return []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const docs = await Collaborator.aggregate<any>([
     // Explicitly use $eq and wrap in Types.ObjectId to prevent NoSQL injection warnings in static analysis
