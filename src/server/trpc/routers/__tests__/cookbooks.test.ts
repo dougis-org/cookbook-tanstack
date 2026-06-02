@@ -1338,5 +1338,69 @@ describe("cookbooks collaboration notifications triggers", () => {
       expect(notification!.data?.recipeTitle).toBe(recipe.name);
     });
   });
+
+  describe("cookbooks.onboardCollaborator and byId status", () => {
+    it("exposes onboarded status in byId query", async () => {
+      await withCleanDb(async () => {
+        const owner = await seedUser();
+        const collaborator = await seedUser();
+        const cb = await seedCookbook(owner.id);
+
+        await new Collaborator({
+          cookbookId: cb._id,
+          userId: collaborator.id,
+          role: "editor",
+          addedBy: owner.id,
+          onboarded: false,
+        }).save();
+
+        const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+        const details = await caller.cookbooks.byId({ id: cb.id });
+
+        expect(details).not.toBeNull();
+        expect(details!.collaborators).toHaveLength(1);
+        expect(details!.collaborators[0].onboarded).toBe(false);
+      });
+    });
+
+    it("updates onboarded status to true on onboardCollaborator mutation", async () => {
+      await withCleanDb(async () => {
+        const owner = await seedUser();
+        const collaborator = await seedUser();
+        const cb = await seedCookbook(owner.id);
+
+        await new Collaborator({
+          cookbookId: cb._id,
+          userId: collaborator.id,
+          role: "editor",
+          addedBy: owner.id,
+          onboarded: false,
+        }).save();
+
+        const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+        const result = await caller.cookbooks.onboardCollaborator({ cookbookId: cb.id });
+
+        expect(result).toEqual({ success: true });
+
+        const updated = await Collaborator.findOne({ cookbookId: cb._id, userId: collaborator.id });
+        expect(updated).not.toBeNull();
+        expect(updated!.onboarded).toBe(true);
+      });
+    });
+
+    it("throws NOT_FOUND when user is not a collaborator on the cookbook", async () => {
+      await withCleanDb(async () => {
+        const owner = await seedUser();
+        const other = await seedUser();
+        const cb = await seedCookbook(owner.id);
+
+        // other is not a collaborator
+        const caller = await makeAuthCaller(other.id);
+        await expect(
+          caller.cookbooks.onboardCollaborator({ cookbookId: cb.id })
+        ).rejects.toThrow("NOT_FOUND");
+      });
+    });
+  });
 });
 

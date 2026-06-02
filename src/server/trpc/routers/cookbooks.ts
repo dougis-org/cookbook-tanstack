@@ -132,6 +132,7 @@ async function fetchCollaboratorsWithUsers(cookbookId: string) {
     role: c.role as 'editor' | 'viewer',
     addedAt: c.addedAt as Date,
     addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
+    onboarded: (c.onboarded ?? false) as boolean,
   }))
 }
 
@@ -884,6 +885,31 @@ export const cookbooksRouter = router({
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $set: { chapters: updatedChapters },
       });
+
+      return { success: true };
+    }),
+
+  onboardCollaborator: protectedProcedure
+    .input(
+      z.object({
+        cookbookId: objectId,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const collaborator = await Collaborator.findOne({
+        cookbookId: new Types.ObjectId(input.cookbookId),
+        userId: new Types.ObjectId(ctx.user.id),
+      });
+      if (!collaborator) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (collaborator.onboarded) {
+        return { success: true };
+      }
+
+      collaborator.onboarded = true;
+      await collaborator.save();
 
       return { success: true };
     }),

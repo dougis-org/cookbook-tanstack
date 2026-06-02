@@ -5,7 +5,9 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ChapterHeader, AddRecipeModal, CollaboratorsPanel } from '@/routes/cookbooks.$cookbookId'
+import { ChapterHeader, AddRecipeModal, CollaboratorsPanel, OnboardingModal, Route } from '@/routes/cookbooks.$cookbookId'
+
+const CookbookDetailPage = Route.options.component!
 
 // ─── Router mocks ────────────────────────────────────────────────────────────
 
@@ -62,7 +64,10 @@ vi.mock('@/components/ui/CardImage', () => ({
 }))
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ session: null, isPending: false, isLoggedIn: false, userId: null }) }))
+let mockUserId: string | null = null
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ session: null, isPending: false, isLoggedIn: false, userId: mockUserId }),
+}))
 
 const mockAddMutate = vi.fn()
 const mockOnSearchChange = vi.fn()
@@ -77,9 +82,19 @@ let mockRecipeSearchResult = {
   isLoading: false,
 }
 
+let mockCookbookData: any = null
+let mockQueryLoading = false
+let mockMutate = mockAddMutate
+let mockMutationPending = false
+let mockMutationError: any = null
+
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: { items: [] }, isLoading: false }),
-  useMutation: () => ({ mutate: mockAddMutate, isPending: false }),
+  useQuery: () => ({ data: mockCookbookData, isLoading: mockQueryLoading }),
+  useMutation: () => ({
+    mutate: (args: any) => mockMutate(args),
+    isPending: mockMutationPending,
+    error: mockMutationError,
+  }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }))
 
@@ -98,6 +113,7 @@ vi.mock('@/lib/trpc', () => ({
       reorderChapters: { mutationOptions: (o: unknown) => o },
       addCollaborator: { mutationOptions: (o: unknown) => o },
       removeCollaborator: { mutationOptions: (o: unknown) => o },
+      onboardCollaborator: { mutationOptions: (o: unknown) => o },
     },
     recipes: { list: { queryOptions: () => ({}) } },
     users: { search: { queryOptions: () => ({}) } },
@@ -318,7 +334,7 @@ describe('AddRecipeModal — infinite scroll', () => {
 
 // ─── CollaboratorsPanel tests ─────────────────────────────────────────────────
 
-function makeCollaborator(overrides: Partial<{ id: string; userId: string; name: string; role: 'editor' | 'viewer'; addedAt: Date; addedByName: string | null }> = {}) {
+function makeCollaborator(overrides: Partial<{ id: string; userId: string; name: string; role: 'editor' | 'viewer'; addedAt: Date; addedByName: string | null; onboarded: boolean }> = {}) {
   return {
     id: 'collab-1',
     userId: 'user-2',
@@ -326,6 +342,7 @@ function makeCollaborator(overrides: Partial<{ id: string; userId: string; name:
     role: 'editor' as const,
     addedAt: new Date(),
     addedByName: null,
+    onboarded: false,
     ...overrides,
   }
 }
@@ -407,5 +424,80 @@ describe('CollaboratorsPanel', () => {
     const { onInvite } = renderPanel({ isOwner: true, expand: true })
     fireEvent.click(screen.getByText(/Invite collaborator/))
     expect(onInvite).toHaveBeenCalledOnce()
+  })
+})
+
+describe('OnboardingModal', () => {
+  it('renders correct Editor copy', () => {
+    const onAcknowledge = vi.fn()
+    render(
+      <OnboardingModal
+        role="editor"
+        isPending={false}
+        error={null}
+        onAcknowledge={onAcknowledge}
+      />
+    )
+    expect(screen.getByText(/Editor ✏️/)).toBeInTheDocument()
+    expect(screen.getByText(/Editor Capabilities/)).toBeInTheDocument()
+    expect(screen.getByText(/add, edit, delete recipes/)).toBeInTheDocument()
+    expect(screen.getByText(/organize chapters/)).toBeInTheDocument()
+  })
+
+  it('renders correct Viewer copy', () => {
+    const onAcknowledge = vi.fn()
+    render(
+      <OnboardingModal
+        role="viewer"
+        isPending={false}
+        error={null}
+        onAcknowledge={onAcknowledge}
+      />
+    )
+    expect(screen.getByText(/Viewer 👁️/)).toBeInTheDocument()
+    expect(screen.getByText(/Viewer Capabilities/)).toBeInTheDocument()
+    expect(screen.getByText(/read-only access/)).toBeInTheDocument()
+    expect(screen.getByText(/printing/)).toBeInTheDocument()
+    expect(screen.getByText(/bookmarking/)).toBeInTheDocument()
+  })
+})
+
+describe('CookbookDetailPage — onboarding integration', () => {
+  beforeEach(() => {
+    mockUserId = 'collab-user-id'
+    mockMutationPending = false
+    mockMutationError = null
+    mockCookbookData = {
+      id: 'cb-1',
+      name: 'Shared Kitchen',
+      userId: 'owner-id',
+      collaborators: [
+        {
+          id: 'c-1',
+          userId: 'collab-user-id',
+          name: 'Collab User',
+          role: 'editor',
+          onboarded: false,
+          addedAt: new Date(),
+          addedByName: 'Owner',
+        },
+      ],
+      recipes: [],
+      chapters: [],
+    }
+  })
+
+  it('auto-triggers and dismisses when acknowledging', () => {
+    const mockOnboardFn = vi.fn()
+    mockMutate = mockOnboardFn
+
+    render(<CookbookDetailPage />)
+
+    // The onboarding modal is shown automatically
+    expect(screen.getByText(/Editor ✏️/)).toBeInTheDocument()
+
+    // Clicking the CTA button invokes the onboarding mutation
+    fireEvent.click(screen.getByRole('button', { name: /Got it!/i }))
+    expect(mockOnboardFn).toHaveBeenCalledWith({ cookbookId: 'cb-1' })
   })
 })

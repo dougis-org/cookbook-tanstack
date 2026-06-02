@@ -113,6 +113,7 @@ interface Collaborator {
   role: 'editor' | 'viewer'
   addedAt: Date
   addedByName: string | null
+  onboarded: boolean
 }
 
 /** Discriminated union replaces four separate boolean/nullable modal states. */
@@ -189,9 +190,11 @@ function CookbookDetailPage() {
   )
 
   const isOwner = userId === cookbook?.userId
-  const myCollabRole = !isOwner ? cookbook?.collaborators?.find(c => c.userId === userId)?.role : null
+  const myCollabRecord = !isOwner ? cookbook?.collaborators?.find(c => c.userId === userId) : null
+  const myCollabRole = myCollabRecord?.role ?? null
   const accessLevel: 'owner' | 'editor' | 'viewer' = isOwner ? 'owner' : (myCollabRole ?? 'viewer')
   const canEdit = accessLevel === 'owner' || accessLevel === 'editor'
+  const showOnboarding = !isLoading && !!userId && !isOwner && !!myCollabRecord && myCollabRecord.onboarded === false
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({
@@ -235,6 +238,12 @@ function CookbookDetailPage() {
   const removeCollaboratorMutation = useMutation(
     trpc.cookbooks.removeCollaborator.mutationOptions({
       onSuccess: () => { invalidate(); closeModal() },
+    }),
+  )
+
+  const onboardCollaboratorMutation = useMutation(
+    trpc.cookbooks.onboardCollaborator.mutationOptions({
+      onSuccess: () => { invalidate() },
     }),
   )
 
@@ -539,6 +548,15 @@ function CookbookDetailPage() {
           isPending={removeCollaboratorMutation.isPending}
           onConfirm={() => removeCollaboratorMutation.mutate({ cookbookId, userId: modal.collaborator.userId })}
           onCancel={closeModal}
+        />
+      )}
+
+      {showOnboarding && (
+        <OnboardingModal
+          role={myCollabRecord.role}
+          isPending={onboardCollaboratorMutation.isPending}
+          error={onboardCollaboratorMutation.error?.message ?? null}
+          onAcknowledge={() => onboardCollaboratorMutation.mutate({ cookbookId })}
         />
       )}
 
@@ -1242,5 +1260,83 @@ function InviteCollaboratorModal({
   )
 }
 
+function OnboardingModal({
+  role,
+  isPending,
+  error,
+  onAcknowledge,
+}: {
+  role: 'editor' | 'viewer'
+  isPending: boolean
+  error: string | null
+  onAcknowledge: () => void
+}) {
+  return (
+    <DialogOverlay labelId="onboarding-modal-title" onClose={() => {}} isPending={isPending}>
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md p-6">
+        <h2 id="onboarding-modal-title" className="text-2xl font-bold text-[var(--theme-fg)] mb-4 text-center">
+          {role === 'editor' ? 'Welcome Editor ✏️' : 'Welcome Viewer 👁️'}
+        </h2>
+        <p className="text-[var(--theme-fg-muted)] mb-6 text-sm text-center">
+          You have been invited to collaborate on this cookbook. Here is what you can do:
+        </p>
+
+        <div className="mb-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-fg-muted)] mb-3">
+            {role === 'editor' ? 'Editor Capabilities' : 'Viewer Capabilities'}
+          </h3>
+          <ul className="space-y-2 text-sm text-[var(--theme-fg)]">
+            {role === 'editor' ? (
+              <>
+                <li className="flex items-center gap-2">
+                  <span className="text-[var(--theme-accent)]">✓</span> add, edit, delete recipes
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[var(--theme-accent)]">✓</span> organize chapters
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="flex items-center gap-2">
+                  <span className="text-[var(--theme-accent)]">✓</span> read-only access
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[var(--theme-accent)]">✓</span> printing
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-[var(--theme-accent)]">✓</span> bookmarking
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+
+        {error && (
+          <p className="text-[var(--theme-error)] text-sm mb-4 text-center">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onAcknowledge}
+            disabled={isPending}
+            className="flex-1 py-2 px-4 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {isPending ? 'Acknowledging…' : 'Got it!'}
+          </button>
+          <Link
+            to="/cookbooks"
+            className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors flex items-center justify-center text-center text-sm"
+          >
+            Leave Cookbook
+          </Link>
+        </div>
+      </div>
+    </DialogOverlay>
+  )
+}
+
 // Named exports for testing
-export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal }
+export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal, OnboardingModal }
