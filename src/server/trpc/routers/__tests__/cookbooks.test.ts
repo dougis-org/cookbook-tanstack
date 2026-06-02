@@ -1,5 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from "vitest";
+import { Types } from "mongoose";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { Recipe, Cookbook, Classification, Source, Meal, Course, Preparation, Collaborator, Notification } from "@/db/models";
 import {
@@ -1377,8 +1378,8 @@ describe("cookbooks collaboration notifications triggers", () => {
         expect(result).toEqual({ success: true });
 
         const updated = await Collaborator.findOne({
-          cookbookId: { $eq: cb._id },
-          userId: { $eq: collaborator.id },
+          cookbookId: { $eq: new Types.ObjectId(cb._id) },
+          userId: { $eq: new Types.ObjectId(collaborator.id) },
         });
         expect(updated).not.toBeNull();
         expect(updated!.onboarded).toBe(true);
@@ -1409,8 +1410,8 @@ describe("cookbooks collaboration notifications triggers", () => {
         expect(result).toEqual({ success: true });
 
         const updated = await Collaborator.findOne({
-          cookbookId: { $eq: cb._id },
-          userId: { $eq: collaborator.id },
+          cookbookId: { $eq: new Types.ObjectId(cb._id) },
+          userId: { $eq: new Types.ObjectId(collaborator.id) },
         });
         expect(updated).not.toBeNull();
         expect(updated!.onboarded).toBe(true);
