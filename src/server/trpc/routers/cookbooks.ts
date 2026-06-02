@@ -121,6 +121,7 @@ function userLookupStages(localField: string, alias: string) {
 async function fetchCollaboratorsWithUsers(cookbookId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const docs = await Collaborator.aggregate<any>([
+    // Explicitly use $eq and wrap in Types.ObjectId to prevent NoSQL injection warnings in static analysis
     { $match: { cookbookId: { $eq: new Types.ObjectId(cookbookId) } } },
     ...userLookupStages('userId', '_user'),
     ...userLookupStages('addedBy', '_addedByUser'),
@@ -896,6 +897,12 @@ export const cookbooksRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Validate ctx.user.id; input.cookbookId is validated by input schema
+      if (!Types.ObjectId.isValid(ctx.user.id)) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // Explicitly wrap values in Types.ObjectId and use $eq to satisfy Codacy NoSQL injection requirements
       const collaborator = await Collaborator.findOne({
         cookbookId: { $eq: new Types.ObjectId(input.cookbookId) },
         userId: { $eq: new Types.ObjectId(ctx.user.id) },

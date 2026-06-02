@@ -143,22 +143,29 @@ function DialogOverlay({
 }) {
   const overlayRef = useRef<HTMLDivElement>(null)
 
+  const FOCUSABLE_SELECTOR = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+  // Focus on mount: only runs once to prevent resetting focus during pending/loading state transitions
   useEffect(() => {
     if (!overlayRef.current) return
-    
-    // Focus the first focusable element inside the modal upon mounting
-    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    const focusableElements = overlayRef.current.querySelectorAll(focusableSelector)
-    if (focusableElements.length > 0) {
-      ;(focusableElements[0] as HTMLElement).focus()
+    const autoFocusEl = overlayRef.current.querySelector('[autofocus]') as HTMLElement
+    if (autoFocusEl) {
+      autoFocusEl.focus()
+    } else {
+      const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
+      if (focusableEls.length > 0) {
+        ;(focusableEls[0] as HTMLElement).focus()
+      }
     }
+  }, [])
 
+  useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && !isPending) onClose()
 
-      if (e.key === 'Tab') {
-        const focusableEls = overlayRef.current?.querySelectorAll(focusableSelector)
-        if (!focusableEls || focusableEls.length === 0) return
+      if (e.key === 'Tab' && overlayRef.current) {
+        const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
+        if (focusableEls.length === 0) return
 
         const firstEl = focusableEls[0] as HTMLElement
         const lastEl = focusableEls[focusableEls.length - 1] as HTMLElement
@@ -1307,6 +1314,8 @@ function OnboardingModal({
     ? ['add, edit, delete recipes', 'organize chapters']
     : ['read-only access', 'printing', 'bookmarking']
 
+  const leaveBtnBase = "flex-1 py-2 px-4 font-semibold rounded-lg text-center text-sm transition-colors"
+
   return (
     /* Esc/backdrop dismissals are disabled per spec to force explicit acknowledgment or leave cookbook */
     <DialogOverlay labelId="onboarding-modal-title" onClose={() => {}} isPending={isPending}>
@@ -1325,7 +1334,7 @@ function OnboardingModal({
           <ul className="space-y-2 text-sm text-[var(--theme-fg)]">
             {capabilities.map((cap) => (
               <li key={cap} className="flex items-center gap-2">
-                <span className="text-[var(--theme-accent)]">✓</span> {cap}
+                <span className="text-[var(--theme-accent)]" aria-hidden="true">✓</span> {cap}
               </li>
             ))}
           </ul>
@@ -1350,14 +1359,14 @@ function OnboardingModal({
             <button
               type="button"
               disabled
-              className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] opacity-50 text-[var(--theme-fg-muted)] font-semibold rounded-lg text-center text-sm cursor-not-allowed"
+              className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] opacity-50 text-[var(--theme-fg-muted)] cursor-not-allowed`}
             >
               Leave Cookbook
             </button>
           ) : (
             <Link
               to="/cookbooks"
-              className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors flex items-center justify-center text-center text-sm"
+              className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] flex items-center justify-center`}
             >
               Leave Cookbook
             </Link>
