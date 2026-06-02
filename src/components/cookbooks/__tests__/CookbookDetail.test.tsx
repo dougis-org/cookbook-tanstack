@@ -467,6 +467,7 @@ describe('CookbookDetailPage — onboarding integration', () => {
     mockUserId = 'collab-user-id'
     mockMutationPending = false
     mockMutationError = null
+    mockMutate = mockAddMutate
     mockCookbookData = {
       id: 'cb-1',
       name: 'Shared Kitchen',

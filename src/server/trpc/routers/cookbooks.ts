@@ -121,7 +121,7 @@ function userLookupStages(localField: string, alias: string) {
 async function fetchCollaboratorsWithUsers(cookbookId: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const docs = await Collaborator.aggregate<any>([
-    { $match: { cookbookId: new Types.ObjectId(cookbookId) } },
+    { $match: { cookbookId: { $eq: new Types.ObjectId(cookbookId) } } },
     ...userLookupStages('userId', '_user'),
     ...userLookupStages('addedBy', '_addedByUser'),
   ])

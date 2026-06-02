@@ -1340,19 +1340,23 @@ describe("cookbooks collaboration notifications triggers", () => {
   });
 
   describe("cookbooks.onboardCollaborator and byId status", () => {
+    async function setupCollaborator(onboarded = false) {
+      const owner = await seedUser();
+      const collaborator = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({
+        cookbookId: cb._id,
+        userId: collaborator.id,
+        role: "editor",
+        addedBy: owner.id,
+        onboarded,
+      }).save();
+      return { owner, collaborator, cb };
+    }
+
     it("exposes onboarded status in byId query", async () => {
       await withCleanDb(async () => {
-        const owner = await seedUser();
-        const collaborator = await seedUser();
-        const cb = await seedCookbook(owner.id);
-
-        await new Collaborator({
-          cookbookId: cb._id,
-          userId: collaborator.id,
-          role: "editor",
-          addedBy: owner.id,
-          onboarded: false,
-        }).save();
+        const { collaborator, cb } = await setupCollaborator(false);
 
         const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
         const details = await caller.cookbooks.byId({ id: cb.id });
@@ -1365,24 +1369,17 @@ describe("cookbooks collaboration notifications triggers", () => {
 
     it("updates onboarded status to true on onboardCollaborator mutation", async () => {
       await withCleanDb(async () => {
-        const owner = await seedUser();
-        const collaborator = await seedUser();
-        const cb = await seedCookbook(owner.id);
-
-        await new Collaborator({
-          cookbookId: cb._id,
-          userId: collaborator.id,
-          role: "editor",
-          addedBy: owner.id,
-          onboarded: false,
-        }).save();
+        const { collaborator, cb } = await setupCollaborator(false);
 
         const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
         const result = await caller.cookbooks.onboardCollaborator({ cookbookId: cb.id });
 
         expect(result).toEqual({ success: true });
 
-        const updated = await Collaborator.findOne({ cookbookId: cb._id, userId: collaborator.id });
+        const updated = await Collaborator.findOne({
+          cookbookId: { $eq: cb._id },
+          userId: { $eq: collaborator.id },
+        });
         expect(updated).not.toBeNull();
         expect(updated!.onboarded).toBe(true);
       });
@@ -1404,24 +1401,17 @@ describe("cookbooks collaboration notifications triggers", () => {
 
     it("is idempotent when the collaborator is already onboarded", async () => {
       await withCleanDb(async () => {
-        const owner = await seedUser();
-        const collaborator = await seedUser();
-        const cb = await seedCookbook(owner.id);
-
-        await new Collaborator({
-          cookbookId: cb._id,
-          userId: collaborator.id,
-          role: "editor",
-          addedBy: owner.id,
-          onboarded: true,
-        }).save();
+        const { collaborator, cb } = await setupCollaborator(true);
 
         const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
         const result = await caller.cookbooks.onboardCollaborator({ cookbookId: cb.id });
 
         expect(result).toEqual({ success: true });
 
-        const updated = await Collaborator.findOne({ cookbookId: cb._id, userId: collaborator.id });
+        const updated = await Collaborator.findOne({
+          cookbookId: { $eq: cb._id },
+          userId: { $eq: collaborator.id },
+        });
         expect(updated).not.toBeNull();
         expect(updated!.onboarded).toBe(true);
       });

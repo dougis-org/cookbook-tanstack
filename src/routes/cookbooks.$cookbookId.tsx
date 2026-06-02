@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -141,9 +141,40 @@ function DialogOverlay({
   isPending?: boolean
   children: React.ReactNode
 }) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
+    if (!overlayRef.current) return
+    
+    // Focus the first focusable element inside the modal upon mounting
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const focusableElements = overlayRef.current.querySelectorAll(focusableSelector)
+    if (focusableElements.length > 0) {
+      ;(focusableElements[0] as HTMLElement).focus()
+    }
+
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && !isPending) onClose()
+
+      if (e.key === 'Tab') {
+        const focusableEls = overlayRef.current?.querySelectorAll(focusableSelector)
+        if (!focusableEls || focusableEls.length === 0) return
+
+        const firstEl = focusableEls[0] as HTMLElement
+        const lastEl = focusableEls[focusableEls.length - 1] as HTMLElement
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstEl) {
+            lastEl.focus()
+            e.preventDefault()
+          }
+        } else {
+          if (document.activeElement === lastEl) {
+            firstEl.focus()
+            e.preventDefault()
+          }
+        }
+      }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
@@ -151,6 +182,7 @@ function DialogOverlay({
 
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       role="dialog"
       aria-modal="true"
@@ -553,7 +585,7 @@ function CookbookDetailPage() {
 
       {showOnboarding && (
         <OnboardingModal
-          role={myCollabRecord.role}
+          role={myCollabRecord?.role ?? 'viewer'}
           isPending={onboardCollaboratorMutation.isPending}
           error={onboardCollaboratorMutation.error?.message ?? null}
           onAcknowledge={() => onboardCollaboratorMutation.mutate({ cookbookId })}
@@ -1271,7 +1303,12 @@ function OnboardingModal({
   error: string | null
   onAcknowledge: () => void
 }) {
+  const capabilities = role === 'editor'
+    ? ['add, edit, delete recipes', 'organize chapters']
+    : ['read-only access', 'printing', 'bookmarking']
+
   return (
+    /* Esc/backdrop dismissals are disabled per spec to force explicit acknowledgment or leave cookbook */
     <DialogOverlay labelId="onboarding-modal-title" onClose={() => {}} isPending={isPending}>
       <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md p-6">
         <h2 id="onboarding-modal-title" className="text-2xl font-bold text-[var(--theme-fg)] mb-4 text-center">
@@ -1286,28 +1323,11 @@ function OnboardingModal({
             {role === 'editor' ? 'Editor Capabilities' : 'Viewer Capabilities'}
           </h3>
           <ul className="space-y-2 text-sm text-[var(--theme-fg)]">
-            {role === 'editor' ? (
-              <>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--theme-accent)]">✓</span> add, edit, delete recipes
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--theme-accent)]">✓</span> organize chapters
-                </li>
-              </>
-            ) : (
-              <>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--theme-accent)]">✓</span> read-only access
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--theme-accent)]">✓</span> printing
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-[var(--theme-accent)]">✓</span> bookmarking
-                </li>
-              </>
-            )}
+            {capabilities.map((cap) => (
+              <li key={cap} className="flex items-center gap-2">
+                <span className="text-[var(--theme-accent)]">✓</span> {cap}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -1326,12 +1346,22 @@ function OnboardingModal({
           >
             {isPending ? 'Acknowledging…' : 'Got it!'}
           </button>
-          <Link
-            to="/cookbooks"
-            className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors flex items-center justify-center text-center text-sm"
-          >
-            Leave Cookbook
-          </Link>
+          {isPending ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] opacity-50 text-[var(--theme-fg-muted)] font-semibold rounded-lg text-center text-sm cursor-not-allowed"
+            >
+              Leave Cookbook
+            </button>
+          ) : (
+            <Link
+              to="/cookbooks"
+              className="flex-1 py-2 px-4 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors flex items-center justify-center text-center text-sm"
+            >
+              Leave Cookbook
+            </Link>
+          )}
         </div>
       </div>
     </DialogOverlay>
