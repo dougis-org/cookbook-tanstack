@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
+This document details *changes* to requirements and is additive to the archived [design.md](../../changes/archive/2026-06-02-cookbook-collaborator-onboarding/design.md) document, not a replacement.
 
 ### Requirement: ADDED Collaborator Onboarding State Tracking
 
@@ -18,6 +18,8 @@ The system SHALL persistently track whether a collaborator has acknowledged the 
 - **When** they trigger `cookbooks.onboardCollaborator` mutation
 - **Then** the `onboarded` field is updated to `true` in the database.
 
+---
+
 ### Requirement: ADDED Welcome Onboarding Dialog
 
 The system SHALL display an interactive, role-specific onboarding modal to first-time shared cookbook collaborators.
@@ -34,6 +36,8 @@ The system SHALL display an interactive, role-specific onboarding modal to first
 - **When** the page loads
 - **Then** a welcome modal is displayed showing the `Viewer 👁️` role details, read-only boundaries, and actions they can perform.
 
+---
+
 ## MODIFIED Requirements
 
 ### Requirement: MODIFIED Cookbook Fetching Query (`cookbooks.byId`)
@@ -46,9 +50,13 @@ The system SHALL include the `onboarded` status for collaborators in the byId de
 - **When** the query is resolved
 - **Then** the response payload includes an array of collaborators, each containing their name, role, and `onboarded` status.
 
+---
+
 ## REMOVED Requirements
 
 None.
+
+---
 
 ## Traceability
 
@@ -61,6 +69,8 @@ None.
 - Requirement -> Task(s):
   - Collaborator Onboarding State Tracking -> Task 1, Task 2
   - Welcome Onboarding Dialog -> Task 3, Task 4
+
+---
 
 ## Non-Functional Acceptance Criteria
 
