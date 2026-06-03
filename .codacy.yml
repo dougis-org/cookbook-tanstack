@@ -7,9 +7,6 @@ exclude_patterns:
   - dist/**
   - .next/**
   - node_modules/**
-  - src/server/trpc/routers/__tests__/**
-  - src/db/models/__tests__/**
-  - src/components/cookbooks/__tests__/**
   - .codacy/**
   - .agent/**
   - .claude/**
@@ -26,9 +23,6 @@ exclude_patterns:
 # Exclude SQL migration files from SQL Server-specific analysis
 exclude_paths:
   - drizzle/**
-  - src/server/trpc/routers/__tests__/**
-  - src/db/models/__tests__/**
-  - src/components/cookbooks/__tests__/**
 
 # Pattern exclusions: disable SQL Server T-SQL specific checks
 # These patterns do not apply to PostgreSQL 16

@@ -1368,6 +1368,31 @@ describe("cookbooks collaboration notifications triggers", () => {
       });
     });
 
+    it("defaults missing/undefined onboarded status to true for pre-existing records in byId query", async () => {
+      await withCleanDb(async () => {
+        const owner = await seedUser();
+        const collaborator = await seedUser();
+        const cb = await seedCookbook(owner.id);
+
+        // Seed a collaborator without the onboarded field (using MongoDB collection directly)
+        const mongo = Collaborator.collection;
+        await mongo.insertOne({
+          cookbookId: cb._id,
+          userId: new Types.ObjectId(collaborator.id),
+          role: "editor",
+          addedBy: new Types.ObjectId(owner.id),
+          addedAt: new Date(),
+        });
+
+        const caller = await makeAuthCaller(collaborator.id, { collabCookbookIds: [cb.id] });
+        const details = await caller.cookbooks.byId({ id: cb.id });
+
+        expect(details).not.toBeNull();
+        expect(details!.collaborators).toHaveLength(1);
+        expect(details!.collaborators[0].onboarded).toBe(true);
+      });
+    });
+
     it("updates onboarded status to true on onboardCollaborator mutation", async () => {
       await withCleanDb(async () => {
         const { collaborator, cb } = await setupCollaborator(false);

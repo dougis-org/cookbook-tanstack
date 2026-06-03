@@ -147,14 +147,23 @@ function DialogOverlay({
 
   // Focus on mount: only runs once to prevent resetting focus during pending/loading state transitions
   useEffect(() => {
-    if (!overlayRef.current) return
-    const autoFocusEl = overlayRef.current.querySelector('[autofocus]') as HTMLElement
-    if (autoFocusEl) {
-      autoFocusEl.focus()
-    } else {
-      const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
-      if (focusableEls.length > 0) {
-        ;(focusableEls[0] as HTMLElement).focus()
+    const previouslyFocused = document.activeElement as HTMLElement | null
+
+    if (overlayRef.current) {
+      const autoFocusEl = overlayRef.current.querySelector('[autofocus]') as HTMLElement
+      if (autoFocusEl) {
+        autoFocusEl.focus()
+      } else {
+        const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
+        if (focusableEls.length > 0) {
+          ;(focusableEls[0] as HTMLElement).focus()
+        }
+      }
+    }
+
+    return () => {
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus()
       }
     }
   }, [])

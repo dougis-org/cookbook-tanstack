@@ -134,7 +134,7 @@ async function fetchCollaboratorsWithUsers(cookbookId: string) {
     role: c.role as 'editor' | 'viewer',
     addedAt: c.addedAt as Date,
     addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
-    onboarded: (c.onboarded ?? false) as boolean,
+    onboarded: (c.onboarded ?? true) as boolean,
   }))
 }
 
