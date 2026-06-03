@@ -119,9 +119,11 @@ function userLookupStages(localField: string, alias: string) {
 
 /** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
 async function fetchCollaboratorsWithUsers(cookbookId: string) {
+  if (!Types.ObjectId.isValid(cookbookId)) return []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const docs = await Collaborator.aggregate<any>([
-    { $match: { cookbookId: new Types.ObjectId(cookbookId) } },
+    // Explicitly use $eq and wrap in Types.ObjectId to prevent NoSQL injection warnings in static analysis
+    { $match: { cookbookId: { $eq: new Types.ObjectId(cookbookId) } } },
     ...userLookupStages('userId', '_user'),
     ...userLookupStages('addedBy', '_addedByUser'),
   ])
@@ -132,6 +134,7 @@ async function fetchCollaboratorsWithUsers(cookbookId: string) {
     role: c.role as 'editor' | 'viewer',
     addedAt: c.addedAt as Date,
     addedByName: typeof c._addedByUser?.name === 'string' ? (c._addedByUser.name as string) : null,
+    onboarded: (c.onboarded ?? true) as boolean,
   }))
 }
 
@@ -884,6 +887,39 @@ export const cookbooksRouter = router({
       await Cookbook.findByIdAndUpdate(input.cookbookId, {
         $set: { chapters: updatedChapters },
       });
+
+      return { success: true };
+    }),
+
+  onboardCollaborator: protectedProcedure
+    .input(
+      z.object({
+        cookbookId: objectId,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Validate ctx.user.id; input.cookbookId is validated by input schema
+      if (!Types.ObjectId.isValid(ctx.user.id)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid user ID in session context" });
+      }
+
+      // Atomic update reduces DB round-trips; cast inputs to String to prevent NoSQL operator injection flags
+      const result = await Collaborator.updateOne(
+        {
+          cookbookId: { $eq: new Types.ObjectId(String(input.cookbookId)) },
+          userId: { $eq: new Types.ObjectId(String(ctx.user.id)) },
+        },
+        {
+          $set: { onboarded: true }
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not a collaborator on this cookbook",
+        });
+      }
 
       return { success: true };
     }),

@@ -6,6 +6,7 @@ export interface ICollaborator extends Document {
   role: 'editor' | 'viewer';
   addedAt: Date;
   addedBy: Types.ObjectId;
+  onboarded?: boolean;
 }
 
 const collaboratorSchema = new Schema<ICollaborator>({
@@ -14,6 +15,7 @@ const collaboratorSchema = new Schema<ICollaborator>({
   role: { type: String, enum: ['editor', 'viewer'], required: true },
   addedAt: { type: Date, default: Date.now },
   addedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  onboarded: { type: Boolean, default: false },
 });
 
 collaboratorSchema.index({ userId: 1 });

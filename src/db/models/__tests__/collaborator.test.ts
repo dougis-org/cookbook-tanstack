@@ -60,6 +60,22 @@ describe("Collaborator model — schema validation", () => {
       expect(doc.addedAt).toBeInstanceOf(Date);
     });
   });
+
+  it("defaults onboarded to false", async () => {
+    await withCleanDb(async () => {
+      const { cookbookId, userId, addedBy } = makeIds();
+      const doc = await new Collaborator({ cookbookId, userId, role: "editor", addedBy }).save();
+      expect(doc.onboarded).toBe(false);
+    });
+  });
+
+  it("saves an explicit onboarded value", async () => {
+    await withCleanDb(async () => {
+      const { cookbookId, userId, addedBy } = makeIds();
+      const doc = await new Collaborator({ cookbookId, userId, role: "editor", addedBy, onboarded: true }).save();
+      expect(doc.onboarded).toBe(true);
+    });
+  });
 });
 
 describe("Collaborator model — unique constraint", () => {

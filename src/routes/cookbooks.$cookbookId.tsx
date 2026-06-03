@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -113,6 +113,7 @@ interface Collaborator {
   role: 'editor' | 'viewer'
   addedAt: Date
   addedByName: string | null
+  onboarded: boolean
 }
 
 /** Discriminated union replaces four separate boolean/nullable modal states. */
@@ -140,9 +141,56 @@ function DialogOverlay({
   isPending?: boolean
   children: React.ReactNode
 }) {
+  const overlayRef = useRef<HTMLDivElement>(null)
+
+  const FOCUSABLE_SELECTOR = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+  // Focus on mount: only runs once to prevent resetting focus during pending/loading state transitions
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+
+    if (overlayRef.current) {
+      const autoFocusEl = overlayRef.current.querySelector('[autofocus]') as HTMLElement
+      if (autoFocusEl) {
+        autoFocusEl.focus()
+      } else {
+        const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
+        if (focusableEls.length > 0) {
+          ;(focusableEls[0] as HTMLElement).focus()
+        }
+      }
+    }
+
+    return () => {
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus()
+      }
+    }
+  }, [])
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape' && !isPending) onClose()
+
+      if (e.key === 'Tab' && overlayRef.current) {
+        const focusableEls = overlayRef.current.querySelectorAll(FOCUSABLE_SELECTOR)
+        if (focusableEls.length === 0) return
+
+        const firstEl = focusableEls[0] as HTMLElement
+        const lastEl = focusableEls[focusableEls.length - 1] as HTMLElement
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstEl) {
+            lastEl.focus()
+            e.preventDefault()
+          }
+        } else {
+          if (document.activeElement === lastEl) {
+            firstEl.focus()
+            e.preventDefault()
+          }
+        }
+      }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
@@ -150,6 +198,7 @@ function DialogOverlay({
 
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       role="dialog"
       aria-modal="true"
@@ -189,9 +238,11 @@ function CookbookDetailPage() {
   )
 
   const isOwner = userId === cookbook?.userId
-  const myCollabRole = !isOwner ? cookbook?.collaborators?.find(c => c.userId === userId)?.role : null
+  const myCollabRecord = !isOwner ? cookbook?.collaborators?.find(c => c.userId === userId) : null
+  const myCollabRole = myCollabRecord?.role ?? null
   const accessLevel: 'owner' | 'editor' | 'viewer' = isOwner ? 'owner' : (myCollabRole ?? 'viewer')
   const canEdit = accessLevel === 'owner' || accessLevel === 'editor'
+  const showOnboarding = !isLoading && !!userId && !isOwner && !!myCollabRecord && myCollabRecord.onboarded === false
 
   const deleteMutation = useMutation(
     trpc.cookbooks.delete.mutationOptions({
@@ -235,6 +286,12 @@ function CookbookDetailPage() {
   const removeCollaboratorMutation = useMutation(
     trpc.cookbooks.removeCollaborator.mutationOptions({
       onSuccess: () => { invalidate(); closeModal() },
+    }),
+  )
+
+  const onboardCollaboratorMutation = useMutation(
+    trpc.cookbooks.onboardCollaborator.mutationOptions({
+      onSuccess: () => { invalidate() },
     }),
   )
 
@@ -539,6 +596,15 @@ function CookbookDetailPage() {
           isPending={removeCollaboratorMutation.isPending}
           onConfirm={() => removeCollaboratorMutation.mutate({ cookbookId, userId: modal.collaborator.userId })}
           onCancel={closeModal}
+        />
+      )}
+
+      {showOnboarding && myCollabRecord && (
+        <OnboardingModal
+          role={myCollabRecord.role}
+          isPending={onboardCollaboratorMutation.isPending}
+          error={onboardCollaboratorMutation.error?.message}
+          onAcknowledge={() => onboardCollaboratorMutation.mutate({ cookbookId })}
         />
       )}
 
@@ -1242,5 +1308,75 @@ function InviteCollaboratorModal({
   )
 }
 
+const NOOP = () => {}
+
+function OnboardingModal({
+  role,
+  isPending,
+  error,
+  onAcknowledge,
+}: {
+  role: 'editor' | 'viewer'
+  isPending: boolean
+  error?: string | null
+  onAcknowledge: () => void
+}) {
+  const capabilities = role === 'editor'
+    ? ['add, edit, delete recipes', 'organize chapters']
+    : ['read-only access', 'printing', 'bookmarking']
+
+  const leaveBtnBase = "flex-1 py-2 px-4 font-semibold rounded-lg text-center text-sm transition-colors"
+
+  return (
+    /* Esc/backdrop dismissals are disabled per spec to force explicit acknowledgment or leave cookbook */
+    <DialogOverlay labelId="onboarding-modal-title" onClose={NOOP} isPending={isPending}>
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md p-6">
+        <h2 id="onboarding-modal-title" className="text-2xl font-bold text-[var(--theme-fg)] mb-4 text-center">
+          {role === 'editor' ? 'Welcome Editor ✏️' : 'Welcome Viewer 👁️'}
+        </h2>
+        <p className="text-[var(--theme-fg-muted)] mb-6 text-sm text-center">
+          You have been invited to collaborate on this cookbook. Here is what you can do:
+        </p>
+
+        <div className="mb-6 bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--theme-fg-muted)] mb-3">
+            {role === 'editor' ? 'Editor Capabilities' : 'Viewer Capabilities'}
+          </h3>
+          <ul className="space-y-2 text-sm text-[var(--theme-fg)]">
+            {capabilities.map((cap) => (
+              <li key={cap} className="flex items-center gap-2">
+                <span className="text-[var(--theme-accent)]" aria-hidden="true">✓</span> {cap}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {error && (
+          <p className="text-[var(--theme-error)] text-sm mb-4 text-center">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onAcknowledge}
+            disabled={isPending}
+            className="flex-1 py-2 px-4 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {isPending ? 'Acknowledging…' : 'Got it!'}
+          </button>
+          <Link
+            to="/cookbooks"
+            className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] flex items-center justify-center`}
+          >
+            Leave Cookbook
+          </Link>
+        </div>
+      </div>
+    </DialogOverlay>
+  )
+}
+
 // Named exports for testing
-export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal }
+export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal, OnboardingModal }
