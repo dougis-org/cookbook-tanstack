@@ -900,24 +900,26 @@ export const cookbooksRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Validate ctx.user.id; input.cookbookId is validated by input schema
       if (!Types.ObjectId.isValid(ctx.user.id)) {
-        throw new TRPCError({ code: "FORBIDDEN" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid user ID" });
       }
 
-      // Explicitly wrap values in Types.ObjectId and use $eq to satisfy Codacy NoSQL injection requirements
-      const collaborator = await Collaborator.findOne({
-        cookbookId: { $eq: new Types.ObjectId(input.cookbookId) },
-        userId: { $eq: new Types.ObjectId(ctx.user.id) },
-      });
-      if (!collaborator) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      // Atomic update reduces DB round-trips; cast inputs to String to prevent NoSQL operator injection flags
+      const result = await Collaborator.updateOne(
+        {
+          cookbookId: { $eq: new Types.ObjectId(String(input.cookbookId)) },
+          userId: { $eq: new Types.ObjectId(String(ctx.user.id)) },
+        },
+        {
+          $set: { onboarded: true }
+        }
+      );
 
-      if (collaborator.onboarded) {
-        return { success: true };
+      if (result.matchedCount === 0) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not a collaborator on this cookbook",
+        });
       }
-
-      collaborator.onboarded = true;
-      await collaborator.save();
 
       return { success: true };
     }),

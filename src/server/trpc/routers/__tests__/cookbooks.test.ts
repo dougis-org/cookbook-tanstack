@@ -1396,7 +1396,7 @@ describe("cookbooks collaboration notifications triggers", () => {
         const caller = await makeAuthCaller(other.id);
         await expect(
           caller.cookbooks.onboardCollaborator({ cookbookId: cb.id })
-        ).rejects.toThrow("FORBIDDEN");
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
       });
     });
 

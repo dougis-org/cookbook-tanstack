@@ -6,7 +6,7 @@ export interface ICollaborator extends Document {
   role: 'editor' | 'viewer';
   addedAt: Date;
   addedBy: Types.ObjectId;
-  onboarded: boolean;
+  onboarded?: boolean;
 }
 
 const collaboratorSchema = new Schema<ICollaborator>({

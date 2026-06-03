@@ -1299,6 +1299,8 @@ function InviteCollaboratorModal({
   )
 }
 
+const NOOP = () => {}
+
 function OnboardingModal({
   role,
   isPending,
@@ -1307,7 +1309,7 @@ function OnboardingModal({
 }: {
   role: 'editor' | 'viewer'
   isPending: boolean
-  error: string | null
+  error?: string | null
   onAcknowledge: () => void
 }) {
   const capabilities = role === 'editor'
@@ -1318,7 +1320,7 @@ function OnboardingModal({
 
   return (
     /* Esc/backdrop dismissals are disabled per spec to force explicit acknowledgment or leave cookbook */
-    <DialogOverlay labelId="onboarding-modal-title" onClose={() => {}} isPending={isPending}>
+    <DialogOverlay labelId="onboarding-modal-title" onClose={NOOP} isPending={isPending}>
       <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md p-6">
         <h2 id="onboarding-modal-title" className="text-2xl font-bold text-[var(--theme-fg)] mb-4 text-center">
           {role === 'editor' ? 'Welcome Editor ✏️' : 'Welcome Viewer 👁️'}

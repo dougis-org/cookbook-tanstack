@@ -489,17 +489,28 @@ describe('CookbookDetailPage — onboarding integration', () => {
   })
 
   it('auto-triggers and dismisses when acknowledging', () => {
-    const mockOnboardFn = vi.fn()
-    mockMutate = mockOnboardFn
+    mockCookbookData.collaborators[0].onboarded = false
 
-    render(<CookbookDetailPage />)
+    const { rerender } = render(<CookbookDetailPage />)
 
     // The onboarding modal is shown automatically
     expect(screen.getByText(/Editor ✏️/)).toBeInTheDocument()
 
+    // Mock mutate changes the data as the backend would, then we rerender
+    const mockOnboardFn = vi.fn().mockImplementation(() => {
+      mockCookbookData.collaborators[0].onboarded = true
+    })
+    mockMutate = mockOnboardFn
+
     // Clicking the CTA button invokes the onboarding mutation
     fireEvent.click(screen.getByRole('button', { name: /Got it!/i }))
     expect(mockOnboardFn).toHaveBeenCalledWith({ cookbookId: 'cb-1' })
+
+    // Simulate reactive query invalidation / refetch
+    rerender(<CookbookDetailPage />)
+
+    // The onboarding modal should now be dismissed
+    expect(screen.queryByText(/Editor ✏️/)).not.toBeInTheDocument()
   })
 
   it('does not display for collaborators who are already onboarded', () => {
