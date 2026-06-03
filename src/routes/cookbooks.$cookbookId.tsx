@@ -590,11 +590,11 @@ function CookbookDetailPage() {
         />
       )}
 
-      {showOnboarding && (
+      {showOnboarding && myCollabRecord && (
         <OnboardingModal
-          role={myCollabRecord?.role ?? 'viewer'}
+          role={myCollabRecord.role}
           isPending={onboardCollaboratorMutation.isPending}
-          error={onboardCollaboratorMutation.error?.message ?? null}
+          error={onboardCollaboratorMutation.error?.message}
           onAcknowledge={() => onboardCollaboratorMutation.mutate({ cookbookId })}
         />
       )}
