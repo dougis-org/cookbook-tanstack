@@ -1357,22 +1357,12 @@ function OnboardingModal({
           >
             {isPending ? 'Acknowledging…' : 'Got it!'}
           </button>
-          {isPending ? (
-            <button
-              type="button"
-              disabled
-              className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] opacity-50 text-[var(--theme-fg-muted)] cursor-not-allowed`}
-            >
-              Leave Cookbook
-            </button>
-          ) : (
-            <Link
-              to="/cookbooks"
-              className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] flex items-center justify-center`}
-            >
-              Leave Cookbook
-            </Link>
-          )}
+          <Link
+            to="/cookbooks"
+            className={`${leaveBtnBase} bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] flex items-center justify-center`}
+          >
+            Leave Cookbook
+          </Link>
         </div>
       </div>
     </DialogOverlay>

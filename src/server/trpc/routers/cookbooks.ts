@@ -900,7 +900,7 @@ export const cookbooksRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Validate ctx.user.id; input.cookbookId is validated by input schema
       if (!Types.ObjectId.isValid(ctx.user.id)) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid user ID" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid user ID in session context" });
       }
 
       // Atomic update reduces DB round-trips; cast inputs to String to prevent NoSQL operator injection flags
