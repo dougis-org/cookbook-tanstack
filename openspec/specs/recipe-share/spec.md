@@ -1,8 +1,6 @@
-## ADDED Requirements
+## Requirements
 
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
-
-### Requirement: ADDED Copy Recipe URL to Clipboard
+### Requirement: Copy Recipe URL to Clipboard
 
 The system SHALL allow users on a recipe detail page to copy the page URL to their clipboard using a Share button next to the Print button, with temporary success confirmation.
 
@@ -24,9 +22,7 @@ The system SHALL allow users on a recipe detail page to copy the page URL to the
 - **When** the user clicks the Share button
 - **Then** the system triggers a standard browser `alert` containing the URL and instructions to copy it manually.
 
-## MODIFIED Requirements
-
-### Requirement: MODIFIED Recipe Details Page Actions Layout
+### Requirement: Recipe Details Page Actions Layout
 
 The system SHALL include a Share button in the actions bar on the recipe details card next to the Print button.
 
@@ -35,25 +31,6 @@ The system SHALL include a Share button in the actions bar on the recipe details
 - **Given** a user prints the recipe page or enters print preview
 - **When** the layout is formatted for printing
 - **Then** the Share button is hidden from the print view (styled with `print:hidden`).
-
-## REMOVED Requirements
-
-None.
-
-## Traceability
-
-- Proposal element -> Requirement:
-  - "Share button visible on recipe detail page" -> MODIFIED Recipe Details Page Actions Layout
-  - "Copies window.location.href to clipboard" -> ADDED Copy Recipe URL to Clipboard
-  - "Brief success message / toast shown after copy" -> ADDED Copy Recipe URL to Clipboard (Scenario: Happy Path Copying Link)
-  - "Graceful degradation if navigator.clipboard is unavailable" -> ADDED Copy Recipe URL to Clipboard (Scenarios: Graceful Fallback Copying & Fail-Safe Browser Alert)
-  - "Button hidden in print view" -> MODIFIED Recipe Details Page Actions Layout (Scenario: Print Layout Exclusion)
-- Design decision -> Requirement:
-  - "Decision 1: Use the Link icon" -> MODIFIED Recipe Details Page Actions Layout
-  - "Decision 2: Multi-tier Clipboard Copy Strategy" -> ADDED Copy Recipe URL to Clipboard
-- Requirement -> Task(s):
-  - ADDED Copy Recipe URL to Clipboard -> Implement `ShareButton.tsx` and unit tests
-  - MODIFIED Recipe Details Page Actions Layout -> Integrate `ShareButton` in `$recipeId.tsx` and E2E tests
 
 ## Non-Functional Acceptance Criteria
 
