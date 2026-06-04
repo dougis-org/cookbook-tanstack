@@ -62,8 +62,8 @@ Use the project's documented commands for each of the above (see project README 
 - [x] **IMMEDIATELY** enable auto-merge: `gh pr merge https://github.com/dougis-org/cookbook-tanstack/pull/480 --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, and explicitly ensure threads are resolved to allow the process to progress. Follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
-- [ ] **Monitor CI checks** — poll for check status autonomously using `gh pr checks <PR-URL> --json isRequired,state`; when any **required (blocking)** CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all required checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [x] **Monitor CI checks** — poll for check status autonomously using `gh pr checks <PR-URL> --json isRequired,state`; when any **required (blocking)** CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all required checks pass
+- [x] **Poll for merge** — after each iteration run `gh pr view <PR-URL> --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 The comment and CI resolution loops are iterative: address → validate locally → push → wait 180 seconds → re-check → poll for merge → repeat until the PR merges.
 
@@ -81,17 +81,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/cookbook-collaborator-onboarding/` to `openspec/changes/archive/2026-06-02-cookbook-collaborator-onboarding/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/2026-06-02-cookbook-collaborator-onboarding/` exists and `openspec/changes/cookbook-collaborator-onboarding/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-06-02-cookbook-collaborator-onboarding` then `git push -u origin doc/archive-2026-06-02-cookbook-collaborator-onboarding`
-- [ ] Open a PR from `doc/archive-2026-06-02-cookbook-collaborator-onboarding` to `main` with title `docs: archive cookbook-collaborator-onboarding (2026-06-02)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -d feat/cookbook-collaborator-onboarding doc/archive-2026-06-02-cookbook-collaborator-onboarding`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/cookbook-collaborator-onboarding/` to `openspec/changes/archive/2026-06-02-cookbook-collaborator-onboarding/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/2026-06-02-cookbook-collaborator-onboarding/` exists and `openspec/changes/cookbook-collaborator-onboarding/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-06-02-cookbook-collaborator-onboarding` then `git push -u origin doc/archive-2026-06-02-cookbook-collaborator-onboarding`
+- [x] Open a PR from `doc/archive-2026-06-02-cookbook-collaborator-onboarding` to `main` with title `docs: archive cookbook-collaborator-onboarding (2026-06-02)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -d feat/cookbook-collaborator-onboarding doc/archive-2026-06-02-cookbook-collaborator-onboarding`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feat/cookbook-collaborator-onboarding doc/archive-2026-06-02-cookbook-collaborator-onboarding`
