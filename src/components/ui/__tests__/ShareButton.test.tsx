@@ -103,6 +103,46 @@ describe("ShareButton", () => {
     expect(screen.getByText("Share")).toBeInTheDocument()
   })
 
+  it("restarts the 2000ms reset timer on consecutive clicks", async () => {
+    vi.useFakeTimers()
+    mockClipboard()
+
+    render(<ShareButton />)
+    const button = screen.getByRole("button", { name: /share/i })
+
+    // First click
+    fireEvent.click(button)
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(screen.getByText("Copied!")).toBeInTheDocument()
+
+    // Advance by 1000ms
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(screen.getByText("Copied!")).toBeInTheDocument()
+
+    // Second click during success state
+    fireEvent.click(button)
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    // Advance by another 1500ms (total 2500ms since first click, but only 1500ms since second click)
+    act(() => {
+      vi.advanceTimersByTime(1500)
+    })
+    // It should STILL be in "Copied!" state because second click restarted the 2000ms timer
+    expect(screen.getByText("Copied!")).toBeInTheDocument()
+
+    // Advance by final 500ms (total 2000ms since second click)
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+    expect(screen.getByText("Share")).toBeInTheDocument()
+  })
+
   it("falls back to document.execCommand('copy') when navigator.clipboard is unavailable", () => {
     // Make navigator.clipboard undefined
     Object.defineProperty(navigator, "clipboard", {

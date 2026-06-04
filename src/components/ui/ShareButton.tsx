@@ -3,15 +3,21 @@ import { Link, Check } from "lucide-react"
 
 export default function ShareButton({ showLabel = true }: { showLabel?: boolean }) {
   const [copied, setCopied] = useState(false)
+  const [timerTrigger, setTimerTrigger] = useState(0)
 
   const handleShare = async () => {
     const url = window.location.href
+
+    const triggerSuccess = () => {
+      setCopied(true)
+      setTimerTrigger((prev) => prev + 1)
+    }
 
     // 1. Primary: navigator.clipboard
     if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
       try {
         await navigator.clipboard.writeText(url)
-        setCopied(true)
+        triggerSuccess()
         return
       } catch {
         // Fall through to secondary fallback
@@ -24,15 +30,16 @@ export default function ShareButton({ showLabel = true }: { showLabel?: boolean 
       textArea = document.createElement("textarea")
       textArea.value = url
       // Position offscreen to prevent layout shift or visual disturbance
-      textArea.style.position = "absolute"
+      textArea.style.position = "fixed"
       textArea.style.left = "-9999px"
       textArea.style.top = "0"
+      textArea.setAttribute("readonly", "true")
       document.body.appendChild(textArea)
       textArea.focus()
       textArea.select()
       const successful = document.execCommand("copy")
       if (successful) {
-        setCopied(true)
+        triggerSuccess()
         return
       }
     } catch {
@@ -53,7 +60,7 @@ export default function ShareButton({ showLabel = true }: { showLabel?: boolean 
       setCopied(false)
     }, 2000)
     return () => clearTimeout(timer)
-  }, [copied])
+  }, [copied, timerTrigger])
 
   return (
     <button
