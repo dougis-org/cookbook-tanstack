@@ -77,6 +77,11 @@ export default function ShareButton({ showLabel = true }: { showLabel?: boolean 
         <Link className="w-4 h-4" />
       )}
       {showLabel && <span>{copied ? "Copied!" : "Share"}</span>}
+      {copied && (
+        <span aria-live="polite" className="sr-only">
+          Link copied to clipboard
+        </span>
+      )}
     </button>
   )
 }

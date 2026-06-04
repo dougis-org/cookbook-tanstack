@@ -75,6 +75,11 @@ describe("ShareButton", () => {
     const copiedText = await screen.findByText("Copied!")
     expect(copiedText).toBeInTheDocument()
     expect(writeTextMock).toHaveBeenCalledWith(mockHref)
+
+    // Verify ARIA live region announcement
+    const announcement = screen.getByText("Link copied to clipboard")
+    expect(announcement).toBeInTheDocument()
+    expect(announcement).toHaveAttribute("aria-live", "polite")
   })
 
   it("reverts the visual state to 'Share' after 2000ms", async () => {
