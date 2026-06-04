@@ -6,25 +6,25 @@ The system SHALL allow users on a recipe detail page to copy the page URL to the
 
 #### Scenario: Happy Path Copying Link
 
-- **Given** a user is viewing a recipe details page
+- **Given** a user is viewing a recipe detail page
 - **When** the user clicks the Share button with the Link icon
-- **Then** the current page URL is copied to the clipboard, the button text changes to "Copied!" and the icon changes to a checkmark, and after 2 seconds the button resets to its original "Share" and Link icon state.
+- **Then** the current page URL is copied to the clipboard, the button text changes to "Copied!", the icon changes to a checkmark, an ARIA live region announces "Link copied to clipboard", and after 2 seconds the button resets to its original "Share" and Link icon state.
 
 #### Scenario: Graceful Fallback Copying
 
-- **Given** a user is viewing a recipe details page and the modern `navigator.clipboard` API is not available (e.g. non-HTTPS context)
+- **Given** a user is viewing a recipe detail page and the modern `navigator.clipboard` API is not available (e.g. non-HTTPS context)
 - **When** the user clicks the Share button
 - **Then** the system falls back to using a temporary off-screen `<textarea>` to perform the copy via `document.execCommand('copy')` and succeeds, showing the "Copied!" visual feedback.
 
 #### Scenario: Fail-Safe Browser Alert
 
-- **Given** a user is viewing a recipe details page and both modern and legacy clipboard copy methods are blocked or unavailable
+- **Given** a user is viewing a recipe detail page and both modern and legacy clipboard copy methods are blocked or unavailable
 - **When** the user clicks the Share button
 - **Then** the system triggers a standard browser `alert` containing the URL and instructions to copy it manually.
 
-### Requirement: Recipe Details Page Actions Layout
+### Requirement: Recipe Detail Page Actions Layout
 
-The system SHALL include a Share button in the actions bar on the recipe details card next to the Print button.
+The system SHALL include a Share button in the actions bar on the recipe detail card next to the Print button.
 
 #### Scenario: Print Layout Exclusion
 
