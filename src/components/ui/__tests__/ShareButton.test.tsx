@@ -7,6 +7,15 @@ describe("ShareButton", () => {
   let originalClipboard: typeof navigator.clipboard | undefined
   let originalExecCommand: typeof document.execCommand
 
+  function mockClipboard(writeTextMock = vi.fn().mockResolvedValue(undefined)) {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: writeTextMock },
+      configurable: true,
+      writable: true,
+    })
+    return writeTextMock
+  }
+
   beforeEach(() => {
     // Save original values
     originalClipboard = navigator.clipboard
@@ -55,12 +64,7 @@ describe("ShareButton", () => {
   })
 
   it("successfully copies URL via navigator.clipboard.writeText and toggles visual state", async () => {
-    const writeTextMock = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText: writeTextMock },
-      configurable: true,
-      writable: true,
-    })
+    const writeTextMock = mockClipboard()
 
     render(<ShareButton />)
     const button = screen.getByRole("button", { name: /share/i })
@@ -77,12 +81,7 @@ describe("ShareButton", () => {
     // Enable fake timers specifically for this test
     vi.useFakeTimers()
 
-    const writeTextMock = vi.fn().mockResolvedValue(undefined)
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText: writeTextMock },
-      configurable: true,
-      writable: true,
-    })
+    mockClipboard()
 
     render(<ShareButton />)
     const button = screen.getByRole("button", { name: /share/i })
