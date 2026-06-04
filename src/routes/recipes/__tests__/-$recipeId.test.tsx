@@ -10,7 +10,9 @@ vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
-vi.mock('@/components/recipes/RecipeDetail', () => ({ default: () => null }))
+vi.mock('@/components/recipes/RecipeDetail', () => ({
+  default: ({ actions }: { actions: React.ReactNode }) => <div>{actions}</div>,
+}))
 vi.mock('@/components/recipes/RelatedRecipesSection', () => ({ default: () => null }))
 vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null }))
 vi.mock('@/components/recipes/ExportButton', () => ({ default: () => null }))
@@ -80,5 +82,14 @@ describe('RecipeDetailPage', () => {
     render(<RecipeDetailPage />)
 
     expect(screen.getByRole('button', { name: /saved/i })).toBeInTheDocument()
+  })
+
+  it('renders the ShareButton and PrintButton next to each other in the actions slot', () => {
+    mockUseQuery.mockReturnValue({ data: baseRecipe, isLoading: false })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByRole('button', { name: /share/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /print/i })).toBeInTheDocument()
   })
 })
