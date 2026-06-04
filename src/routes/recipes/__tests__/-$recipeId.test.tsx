@@ -89,7 +89,11 @@ describe('RecipeDetailPage', () => {
 
     render(<RecipeDetailPage />)
 
-    expect(screen.getByRole('button', { name: /share/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /print/i })).toBeInTheDocument()
+    const shareButton = screen.getByRole('button', { name: /share/i })
+    const printButton = screen.getByRole('button', { name: /print/i })
+
+    expect(shareButton).toBeInTheDocument()
+    expect(printButton).toBeInTheDocument()
+    expect(shareButton.nextElementSibling).toBe(printButton)
   })
 })

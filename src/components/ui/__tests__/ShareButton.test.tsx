@@ -39,6 +39,7 @@ describe("ShareButton", () => {
     }
     document.execCommand = originalExecCommand
 
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })

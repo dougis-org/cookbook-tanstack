@@ -19,8 +19,9 @@ export default function ShareButton({ showLabel = true }: { showLabel?: boolean 
     }
 
     // 2. Secondary: execCommand fallback
+    let textArea: HTMLTextAreaElement | null = null
     try {
-      const textArea = document.createElement("textarea")
+      textArea = document.createElement("textarea")
       textArea.value = url
       // Position offscreen to prevent layout shift or visual disturbance
       textArea.style.position = "absolute"
@@ -30,13 +31,16 @@ export default function ShareButton({ showLabel = true }: { showLabel?: boolean 
       textArea.focus()
       textArea.select()
       const successful = document.execCommand("copy")
-      document.body.removeChild(textArea)
       if (successful) {
         setCopied(true)
         return
       }
     } catch {
       // Fall through to tertiary fallback
+    } finally {
+      if (textArea && textArea.parentNode) {
+        textArea.parentNode.removeChild(textArea)
+      }
     }
 
     // 3. Tertiary: Standard browser alert
