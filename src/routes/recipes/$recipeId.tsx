@@ -11,6 +11,7 @@ import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
 import ExportButton from '@/components/recipes/ExportButton'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import PrintButton from '@/components/ui/PrintButton'
+import ShareButton from '@/components/ui/ShareButton'
 
 export const Route = createFileRoute('/recipes/$recipeId')({
   component: RecipeDetailPage,
@@ -112,6 +113,7 @@ export function RecipeDetailPage() {
         recipe={recipe}
         actions={
           <div className="flex items-center gap-2 print:hidden">
+            <ShareButton />
             <PrintButton />
             {isOwner && (
               <Link
