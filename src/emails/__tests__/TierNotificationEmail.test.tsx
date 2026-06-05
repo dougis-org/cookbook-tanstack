@@ -29,4 +29,46 @@ describe('TierNotificationEmail', () => {
     expect(html).toContain('25 cookbooks');
     expect(html).toContain('$5.99/mo');
   });
+
+  it('renders upgrade heading, limits, and pricing when changeType is upgrade', async () => {
+    const html = await render(
+      <TierNotificationEmail
+        tier="executive-chef"
+        name="Bob"
+        changeType="upgrade"
+      />
+    );
+    expect(html).toContain('Welcome to the Executive Chef tier');
+    expect(html).toContain('2500 recipes');
+    expect(html).toContain('200 cookbooks');
+    expect(html).toContain('$9.99/mo');
+    expect(html).toContain('1-click recipe imports');
+  });
+
+  it('renders downgrade message, hidden item counts when changeType is downgrade', async () => {
+    const html = await render(
+      <TierNotificationEmail
+        tier="home-cook"
+        name="Bob"
+        changeType="downgrade"
+        recipesHidden={15}
+        cookbooksHidden={3}
+      />
+    );
+    expect(html).toContain('Your tier has been adjusted to Home Cook');
+    expect(html).toContain('15 recipes and 3 cookbooks have been hidden to comply with your new tier limits');
+  });
+
+  it('does not render hidden item counts when none are hidden', async () => {
+    const html = await render(
+      <TierNotificationEmail
+        tier="home-cook"
+        name="Bob"
+        changeType="downgrade"
+        recipesHidden={0}
+        cookbooksHidden={0}
+      />
+    );
+    expect(html).not.toContain('have been hidden to comply');
+  });
 });

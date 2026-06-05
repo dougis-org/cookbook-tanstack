@@ -63,11 +63,13 @@ const usersRouter = router({
         { $set: { tier: input.tier, updatedAt: new Date() } },
       )
 
-      try {
-        const reconciliationResult = await reconcileUserContent(input.userId, currentTier, input.tier)
+      const reconciliationResult = await reconcileUserContent(input.userId, currentTier, input.tier)
+        .catch((err) => {
+          console.error('[admin.setTier] Content reconciliation failed:', err)
+          return undefined
+        })
+      if (reconciliationResult) {
         console.log('[admin.setTier] Reconciliation result:', reconciliationResult)
-      } catch (err) {
-        console.error('[admin.setTier] Content reconciliation failed:', err)
       }
 
       try {
@@ -94,6 +96,10 @@ const usersRouter = router({
           react: React.createElement(TierNotificationEmail, {
             tier: input.tier,
             name: targetUser.name ? String(targetUser.name) : undefined,
+            changeType: 'admin-change',
+            recipesHidden: reconciliationResult?.recipesHidden,
+            cookbooksHidden: reconciliationResult?.cookbooksHidden,
+            madePublic: reconciliationResult?.madePublic,
           }),
         }).catch((err) => {
           console.error('[admin.setTier] Failed to send tier notification email:', err)
