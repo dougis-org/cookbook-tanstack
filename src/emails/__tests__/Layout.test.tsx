@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@react-email/render';
-import { Layout } from '../Layout';
+import { Layout, getBaseUrl } from '../Layout';
 
 describe('Layout', () => {
   it('compiles with basic text children', async () => {
@@ -23,5 +23,16 @@ describe('Layout', () => {
     expect(html.toLowerCase()).toMatch(/#0f172a|#1e293b/);
     // Light slate/white text (#f8fafc or similar)
     expect(html.toLowerCase()).toMatch(/#f8fafc|#ffffff/);
+  });
+
+  it('getBaseUrl handles malformed URL strings', () => {
+    const originalUrl = process.env.APP_PRIMARY_URL;
+    process.env.APP_PRIMARY_URL = 'malformed-url///';
+    expect(getBaseUrl()).toBe('malformed-url');
+    if (originalUrl) {
+      process.env.APP_PRIMARY_URL = originalUrl;
+    } else {
+      delete process.env.APP_PRIMARY_URL;
+    }
   });
 });

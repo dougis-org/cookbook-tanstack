@@ -26,6 +26,7 @@ export const auth = betterAuth({
       void sendEmail({
         to: user.email,
         subject: "Reset your password",
+        text: `Reset your password: ${url}`,
         react: React.createElement(PasswordResetEmail, { url }),
       }).catch((error) => {
         console.error("Failed to send reset password email:", error);
@@ -38,6 +39,7 @@ export const auth = betterAuth({
       void sendEmail({
         to: user.email,
         subject: "Verify your email address",
+        text: `Verify your email address: ${url}`,
         react: React.createElement(VerificationEmail, { url, name: user.name ?? undefined }),
       }).catch((error) => {
         console.error("Failed to send verification email:", error);
