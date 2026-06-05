@@ -305,11 +305,11 @@ export const cookbooksRouter = router({
         .lean();
 
       let ownerName = "";
-      if (cookbook.userId) {
+      if (cookbook.userId && Types.ObjectId.isValid(cookbook.userId.toString())) {
         const ownerDoc = await getMongoClient()
           .db()
           .collection("user")
-          .findOne({ _id: new ObjectId(cookbook.userId.toString()) });
+          .findOne({ _id: { $eq: new ObjectId(cookbook.userId.toString()) } });
         if (ownerDoc) {
           ownerName = typeof ownerDoc.name === "string" ? ownerDoc.name : "";
         }
@@ -323,9 +323,11 @@ export const cookbooksRouter = router({
         ? await fetchCollaboratorsWithUsers(input.id)
         : [];
 
-      const hasCollabs = !!(await Collaborator.exists({ cookbookId: new Types.ObjectId(input.id) }));
+      const hasCollabs = isAuthorized
+        ? collaborators.length > 0
+        : !!(await Collaborator.exists({ cookbookId: { $eq: new Types.ObjectId(input.id) } }));
 
-      const userIds = [...new Set(recipeDocs.map((r) => r.userId?.toString()).filter(Boolean))] as string[];
+      const userIds = [...new Set(recipeDocs.map((r) => r.userId?.toString()).filter((id) => id && Types.ObjectId.isValid(id)))] as string[];
       const userNameMap = new Map<string, string>();
       if (userIds.length > 0) {
         const users = await getMongoClient()
