@@ -71,4 +71,30 @@ describe('TierNotificationEmail', () => {
     );
     expect(html).not.toContain('have been hidden to comply');
   });
+
+  it('renders correct singular/plural messages when only one resource type is hidden', async () => {
+    // 1 recipe hidden
+    let html = await render(
+      <TierNotificationEmail tier="home-cook" recipesHidden={1} cookbooksHidden={0} />
+    );
+    expect(html).toContain('1 recipe has been hidden to comply with your new tier limits');
+
+    // 5 recipes hidden
+    html = await render(
+      <TierNotificationEmail tier="home-cook" recipesHidden={5} cookbooksHidden={0} />
+    );
+    expect(html).toContain('5 recipes have been hidden to comply with your new tier limits');
+
+    // 1 cookbook hidden
+    html = await render(
+      <TierNotificationEmail tier="home-cook" recipesHidden={0} cookbooksHidden={1} />
+    );
+    expect(html).toContain('1 cookbook has been hidden to comply with your new tier limits');
+
+    // 2 cookbooks hidden
+    html = await render(
+      <TierNotificationEmail tier="home-cook" recipesHidden={0} cookbooksHidden={2} />
+    );
+    expect(html).toContain('2 cookbooks have been hidden to comply with your new tier limits');
+  });
 });

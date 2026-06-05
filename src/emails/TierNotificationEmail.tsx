@@ -58,7 +58,11 @@ export function TierNotificationEmail({
       
       {((recipesHidden !== undefined && recipesHidden > 0) || (cookbooksHidden !== undefined && cookbooksHidden > 0)) && (
         <Text style={paragraph}>
-          {`${recipesHidden ?? 0} recipes and ${cookbooksHidden ?? 0} cookbooks have been hidden to comply with your new tier limits.`}
+          {recipesHidden && recipesHidden > 0 && cookbooksHidden && cookbooksHidden > 0
+            ? `${recipesHidden} ${recipesHidden === 1 ? 'recipe' : 'recipes'} and ${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook' : 'cookbooks'} have been hidden to comply with your new tier limits.`
+            : recipesHidden && recipesHidden > 0
+            ? `${recipesHidden} ${recipesHidden === 1 ? 'recipe has' : 'recipes have'} been hidden to comply with your new tier limits.`
+            : `${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook has' : 'cookbooks have'} been hidden to comply with your new tier limits.`}
         </Text>
       )}
 
