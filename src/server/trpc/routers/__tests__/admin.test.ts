@@ -266,9 +266,9 @@ describe('admin.users.setTier', () => {
       madePublic: 2,
     })
     mockFindOneUser.mockResolvedValueOnce(makeUserDoc({ tier: 'sous-chef' }))
-    
+
     await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
-    
+
     expect(mockSendEmail).toHaveBeenCalledOnce()
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
