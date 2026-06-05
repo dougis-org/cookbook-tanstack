@@ -75,7 +75,7 @@ describe('sendEmail', () => {
     delete process.env.MAIL_FROM;
     await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
     expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
-      from: 'Cookbook App <noreply@example.com>',
+      from: 'My CookBooks <noreply@example.com>',
     }));
   });
 

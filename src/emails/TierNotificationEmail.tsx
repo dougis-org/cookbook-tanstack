@@ -23,7 +23,7 @@ export function TierNotificationEmail({ tier, name }: TierNotificationEmailProps
   
   const title = `Your Culinary Tier is now ${displayName}`;
   const preview = `Your account has been updated to the ${displayName} tier.`;
-  const dashboardUrl = `${getBaseUrl()}/dashboard`;
+  const recipesUrl = `${getBaseUrl()}/recipes`;
 
   return (
     <Layout previewText={preview}>
@@ -50,8 +50,8 @@ export function TierNotificationEmail({ tier, name }: TierNotificationEmailProps
       </Text>
       
       <Section style={btnContainer}>
-        <Button href={dashboardUrl} style={button}>
-          Go to Dashboard
+        <Button href={recipesUrl} style={button}>
+          View Recipes
         </Button>
       </Section>
       

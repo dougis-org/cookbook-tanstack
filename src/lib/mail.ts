@@ -40,7 +40,7 @@ export interface SendEmailOptions {
 }
 
 export async function sendEmail(options: SendEmailOptions) {
-  const from = process.env.MAIL_FROM || "Cookbook App <noreply@example.com>";
+  const from = process.env.MAIL_FROM || "My CookBooks <noreply@example.com>";
   const transport = getTransporter();
 
   const { react, ...restOptions } = options;
