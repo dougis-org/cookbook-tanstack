@@ -60,6 +60,10 @@ export async function sendEmail(options: SendEmailOptions) {
     }
   }
 
+  if (!html && !text) {
+    throw new Error("Email body content must be provided (either react, html, or text)");
+  }
+
   return transport.sendMail({
     from,
     ...restOptions,

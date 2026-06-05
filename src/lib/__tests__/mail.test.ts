@@ -10,7 +10,7 @@ vi.mock('mailtrap', () => ({
 
 vi.mock('nodemailer');
 
-let shouldRenderThrow = false;
+var shouldRenderThrow = false;
 vi.mock('@react-email/render', async (importOriginal) => {
   const original = await importOriginal<typeof import('@react-email/render')>();
   return {
@@ -149,6 +149,15 @@ describe('sendEmail', () => {
 
       consoleErrorSpy.mockRestore();
       shouldRenderThrow = false;
+    });
+
+    it('throws a clear error when no body content is provided', async () => {
+      await expect(
+        sendEmail({
+          to: 'user@example.com',
+          subject: 'No Body Subject',
+        })
+      ).rejects.toThrow('Email body content must be provided (either react, html, or text)');
     });
   });
 });

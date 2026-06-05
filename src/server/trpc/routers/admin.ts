@@ -89,7 +89,7 @@ const usersRouter = router({
       if (targetUser.email) {
         void sendEmail({
           to: String(targetUser.email),
-          subject: 'Your My CookBooks Tier Has Been Updated',
+          subject: 'Your Cookbook Tier Has Been Updated',
           react: React.createElement(TierNotificationEmail, {
             tier: input.tier,
             name: targetUser.name ? String(targetUser.name) : undefined,

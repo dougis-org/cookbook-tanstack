@@ -9,7 +9,9 @@ let mockFindUsers: ReturnType<typeof vi.fn>
 let mockFindOneUser: ReturnType<typeof vi.fn>
 let mockUpdateOne: ReturnType<typeof vi.fn>
 let mockInsertOne: ReturnType<typeof vi.fn>
-const mockSendEmail = vi.fn().mockResolvedValue({ messageId: 'test-id' })
+const { mockSendEmail } = vi.hoisted(() => ({
+  mockSendEmail: vi.fn().mockResolvedValue({ messageId: 'test-id' }),
+}))
 
 vi.mock('@/lib/mail', () => ({
   sendEmail: mockSendEmail,
