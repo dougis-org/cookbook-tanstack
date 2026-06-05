@@ -7,6 +7,9 @@ import { objectId } from './_helpers'
 import { transformUserDoc } from './users'
 import { reconcileUserContent } from '@/lib/reconcile-user-content'
 import type { UserTier } from '@/types/user'
+import React from 'react'
+import { sendEmail } from '@/lib/mail'
+import { TierNotificationEmail } from '@/emails/TierNotificationEmail'
 
 const USER_TIERS = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef'] as const
 
@@ -80,6 +83,20 @@ const usersRouter = router({
         })
       } catch (err) {
         console.error('[admin.setTier] Audit log write failed:', err)
+      }
+
+      // Trigger tier notification email asynchronously
+      if (targetUser.email) {
+        void sendEmail({
+          to: String(targetUser.email),
+          subject: 'Your My CookBooks Tier Has Been Updated',
+          react: React.createElement(TierNotificationEmail, {
+            tier: input.tier,
+            name: targetUser.name ? String(targetUser.name) : undefined,
+          }),
+        }).catch((err) => {
+          console.error('[admin.setTier] Failed to send tier notification email:', err)
+        })
       }
 
       return { success: true }

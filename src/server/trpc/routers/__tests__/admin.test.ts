@@ -9,6 +9,11 @@ let mockFindUsers: ReturnType<typeof vi.fn>
 let mockFindOneUser: ReturnType<typeof vi.fn>
 let mockUpdateOne: ReturnType<typeof vi.fn>
 let mockInsertOne: ReturnType<typeof vi.fn>
+const mockSendEmail = vi.fn().mockResolvedValue({ messageId: 'test-id' })
+
+vi.mock('@/lib/mail', () => ({
+  sendEmail: mockSendEmail,
+}))
 
 vi.mock('@/db', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/db')>()
@@ -124,6 +129,7 @@ describe('admin.users.list', () => {
 describe('admin.users.setTier', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockSendEmail.mockClear()
     mockFindUsers = vi.fn().mockResolvedValue([])
     mockFindOneUser = vi.fn().mockResolvedValue(makeUserDoc({ tier: 'home-cook' }))
     mockUpdateOne = vi.fn().mockResolvedValue({ acknowledged: true })
@@ -213,6 +219,31 @@ describe('admin.users.setTier', () => {
     await expect(
       caller.admin.users.setTier({ userId: TARGET_ID, tier: 'sous-chef' }),
     ).resolves.not.toThrow()
+  })
+
+  it('calls sendEmail when a tier changes', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const { TierNotificationEmail } = await import('@/emails/TierNotificationEmail')
+    await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'executive-chef' })
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'target@test.com',
+        react: expect.objectContaining({
+          type: TierNotificationEmail,
+          props: expect.objectContaining({
+            tier: 'executive-chef',
+            name: 'Target User',
+          }),
+        }),
+      })
+    )
+  })
+
+  it('does not call sendEmail if the tier is unchanged', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 })
 

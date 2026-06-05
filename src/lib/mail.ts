@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 import { MailtrapTransport } from "mailtrap";
+import { render } from "@react-email/render";
+import React from "react";
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -32,14 +34,35 @@ function getTransporter() {
 export interface SendEmailOptions {
   to: string;
   subject: string;
-  text: string;
+  text?: string;
   html?: string;
+  react?: React.ReactElement;
 }
 
 export async function sendEmail(options: SendEmailOptions) {
   const from = process.env.MAIL_FROM || "Cookbook App <noreply@example.com>";
   const transport = getTransporter();
-  return transport.sendMail({ from, ...options });
+
+  const { react, ...restOptions } = options;
+  let html = restOptions.html;
+  let text = restOptions.text;
+
+  if (react) {
+    try {
+      html = await render(react);
+      text = await render(react, { plainText: true });
+    } catch (error) {
+      console.error("Email rendering failed, falling back to text options:", error);
+      html = undefined;
+    }
+  }
+
+  return transport.sendMail({
+    from,
+    ...restOptions,
+    html,
+    text,
+  });
 }
 
 /** @internal - Only for testing */
