@@ -4,7 +4,7 @@ This document details *changes* to requirements and is additive to the `design.m
 
 ### Requirement: ADDED Dynamic Tier Email Variants
 
-The system SHALL render distinct email notifications depending on whether the tier change is an upgrade, a downgrade, an administrative update, or a trial expiration.
+The system SHALL render distinct email notifications depending on the nature of the tier change, supporting upgrades, downgrades, trial expirations, and administrative updates.
 
 #### Scenario: Upgrade Email Layout
 
@@ -17,6 +17,18 @@ The system SHALL render distinct email notifications depending on whether the ti
 - **Given** a user is downgraded to the Home Cook tier and has 15 recipes and 3 cookbooks hidden during reconciliation
 - **When** the `TierNotificationEmail` component is rendered with `changeType: 'downgrade'` and reconciliation counts `recipesHidden: 15` and `cookbooksHidden: 3`
 - **Then** the email says "Your tier has been adjusted to Home Cook" and displays "15 recipes and 3 cookbooks have been hidden to comply with your new tier limits".
+
+#### Scenario: Trial Expiration Email Layout
+
+- **Given** a user's trial is expiring soon
+- **When** the `TierNotificationEmail` component is rendered with `changeType: 'trial-expiring'` and `tier: 'home-cook'`
+- **Then** the email header says "Your Trial is Expiring Soon" and the intro text says "Your trial is expiring soon, and your tier will be adjusted to Home Cook."
+
+#### Scenario: Administrative Update Email Layout
+
+- **Given** a user's tier is modified by an administrator
+- **When** the `TierNotificationEmail` component is rendered with `changeType: 'admin-change'`
+- **Then** the email header says "Your Culinary Tier is now [Tier Name]" and the intro text explains that an administrator has updated their culinary tier.
 
 ## MODIFIED Requirements
 
@@ -67,6 +79,6 @@ Reason for removal: The static text template is replaced by dynamic templates to
 
 #### Scenario: SMTP server down
 
-- **Given** the Mailtrap SMTP server is temporarily unreachable
+- **Given** the SMTP server is temporarily unreachable
 - **When** `admin.users.setTier` is called
 - **Then** the user tier change persists successfully in the database and a warning is logged on the server instead of throwing a TRPC error.
