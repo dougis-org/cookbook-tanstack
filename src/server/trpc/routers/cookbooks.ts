@@ -315,9 +315,10 @@ export const cookbooksRouter = router({
         }
       }
 
-      const isAuthorized = ctx.user && (
-        ctx.user.id === cookbook.userId?.toString() ||
-        ctx.collabCookbookIds.includes(input.id)
+      const isAuthorized = !!(
+        ctx.user &&
+        (ctx.user.id === cookbook.userId?.toString() ||
+          ctx.collabCookbookIds.includes(input.id))
       );
       const collaborators = isAuthorized
         ? await fetchCollaboratorsWithUsers(input.id)
@@ -327,7 +328,15 @@ export const cookbooksRouter = router({
         ? collaborators.length > 0
         : !!(await Collaborator.exists({ cookbookId: { $eq: new Types.ObjectId(input.id) } }));
 
-      const userIds = [...new Set(recipeDocs.map((r) => r.userId?.toString()).filter((id) => id && Types.ObjectId.isValid(id)))] as string[];
+      const userIds = hasCollabs
+        ? ([
+            ...new Set(
+              recipeDocs
+                .map((r) => r.userId?.toString())
+                .filter((id): id is string => typeof id === "string" && Types.ObjectId.isValid(id)),
+            ),
+          ] as string[])
+        : [];
       const userNameMap = new Map<string, string>();
       if (userIds.length > 0) {
         const users = await getMongoClient()

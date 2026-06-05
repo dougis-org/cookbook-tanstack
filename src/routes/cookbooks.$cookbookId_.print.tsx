@@ -80,7 +80,7 @@ export function CookbookPrintPage() {
             className="cookbook-toc-footer mt-8 pt-4 border-t border-[color:var(--theme-print-border)] text-xs text-[var(--theme-print-fg-subtle)]"
             data-testid="cookbook-toc-footer"
           >
-            <div>Created by: {ownerName}</div>
+            <div>Created by: {ownerName || 'Owner'}</div>
             {collaborators && collaborators.length > 0 && (
               <div className="mt-1" data-testid="cookbook-toc-collaborators">
                 Collaborators: {collaborators.map((c) => c.name || 'Collaborator').join(', ')}
