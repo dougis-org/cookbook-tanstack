@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, waitFor, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { mockUseParams, mockUseSearch } = vi.hoisted(() => ({
@@ -97,5 +97,45 @@ describe('CookbookPrintPage — document.title swap', () => {
 
     expect(window.print).not.toHaveBeenCalled()
     expect(document.title).toBe(originalTitle)
+  })
+
+  it('renders the owner name and collaborators in the TOC footer when authenticated and authorized', () => {
+    const authData = {
+      ...printData,
+      ownerName: 'Alice Owner',
+      collaborators: [
+        { id: 'c1', name: 'Bob Editor', role: 'editor' },
+        { id: 'c2', name: 'Charlie Viewer', role: 'viewer' },
+      ],
+    }
+    mockUseQuery.mockReturnValue({ data: authData, isLoading: false })
+
+    render(<CookbookPrintPage />)
+
+    const footer = screen.getByTestId('cookbook-toc-footer')
+    expect(footer).toBeInTheDocument()
+    expect(footer).toHaveTextContent('Created by: Alice Owner')
+
+    const collaboratorsSec = screen.getByTestId('cookbook-toc-collaborators')
+    expect(collaboratorsSec).toBeInTheDocument()
+    expect(collaboratorsSec).toHaveTextContent('Collaborators: Bob Editor, Charlie Viewer')
+  })
+
+  it('renders only the owner name and omits the collaborators section in the TOC footer when collaborator list is empty', () => {
+    const anonData = {
+      ...printData,
+      ownerName: 'Alice Owner',
+      collaborators: [],
+    }
+    mockUseQuery.mockReturnValue({ data: anonData, isLoading: false })
+
+    render(<CookbookPrintPage />)
+
+    const footer = screen.getByTestId('cookbook-toc-footer')
+    expect(footer).toBeInTheDocument()
+    expect(footer).toHaveTextContent('Created by: Alice Owner')
+
+    const collaboratorsSec = screen.queryByTestId('cookbook-toc-collaborators')
+    expect(collaboratorsSec).not.toBeInTheDocument()
   })
 })

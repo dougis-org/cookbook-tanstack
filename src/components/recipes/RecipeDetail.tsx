@@ -14,6 +14,7 @@ interface RecipeDetailProps {
     classificationName?: string | null
     sourceName?: string | null
     sourceUrl?: string | null
+    addedByName?: string | null
   }
   actions?: ReactNode
 }
@@ -266,6 +267,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               recipe.cookTime && `Cook: ${recipe.cookTime}m`,
               recipe.servings != null && `Serves: ${currentServings}`,
               recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
+              recipe.addedByName && `Added by: ${recipe.addedByName}`,
             ].filter(Boolean).join(' · ')
             return printMetaLine ? (
               <p

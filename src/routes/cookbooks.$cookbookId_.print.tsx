@@ -55,7 +55,7 @@ export function CookbookPrintPage() {
   if (isLoading) return <CookbookPageLoading />
   if (!printData) return <CookbookPageNotFound />
 
-  const { name, description, recipes, chapters } = printData
+  const { name, description, recipes, chapters, ownerName, collaborators } = printData
   const orderedRecipes = getDisplayOrderedRecipes(recipes, chapters ?? [])
   const pageMap = buildPageMap(orderedRecipes)
 
@@ -75,6 +75,18 @@ export function CookbookPrintPage() {
           ) : (
             <CookbookTocList recipes={recipes} chapters={chapters ?? []} />
           )}
+
+          <div
+            className="cookbook-toc-footer mt-8 pt-4 border-t border-[color:var(--theme-print-border)] text-xs text-[var(--theme-print-fg-subtle)]"
+            data-testid="cookbook-toc-footer"
+          >
+            <div>Created by: {ownerName}</div>
+            {collaborators && collaborators.length > 0 && (
+              <div className="mt-1" data-testid="cookbook-toc-collaborators">
+                Collaborators: {collaborators.map((c) => c.name || 'Collaborator').join(', ')}
+              </div>
+            )}
+          </div>
         </div>
 
         {orderedRecipes.map((recipe) => {
@@ -85,6 +97,7 @@ export function CookbookPrintPage() {
             classificationName?: string | null
             sourceName?: string | null
             sourceUrl?: string | null
+            addedByName?: string | null
           } = {
             ...recipe,
             imageUrl: null,
