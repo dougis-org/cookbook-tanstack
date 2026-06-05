@@ -97,4 +97,16 @@ describe('TierNotificationEmail', () => {
     );
     expect(html).toContain('2 cookbooks have been hidden to comply with your new tier limits');
   });
+
+  it('renders trial-expiring message when changeType is trial-expiring', async () => {
+    const html = await render(
+      <TierNotificationEmail
+        tier="home-cook"
+        name="Bob"
+        changeType="trial-expiring"
+      />
+    );
+    expect(html).toContain('Your Trial is Expiring Soon');
+    expect(html).toContain('Your trial is expiring soon, and your tier will be adjusted to Home Cook.');
+  });
 });

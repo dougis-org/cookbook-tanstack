@@ -10,6 +10,7 @@ import type { UserTier } from '@/types/user'
 import React from 'react'
 import { sendEmail } from '@/lib/mail'
 import { TierNotificationEmail } from '@/emails/TierNotificationEmail'
+import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
 
 const USER_TIERS = ['home-cook', 'prep-cook', 'sous-chef', 'executive-chef'] as const
 
@@ -92,7 +93,7 @@ const usersRouter = router({
         void sendEmail({
           to: String(targetUser.email),
           subject: 'Your My CookBooks Tier Has Been Updated',
-          text: `Your My CookBooks culinary tier has been updated to ${input.tier}.`,
+          text: `Your My CookBooks culinary tier has been updated to ${TIER_DISPLAY_NAMES[input.tier] || input.tier}.`,
           react: React.createElement(TierNotificationEmail, {
             tier: input.tier,
             name: targetUser.name ? String(targetUser.name) : undefined,

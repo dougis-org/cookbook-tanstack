@@ -242,6 +242,7 @@ describe('admin.users.setTier', () => {
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Executive Chef.',
         react: expect.objectContaining({
           type: TierNotificationEmail,
           props: expect.objectContaining({
@@ -272,6 +273,7 @@ describe('admin.users.setTier', () => {
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Home Cook.',
         react: expect.objectContaining({
           type: TierNotificationEmail,
           props: expect.objectContaining({
@@ -291,5 +293,33 @@ describe('admin.users.setTier', () => {
     const caller = await makeAdminCaller(ADMIN_ID)
     await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
     expect(mockSendEmail).not.toHaveBeenCalled()
+  })
+
+  it('succeeds and calls sendEmail even if reconcileUserContent throws an error', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const { TierNotificationEmail } = await import('@/emails/TierNotificationEmail')
+    mockReconcileUserContent.mockRejectedValueOnce(new Error('Reconciliation failed'))
+    mockFindOneUser.mockResolvedValueOnce(makeUserDoc({ tier: 'sous-chef' }))
+
+    const result = await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
+    expect(result).toMatchObject({ success: true })
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Home Cook.',
+        react: expect.objectContaining({
+          type: TierNotificationEmail,
+          props: expect.objectContaining({
+            tier: 'home-cook',
+            name: 'Target User',
+            changeType: 'admin-change',
+            recipesHidden: undefined,
+            cookbooksHidden: undefined,
+            madePublic: undefined,
+          }),
+        }),
+      })
+    )
   })
 })

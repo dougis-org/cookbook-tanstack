@@ -18,6 +18,24 @@ interface TierNotificationEmailProps {
   madePublic?: number;
 }
 
+function getHiddenItemsText(recipesHidden?: number, cookbooksHidden?: number): string {
+  const hasRecipes = recipesHidden !== undefined && recipesHidden > 0;
+  const hasCookbooks = cookbooksHidden !== undefined && cookbooksHidden > 0;
+
+  if (hasRecipes && hasCookbooks) {
+    const recipeText = `${recipesHidden} ${recipesHidden === 1 ? 'recipe' : 'recipes'}`;
+    const cookbookText = `${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook' : 'cookbooks'}`;
+    return `${recipeText} and ${cookbookText} have been hidden to comply with your new tier limits.`;
+  }
+  if (hasRecipes) {
+    return `${recipesHidden} ${recipesHidden === 1 ? 'recipe has' : 'recipes have'} been hidden to comply with your new tier limits.`;
+  }
+  if (hasCookbooks) {
+    return `${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook has' : 'cookbooks have'} been hidden to comply with your new tier limits.`;
+  }
+  return '';
+}
+
 export function TierNotificationEmail({
   tier,
   name,
@@ -49,6 +67,7 @@ export function TierNotificationEmail({
 
   const preview = `Your account has been updated to the ${displayName} tier.`;
   const recipesUrl = `${getBaseUrl()}/recipes`;
+  const hiddenText = getHiddenItemsText(recipesHidden, cookbooksHidden);
 
   return (
     <Layout previewText={preview}>
@@ -56,19 +75,13 @@ export function TierNotificationEmail({
       <Text style={paragraph}>{greeting}</Text>
       <Text style={paragraph}>{introText}</Text>
       
-      {((recipesHidden !== undefined && recipesHidden > 0) || (cookbooksHidden !== undefined && cookbooksHidden > 0)) && (
-        <Text style={paragraph}>
-          {recipesHidden && recipesHidden > 0 && cookbooksHidden && cookbooksHidden > 0
-            ? `${recipesHidden} ${recipesHidden === 1 ? 'recipe' : 'recipes'} and ${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook' : 'cookbooks'} have been hidden to comply with your new tier limits.`
-            : recipesHidden && recipesHidden > 0
-            ? `${recipesHidden} ${recipesHidden === 1 ? 'recipe has' : 'recipes have'} been hidden to comply with your new tier limits.`
-            : `${cookbooksHidden} ${cookbooksHidden === 1 ? 'cookbook has' : 'cookbooks have'} been hidden to comply with your new tier limits.`}
-        </Text>
+      {hiddenText && (
+        <Text style={paragraph}>{hiddenText}</Text>
       )}
 
       {madePublic !== undefined && madePublic > 0 && (
         <Text style={paragraph}>
-          Additionally, {madePublic} private items have been made public to comply with your new tier limits.
+          Additionally, {madePublic} private {madePublic === 1 ? 'item has' : 'items have'} been made public to comply with your new tier limits.
         </Text>
       )}
       
