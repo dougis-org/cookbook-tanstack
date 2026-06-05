@@ -16,7 +16,18 @@ interface LayoutProps {
   previewText?: string;
 }
 
+export function getBaseUrl() {
+  let cleanBaseUrl = process.env.APP_PRIMARY_URL || process.env.BETTER_AUTH_URL || "https://mycookbooks.app";
+  try {
+    cleanBaseUrl = new URL(cleanBaseUrl).origin;
+  } catch {
+    cleanBaseUrl = cleanBaseUrl.replace(/\/+$/, "");
+  }
+  return cleanBaseUrl;
+}
+
 export function Layout({ children, previewText }: LayoutProps) {
+  const baseUrl = getBaseUrl();
   return (
     <Html>
       <Head />
@@ -33,7 +44,7 @@ export function Layout({ children, previewText }: LayoutProps) {
           </Section>
           <Section style={footer}>
             <Text style={footerText}>
-              Sent by My CookBooks • <Link href="https://mycookbooks.app" style={footerLink}>Visit Website</Link>
+              Sent by My CookBooks • <Link href={baseUrl} style={footerLink}>Visit Website</Link>
             </Text>
             <Text style={footerText}>
               © {new Date().getFullYear()} My CookBooks. All rights reserved.

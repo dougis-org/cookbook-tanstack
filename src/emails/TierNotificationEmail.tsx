@@ -1,5 +1,5 @@
 import { Section, Text, Button } from '@react-email/components';
-import { Layout } from './Layout';
+import { Layout, getBaseUrl } from './Layout';
 import {
   TIER_LIMITS,
   TIER_DISPLAY_NAMES,
@@ -23,6 +23,7 @@ export function TierNotificationEmail({ tier, name }: TierNotificationEmailProps
   
   const title = `Your Culinary Tier is now ${displayName}`;
   const preview = `Your account has been updated to the ${displayName} tier.`;
+  const dashboardUrl = `${getBaseUrl()}/dashboard`;
 
   return (
     <Layout previewText={preview}>
@@ -49,7 +50,7 @@ export function TierNotificationEmail({ tier, name }: TierNotificationEmailProps
       </Text>
       
       <Section style={btnContainer}>
-        <Button href="https://mycookbooks.app/dashboard" style={button}>
+        <Button href={dashboardUrl} style={button}>
           Go to Dashboard
         </Button>
       </Section>

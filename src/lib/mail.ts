@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { MailtrapTransport } from "mailtrap";
 import { render } from "@react-email/render";
-import React from "react";
+import type React from "react";
 
 let transporter: nodemailer.Transporter | null = null;
 
