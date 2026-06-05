@@ -49,11 +49,14 @@ export async function sendEmail(options: SendEmailOptions) {
 
   if (react) {
     try {
-      html = await render(react);
-      text = await render(react, { plainText: true });
+      const renderedHtml = await render(react);
+      const renderedText = await render(react, { plainText: true });
+      html = renderedHtml;
+      text = renderedText;
     } catch (error) {
       console.error("Email rendering failed, falling back to text options:", error);
-      html = undefined;
+      html = restOptions.html;
+      text = restOptions.text;
     }
   }
 

@@ -1,4 +1,4 @@
-import { Section, Text, Button } from '@react-email/components';
+import { Section, Text, Button, Link } from '@react-email/components';
 import { Layout } from './Layout';
 
 interface VerificationEmailProps {
@@ -24,7 +24,7 @@ export function VerificationEmail({ url, name }: VerificationEmailProps) {
         If the button above doesn't work, you can also copy and paste the following link into your browser:
       </Text>
       <Text style={linkText}>
-        <a href={url} style={link}>{url}</a>
+        <Link href={url} style={link}>{url}</Link>
       </Text>
       <Text style={paragraph}>
         Happy cooking,
