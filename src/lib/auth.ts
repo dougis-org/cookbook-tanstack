@@ -5,6 +5,9 @@ import { username } from "better-auth/plugins";
 import { getMongoClient } from "@/db";
 import { sendEmail } from "@/lib/mail";
 import { publishPendingRecipes } from "@/server/recipes/pendingRecipes";
+import React from "react";
+import { VerificationEmail } from "@/emails/VerificationEmail";
+import { PasswordResetEmail } from "@/emails/PasswordResetEmail";
 
 export const auth = betterAuth({
   trustedOrigins:
@@ -23,8 +26,8 @@ export const auth = betterAuth({
       void sendEmail({
         to: user.email,
         subject: "Reset your password",
-        text: `Click the link to reset your password: ${url}`,
-        html: `<p>Click the link to reset your password: <a href="${url}">${url}</a></p>`,
+        text: `Reset your password: ${url}`,
+        react: React.createElement(PasswordResetEmail, { url }),
       }).catch((error) => {
         console.error("Failed to send reset password email:", error);
       });
@@ -36,8 +39,8 @@ export const auth = betterAuth({
       void sendEmail({
         to: user.email,
         subject: "Verify your email address",
-        text: `Click the link to verify your email address: ${url}`,
-        html: `<p>Click the link to verify your email address: <a href="${url}">${url}</a></p>`,
+        text: `Verify your email address: ${url}`,
+        react: React.createElement(VerificationEmail, { url, name: user.name ?? undefined }),
       }).catch((error) => {
         console.error("Failed to send verification email:", error);
       });

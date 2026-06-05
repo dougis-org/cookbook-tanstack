@@ -21,10 +21,17 @@ function assertIsFunction(value: unknown) {
   expect(typeof value).toBe("function")
 }
 
-function assertEmailSentTo(to: string, urlContaining: string) {
-  expect(mockSendEmail).toHaveBeenCalledWith(expect.objectContaining({ to }))
+function assertEmailSentTo(to: string, urlContaining: string, expectedType: any) {
   expect(mockSendEmail).toHaveBeenCalledWith(
-    expect.objectContaining({ text: expect.stringContaining(urlContaining) })
+    expect.objectContaining({
+      to,
+      react: expect.objectContaining({
+        type: expectedType,
+        props: expect.objectContaining({
+          url: urlContaining,
+        }),
+      }),
+    })
   )
 }
 
@@ -68,23 +75,25 @@ describe("auth email hooks behavior", () => {
 
   it("sendResetPassword hook sends email to user with reset url", async () => {
     const { auth } = await import("@/lib/auth")
+    const { PasswordResetEmail } = await import("@/emails/PasswordResetEmail")
     const hook = auth.options.emailAndPassword?.sendResetPassword
     await hook?.({
       user: { email: "user@example.com" } as any,
       url: "https://example.com/reset",
       token: "test-token",
     })
-    assertEmailSentTo("user@example.com", "https://example.com/reset")
+    assertEmailSentTo("user@example.com", "https://example.com/reset", PasswordResetEmail)
   })
 
   it("sendVerificationEmail hook sends email to user with verification url", async () => {
     const { auth } = await import("@/lib/auth")
+    const { VerificationEmail } = await import("@/emails/VerificationEmail")
     const hook = auth.options.emailVerification?.sendVerificationEmail
     await hook?.({
       user: { email: "user@example.com" } as any,
       url: "https://example.com/verify",
       token: "test-token",
     })
-    assertEmailSentTo("user@example.com", "https://example.com/verify")
+    assertEmailSentTo("user@example.com", "https://example.com/verify", VerificationEmail)
   })
 })

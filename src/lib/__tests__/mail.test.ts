@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React from 'react';
 import nodemailer from 'nodemailer';
 import { sendEmail, resetTransporter } from '@/lib/mail';
 
@@ -9,12 +10,27 @@ vi.mock('mailtrap', () => ({
 
 vi.mock('nodemailer');
 
+var shouldRenderThrow = false;
+vi.mock('@react-email/render', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@react-email/render')>();
+  return {
+    ...original,
+    render: vi.fn(async (element: React.ReactElement, options?: any) => {
+      if (shouldRenderThrow) {
+        throw new Error('Render error');
+      }
+      return original.render(element, options);
+    }),
+  };
+});
+
 describe('sendEmail', () => {
   const mockSendMail = vi.fn().mockResolvedValue({ messageId: 'test-id' });
 
   beforeEach(() => {
     vi.clearAllMocks();
     resetTransporter();
+    shouldRenderThrow = false;
     vi.mocked(nodemailer.createTransport).mockReturnValue({
       sendMail: mockSendMail,
     } as any);
@@ -59,7 +75,7 @@ describe('sendEmail', () => {
     delete process.env.MAIL_FROM;
     await sendEmail({ to: 'u@e.com', subject: 's', text: 't' });
     expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
-      from: 'Cookbook App <noreply@example.com>',
+      from: 'My CookBooks <noreply@example.com>',
     }));
   });
 
@@ -84,5 +100,64 @@ describe('sendEmail', () => {
     await expect(sendEmail({ to: 'u@e.com', subject: 's', text: 't' })).rejects.toThrow(
       'must be a valid positive integer',
     );
+  });
+
+  describe('with react rendering', () => {
+    it('compiles a React element into the html and text fields', async () => {
+      const reactEl = React.createElement('div', null, 'Hello React Email');
+      await sendEmail({
+        to: 'user@example.com',
+        subject: 'React Subject',
+        react: reactEl,
+      });
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'React Subject',
+          html: expect.stringContaining('Hello React Email'),
+          text: expect.stringContaining('Hello React Email'),
+        })
+      );
+    });
+
+    it('gracefully degrades to provided fallback text when render fails and console logs error', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const badReactEl = React.createElement('div', null, 'Bad Element');
+
+      shouldRenderThrow = true;
+
+      await sendEmail({
+        to: 'user@example.com',
+        subject: 'Fail Subject',
+        text: 'Fallback Text',
+        react: badReactEl,
+      });
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'user@example.com',
+          subject: 'Fail Subject',
+          text: 'Fallback Text',
+        })
+      );
+      expect(mockSendMail.mock.calls[mockSendMail.mock.calls.length - 1][0].html).toBeUndefined();
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Email rendering failed'),
+        expect.any(Error)
+      );
+
+      consoleErrorSpy.mockRestore();
+      shouldRenderThrow = false;
+    });
+
+    it('throws a clear error when no body content is provided', async () => {
+      await expect(
+        sendEmail({
+          to: 'user@example.com',
+          subject: 'No Body Subject',
+        })
+      ).rejects.toThrow('Email body content must be provided (either react, html, or text)');
+    });
   });
 });
