@@ -35,4 +35,14 @@ describe('Layout', () => {
       delete process.env.APP_PRIMARY_URL;
     }
   });
+
+  it('renders the transaction notice footer text and a link pointing to the /account settings route', async () => {
+    const html = await render(
+      <Layout>
+        <div>Footer Link Test</div>
+      </Layout>
+    );
+    expect(html).toContain('transactional');
+    expect(html).toContain('/account');
+  });
 });

@@ -9,12 +9,23 @@ let mockFindUsers: ReturnType<typeof vi.fn>
 let mockFindOneUser: ReturnType<typeof vi.fn>
 let mockUpdateOne: ReturnType<typeof vi.fn>
 let mockInsertOne: ReturnType<typeof vi.fn>
-const { mockSendEmail } = vi.hoisted(() => ({
+const { mockSendEmail, mockReconcileUserContent } = vi.hoisted(() => ({
   mockSendEmail: vi.fn().mockResolvedValue({ messageId: 'test-id' }),
+  mockReconcileUserContent: vi.fn().mockResolvedValue({
+    recipesUpdated: 0,
+    cookbooksUpdated: 0,
+    recipesHidden: 10,
+    cookbooksHidden: 2,
+    madePublic: 1,
+  }),
 }))
 
 vi.mock('@/lib/mail', () => ({
   sendEmail: mockSendEmail,
+}))
+
+vi.mock('@/lib/reconcile-user-content', () => ({
+  reconcileUserContent: mockReconcileUserContent,
 }))
 
 vi.mock('@/db', async (importOriginal) => {
@@ -231,11 +242,47 @@ describe('admin.users.setTier', () => {
     expect(mockSendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Executive Chef.',
         react: expect.objectContaining({
           type: TierNotificationEmail,
           props: expect.objectContaining({
             tier: 'executive-chef',
             name: 'Target User',
+            changeType: 'upgrade',
+          }),
+        }),
+      })
+    )
+  })
+
+  it('passes reconciliation results to sendEmail', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const { TierNotificationEmail } = await import('@/emails/TierNotificationEmail')
+    mockReconcileUserContent.mockResolvedValueOnce({
+      recipesUpdated: 0,
+      cookbooksUpdated: 0,
+      recipesHidden: 15,
+      cookbooksHidden: 3,
+      madePublic: 2,
+    })
+    mockFindOneUser.mockResolvedValueOnce(makeUserDoc({ tier: 'sous-chef' }))
+
+    await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
+
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Home Cook.',
+        react: expect.objectContaining({
+          type: TierNotificationEmail,
+          props: expect.objectContaining({
+            tier: 'home-cook',
+            name: 'Target User',
+            changeType: 'downgrade',
+            recipesHidden: 15,
+            cookbooksHidden: 3,
+            madePublic: 2,
           }),
         }),
       })
@@ -247,5 +294,32 @@ describe('admin.users.setTier', () => {
     await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
     expect(mockSendEmail).not.toHaveBeenCalled()
   })
-})
 
+  it('succeeds and calls sendEmail even if reconcileUserContent throws an error', async () => {
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const { TierNotificationEmail } = await import('@/emails/TierNotificationEmail')
+    mockReconcileUserContent.mockRejectedValueOnce(new Error('Reconciliation failed'))
+    mockFindOneUser.mockResolvedValueOnce(makeUserDoc({ tier: 'sous-chef' }))
+
+    const result = await caller.admin.users.setTier({ userId: TARGET_ID, tier: 'home-cook' })
+    expect(result).toMatchObject({ success: true })
+    expect(mockSendEmail).toHaveBeenCalledOnce()
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'target@test.com',
+        text: 'Your My CookBooks culinary tier has been updated to Home Cook.',
+        react: expect.objectContaining({
+          type: TierNotificationEmail,
+          props: expect.objectContaining({
+            tier: 'home-cook',
+            name: 'Target User',
+            changeType: 'downgrade',
+            recipesHidden: undefined,
+            cookbooksHidden: undefined,
+            madePublic: undefined,
+          }),
+        }),
+      })
+    )
+  })
+})
