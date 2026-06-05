@@ -28,7 +28,7 @@ The system SHALL trigger the refined `TierNotificationEmail` asynchronously upon
 
 - **Given** an administrator changes user "Bob" tier from Prep Cook to Sous Chef
 - **When** the `admin.users.setTier` mutation runs successfully
-- **Then** the `sendEmail` utility is called asynchronously with `changeType: 'admin-change'` and Bob's email.
+- **Then** the `sendEmail` utility is called asynchronously with `changeType: 'upgrade'` and Bob's email.
 
 ## REMOVED Requirements
 

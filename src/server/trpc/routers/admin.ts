@@ -90,6 +90,10 @@ const usersRouter = router({
 
       // Trigger tier notification email asynchronously
       if (targetUser.email) {
+        const oldIndex = USER_TIERS.indexOf(currentTier)
+        const newIndex = USER_TIERS.indexOf(input.tier)
+        const changeType = newIndex > oldIndex ? 'upgrade' : 'downgrade'
+
         void sendEmail({
           to: String(targetUser.email),
           subject: 'Your My CookBooks Tier Has Been Updated',
@@ -97,7 +101,7 @@ const usersRouter = router({
           react: React.createElement(TierNotificationEmail, {
             tier: input.tier,
             name: targetUser.name ? String(targetUser.name) : undefined,
-            changeType: 'admin-change',
+            changeType,
             recipesHidden: reconciliationResult?.recipesHidden,
             cookbooksHidden: reconciliationResult?.cookbooksHidden,
             madePublic: reconciliationResult?.madePublic,

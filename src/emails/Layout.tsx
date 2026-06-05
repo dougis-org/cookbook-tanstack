@@ -47,7 +47,7 @@ export function Layout({ children, previewText }: LayoutProps) {
               Sent by My CookBooks • <Link href={baseUrl} style={footerLink}>Visit Website</Link>
             </Text>
             <Text style={footerText}>
-              This is a mandatory transactional email regarding your account settings. You can manage notification preferences in your <Link href={`${baseUrl}/account`} style={footerLink}>account settings</Link>.
+              This is a mandatory transactional email regarding your account. You can view your tier status and manage your account in your <Link href={`${baseUrl}/account`} style={footerLink}>account settings</Link>.
             </Text>
             <Text style={footerText}>
               © {new Date().getFullYear()} My CookBooks. All rights reserved.

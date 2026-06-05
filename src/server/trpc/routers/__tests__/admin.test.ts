@@ -248,7 +248,7 @@ describe('admin.users.setTier', () => {
           props: expect.objectContaining({
             tier: 'executive-chef',
             name: 'Target User',
-            changeType: 'admin-change',
+            changeType: 'upgrade',
           }),
         }),
       })
@@ -279,7 +279,7 @@ describe('admin.users.setTier', () => {
           props: expect.objectContaining({
             tier: 'home-cook',
             name: 'Target User',
-            changeType: 'admin-change',
+            changeType: 'downgrade',
             recipesHidden: 15,
             cookbooksHidden: 3,
             madePublic: 2,
@@ -313,7 +313,7 @@ describe('admin.users.setTier', () => {
           props: expect.objectContaining({
             tier: 'home-cook',
             name: 'Target User',
-            changeType: 'admin-change',
+            changeType: 'downgrade',
             recipesHidden: undefined,
             cookbooksHidden: undefined,
             madePublic: undefined,
