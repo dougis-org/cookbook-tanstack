@@ -75,4 +75,4 @@ Reason for removal: N/A
 
 - **Given** an unauthenticated visitor or unauthorized user.
 - **When** executing `trpc.cookbooks.printById` for a private cookbook.
-- **Then** the API rejects the request with a FORBIDDEN or NOT_FOUND error.
+- **Then** the API returns a null response (which the UI handles as a NOT_FOUND state).

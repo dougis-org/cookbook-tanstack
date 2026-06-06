@@ -14,7 +14,7 @@ import {
   CookbookAlphaIndex,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import { PrintLayout } from '@/components/cookbooks/PrintLayout'
-import RecipeDetail, { RecipeDetailProps } from '@/components/recipes/RecipeDetail'
+import RecipeDetail, { type RecipeDetailProps } from '@/components/recipes/RecipeDetail'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
