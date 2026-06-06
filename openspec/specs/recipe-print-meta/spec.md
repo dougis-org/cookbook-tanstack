@@ -68,7 +68,7 @@ The system SHALL NOT change the visible screen layout of the recipe meta block.
 - **When** the component mounts in a non-print context
 - **Then** the labels "Prep Time", "Cook Time", "Servings", and "Difficulty" are all present in the DOM
 
-### Requirement: Recipe Print Metadata Line
+### Requirement: FR5 — Recipe Print Metadata Line
 
 The system SHALL display the name of the collaborator who added the recipe in collaborative cookbooks.
 

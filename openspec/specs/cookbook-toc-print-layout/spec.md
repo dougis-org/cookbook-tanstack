@@ -84,12 +84,11 @@ The system SHALL display the cookbook creator and collaborator list on the print
 
 #### Scenario: Render owner and collaborator names for authorized users
 
-- **Given** an authenticated user who is the owner or an active collaborator of a collaborative cookbook.
-- **When** the cookbook print page loads.
-- **Then** the Table of Contents print footer displays "Created by: [Owner Name]" and "Collaborators: [Collab 1], [Collab 2]".
+- **WHEN** the print page loads for an authenticated user who is the owner or active collaborator of a collaborative cookbook
+- **THEN** the Table of Contents print footer displays "Created by: [Owner Name]" and "Collaborators: [Collab 1], [Collab 2]"
 
 #### Scenario: Hide collaborator list for anonymous public viewers
 
-- **Given** an unauthenticated anonymous visitor viewing a public collaborative cookbook's print page.
-- **When** the cookbook print page loads.
-- **Then** the Table of Contents print footer displays "Created by: [Owner Name]" but the collaborators list is completely hidden.
+- **WHEN** the print page loads for an unauthenticated anonymous visitor on a public collaborative cookbook
+- **THEN** the Table of Contents print footer displays "Created by: [Owner Name]" but the collaborators list is completely hidden
+
