@@ -68,9 +68,25 @@ The system SHALL NOT change the visible screen layout of the recipe meta block.
 - **When** the component mounts in a non-print context
 - **Then** the labels "Prep Time", "Cook Time", "Servings", and "Difficulty" are all present in the DOM
 
+### Requirement: Recipe Print Metadata Line
+
+The system SHALL display the name of the collaborator who added the recipe in collaborative cookbooks.
+
+#### Scenario: Show author name on recipe page in collaborative cookbook
+
+- **Given** a collaborative cookbook (has collaborators) containing a recipe created by collaborator "Alice".
+- **When** the print page loads.
+- **Then** the recipe's printed metadata line includes "Added by: Alice".
+
+#### Scenario: Hide author name on recipe page in single-user cookbook
+
+- **Given** a cookbook with no collaborators (single-user).
+- **When** the print page loads.
+- **Then** the recipe's printed metadata line does not show any "Added by" section.
+
 ## Traceability
 
 - Implemented in: `src/components/recipes/RecipeDetail.tsx`
 - Tested in: `src/components/recipes/__tests__/RecipeDetail.test.tsx`
-- Merged via: dougis-org/cookbook-tanstack#288
-- Closes: dougis-org/cookbook-tanstack#284
+- Merged via: dougis-org/cookbook-tanstack#288, dougis-org/cookbook-tanstack#488
+- Closes: dougis-org/cookbook-tanstack#284, dougis-org/cookbook-tanstack#461

@@ -77,3 +77,19 @@ TOC so that print output conforms to standard TOC formatting
 
 - **WHEN** the TOC page is printed or shown in print preview
 - **THEN** prep and cook time is not visible on any recipe entry
+
+### Requirement: Cookbook Print Credits Footer
+
+The system SHALL display the cookbook creator and collaborator list on the printed Table of Contents.
+
+#### Scenario: Render owner and collaborator names for authorized users
+
+- **Given** an authenticated user who is the owner or an active collaborator of a collaborative cookbook.
+- **When** the cookbook print page loads.
+- **Then** the Table of Contents print footer displays "Created by: [Owner Name]" and "Collaborators: [Collab 1], [Collab 2]".
+
+#### Scenario: Hide collaborator list for anonymous public viewers
+
+- **Given** an unauthenticated anonymous visitor viewing a public collaborative cookbook's print page.
+- **When** the cookbook print page loads.
+- **Then** the Table of Contents print footer displays "Created by: [Owner Name]" but the collaborators list is completely hidden.
