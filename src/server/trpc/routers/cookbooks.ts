@@ -291,7 +291,7 @@ export const cookbooksRouter = router({
 
       const { cookbook, stubs } = row;
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
-      const recipeVisFilter = visibilityFilter(ctx.user);
+      const recipeVisFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
@@ -303,17 +303,6 @@ export const cookbooksRouter = router({
         .populate("courseIds", "name")
         .populate("preparationIds", "name")
         .lean();
-
-      let ownerName = "";
-      if (cookbook.userId && Types.ObjectId.isValid(cookbook.userId.toString())) {
-        const ownerDoc = await getMongoClient()
-          .db()
-          .collection("user")
-          .findOne({ _id: { $eq: new ObjectId(cookbook.userId.toString()) } });
-        if (ownerDoc) {
-          ownerName = typeof ownerDoc.name === "string" ? ownerDoc.name : "";
-        }
-      }
 
       const isAuthorized = !!(
         ctx.user &&
@@ -328,27 +317,35 @@ export const cookbooksRouter = router({
         ? collaborators.length > 0
         : !!(await Collaborator.exists({ cookbookId: { $eq: new Types.ObjectId(input.id) } }));
 
-      const userIds = hasCollabs
-        ? ([
-            ...new Set(
-              recipeDocs
-                .map((r) => r.userId?.toString())
-                .filter((id): id is string => typeof id === "string" && Types.ObjectId.isValid(id)),
-            ),
-          ] as string[])
-        : [];
+      const userIdsToLookup = new Set<string>();
+      if (cookbook.userId && Types.ObjectId.isValid(cookbook.userId.toString())) {
+        userIdsToLookup.add(cookbook.userId.toString());
+      }
+      if (hasCollabs) {
+        for (const r of recipeDocs) {
+          const uId = r.userId?.toString();
+          if (uId && Types.ObjectId.isValid(uId)) {
+            userIdsToLookup.add(uId);
+          }
+        }
+      }
+
+      let ownerName = "";
       const userNameMap = new Map<string, string>();
-      if (userIds.length > 0) {
+      if (userIdsToLookup.size > 0) {
         const users = await getMongoClient()
           .db()
           .collection("user")
-          .find({ _id: { $in: userIds.map((id) => new ObjectId(id)) } })
+          .find({ _id: { $in: Array.from(userIdsToLookup).map((id) => new ObjectId(id)) } })
           .project({ _id: 1, name: 1 })
           .toArray();
         for (const u of users) {
           if (u._id && typeof u.name === "string") {
             userNameMap.set(u._id.toString(), u.name);
           }
+        }
+        if (cookbook.userId) {
+          ownerName = userNameMap.get(cookbook.userId.toString()) ?? "";
         }
       }
 

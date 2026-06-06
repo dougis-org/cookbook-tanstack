@@ -6,7 +6,7 @@ import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
 import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
 
-interface RecipeDetailProps {
+export interface RecipeDetailProps {
   recipe: Recipe & {
     meals?: TaxonomyItem[]
     courses?: TaxonomyItem[]

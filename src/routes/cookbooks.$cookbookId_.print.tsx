@@ -14,8 +14,7 @@ import {
   CookbookAlphaIndex,
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import { PrintLayout } from '@/components/cookbooks/PrintLayout'
-import RecipeDetail from '@/components/recipes/RecipeDetail'
-import type { Recipe, TaxonomyItem } from '@/types/recipe'
+import RecipeDetail, { RecipeDetailProps } from '@/components/recipes/RecipeDetail'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
@@ -80,7 +79,7 @@ export function CookbookPrintPage() {
             className="cookbook-toc-footer mt-8 pt-4 border-t border-[color:var(--theme-print-border)] text-xs text-[var(--theme-print-fg-subtle)]"
             data-testid="cookbook-toc-footer"
           >
-            <div>Created by: {ownerName || 'Owner'}</div>
+            <div>Created by: {ownerName || 'Unknown'}</div>
             {collaborators && collaborators.length > 0 && (
               <div className="mt-1" data-testid="cookbook-toc-collaborators">
                 Collaborators: {collaborators.map((c) => c.name || 'Collaborator').join(', ')}
@@ -90,15 +89,7 @@ export function CookbookPrintPage() {
         </div>
 
         {orderedRecipes.map((recipe) => {
-          const recipeForDetail: Recipe & {
-            meals?: TaxonomyItem[]
-            courses?: TaxonomyItem[]
-            preparations?: TaxonomyItem[]
-            classificationName?: string | null
-            sourceName?: string | null
-            sourceUrl?: string | null
-            addedByName?: string | null
-          } = {
+          const recipeForDetail: RecipeDetailProps['recipe'] = {
             ...recipe,
             imageUrl: null,
             marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
