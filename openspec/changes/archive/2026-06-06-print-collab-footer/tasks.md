@@ -53,7 +53,7 @@ Use the project's documented commands for each of the above (see project README 
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post their comments
 - [x] **Monitor PR comments** — poll for new comments autonomously; when comments appear, address them, commit fixes, and explicitly ensure threads are resolved to allow the process to progress. Follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until no unresolved comments remain
 - [x] **Monitor CI checks** — poll for check status autonomously using `gh pr checks --json isRequired,state`; when any **required (blocking)** CI check fails, diagnose and fix the failure, commit fixes, follow all steps in [Remote push validation] then push to the same working branch; wait 180 seconds then repeat until all required checks pass
-- [ ] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
+- [x] **Poll for merge** — after each iteration run `gh pr view --json state`; when `state` is `MERGED` proceed to Post-Merge; if `CLOSED` exit and notify the user — **never wait for a human to report the merge**; **never force-merge**
 
 Ownership metadata:
 
@@ -69,17 +69,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec)
-- [ ] Archive the change: move `openspec/changes/print-collab-footer/` to `openspec/changes/archive/YYYY-MM-DD-print-collab-footer/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-print-collab-footer/` exists and `openspec/changes/print-collab-footer/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-print-collab-footer` then `git push -u origin doc/archive-YYYY-MM-DD-print-collab-footer`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-print-collab-footer` to `main` with title `docs: archive print-collab-footer (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -d feat/print-collab-footer doc/archive-YYYY-MM-DD-print-collab-footer`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec)
+- [x] Archive the change: move `openspec/changes/print-collab-footer/` to `openspec/changes/archive/YYYY-MM-DD-print-collab-footer/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-print-collab-footer/` exists and `openspec/changes/print-collab-footer/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-print-collab-footer` then `git push -u origin doc/archive-YYYY-MM-DD-print-collab-footer`
+- [x] Open a PR from `doc/archive-YYYY-MM-DD-print-collab-footer` to `main` with title `docs: archive print-collab-footer (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -d feat/print-collab-footer doc/archive-YYYY-MM-DD-print-collab-footer`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -d feat/print-collab-footer doc/archive-YYYY-MM-DD-print-collab-footer`
