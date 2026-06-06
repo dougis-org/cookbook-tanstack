@@ -581,6 +581,77 @@ describe("cookbooks.printById", () => {
     });
   });
 
+  it("returns ownerName, collaborators list, and recipe addedByName for authorized owners/collaborators", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collabUser = await seedUser();
+
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: collabUser.id, role: "editor", addedBy: owner.id }).save();
+
+      const recipe1 = await new Recipe({
+        name: `Recipe1-${uid()}`,
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+      const recipe2 = await new Recipe({
+        name: `Recipe2-${uid()}`,
+        userId: collabUser.id,
+        isPublic: true,
+      }).save();
+
+      await seedCookbookWithRecipes(cb.id, recipe1.id, recipe2.id);
+
+      // Log in as collaborator
+      const caller = await makeAuthCaller(collabUser.id, { collabCookbookIds: [cb.id] });
+      const result = await caller.cookbooks.printById({ id: cb.id });
+
+      expect(result).not.toBeNull();
+      expect(result!.ownerName).toBe(owner.name);
+      expect(result!.collaborators).toHaveLength(1);
+      expect(result!.collaborators![0]).toMatchObject({
+        userId: collabUser.id,
+        name: collabUser.name,
+        role: "editor",
+      });
+
+      const r1 = result!.recipes.find((r) => r.id === recipe1.id);
+      const r2 = result!.recipes.find((r) => r.id === recipe2.id);
+      expect(r1).toBeDefined();
+      expect(r1!.addedByName).toBe(owner.name);
+      expect(r2).toBeDefined();
+      expect(r2!.addedByName).toBe(collabUser.name);
+    });
+  });
+
+  it("returns ownerName and recipe addedByName but empty collaborators list for anonymous query on public cookbook", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collabUser = await seedUser();
+
+      const cb = await seedCookbook(owner.id, { isPublic: true });
+      await new Collaborator({ cookbookId: cb._id, userId: collabUser.id, role: "editor", addedBy: owner.id }).save();
+
+      const recipe = await new Recipe({
+        name: `Recipe-${uid()}`,
+        userId: owner.id,
+        isPublic: true,
+      }).save();
+
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const caller = await makeAnonCaller();
+      const result = await caller.cookbooks.printById({ id: cb.id });
+
+      expect(result).not.toBeNull();
+      expect(result!.ownerName).toBe(owner.name);
+      expect(result!.collaborators).toHaveLength(0); // restricted
+
+      const r = result!.recipes[0];
+      expect(r.addedByName).toBe(owner.name);
+    });
+  });
+
   itNullCases((caller, id) => caller.cookbooks.printById({ id }));
 });
 

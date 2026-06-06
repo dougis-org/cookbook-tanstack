@@ -291,10 +291,11 @@ export const cookbooksRouter = router({
 
       const { cookbook, stubs } = row;
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
+      const recipeVisFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
-        ...visFilter,
+        ...recipeVisFilter,
       })
         .populate("classificationId", "name")
         .populate("sourceId", "name url")
@@ -302,6 +303,51 @@ export const cookbooksRouter = router({
         .populate("courseIds", "name")
         .populate("preparationIds", "name")
         .lean();
+
+      const isAuthorized = !!(
+        ctx.user &&
+        (ctx.user.id === cookbook.userId?.toString() ||
+          ctx.collabCookbookIds.includes(input.id))
+      );
+      const collaborators = isAuthorized
+        ? await fetchCollaboratorsWithUsers(input.id)
+        : [];
+
+      const hasCollabs = isAuthorized
+        ? collaborators.length > 0
+        : !!(await Collaborator.exists({ cookbookId: { $eq: new Types.ObjectId(input.id) } }));
+
+      const userIdsToLookup = new Set<string>();
+      if (cookbook.userId && Types.ObjectId.isValid(cookbook.userId.toString())) {
+        userIdsToLookup.add(cookbook.userId.toString());
+      }
+      if (hasCollabs) {
+        for (const r of recipeDocs) {
+          const uId = r.userId?.toString();
+          if (uId && Types.ObjectId.isValid(uId)) {
+            userIdsToLookup.add(uId);
+          }
+        }
+      }
+
+      let ownerName = "";
+      const userNameMap = new Map<string, string>();
+      if (userIdsToLookup.size > 0) {
+        const users = await getMongoClient()
+          .db()
+          .collection("user")
+          .find({ _id: { $in: Array.from(userIdsToLookup).map((id) => new ObjectId(id)) } })
+          .project({ _id: 1, name: 1 })
+          .toArray();
+        for (const u of users) {
+          if (u._id && typeof u.name === "string") {
+            userNameMap.set(u._id.toString(), u.name);
+          }
+        }
+        if (cookbook.userId) {
+          ownerName = userNameMap.get(cookbook.userId.toString()) ?? "";
+        }
+      }
 
       const recipeById = indexByStringId(recipeDocs);
 
@@ -311,10 +357,13 @@ export const cookbooksRouter = router({
           if (!d) return null;
           const cls = d.classificationId as { _id?: unknown; name?: string } | null;
           const src = d.sourceId as { _id?: unknown; name?: string; url?: string } | null;
+          const userIdStr = d.userId?.toString();
+          const addedByName = (hasCollabs && userIdStr) ? (userNameMap.get(userIdStr) ?? null) : null;
           return {
             id: d._id.toString() as string,
             name: d.name as string,
             userId: d.userId?.toString() as string,
+            addedByName: addedByName as string | null,
             ingredients: (d.ingredients ?? null) as string | null,
             instructions: (d.instructions ?? null) as string | null,
             notes: (d.notes ?? null) as string | null,
@@ -353,7 +402,13 @@ export const cookbooksRouter = router({
       const cb = cookbook as any;
       const chapters = transformChapters(cb);
 
-      return { ...cookbookCoreFields(cb), recipes, chapters };
+      return {
+        ...cookbookCoreFields(cb),
+        ownerName,
+        collaborators,
+        recipes,
+        chapters,
+      };
     }),
 
   create: verifiedProcedure

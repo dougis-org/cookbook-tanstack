@@ -764,6 +764,29 @@ describe("RecipeDetail — compact print meta line", () => {
       expect(line.textContent).toContain("Serves: 5")
     })
   })
+
+  describe("TC-9: recipe attribution (addedByName) in print meta line", () => {
+    it("renders Added by: [addedByName] when present", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, difficulty: "easy", addedByName: "Alice" })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Serves: 4 · Easy · Added by: Alice")
+    })
+
+    it("does not render Added by section when addedByName is absent/null", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ servings: 4, difficulty: "easy", addedByName: null })}
+        />,
+      )
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Serves: 4 · Easy")
+      expect(line.textContent).not.toContain("Added by:")
+    })
+  })
 })
 
 describe("RecipeDetail — blank line rendering", () => {
