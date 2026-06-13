@@ -37,7 +37,7 @@ describe("sources.list", () => {
   it("includes a newly inserted source", async () => {
     await withCleanDb(async () => {
       const id = uid();
-      await new Source({ name: `ListSource-${id}` }).save();
+      await new Source({ name: `ListSource-${id}`, slug: `list-source-${id}` }).save();
       const caller = await makeAnonCaller();
       const result = await caller.sources.list();
       expect(result).toEqual(
@@ -51,7 +51,7 @@ describe("sources.list", () => {
   it("includes recipeCount=0 when no recipes reference the source", async () => {
     await withCleanDb(async () => {
       const id = uid();
-      await new Source({ name: `NoRefSource-${id}` }).save();
+      await new Source({ name: `NoRefSource-${id}`, slug: `no-ref-source-${id}` }).save();
       const caller = await makeAnonCaller();
       const result = await caller.sources.list();
       for (const item of result) {
@@ -65,7 +65,7 @@ describe("sources.list", () => {
   it("counts recipes that reference the source", async () => {
     await withCleanDb(async () => {
       const id = uid();
-      const source = await new Source({ name: `RefSource-${id}` }).save();
+      const source = await new Source({ name: `RefSource-${id}`, slug: `ref-source-${id}` }).save();
       const user = await seedUser();
       await new Recipe({
         name: "R1",
@@ -91,8 +91,8 @@ describe("sources.search", () => {
   it("returns sources matching query (case-insensitive partial match)", async () => {
     await withCleanDb(async () => {
       const id = uid();
-      await new Source({ name: `BonAppetit-${id}` }).save();
-      await new Source({ name: `NewYorkTimes-${id}` }).save();
+      await new Source({ name: `BonAppetit-${id}`, slug: `bon-appetit-${id}` }).save();
+      await new Source({ name: `NewYorkTimes-${id}`, slug: `new-york-times-${id}` }).save();
       const caller = await makeAnonCaller();
       const result = await caller.sources.search({ query: `bonappetit-${id}` });
       expect(result).toHaveLength(1);
@@ -114,7 +114,7 @@ describe("sources.search", () => {
       const id = uid();
       await Promise.all(
         Array.from({ length: 15 }, (_, i) =>
-          new Source({ name: `SearchLimit-${id}-${i}` }).save(),
+          new Source({ name: `SearchLimit-${id}-${i}`, slug: `search-limit-${id}-${i}` }).save(),
         ),
       );
       const caller = await makeAnonCaller();

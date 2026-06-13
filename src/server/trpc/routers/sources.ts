@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Recipe, Source } from "@/db/models";
 import { objectId } from "./_helpers";
+import { slugify } from "../../../../scripts/migration/lib/transformHelpers";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -64,16 +66,27 @@ export const sourcesRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      const source = await new Source({
-        name: input.name,
-        url: input.url ?? null,
-      }).save();
-      return {
-        id: source._id.toString(),
-        name: source.name,
-        url: source.url ?? null,
-        createdAt: source.createdAt,
-        updatedAt: source.updatedAt,
-      };
+      try {
+        const source = await new Source({
+          name: input.name,
+          url: input.url ?? null,
+          slug: slugify(input.name),
+        }).save();
+        return {
+          id: source._id.toString(),
+          name: source.name,
+          url: source.url ?? null,
+          createdAt: source.createdAt,
+          updatedAt: source.updatedAt,
+        };
+      } catch (err: unknown) {
+        if ((err as { code?: number }).code === 11000) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "A source with this name already exists",
+          });
+        }
+        throw err;
+      }
     }),
 });
