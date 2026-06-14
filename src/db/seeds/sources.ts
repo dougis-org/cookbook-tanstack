@@ -20,7 +20,8 @@ export async function backfillSourceSlugs() {
     }
     return {
       updateOne: {
-        filter: { _id: doc._id },
+        // Include slug: $exists: false to guard against concurrent slug writes
+        filter: { _id: doc._id, slug: { $exists: false } },
         update: { $set: { slug } },
       },
     };

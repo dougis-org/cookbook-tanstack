@@ -1,10 +1,18 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import mongoose from "mongoose";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Recipe, Source } from "@/db/models";
 import { objectId } from "./_helpers";
 import { slugify } from "@/lib/slugify";
+
+function isDuplicateKeyError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code: number }).code === 11000
+  );
+}
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {
@@ -89,10 +97,7 @@ export const sourcesRouter = router({
           updatedAt: source.updatedAt,
         };
       } catch (err: unknown) {
-        if (
-          err instanceof mongoose.mongo.MongoServerError &&
-          err.code === 11000
-        ) {
+        if (isDuplicateKeyError(err)) {
           throw new TRPCError({
             code: "CONFLICT",
             message: "A source with this slug already exists",
