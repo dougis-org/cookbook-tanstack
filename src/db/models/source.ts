@@ -12,6 +12,9 @@ const sourceSchema = new Schema<ISource>(
   {
     name: { type: String, required: true },
     url: { type: String },
+    // sparse: true allows the unique index to coexist with pre-backfill documents
+    // that have no slug field. Mongoose required:true only enforces at the JS layer;
+    // MongoDB's unique index would otherwise reject multiple null-slug docs at creation time.
     slug: { type: String, required: true, unique: true, sparse: true },
   },
   { timestamps: true },

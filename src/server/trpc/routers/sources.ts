@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import mongoose from "mongoose";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Recipe, Source } from "@/db/models";
 import { objectId } from "./_helpers";
@@ -88,10 +89,13 @@ export const sourcesRouter = router({
           updatedAt: source.updatedAt,
         };
       } catch (err: unknown) {
-        if ((err as { code?: number }).code === 11000) {
+        if (
+          err instanceof mongoose.mongo.MongoServerError &&
+          err.code === 11000
+        ) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "A source with this name already exists",
+            message: "A source with this slug already exists",
           });
         }
         throw err;

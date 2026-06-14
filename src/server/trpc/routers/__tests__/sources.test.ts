@@ -163,7 +163,7 @@ describe("sources.create", () => {
       await caller.sources.create({ name: "Bon Appetit" });
       await expect(
         caller.sources.create({ name: "Bon Appetit" }),
-      ).rejects.toThrow("A source with this name already exists");
+      ).rejects.toThrow("A source with this slug already exists");
     });
   });
 });

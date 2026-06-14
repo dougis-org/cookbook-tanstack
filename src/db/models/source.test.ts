@@ -26,6 +26,7 @@ describe("Source model — slug field", () => {
 
   it("TC-1.3 — slug index exists", async () => {
     await withCleanDb(async () => {
+      await Source.init(); // ensure Mongoose has built indexes before inspecting
       const indexes = await Source.collection.indexes();
       const slugIndex = indexes.find((idx) => "slug" in idx.key);
       expect(slugIndex).toBeDefined();

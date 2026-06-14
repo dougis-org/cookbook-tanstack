@@ -27,7 +27,7 @@
 ### Task 3 — Create `src/db/seeds/sources.ts`
 
 - [x] Create `src/db/seeds/sources.ts` exporting `backfillSourceSlugs()`
-- [x] Import `slugify` from `scripts/migration/lib/transformHelpers.ts`
+- [x] Import `slugify` from `src/lib/slugify.ts` (moved from `scripts/migration/lib/transformHelpers.ts` during implementation)
 - [x] Import `Source` from `src/db/models/index.ts`
 - [x] Implementation:
   - Query `Source.find({ slug: { $exists: false } })`
@@ -82,7 +82,7 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 - [x] Open PR from `feat/source-slug-backfill` to `main`. PR body must include: **"Closes #501"**
 - [x] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
 - [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user:
+- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user: [WAITING FOR APPROVAL: all CI checks pass, PR #512 needs 1 approval from dougis]
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address each unresolved thread, commit fixes, run validation, push, wait 180 seconds
   3. **CI check failures** — fix any failing required checks, commit, run validation, push, wait 180 seconds; then restart loop from step 1

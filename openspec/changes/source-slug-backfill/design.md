@@ -1,6 +1,6 @@
 ## Context
 
-- Relevant architecture: `Source` is a Mongoose model in `src/db/models/source.ts`, barrel-exported from `src/db/models/index.ts`. Seeds live in `src/db/seeds/` and follow the `updateOne({ slug }, $set, { upsert: true })` pattern used by meals, courses, and preparations. The `slugify()` utility is at `scripts/migration/lib/transformHelpers.ts`.
+- Relevant architecture: `Source` is a Mongoose model in `src/db/models/source.ts`, barrel-exported from `src/db/models/index.ts`. Seeds live in `src/db/seeds/`. The `slugify()` utility was moved from `scripts/migration/lib/transformHelpers.ts` to `src/lib/slugify.ts` as part of this change so that production runtime code can import it without depending on the migration scripts directory.
 - Dependencies: No runtime dependencies on other in-flight changes. This change is a prerequisite for Issue B (seed Personal source) and Issue F (SourceSelector UI).
 - Interfaces/contracts touched: `ISource` TypeScript interface, `sourceSchema` Mongoose schema, `src/db/seeds/index.ts` entrypoint.
 
@@ -21,12 +21,12 @@
 
 ## Decisions
 
-### Decision 1: Reuse existing `slugify()` from transformHelpers
+### Decision 1: Move `slugify()` to `src/lib/slugify.ts` for shared use
 
-- Chosen: Import and reuse `slugify()` from `scripts/migration/lib/transformHelpers.ts`.
-- Alternatives considered: Inline a local slug implementation in the seed file; add a shared utility to `src/lib/`.
-- Rationale: The function already exists and was verified against all 150 prod source names with zero collisions. Reuse avoids divergence. Moving it to `src/lib/` is a future concern.
-- Trade-offs: Seeds importing from `scripts/` is slightly unconventional. Acceptable since this is a one-time backfill concern; the function will be co-located with `src/lib/` if needed later.
+- Chosen: The `slugify()` function was extracted from `scripts/migration/lib/transformHelpers.ts` and placed at `src/lib/slugify.ts`. Both the seed (`src/db/seeds/sources.ts`) and the tRPC router (`src/server/trpc/routers/sources.ts`) import from this shared location.
+- Alternatives considered: Keep in `scripts/migration/`; inline per-call-site; npm package.
+- Rationale: Production runtime code (tRPC router) cannot safely depend on files in `scripts/migration/` — those directories are often excluded from production builds. Moving to `src/lib/` follows the established project pattern for shared utilities and keeps the function co-located with the code that uses it.
+- Trade-offs: The function implementation is now duplicated at `scripts/migration/lib/transformHelpers.ts` (kept for migration-script backwards compatibility) and `src/lib/slugify.ts`. A future cleanup can remove the `scripts/` copy once all migration scripts are updated to import from `src/lib/`.
 
 ### Decision 2: Deploy order — backfill before enforcing `required: true`
 
@@ -42,12 +42,12 @@
 - Rationale: The seed runner is the established pattern for idempotent data operations in this project. Placing the backfill here makes it re-runnable via `npm run db:seed` and consistent with how meals/courses/preparations are managed.
 - Trade-offs: Unlike meals/courses, this is not seeding new records — it's updating existing ones. The function name `backfillSourceSlugs` makes this intent clear. Future source seeds (e.g., "Personal") will be a separate addition.
 
-### Decision 4: Idempotency via `$set` only when slug is absent
+### Decision 4: Idempotency via `$set` only when slug is absent, using `bulkWrite`
 
-- Chosen: Query `{ slug: { $exists: false } }` to find un-slugged documents; for each, compute slug from `name` and `$set` it. Documents already having a slug are skipped entirely.
-- Alternatives considered: Unconditional `updateMany` with `$set: { slug: slugify(name) }` on all documents.
-- Rationale: Skip-if-present prevents accidental overwrite if a slug was manually assigned. Safer default.
-- Trade-offs: Requires a fetch-then-update loop rather than a single bulk operation. At 150 documents, performance is irrelevant.
+- Chosen: Query `{ slug: { $exists: false } }` to find un-slugged documents; derive slug from `name` for each; issue a single `Source.bulkWrite()` to apply all updates. Documents already having a slug are skipped entirely.
+- Alternatives considered: Unconditional `updateMany` with `$set: { slug: slugify(name) }`; sequential `updateOne` per document.
+- Rationale: Skip-if-present prevents accidental overwrite if a slug was manually assigned. `bulkWrite` is more efficient than sequential round-trips and avoids per-document latency at scale.
+- Trade-offs: Requires a fetch-then-bulk-update pattern. At 150 documents the performance difference is negligible, but the pattern is correct at any scale.
 
 ## Proposal to Design Mapping
 
@@ -111,9 +111,9 @@
 
 ## Risks / Trade-offs
 
-- Risk/trade-off: `scripts/` import in `src/db/seeds/`
-  - Impact: Slightly unusual import path; may confuse future contributors
-  - Mitigation: Comment in `sources.ts` explaining the cross-directory import. Candidate for refactor into `src/lib/slugify.ts` later.
+- Risk/trade-off: Duplicate `slugify()` implementation in `scripts/migration/` and `src/lib/`
+  - Impact: The two implementations could diverge if one is updated but not the other.
+  - Mitigation: Both currently have identical implementations. A follow-up cleanup task can remove the `scripts/migration/` copy once migration scripts are updated to import from `src/lib/slugify.ts`.
 
 - Risk/trade-off: Deploy ordering requirement
   - Impact: If app deploys before backfill runs, Source reads fail validation on `slug: required`
