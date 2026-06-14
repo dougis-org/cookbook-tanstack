@@ -1,4 +1,4 @@
-import { slugify } from "../../../scripts/migration/lib/transformHelpers";
+import { slugify } from "@/lib/slugify";
 import { Source } from "@/db/models";
 
 export async function backfillSourceSlugs() {

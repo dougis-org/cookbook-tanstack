@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Recipe, Source } from "@/db/models";
 import { objectId } from "./_helpers";
-import { slugify } from "../../../../scripts/migration/lib/transformHelpers";
+import { slugify } from "@/lib/slugify";
 
 /** Escapes regex metacharacters so user input is treated as a literal substring. */
 function escapeRegex(str: string) {

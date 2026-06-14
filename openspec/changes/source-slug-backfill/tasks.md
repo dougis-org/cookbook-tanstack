@@ -77,11 +77,11 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to `feat/source-slug-backfill` and push to remote
-- [ ] Open PR from `feat/source-slug-backfill` to `main`. PR body must include: **"Closes #501"**
-- [ ] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit all changes to `feat/source-slug-backfill` and push to remote
+- [x] Open PR from `feat/source-slug-backfill` to `main`. PR body must include: **"Closes #501"**
+- [x] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
 - [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address each unresolved thread, commit fixes, run validation, push, wait 180 seconds

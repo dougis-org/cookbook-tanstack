@@ -155,4 +155,15 @@ describe("sources.create", () => {
       });
     },
   );
+
+  it("returns CONFLICT when a source with the same slugified name already exists", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+      await caller.sources.create({ name: "Bon Appetit" });
+      await expect(
+        caller.sources.create({ name: "Bon Appetit" }),
+      ).rejects.toThrow("CONFLICT");
+    });
+  });
 });
