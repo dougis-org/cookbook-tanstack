@@ -36,7 +36,7 @@ None.
 
 - Proposal element -> Requirement: Add `personalSourceName` -> Requirement: ADDED Recipe Personal Source Name
 - Design decision -> Requirement: Decision 1 & 2 -> Requirement: ADDED Recipe Personal Source Name
-- Requirement -> Task(s): ADDED Recipe Personal Source Name -> (See Tasks 1-3)
+- Requirement -> Task(s): ADDED Recipe Personal Source Name -> (See Tasks 1-5)
 
 ## Non-Functional Acceptance Criteria
 
