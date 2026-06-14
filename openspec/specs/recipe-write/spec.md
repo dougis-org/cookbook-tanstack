@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-14-normalize-personal-source-name/design.md) document, not a replacement.
 
 ### Requirement: ADDED Trim personalSourceName
 
@@ -46,7 +46,7 @@ None
 - Proposal element -> Requirement: Normalize `personalSourceName` in `create` and `update` -> MODIFIED Normalize personalSourceName on create/update
 - Design decision -> Requirement: Decision 3 (Trimming) -> ADDED Trim personalSourceName
 - Design decision -> Requirement: Decision 2 (Scrubbing mechanism) -> MODIFIED Normalize personalSourceName on create/update
-- Requirement -> Task(s): (Will map to implementation tasks in `tasks.md`)
+- Requirement -> Task(s): See [`tasks.md`](../../changes/archive/2026-06-14-normalize-personal-source-name/tasks.md)
 
 ## Non-Functional Acceptance Criteria
 
