@@ -6,7 +6,7 @@ This document details *changes* to requirements and is additive to the [`design.
 
 The system SHALL provide a generic dropdown that supports local filtering, sorts alphabetically, and pins the selected item to the top.
 
-#### Scenario: Droptown lists options alphabetically
+#### Scenario: Dropdown lists options alphabetically
 
 - **Given** a list of unselected options: "Dinner", "Breakfast", "Snack"
 - **When** the dropdown is opened

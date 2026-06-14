@@ -10,14 +10,14 @@ This comment outlines the exact manual (human) steps required to configure the S
 ## Codebase Locations for Catalog Configuration
 
 1. **Entitlements and Pricing Definitions:**
-   - [src/lib/tier-entitlements.ts](file:///home/doug/dev/cookbook-tanstack/src/lib/tier-entitlements.ts#L80-L86) — Defines `TIER_PRICING` (names and annual/monthly price values):
+   - [src/lib/tier-entitlements.ts](../../../src/lib/tier-entitlements.ts#L80-L86) — Defines `TIER_PRICING` (names and annual/monthly price values):
      * **Prep Cook**: $2.99 / month, $27.99 / year
      * **Sous Chef**: $5.99 / month, $59.99 / year
      * **Executive Chef**: $9.99 / month, $99.99 / year
-   - [docs/user-tier-feature-sets.md](file:///home/doug/dev/cookbook-tanstack/docs/user-tier-feature-sets.md) — The master documentation of features and limits per tier.
+   - [docs/user-tier-feature-sets.md](../../../docs/user-tier-feature-sets.md) — The master documentation of features and limits per tier.
 
 2. **Environment Variable Configuration:**
-   - [.env.example](file:///home/doug/dev/cookbook-tanstack/.env.example#L39-L45) — Defines the Stripe Price ID variables that must be populated in local `.env.local` or server deployment environments:
+   - [.env.example](../../../.env.example#L39-L45) — Defines the Stripe Price ID variables that must be populated in local `.env.local` or server deployment environments:
      * `STRIPE_PRICE_PREP_COOK_MONTHLY`
      * `STRIPE_PRICE_PREP_COOK_ANNUAL`
      * `STRIPE_PRICE_SOUS_CHEF_MONTHLY`
@@ -29,7 +29,7 @@ This comment outlines the exact manual (human) steps required to configure the S
 
 ## Human Steps to Prepare the Stripe Product Catalog
 
-To wire payments into the application, a administrator/developer must manually set up the products in the Stripe Dashboard (or via Stripe CLI) and retrieve the price IDs. Follow these steps:
+To wire payments into the application, an administrator/developer must manually set up the products in the Stripe Dashboard (or via Stripe CLI) and retrieve the price IDs. Follow these steps:
 
 ### Step 1: Access the Stripe Dashboard
 1. Log in to the [Stripe Dashboard](https://dashboard.stripe.com).

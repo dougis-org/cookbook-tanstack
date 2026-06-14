@@ -4,6 +4,7 @@ import { trpc } from '@/lib/trpc'
 import SingleSelectDropdown from './SingleSelectDropdown'
 
 interface SourcePickerDropdownProps {
+  id?: string
   value: string
   selectedName?: string
   onChange: (id: string, name: string) => void
@@ -11,6 +12,7 @@ interface SourcePickerDropdownProps {
 }
 
 export default function SourcePickerDropdown({
+  id,
   value,
   selectedName = '',
   onChange,
@@ -24,6 +26,7 @@ export default function SourcePickerDropdown({
 
   return (
     <SingleSelectDropdown
+      id={id}
       options={allSources}
       value={value}
       selectedName={selectedName}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 
 interface Option {
@@ -7,6 +8,7 @@ interface Option {
 }
 
 interface SingleSelectDropdownProps {
+  id?: string
   options: Option[]
   value: string
   selectedName?: string
@@ -17,6 +19,7 @@ interface SingleSelectDropdownProps {
 }
 
 export default function SingleSelectDropdown({
+  id,
   options,
   value,
   selectedName = '',
@@ -25,19 +28,16 @@ export default function SingleSelectDropdown({
   emptyMessage = 'No items found',
   onOpenChange,
 }: SingleSelectDropdownProps) {
-  const [open, setOpenState] = useState(false)
-  const setOpen = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
-    setOpenState((prev) => {
-      const next = typeof v === 'function' ? v(prev) : v
-      onOpenChange?.(next)
-      return next
-    })
-  }, [onOpenChange])
+  const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    onOpenChange?.(open)
+  }, [open, onOpenChange])
 
   const debounceSearch = useCallback((val: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -50,7 +50,7 @@ export default function SingleSelectDropdown({
     if (!open) return
     setTimeout(() => inputRef.current?.focus(), 0)
 
-    function handleMouseDown(e: MouseEvent) {
+    function handleMouseDown(e: globalThis.MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
       }
@@ -88,7 +88,7 @@ export default function SingleSelectDropdown({
     setDebouncedSearch('')
   }
 
-  function clearOption(e: React.MouseEvent) {
+  function clearOption(e: MouseEvent) {
     e.stopPropagation()
     onChange('', '')
   }
@@ -99,6 +99,7 @@ export default function SingleSelectDropdown({
     <div ref={containerRef} className="relative w-full">
       <div className="flex items-center gap-1 w-full">
         <button
+          id={id}
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="listbox"
@@ -131,6 +132,7 @@ export default function SingleSelectDropdown({
             <input
               ref={inputRef}
               type="search"
+              aria-label="Search options"
               placeholder="Search..."
               value={search}
               onChange={(e) => {

@@ -423,10 +423,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
           {/* Classification */}
           <div>
-            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
+            <label htmlFor="classificationId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Category
             </label>
             <SingleSelectDropdown
+              id="classificationId"
               options={classifications || []}
               value={watch("classificationId") || ""}
               selectedName={classifications?.find(c => c.id === watch("classificationId"))?.name || ""}
@@ -438,10 +439,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
           {/* Source */}
           <div>
-            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
+            <label htmlFor="sourceId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Source (cookbook, website, etc.)
             </label>
             <SourcePickerDropdown
+              id="sourceId"
               value={selectedSourceId}
               selectedName={selectedSourceName}
               onChange={(id, name) => {
