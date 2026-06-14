@@ -70,17 +70,7 @@ export default function SingleSelectDropdown({
     const searchLower = debouncedSearch.toLowerCase()
     
     const filtered = debouncedSearch.length > 0 
-      ? options.filter(opt => {
-          const name = opt.name.toLowerCase()
-          let searchIdx = 0
-          for (let i = 0; i < name.length; i++) {
-            if (name[i] === searchLower[searchIdx]) {
-              searchIdx++
-            }
-            if (searchIdx === searchLower.length) return true
-          }
-          return false
-        })
+      ? options.filter(opt => opt.name.toLowerCase().includes(searchLower))
       : options
 
     // Sort options: selected value pinned to top, then alphabetical

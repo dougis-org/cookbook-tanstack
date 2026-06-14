@@ -10,11 +10,17 @@ describe('SingleSelectDropdown', () => {
     { id: '3', name: 'Snack' }
   ]
 
+  const setup = (props: Partial<React.ComponentProps<typeof SingleSelectDropdown>> = {}, open = true) => {
+    const utils = render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} {...props} />)
+    const trigger = screen.getByRole('button', { name: props.selectedName || /Select/i })
+    if (open) {
+      fireEvent.click(trigger)
+    }
+    return { ...utils, trigger }
+  }
+
   it('renders options in alphabetical order', async () => {
-    render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} />)
-    
-    // Open dropdown
-    fireEvent.click(screen.getByRole('button', { name: /Select/i }))
+    setup()
     
     const items = await screen.findAllByRole('option')
     expect(items).toHaveLength(3)
@@ -24,9 +30,7 @@ describe('SingleSelectDropdown', () => {
   })
 
   it('pins the selected option to the top of the list', async () => {
-    render(<SingleSelectDropdown options={options} value="3" selectedName="Snack" onChange={vi.fn()} />)
-    
-    fireEvent.click(screen.getByRole('button', { name: 'Snack' }))
+    setup({ value: '3', selectedName: 'Snack' })
     
     const items = await screen.findAllByRole('option')
     expect(items).toHaveLength(3)
@@ -36,9 +40,7 @@ describe('SingleSelectDropdown', () => {
   })
 
   it('filters options when typing in the search input', async () => {
-    render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} />)
-    
-    fireEvent.click(screen.getByRole('button', { name: /Select/i }))
+    setup()
     
     const searchInput = screen.getByRole('searchbox')
     await userEvent.type(searchInput, 'ak')
@@ -46,16 +48,13 @@ describe('SingleSelectDropdown', () => {
     // Wait for the debounce search logic
     await waitFor(async () => {
       const items = await screen.findAllByRole('option')
-      expect(items).toHaveLength(2)
+      expect(items).toHaveLength(1)
       expect(items[0]).toHaveTextContent('Breakfast')
-      expect(items[1]).toHaveTextContent('Snack')
     })
   })
 
   it('displays a "No items found" message when no options match', async () => {
-    render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} />)
-    
-    fireEvent.click(screen.getByRole('button', { name: /Select/i }))
+    setup()
     
     const searchInput = screen.getByRole('searchbox')
     await userEvent.type(searchInput, 'xyz')
@@ -66,10 +65,7 @@ describe('SingleSelectDropdown', () => {
   })
 
   it('closes on Escape key', async () => {
-    render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} />)
-    
-    const button = screen.getByRole('button', { name: /Select/i })
-    fireEvent.click(button)
+    setup()
     
     expect(screen.getByRole('searchbox')).toBeInTheDocument()
     
