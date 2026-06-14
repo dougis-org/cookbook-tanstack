@@ -293,7 +293,8 @@ export const recipesRouter = router({
       const { mealIds, courseIds, preparationIds, ...fields } = input;
 
       const personalSource = await Source.findOne({ slug: "personal" }).lean();
-      if (fields.sourceId?.toString() !== personalSource?._id.toString()) {
+      const isPersonalSource = fields.sourceId && personalSource && fields.sourceId.toString() === personalSource._id.toString();
+      if (!isPersonalSource) {
         fields.personalSourceName = undefined;
       }
 
@@ -356,8 +357,18 @@ export const recipesRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: Record<string, any> = { ...data };
-      if (input.sourceId && input.sourceId.toString() !== personalSource?._id.toString()) {
-        updateData.personalSourceName = null;
+
+      // Determine effective sourceId (from payload or stored record)
+      let effectiveSourceId: string | undefined = input.sourceId?.toString();
+      if (effectiveSourceId === undefined && "personalSourceName" in data) {
+        const stored = await Recipe.findById(id).select("sourceId").lean();
+        effectiveSourceId = (stored as { sourceId?: unknown } | null)?.sourceId?.toString();
+      }
+      if (effectiveSourceId !== undefined || "personalSourceName" in data) {
+        const isPersonalSource = effectiveSourceId && personalSource && effectiveSourceId === personalSource._id.toString();
+        if (!isPersonalSource) {
+          updateData.personalSourceName = null;
+        }
       }
 
       if (mealIds !== undefined) updateData.mealIds = mealIds;
