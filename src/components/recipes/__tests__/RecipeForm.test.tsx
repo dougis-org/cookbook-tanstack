@@ -509,7 +509,7 @@ describe("RecipeForm", () => {
       
       // Open category dropdown
       await userEvent.click(screen.getByRole("button", { name: /Category/i }))
-      await userEvent.click(screen.getByRole("button", { name: /Dessert/i }))
+      await userEvent.click(await screen.findByRole("option", { name: /Dessert/i }))
       
       // Submit
       await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
