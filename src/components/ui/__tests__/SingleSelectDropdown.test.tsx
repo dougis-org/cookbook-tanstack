@@ -75,4 +75,17 @@ describe('SingleSelectDropdown', () => {
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
     })
   })
+
+  it('closes when clicking outside the dropdown', async () => {
+    setup()
+    
+    expect(screen.getByRole('searchbox')).toBeInTheDocument()
+    
+    // Simulate a mousedown event outside the component
+    fireEvent.mouseDown(document.body)
+    
+    await waitFor(() => {
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    })
+  })
 })
