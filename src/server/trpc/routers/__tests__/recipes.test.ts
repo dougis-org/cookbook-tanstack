@@ -559,6 +559,38 @@ describe("recipes.create", () => {
       expect(result.id).toEqual(expect.any(String));
     });
   });
+
+  it("preserves and trims personalSourceName when sourceId is the Personal source", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.create({
+        name: "My Recipe",
+        sourceId: personalSource.id,
+        personalSourceName: "  Mom's Cookbook  ",
+      });
+      expect(result).toMatchObject({
+        personalSourceName: "Mom's Cookbook",
+      });
+      expect(result.sourceId?.toString()).toBe(personalSource.id);
+    });
+  });
+
+  it("discards personalSourceName when sourceId is not the Personal source", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const otherSource = await new Source({ name: "Other", slug: "other" }).save();
+      await new Source({ name: "Personal", slug: "personal" }).save();
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.create({
+        name: "My Recipe",
+        sourceId: otherSource.id,
+        personalSourceName: "Mom's Cookbook",
+      });
+      expect(result.personalSourceName).toBeUndefined();
+    });
+  });
 });
 
 // ─── recipes.update ───────────────────────────────────────────────────────────
@@ -645,6 +677,29 @@ describe("recipes.update", () => {
       });
 
       expect(result).toMatchObject({ id: recipe.id, name: "Existing" });
+    });
+  });
+
+  it("clears personalSourceName when updating away from the Personal source", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+      const otherSource = await new Source({ name: "Other", slug: "other" }).save();
+      const recipe = await new Recipe({
+        name: "My Recipe",
+        userId: user.id,
+        sourceId: personalSource.id,
+        personalSourceName: "Mom's Cookbook",
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.update({
+        id: recipe.id,
+        sourceId: otherSource.id,
+      });
+      expect(result.personalSourceName).toBeNull();
+      const persisted = await Recipe.findById(recipe.id).lean();
+      expect(persisted?.personalSourceName).toBeNull();
     });
   });
 });

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
 import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
-import { Recipe, RecipeLike, Cookbook } from "@/db/models";
+import { Recipe, RecipeLike, Cookbook, Source } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
 import "@/db/models/source";
@@ -58,7 +58,7 @@ const recipeFields = z.object({
   cookTime: z.number().int().positive().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   sourceId: objectId.optional(),
-  personalSourceName: z.string().max(80).nullable().optional(),
+  personalSourceName: z.string().trim().max(80).nullable().optional(),
   classificationId: objectId.optional(),
   calories: z.number().int().nonnegative().optional(),
   fat: z.number().nonnegative().optional(),
@@ -292,6 +292,11 @@ export const recipesRouter = router({
       }
       const { mealIds, courseIds, preparationIds, ...fields } = input;
 
+      const personalSource = await Source.findOne({ slug: "personal" }).lean();
+      if (fields.sourceId?.toString() !== personalSource?._id.toString()) {
+        fields.personalSourceName = undefined;
+      }
+
       let isPublic = fields.isPublic;
       if (!ctx.user.isAdmin && !canCreatePrivate(ctx.user.tier)) {
         isPublic = true;
@@ -347,8 +352,14 @@ export const recipesRouter = router({
 
       const { id, mealIds, courseIds, preparationIds, ...data } = input;
 
+      const personalSource = await Source.findOne({ slug: "personal" }).lean();
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: Record<string, any> = { ...data };
+      if (input.sourceId && input.sourceId.toString() !== personalSource?._id.toString()) {
+        updateData.personalSourceName = null;
+      }
+
       if (mealIds !== undefined) updateData.mealIds = mealIds;
       if (courseIds !== undefined) updateData.courseIds = courseIds;
       if (preparationIds !== undefined)
