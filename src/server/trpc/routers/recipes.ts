@@ -58,7 +58,7 @@ const recipeFields = z.object({
   cookTime: z.number().int().positive().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   sourceId: objectId.optional(),
-  personalSourceName: z.string().max(80).optional(),
+  personalSourceName: z.string().max(80).nullable().optional(),
   classificationId: objectId.optional(),
   calories: z.number().int().nonnegative().optional(),
   fat: z.number().nonnegative().optional(),
@@ -198,7 +198,7 @@ export const recipesRouter = router({
         id: r._id.toString() as string,
         userId: r.userId?.toString() as string,
         classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
-        personalSourceName: (r.personalSourceName ?? null) as string | null,
+        personalSourceName: (ctx.user && r.userId?.toString() === ctx.user.id ? (r.personalSourceName ?? null) : null) as string | null,
         classificationName:
           (r.classificationId as { name?: string } | null)?.name ?? null,
         hiddenByTier: (r.hiddenByTier ?? false) as boolean,
@@ -245,7 +245,7 @@ export const recipesRouter = router({
         sourceId: ((r.sourceId?._id ?? r.sourceId)?.toString() ?? null) as
           | string
           | null,
-        personalSourceName: (r.personalSourceName ?? null) as string | null,
+        personalSourceName: (ctx.user && r.userId?.toString() === ctx.user.id ? (r.personalSourceName ?? null) : null) as string | null,
         classificationId: ((
           r.classificationId?._id ?? r.classificationId
         )?.toString() ?? null) as string | null,
