@@ -10,4 +10,5 @@ export { RecipeLike } from "./recipe-like";
 export { AdminAuditLog } from "./admin-audit-log";
 export { Collaborator } from "./collaborator";
 export { Notification } from "./notification";
+export { RecipeNote } from "./recipe-note";
 

@@ -49,6 +49,23 @@ All taxonomy collections share the same structure: `_id` (ObjectId), `name`, `de
 | Collection | Purpose |
 |------------|---------|
 | `recipelikes` | Recipe favorites — compound unique index on `(userId, recipeId)` |
+| `recipenotes` | Private per-user notes on a recipe — compound unique index on `(userId, recipeId)` |
+
+#### recipenotes
+
+Stores one private markdown note per `(userId, recipeId)` pair.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `userId` | ObjectId | ref: `user` — required |
+| `recipeId` | ObjectId | ref: `recipes` — required |
+| `body` | string | maxlength 10000, trimmed on save — required |
+| `createdAt` | Date | auto-managed by `timestamps: true` |
+| `updatedAt` | Date | auto-managed by `timestamps: true` |
+
+**Index:** compound unique `(userId, recipeId)` — enforced at the database layer, so duplicate notes for the same user+recipe are rejected with MongoDB error code `11000`.
+
+**Tier gate:** access is enforced at the API layer (`hasAtLeastTier(user, 'sous-chef')`). No visibility flag is stored on the document. Downgraded users retain their stored notes but are denied access until they re-upgrade.
 
 ## Document Design
 
