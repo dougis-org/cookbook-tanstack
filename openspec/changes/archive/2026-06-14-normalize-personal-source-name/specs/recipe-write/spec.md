@@ -46,7 +46,7 @@ None
 - Proposal element -> Requirement: Normalize `personalSourceName` in `create` and `update` -> MODIFIED Normalize personalSourceName on create/update
 - Design decision -> Requirement: Decision 3 (Trimming) -> ADDED Trim personalSourceName
 - Design decision -> Requirement: Decision 2 (Scrubbing mechanism) -> MODIFIED Normalize personalSourceName on create/update
-- Requirement -> Task(s): (Will map to implementation tasks in `tasks.md`)
+- Requirement -> Task(s): See [tasks.md](../tasks.md) (archived)
 
 ## Non-Functional Acceptance Criteria
 
