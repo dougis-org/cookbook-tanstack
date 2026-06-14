@@ -18,11 +18,11 @@ The system SHALL allow saving and retrieving an optional `personalSourceName` st
 - **When** the payload includes a `personalSourceName` of 81 characters or more
 - **Then** the save operation throws a Mongoose/Zod validation error
 
-#### Scenario: Empty string normalization
+#### Scenario: Empty string representation
 
 - **Given** a new or existing recipe being saved
 - **When** the payload includes an empty string for `personalSourceName`
-- **Then** the recipe is saved successfully without raising a validation error
+- **Then** the recipe is saved successfully without raising a validation error, and the empty string is semantically equivalent to "no name"
 
 ## MODIFIED Requirements
 
