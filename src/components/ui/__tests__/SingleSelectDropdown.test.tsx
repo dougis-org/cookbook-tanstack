@@ -43,13 +43,14 @@ describe('SingleSelectDropdown', () => {
     setup()
     
     const searchInput = screen.getByRole('searchbox')
-    await userEvent.type(searchInput, 'ak')
+    await userEvent.type(searchInput, 'a')
     
     // Wait for the debounce search logic
-    await waitFor(async () => {
-      const items = await screen.findAllByRole('option')
-      expect(items).toHaveLength(1)
+    await waitFor(() => {
+      const items = screen.getAllByRole('option')
+      expect(items).toHaveLength(2)
       expect(items[0]).toHaveTextContent('Breakfast')
+      expect(items[1]).toHaveTextContent('Snack')
     })
   })
 
