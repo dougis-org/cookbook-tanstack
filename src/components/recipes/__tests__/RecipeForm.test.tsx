@@ -62,7 +62,7 @@ vi.mock("@/lib/trpc", () => ({
       update: { mutationOptions: () => ({ mutationFn: mockUpdateMutationFn }) },
     },
     classifications: {
-      list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [] }) },
+      list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [{ id: "cls1", name: "Dessert" }] }) },
     },
     meals: {
       list: { queryOptions: () => ({ queryKey: ["meals"], queryFn: () => [{ id: "m1", name: "Breakfast" }] }) },
@@ -489,6 +489,34 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={{ ...makeRecipe({ sourceId: "src1" }), sourceName: "Serious Eats" }} />,
       )
       expect(screen.getByRole("button", { name: /serious eats/i })).toBeInTheDocument()
+    })
+  })
+
+  describe("category picker", () => {
+    it("renders category picker using SingleSelectDropdown", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(screen.getByRole("button", { name: /select a category/i })).toBeInTheDocument()
+    })
+
+    it("updates form state when category is selected", async () => {
+      renderWithProviders(<RecipeForm />)
+      await userEvent.type(screen.getByLabelText(/recipe name/i), "My Recipe")
+      
+      // Open category dropdown
+      await userEvent.click(screen.getByRole("button", { name: /select a category/i }))
+      await userEvent.click(screen.getByRole("button", { name: /Dessert/i }))
+      
+      // Submit
+      await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+
+      await waitFor(() => {
+        expect(mockCreateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockCreateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({
+          classificationId: "cls1",
+        }),
+      )
     })
   })
 

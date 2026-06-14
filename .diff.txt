@@ -1,0 +1,294 @@
+diff --git a/openspec/changes/archive/2026-06-14-recipe-note-model/tasks.md b/openspec/changes/archive/2026-06-14-recipe-note-model/tasks.md
+index 68625d1..8d97a36 100644
+--- a/openspec/changes/archive/2026-06-14-recipe-note-model/tasks.md
++++ b/openspec/changes/archive/2026-06-14-recipe-note-model/tasks.md
+@@ -81,11 +81,11 @@ If **ANY** required step fails, iterate and fix before pushing.
+ ## PR and Merge
+ 
+ - [x] Run pre-commit code review sub-agent; apply all findings; re-run tests
+-- [ ] Commit all changes to `feat/recipe-note-model` and push to remote
+-- [ ] Open PR from `feat/recipe-note-model` to `main`. PR body must include: `Closes #490`
+-- [ ] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge` (never `--admin`)
+-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
+-- [ ] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
++- [x] Commit all changes to `feat/recipe-note-model` and push to remote
++- [x] Open PR from `feat/recipe-note-model` to `main`. PR body must include: `Closes #490`
++- [x] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge` (never `--admin`)
++- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
++- [x] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+   1. **Build and tests** — run all steps in [Remote push validation]; fix failures, commit, push before anything else
+   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address each unresolved thread, commit fixes, run validation, push, wait 180 seconds
+   3. **CI check failures** — after comments resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix failing required checks, commit, validate, push, wait 180 seconds; restart loop from step 1
+@@ -104,14 +104,14 @@ Blocking resolution flow:
+ 
+ ## Post-Merge
+ 
+-- [ ] `git checkout main` and `git pull --ff-only`
+-- [ ] Verify `src/db/models/RecipeNote.ts` and barrel export appear on `main`
+-- [ ] Mark all remaining tasks as complete
+-- [ ] Sync spec delta: copy `openspec/changes/recipe-note-model/specs/recipe-note-model/spec.md` to `openspec/specs/recipe-note-model/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/design.md` and `../../tasks.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/tasks.md`
+-- [ ] Archive the change: move `openspec/changes/recipe-note-model/` to `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` — stage both the copy and deletion in **a single commit**
+-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` exists and `openspec/changes/recipe-note-model/` is gone
+-- [ ] Create doc branch: `git checkout -b doc/archive-YYYY-MM-DD-recipe-note-model` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-note-model`
+-- [ ] Open PR from `doc/archive-YYYY-MM-DD-recipe-note-model` to `main` with title `docs: archive recipe-note-model (YYYY-MM-DD)` — do NOT push directly to `main`
+-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
+-- [ ] Monitor doc PR until merged; address any comments or CI failures on the doc branch
+-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D feat/recipe-note-model doc/archive-YYYY-MM-DD-recipe-note-model`
++- [x] `git checkout main` and `git pull --ff-only`
++- [x] Verify `src/db/models/RecipeNote.ts` and barrel export appear on `main`
++- [x] Mark all remaining tasks as complete
++- [x] Sync spec delta: copy `openspec/changes/recipe-note-model/specs/recipe-note-model/spec.md` to `openspec/specs/recipe-note-model/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/design.md` and `../../tasks.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/tasks.md`
++- [x] Archive the change: move `openspec/changes/recipe-note-model/` to `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` — stage both the copy and deletion in **a single commit**
++- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` exists and `openspec/changes/recipe-note-model/` is gone
++- [x] Create doc branch: `git checkout -b doc/archive-YYYY-MM-DD-recipe-note-model` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-note-model`
++- [x] Open PR from `doc/archive-YYYY-MM-DD-recipe-note-model` to `main` with title `docs: archive recipe-note-model (YYYY-MM-DD)` — do NOT push directly to `main`
++- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
++- [x] Monitor doc PR until merged; address any comments or CI failures on the doc branch
++- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/recipe-note-model doc/archive-YYYY-MM-DD-recipe-note-model`
+diff --git a/src/components/recipes/RecipeForm.tsx b/src/components/recipes/RecipeForm.tsx
+index c691d14..a625f79 100644
+--- a/src/components/recipes/RecipeForm.tsx
++++ b/src/components/recipes/RecipeForm.tsx
+@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc"
+ import { getTierWallReason } from "@/lib/trpc-error"
+ import type { Recipe, TaxonomyItem } from "@/types/recipe"
+ import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
++import SingleSelectDropdown from "@/components/ui/SingleSelectDropdown"
+ import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
+ import ConfirmDialog from "@/components/ui/ConfirmDialog"
+ import ImageUploadField from "@/components/ui/ImageUploadField"
+@@ -422,19 +423,17 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
+ 
+           {/* Classification */}
+           <div>
+-            <label htmlFor="classificationId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
++            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
+               Category
+             </label>
+-            <select
+-              id="classificationId"
+-              {...register("classificationId")}
+-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+-            >
+-              <option value="">Select a category</option>
+-              {classifications?.map((c) => (
+-                <option key={c.id} value={c.id}>{c.name}</option>
+-              ))}
+-            </select>
++            <SingleSelectDropdown
++              options={classifications || []}
++              value={watch("classificationId") || ""}
++              selectedName={classifications?.find(c => c.id === watch("classificationId"))?.name || ""}
++              onChange={(id) => setValue("classificationId", id, { shouldDirty: true })}
++              placeholder="Select a category"
++              emptyMessage="No categories found"
++            />
+           </div>
+ 
+           {/* Source */}
+diff --git a/src/components/recipes/__tests__/RecipeForm.test.tsx b/src/components/recipes/__tests__/RecipeForm.test.tsx
+index 6da2445..c88dd10 100644
+--- a/src/components/recipes/__tests__/RecipeForm.test.tsx
++++ b/src/components/recipes/__tests__/RecipeForm.test.tsx
+@@ -62,7 +62,7 @@ vi.mock("@/lib/trpc", () => ({
+       update: { mutationOptions: () => ({ mutationFn: mockUpdateMutationFn }) },
+     },
+     classifications: {
+-      list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [] }) },
++      list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [{ id: "cls1", name: "Dessert" }] }) },
+     },
+     meals: {
+       list: { queryOptions: () => ({ queryKey: ["meals"], queryFn: () => [{ id: "m1", name: "Breakfast" }] }) },
+@@ -492,6 +492,36 @@ describe("RecipeForm", () => {
+     })
+   })
+ 
++  describe("category picker", () => {
++    it("renders category picker using SingleSelectDropdown", () => {
++      renderWithProviders(<RecipeForm />)
++      expect(screen.getByRole("button", { name: /select a category/i })).toBeInTheDocument()
++    })
++
++    it("updates form state when category is selected", async () => {
++      renderWithProviders(<RecipeForm />)
++      await userEvent.type(screen.getByLabelText(/recipe name/i), "My Recipe")
++      
++      // Open category dropdown
++      await userEvent.click(screen.getByRole("button", { name: /select a category/i }))
++      // In the mock, classifications is an empty array, so let's mock it to have an item
++      // Actually, let's fix the mock in the next replace to provide a classification
++      await userEvent.click(screen.getByRole("button", { name: /Dessert/i }))
++      
++      // Submit
++      await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
++
++      await waitFor(() => {
++        expect(mockCreateMutationFn).toHaveBeenCalled()
++      })
++      expect(mockCreateMutationFn.mock.calls[0]?.[0]).toEqual(
++        expect.objectContaining({
++          classificationId: "cls1",
++        }),
++      )
++    })
++  })
++
+   describe("taxonomy dropdowns", () => {
+     it("renders taxonomy dropdown triggers after difficulty", async () => {
+       renderWithProviders(<RecipeForm />)
+diff --git a/src/components/ui/SourcePickerDropdown.tsx b/src/components/ui/SourcePickerDropdown.tsx
+index 5a196df..0ada628 100644
+--- a/src/components/ui/SourcePickerDropdown.tsx
++++ b/src/components/ui/SourcePickerDropdown.tsx
+@@ -1,7 +1,6 @@
+-import { useCallback, useEffect, useRef, useState } from 'react'
+ import { useQuery } from '@tanstack/react-query'
+-import { ChevronDown, X } from 'lucide-react'
+ import { trpc } from '@/lib/trpc'
++import SingleSelectDropdown from './SingleSelectDropdown'
+ 
+ interface SourcePickerDropdownProps {
+   value: string
+@@ -16,133 +15,16 @@ export default function SourcePickerDropdown({
+   onChange,
+   placeholder = 'Select a source…',
+ }: SourcePickerDropdownProps) {
+-  const [open, setOpen] = useState(false)
+-  const [search, setSearch] = useState('')
+-  const [debouncedSearch, setDebouncedSearch] = useState('')
+-  const containerRef = useRef<HTMLDivElement>(null)
+-  const inputRef = useRef<HTMLInputElement>(null)
+-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+-
+-  const debounceSearch = useCallback((value: string) => {
+-    if (debounceRef.current) clearTimeout(debounceRef.current)
+-    debounceRef.current = setTimeout(() => setDebouncedSearch(value), 300)
+-  }, [])
+-
+-  useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
+-
+-  useEffect(() => {
+-    if (!open) return
+-    setTimeout(() => inputRef.current?.focus(), 0)
+-
+-    function handleMouseDown(e: MouseEvent) {
+-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+-        setOpen(false)
+-      }
+-    }
+-    function handleKeyDown(e: KeyboardEvent) {
+-      if (e.key === 'Escape') setOpen(false)
+-    }
+-    document.addEventListener('mousedown', handleMouseDown)
+-    document.addEventListener('keydown', handleKeyDown)
+-    return () => {
+-      document.removeEventListener('mousedown', handleMouseDown)
+-      document.removeEventListener('keydown', handleKeyDown)
+-    }
+-  }, [open])
+-
+-  const { data: allSources = [] } = useQuery({
+-    ...trpc.sources.list.queryOptions(),
+-    enabled: open && debouncedSearch.length === 0,
+-  })
+-
+-  const { data: searchResults = [] } = useQuery({
+-    ...trpc.sources.search.queryOptions({ query: debouncedSearch }),
+-    enabled: open && debouncedSearch.length > 0,
+-  })
+-
+-  const displayedSources = debouncedSearch.length > 0 ? searchResults : allSources
+-
+-  function selectSource(id: string, name: string) {
+-    onChange(id, name)
+-    setOpen(false)
+-    setSearch('')
+-    setDebouncedSearch('')
+-  }
+-
+-  function clearSource(e: React.MouseEvent) {
+-    e.stopPropagation()
+-    onChange('', '')
+-  }
+-
+-  const isActive = !!value && !!selectedName
++  const { data: allSources = [] } = useQuery(trpc.sources.list.queryOptions())
+ 
+   return (
+-    <div ref={containerRef} className="relative">
+-      <div className="flex items-center gap-1">
+-        <button
+-          type="button"
+-          onClick={() => setOpen((v) => !v)}
+-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+-            isActive
+-              ? 'bg-[var(--theme-accent)]/10 border-[var(--theme-accent)] text-[var(--theme-accent)]'
+-              : 'bg-[var(--theme-surface)] border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:border-[var(--theme-accent)]'
+-          }`}
+-        >
+-          <span>{isActive ? selectedName : placeholder}</span>
+-          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+-        </button>
+-
+-        {isActive && (
+-          <button
+-            type="button"
+-            onClick={clearSource}
+-            aria-label="Clear source"
+-            className="p-1 text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
+-          >
+-            <X className="w-3.5 h-3.5" />
+-          </button>
+-        )}
+-      </div>
+-
+-      {open && (
+-        <div className="absolute z-20 mt-1 w-64 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-[var(--theme-shadow-md)]">
+-          <div className="p-2 border-b border-[var(--theme-border)]">
+-            <input
+-              ref={inputRef}
+-              type="search"
+-              role="searchbox"
+-              placeholder="Search sources…"
+-              value={search}
+-              onChange={(e) => {
+-                const val = e.target.value
+-                setSearch(val)
+-                debounceSearch(val)
+-              }}
+-              className="w-full px-2 py-1 text-sm bg-[var(--theme-surface-raised)] border border-[var(--theme-border)] rounded text-[var(--theme-fg)] placeholder:text-[var(--theme-fg-subtle)] focus:outline-none focus:border-[var(--theme-accent)]"
+-            />
+-          </div>
+-
+-          <ul className="max-h-48 overflow-y-auto py-1">
+-            {displayedSources.length === 0 ? (
+-              <li className="px-3 py-2 text-sm text-[var(--theme-fg-subtle)]">No sources found</li>
+-            ) : (
+-              displayedSources.map((source) => (
+-                <li key={source.id}>
+-                  <button
+-                    type="button"
+-                    onClick={() => selectSource(source.id, source.name)}
+-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--theme-surface-hover)] transition-colors ${
+-                      source.id === value ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-fg-muted)]'
+-                    }`}
+-                  >
+-                    {source.name}
+-                  </button>
+-                </li>
+-              ))
+-            )}
+-          </ul>
+-        </div>
+-      )}
+-    </div>
++    <SingleSelectDropdown
++      options={allSources}
++      value={value}
++      selectedName={selectedName}
++      onChange={onChange}
++      placeholder={placeholder}
++      emptyMessage="No sources found"
++    />
+   )
+ }
