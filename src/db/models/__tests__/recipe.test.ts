@@ -47,7 +47,7 @@ describe("Recipe model — personalSourceName field", () => {
         personalSourceName: longName,
       });
 
-      await expect(recipe.save()).rejects.toThrow(/validation failed/i);
+      await expect(recipe.save()).rejects.toThrow(/personalSourceName/i);
     });
   });
 
