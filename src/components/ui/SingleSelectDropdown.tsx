@@ -13,6 +13,7 @@ interface SingleSelectDropdownProps {
   onChange: (id: string, name: string) => void
   placeholder?: string
   emptyMessage?: string
+  onOpenChange?: (open: boolean) => void
 }
 
 export default function SingleSelectDropdown({
@@ -22,8 +23,16 @@ export default function SingleSelectDropdown({
   onChange,
   placeholder = 'Select an option…',
   emptyMessage = 'No items found',
+  onOpenChange,
 }: SingleSelectDropdownProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpenState] = useState(false)
+  const setOpen = useCallback((v: boolean | ((prev: boolean) => boolean)) => {
+    setOpenState((prev) => {
+      const next = typeof v === 'function' ? v(prev) : v
+      onOpenChange?.(next)
+      return next
+    })
+  }, [onOpenChange])
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)

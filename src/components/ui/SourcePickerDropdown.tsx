@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import SingleSelectDropdown from './SingleSelectDropdown'
@@ -15,7 +16,11 @@ export default function SourcePickerDropdown({
   onChange,
   placeholder = 'Select a source…',
 }: SourcePickerDropdownProps) {
-  const { data: allSources = [] } = useQuery(trpc.sources.list.queryOptions())
+  const [isOpen, setIsOpen] = useState(false)
+  const { data: allSources = [] } = useQuery({
+    ...trpc.sources.list.queryOptions(),
+    enabled: isOpen,
+  })
 
   return (
     <SingleSelectDropdown
@@ -25,6 +30,7 @@ export default function SourcePickerDropdown({
       onChange={onChange}
       placeholder={placeholder}
       emptyMessage="No sources found"
+      onOpenChange={setIsOpen}
     />
   )
 }
