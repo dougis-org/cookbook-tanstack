@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
+import type { ComponentProps } from 'react'
 import SingleSelectDropdown from '../SingleSelectDropdown'
 import userEvent from '@testing-library/user-event'
 
@@ -10,7 +11,7 @@ describe('SingleSelectDropdown', () => {
     { id: '3', name: 'Snack' }
   ]
 
-  const setup = (props: Partial<React.ComponentProps<typeof SingleSelectDropdown>> = {}, open = true) => {
+  const setup = (props: Partial<ComponentProps<typeof SingleSelectDropdown>> = {}, open = true) => {
     const utils = render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} {...props} />)
     const trigger = screen.getByRole('button', { name: props.selectedName || /Select/i })
     if (open) {

@@ -149,9 +149,11 @@ export default function SingleSelectDropdown({
               <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">{emptyMessage}</li>
             ) : (
               displayedOptions.map((option) => (
-                <li key={option.id} role="option" aria-selected={option.id === value}>
+                <li key={option.id}>
                   <button
                     type="button"
+                    role="option"
+                    aria-selected={option.id === value}
                     onClick={() => selectOption(option.id, option.name)}
                     className={`w-full text-left px-4 py-2 text-sm hover:bg-[var(--theme-surface-hover)] transition-colors ${
                       option.id === value ? 'text-[var(--theme-accent)] font-medium' : 'text-[var(--theme-fg)]'
