@@ -77,6 +77,7 @@ describe("RecipeNote model — schema validation", () => {
 
   it("rejects duplicate (userId, recipeId) pair", async () => {
     await withCleanDb(async () => {
+      await RecipeNote.init();
       const { userId, recipeId } = makeIds();
       await new RecipeNote({ userId, recipeId, body: "first" }).save();
       const dup = new RecipeNote({ userId, recipeId, body: "second" });

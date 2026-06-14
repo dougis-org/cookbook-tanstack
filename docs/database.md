@@ -49,15 +49,15 @@ All taxonomy collections share the same structure: `_id` (ObjectId), `name`, `de
 | Collection | Purpose |
 |------------|---------|
 | `recipelikes` | Recipe favorites — compound unique index on `(userId, recipeId)` |
-| `recipe-notes` | Private per-user notes on a recipe — compound unique index on `(userId, recipeId)` |
+| `recipenotes` | Private per-user notes on a recipe — compound unique index on `(userId, recipeId)` |
 
-#### recipe-notes
+#### recipenotes
 
 Stores one private markdown note per `(userId, recipeId)` pair.
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `userId` | ObjectId | ref: `users` — required |
+| `userId` | ObjectId | ref: `user` — required |
 | `recipeId` | ObjectId | ref: `recipes` — required |
 | `body` | string | maxlength 10000, trimmed on save — required |
 | `createdAt` | Date | auto-managed by `timestamps: true` |
