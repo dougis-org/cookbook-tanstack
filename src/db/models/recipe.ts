@@ -11,6 +11,7 @@ export interface IRecipe extends Document {
   cookTime?: number;
   difficulty?: "easy" | "medium" | "hard";
   sourceId?: Types.ObjectId;
+  personalSourceName?: string;
   classificationId?: Types.ObjectId;
   dateAdded?: Date;
   calories?: number;
@@ -42,6 +43,7 @@ const recipeSchema = new Schema<IRecipe>(
     cookTime: { type: Number },
     difficulty: { type: String, enum: ["easy", "medium", "hard"] },
     sourceId: { type: Schema.Types.ObjectId, ref: "Source" },
+    personalSourceName: { type: String, maxlength: 80 },
     classificationId: { type: Schema.Types.ObjectId, ref: "Classification" },
     dateAdded: { type: Date, default: Date.now },
     calories: { type: Number },

@@ -253,6 +253,7 @@ export const cookbooksRouter = router({
             prepTime: (d.prepTime ?? null) as number | null,
             cookTime: (d.cookTime ?? null) as number | null,
             servings: (d.servings ?? null) as number | null,
+            personalSourceName: (d.personalSourceName ?? null) as string | null,
             classificationName:
               (d.classificationId as { name?: string } | null)?.name ??
               (null as string | null),
@@ -371,6 +372,7 @@ export const cookbooksRouter = router({
             cookTime: (d.cookTime ?? null) as number | null,
             servings: (d.servings ?? null) as number | null,
             difficulty: (d.difficulty ?? null) as 'easy' | 'medium' | 'hard' | null,
+            personalSourceName: (d.personalSourceName ?? null) as string | null,
             sourceId: src?._id != null ? String(src._id) : (null as string | null),
             classificationId: cls?._id != null ? String(cls._id) : (null as string | null),
             classificationName: (cls?.name ?? null) as string | null,

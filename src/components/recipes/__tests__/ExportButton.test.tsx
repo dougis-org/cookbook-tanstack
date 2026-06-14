@@ -23,6 +23,7 @@ const mockRecipe: Recipe = {
   cookTime: null,
   difficulty: null,
   sourceId: null,
+  personalSourceName: null,
   classificationId: null,
   dateAdded: null,
   calories: null,

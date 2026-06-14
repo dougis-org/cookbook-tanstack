@@ -91,6 +91,7 @@ export function CookbookPrintPage() {
         {orderedRecipes.map((recipe) => {
           const recipeForDetail: RecipeDetailProps['recipe'] = {
             ...recipe,
+            personalSourceName: recipe.personalSourceName ?? null,
             imageUrl: null,
             marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
           }
