@@ -16,7 +16,7 @@ describe('SingleSelectDropdown', () => {
     // Open dropdown
     fireEvent.click(screen.getByRole('button', { name: /Select/i }))
     
-    const items = await screen.findAllByRole('listitem')
+    const items = await screen.findAllByRole('option')
     expect(items).toHaveLength(3)
     expect(items[0]).toHaveTextContent('Breakfast')
     expect(items[1]).toHaveTextContent('Dinner')
@@ -28,7 +28,7 @@ describe('SingleSelectDropdown', () => {
     
     fireEvent.click(screen.getByRole('button', { name: 'Snack' }))
     
-    const items = await screen.findAllByRole('listitem')
+    const items = await screen.findAllByRole('option')
     expect(items).toHaveLength(3)
     expect(items[0]).toHaveTextContent('Snack')
     expect(items[1]).toHaveTextContent('Breakfast')
@@ -45,7 +45,7 @@ describe('SingleSelectDropdown', () => {
     
     // Wait for the debounce search logic
     await waitFor(async () => {
-      const items = await screen.findAllByRole('listitem')
+      const items = await screen.findAllByRole('option')
       expect(items).toHaveLength(2)
       expect(items[0]).toHaveTextContent('Breakfast')
       expect(items[1]).toHaveTextContent('Snack')

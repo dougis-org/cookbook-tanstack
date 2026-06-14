@@ -22,7 +22,10 @@
 - [x] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch
 - [x] Confirm acceptance criteria are covered
 
-Suggested start-of-work commands: `git checkout main` → `git pull --ff-only` → `git checkout -b feature/category-dropdown-enhancement` → `git push -u origin feature/category-dropdown-enhancement`
+## Push & Merge
+
+- [x] Push branch to remote: `git push origin feature/category-dropdown-enhancement`
+- [x] Create Pull Request (set to auto-merge)
 
 ## Pre-Commit Code Review
 

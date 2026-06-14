@@ -479,9 +479,14 @@ describe("RecipeForm", () => {
   })
 
   describe("source picker", () => {
-    it("renders source picker dropdown trigger", () => {
+    it("renders source picker dropdown trigger and opens it to trigger fetch", async () => {
       renderWithProviders(<RecipeForm />)
-      expect(screen.getByRole("button", { name: /select a source/i })).toBeInTheDocument()
+      const trigger = screen.getByRole("button", { name: /select a source/i })
+      expect(trigger).toBeInTheDocument()
+      
+      // Open to trigger lazy load
+      await userEvent.click(trigger)
+      expect(screen.getByRole("listbox")).toBeInTheDocument()
     })
 
     it("shows selected source name when initialData has a sourceId and sourceName", () => {

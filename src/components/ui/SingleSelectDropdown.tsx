@@ -106,19 +106,21 @@ export default function SingleSelectDropdown({
   const isActive = !!value && !!selectedName
 
   return (
-    <div ref={containerRef} className="relative">
-      <div className="flex items-center gap-1">
+    <div ref={containerRef} className="relative w-full">
+      <div className="flex items-center gap-1 w-full">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className={`flex w-full items-center justify-between px-4 py-2 text-sm rounded-lg border transition-colors ${
             isActive
               ? 'bg-[var(--theme-accent)]/10 border-[var(--theme-accent)] text-[var(--theme-accent)]'
-              : 'bg-[var(--theme-surface)] border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:border-[var(--theme-accent)]'
+              : 'bg-[var(--theme-bg)] border-[var(--theme-border)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)]'
           }`}
         >
-          <span>{isActive ? selectedName : placeholder}</span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+          <span className="truncate">{isActive ? selectedName : placeholder}</span>
+          <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 
         {isActive && (
@@ -126,20 +128,19 @@ export default function SingleSelectDropdown({
             type="button"
             onClick={clearOption}
             aria-label="Clear option"
-            className="p-1 text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
+            className="p-2 text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
       {open && (
-        <div className="absolute z-20 mt-1 w-64 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-[var(--theme-shadow-md)]">
+        <div className="absolute z-20 mt-1 w-full rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] shadow-[var(--theme-shadow-md)]">
           <div className="p-2 border-b border-[var(--theme-border)]">
             <input
               ref={inputRef}
               type="search"
-              role="searchbox"
               placeholder="Search..."
               value={search}
               onChange={(e) => {
@@ -147,21 +148,21 @@ export default function SingleSelectDropdown({
                 setSearch(val)
                 debounceSearch(val)
               }}
-              className="w-full px-2 py-1 text-sm bg-[var(--theme-surface-raised)] border border-[var(--theme-border)] rounded text-[var(--theme-fg)] placeholder:text-[var(--theme-fg-subtle)] focus:outline-none focus:border-[var(--theme-accent)]"
+              className="w-full px-3 py-2 text-sm bg-[var(--theme-bg)] border border-[var(--theme-border)] rounded-md text-[var(--theme-fg)] placeholder:text-[var(--theme-fg-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
             />
           </div>
 
-          <ul className="max-h-48 overflow-y-auto py-1">
+          <ul role="listbox" className="max-h-60 overflow-y-auto py-1">
             {displayedOptions.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-[var(--theme-fg-subtle)]">{emptyMessage}</li>
+              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">{emptyMessage}</li>
             ) : (
               displayedOptions.map((option) => (
-                <li key={option.id}>
+                <li key={option.id} role="option" aria-selected={option.id === value}>
                   <button
                     type="button"
                     onClick={() => selectOption(option.id, option.name)}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--theme-surface-hover)] transition-colors ${
-                      option.id === value ? 'text-[var(--theme-accent)]' : 'text-[var(--theme-fg-muted)]'
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[var(--theme-surface-hover)] transition-colors ${
+                      option.id === value ? 'text-[var(--theme-accent)] font-medium' : 'text-[var(--theme-fg)]'
                     }`}
                   >
                     {option.name}
