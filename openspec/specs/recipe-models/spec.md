@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-14-add-personal-source-name/design.md) document, not a replacement.
 
 ### Requirement: ADDED Recipe Personal Source Name
 
@@ -18,11 +18,11 @@ The system SHALL allow saving and retrieving an optional `personalSourceName` st
 - **When** the payload includes a `personalSourceName` of 81 characters or more
 - **Then** the save operation throws a Mongoose/Zod validation error
 
-#### Scenario: Empty string normalization
+#### Scenario: Empty string representation
 
 - **Given** a new or existing recipe being saved
 - **When** the payload includes an empty string for `personalSourceName`
-- **Then** the recipe is saved successfully without raising a validation error
+- **Then** the recipe is saved successfully without raising a validation error, and the empty string is semantically equivalent to "no name"
 
 ## MODIFIED Requirements
 
@@ -36,7 +36,7 @@ None.
 
 - Proposal element -> Requirement: Add `personalSourceName` -> Requirement: ADDED Recipe Personal Source Name
 - Design decision -> Requirement: Decision 1 & 2 -> Requirement: ADDED Recipe Personal Source Name
-- Requirement -> Task(s): ADDED Recipe Personal Source Name -> (See Tasks 1-3)
+- Requirement -> Task(s): ADDED Recipe Personal Source Name -> (See Tasks 1-5)
 
 ## Non-Functional Acceptance Criteria
 
