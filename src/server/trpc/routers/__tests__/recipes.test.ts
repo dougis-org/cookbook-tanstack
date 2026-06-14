@@ -277,8 +277,8 @@ describe("recipes.list", () => {
     it("filters by sourceIds — returns only recipes linked to any of those sources", async () => {
       await withCleanDb(async () => {
         const user = await seedUser();
-        const srcA = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com" }).save();
-        const srcB = await new Source({ name: "NYT Cooking", url: "https://cooking.nytimes.com" }).save();
+        const srcA = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com", slug: "bon-appetit" }).save();
+        const srcB = await new Source({ name: "NYT Cooking", url: "https://cooking.nytimes.com", slug: "nyt-cooking" }).save();
         await new Recipe({ name: "Fancy Salad", userId: user.id, isPublic: true, sourceId: srcA.id }).save();
         await new Recipe({ name: "NYC Bagel", userId: user.id, isPublic: true, sourceId: srcB.id }).save();
         await new Recipe({ name: "Mystery Recipe", userId: user.id, isPublic: true }).save();
@@ -476,6 +476,7 @@ describe("recipes.byId", () => {
         const src = await new Source({
           name: "Bon Appétit",
           url: "https://bonappetit.com",
+          slug: "bon-appetit",
         }).save();
         return {
           recipeExtra: { sourceId: src.id },

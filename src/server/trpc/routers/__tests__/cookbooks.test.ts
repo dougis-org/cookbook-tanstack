@@ -522,7 +522,7 @@ describe("cookbooks.printById", () => {
       const cb = await seedCookbook(owner.id);
 
       const cls = await new Classification({ name: "Italian", slug: `italian-${uid()}` }).save();
-      const src = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com" }).save();
+      const src = await new Source({ name: "Bon Appétit", url: "https://bonappetit.com", slug: "bon-appetit" }).save();
       const meal = await new Meal({ name: "Dinner", slug: `dinner-${uid()}` }).save();
       const course = await new Course({ name: "Entree", slug: `entree-${uid()}` }).save();
       const prep = await new Preparation({ name: "Bake", slug: `bake-${uid()}` }).save();
