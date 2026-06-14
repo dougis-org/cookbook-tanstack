@@ -11,12 +11,21 @@ export async function backfillSourceSlugs() {
     return;
   }
 
-  let count = 0;
-  for (const doc of docs) {
+  const bulkOps = docs.map((doc) => {
     const slug = slugify(doc.name);
-    await doc.updateOne({ $set: { slug } });
-    count++;
-  }
+    if (!slug) {
+      throw new Error(
+        `backfillSourceSlugs: source "${doc.name}" (${doc._id}) produced an empty slug — fix the name before backfilling`,
+      );
+    }
+    return {
+      updateOne: {
+        filter: { _id: doc._id },
+        update: { $set: { slug } },
+      },
+    };
+  });
 
-  console.log(`backfillSourceSlugs: updated ${count} documents`);
+  await Source.bulkWrite(bulkOps);
+  console.log(`backfillSourceSlugs: updated ${docs.length} documents`);
 }

@@ -66,11 +66,19 @@ export const sourcesRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
+      const slug = slugify(input.name);
+      if (!slug) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Source name must contain alphanumeric characters to generate a valid slug",
+        });
+      }
       try {
         const source = await new Source({
           name: input.name,
           url: input.url ?? null,
-          slug: slugify(input.name),
+          slug,
         }).save();
         return {
           id: source._id.toString(),
