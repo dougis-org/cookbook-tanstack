@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, escapeRegex } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook, Source } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
@@ -43,10 +43,7 @@ function buildImportedRecipeFields(fields: ImportedRecipeInput, userId: string, 
   };
 }
 
-/** Escapes regex metacharacters so user input is treated as a literal substring. */
-function escapeRegex(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+
 
 const recipeFields = z.object({
   name: z.string().min(1).max(500),

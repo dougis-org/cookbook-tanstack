@@ -7,9 +7,17 @@ interface SourceSelectorProps {
   value: string
   initialName?: string
   onChange: (id: string) => void
+  personalSourceName: string
+  onPersonalSourceNameChange: (v: string) => void
 }
 
-export default function SourceSelector({ value, initialName = "", onChange }: SourceSelectorProps) {
+export default function SourceSelector({
+  value,
+  initialName = "",
+  onChange,
+  personalSourceName,
+  onPersonalSourceNameChange,
+}: SourceSelectorProps) {
   const [inputText, setInputText] = useState("")
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -41,6 +49,59 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
     enabled: query.length > 0,
   })
 
+  const { data: selectedSource } = useQuery({
+    ...trpc.sources.byId.queryOptions({ id: value }),
+    enabled: !!value,
+  })
+
+  // Synchronously scan cache to prevent visual flickering/layout jump
+  const cachedSource = (() => {
+    if (!value) return null
+    
+    // Check byId query data directly if present
+    const byIdQueryKey = trpc.sources.byId.queryOptions({ id: value }).queryKey
+    const cachedById = queryClient.getQueryData<any>(byIdQueryKey)
+    if (cachedById) return cachedById
+
+    // Scan all cached query arrays (e.g. search/list results) under sources
+    const queries = queryClient.getQueryCache().getAll()
+    for (const q of queries) {
+      const firstKey = q.queryKey[0]
+      const isSourcesQuery =
+        (Array.isArray(firstKey) && firstKey.includes("sources")) ||
+        firstKey === "sources"
+      if (!isSourcesQuery) continue
+
+      const data = q.state.data
+      if (!data) continue
+      
+      if (Array.isArray(data)) {
+        const found = data.find((item: any) => item && (item.id === value || item._id === value))
+        if (found) return found
+      } else if (typeof data === "object" && ((data as any).id === value || (data as any)._id === value)) {
+        return data
+      }
+    }
+    return null
+  })()
+
+  useEffect(() => {
+    if (!value) {
+      setSelectedName("")
+    } else {
+      const name = selectedSource?.name || cachedSource?.name
+      if (name) {
+        setSelectedName(name)
+      }
+    }
+  }, [value, selectedSource, cachedSource])
+
+  const selectedFromSearch = results.find((r) => r.id === value)
+  const isPersonalSelected =
+    (selectedSource?.slug === "personal") ||
+    (selectedFromSearch?.slug === "personal") ||
+    (cachedSource?.slug === "personal")
+
   const createMutation = useMutation(
     trpc.sources.create.mutationOptions({
       onSuccess: (source) => {
@@ -56,6 +117,12 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
     setInputText("")
     setQuery("")
     setOpen(false)
+
+    // Clear personal source name state if the selected source is not personal
+    const selectedSourceFromResults = results.find((r) => r.id === id)
+    if (!selectedSourceFromResults || selectedSourceFromResults.slug !== "personal") {
+      onPersonalSourceNameChange("")
+    }
   }
 
   function clearSource() {
@@ -63,6 +130,7 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
     setSelectedName("")
     setInputText("")
     setQuery("")
+    onPersonalSourceNameChange("")
   }
 
   const trimmedInput = inputText.trim()
@@ -127,6 +195,27 @@ export default function SourceSelector({ value, initialName = "", onChange }: So
             </li>
           )}
         </ul>
+      )}
+
+      {isPersonalSelected && (
+        <div className="mt-4">
+          <label htmlFor="personalSourceName" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-1">
+            Personal Name
+          </label>
+          <input
+            id="personalSourceName"
+            type="text"
+            placeholder="e.g. Aunt Mary"
+            maxLength={80}
+            value={personalSourceName || ""}
+            onChange={(e) => onPersonalSourceNameChange(e.target.value)}
+            aria-describedby="personalSourceName-helper"
+            className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+          />
+          <p id="personalSourceName-helper" className="mt-1.5 text-xs text-[var(--theme-fg-subtle)]">
+            Only you can see this.
+          </p>
+        </div>
       )}
     </div>
   )

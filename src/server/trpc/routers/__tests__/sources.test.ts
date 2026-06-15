@@ -42,7 +42,7 @@ describe("sources.list", () => {
       const result = await caller.sources.list();
       expect(result).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ name: `ListSource-${id}` }),
+          expect.objectContaining({ name: `ListSource-${id}`, slug: `list-source-${id}` }),
         ]),
       );
     });
@@ -59,6 +59,7 @@ describe("sources.list", () => {
       }
       const inserted = result.find((s) => s.name === `NoRefSource-${id}`);
       expect(inserted?.recipeCount).toBe(0);
+      expect(inserted?.slug).toBe(`no-ref-source-${id}`);
     });
   });
 
@@ -96,7 +97,7 @@ describe("sources.search", () => {
       const caller = await makeAnonCaller();
       const result = await caller.sources.search({ query: `bonappetit-${id}` });
       expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({ name: `BonAppetit-${id}` });
+      expect(result[0]).toMatchObject({ name: `BonAppetit-${id}`, slug: `bon-appetit-${id}` });
     });
   });
 
@@ -121,6 +122,33 @@ describe("sources.search", () => {
       expect(
         (await caller.sources.search({ query: `SearchLimit-${id}` })).length,
       ).toBeLessThanOrEqual(10);
+    });
+  });
+});
+
+// ─── sources.byId ─────────────────────────────────────────────────────────────
+
+describe("sources.byId", () => {
+  it("returns the source by id with the slug", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      const source = await new Source({ name: `ByIdSource-${id}`, slug: `by-id-source-${id}` }).save();
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.byId({ id: source._id.toString() });
+      expect(result).toBeDefined();
+      expect(result).toMatchObject({
+        id: source._id.toString(),
+        name: `ByIdSource-${id}`,
+        slug: `by-id-source-${id}`,
+      });
+    });
+  });
+
+  it("returns null when source is not found", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.byId({ id: "000000000000000000000000" });
+      expect(result).toBeNull();
     });
   });
 });
