@@ -10,7 +10,7 @@ The system SHALL completely omit/strip `personalSourceName` from any tRPC respon
 
 - **Given** the user is the owner of the recipe
 - **When** the recipe is returned via tRPC (e.g. `byId`, `list`, or nested in a cookbook)
-- **Then** the recipe object contains the `personalSourceName` key (valued as the stored string or null)
+- **Then** the `personalSourceName` key is not stripped from the recipe object (the field is returned as defined on the underlying recipe)
 
 #### Scenario: Different authenticated user viewing recipe
 
