@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-15-strip-personal-source-name/design.md) document, not a replacement.
 
 ### Requirement: ADDED Strip personalSourceName from tRPC recipe responses
 
@@ -10,7 +10,7 @@ The system SHALL completely omit/strip `personalSourceName` from any tRPC respon
 
 - **Given** the user is the owner of the recipe
 - **When** the recipe is returned via tRPC (e.g. `byId`, `list`, or nested in a cookbook)
-- **Then** the recipe object contains the `personalSourceName` key (valued as the stored string or null)
+- **Then** the `personalSourceName` key is not stripped from the recipe object (the field is returned as defined on the underlying recipe)
 
 #### Scenario: Different authenticated user viewing recipe
 
@@ -37,7 +37,7 @@ None
 - Proposal element -> Requirement: Centralized helper to delete `personalSourceName` -> ADDED Strip personalSourceName from tRPC recipe responses
 - Design decision -> Requirement: Decision 1 (Shared Helper) -> ADDED Strip personalSourceName from tRPC recipe responses
 - Design decision -> Requirement: Decision 2 (delete operator) -> ADDED Strip personalSourceName from tRPC recipe responses
-- Requirement -> Task(s): See [tasks.md](../../tasks.md)
+- Requirement -> Task(s): See [tasks.md](../../changes/archive/2026-06-15-strip-personal-source-name/tasks.md)
 
 ## Non-Functional Acceptance Criteria
 
