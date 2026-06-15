@@ -308,6 +308,45 @@ describe("recipes.list — userId field", () => {
       expect(result.items[0].userId).toBe(owner.id);
     });
   });
+
+  it("strips personalSourceName from recipes.list items for non-owners, but preserves for owner", async () => {
+    await withCleanDb(async () => {
+      const alice = await seedUser();
+      const bob = await seedUser();
+      await new Recipe({
+        name: "Alice's Stew",
+        userId: alice.id,
+        isPublic: true,
+        personalSourceName: "Alice's Secret",
+      }).save();
+      await new Recipe({
+        name: "Bob's Salad",
+        userId: bob.id,
+        isPublic: true,
+        personalSourceName: "Bob's Secret",
+      }).save();
+
+      // Alice lists: sees Alice's Stew's personalSourceName, but not Bob's Salad's
+      const aliceCaller = await makeAuthCaller(alice.id);
+      const aliceResult = await aliceCaller.recipes.list();
+      
+      const aliceStew = aliceResult.items.find(r => r.name === "Alice's Stew");
+      const bobSaladForAlice = aliceResult.items.find(r => r.name === "Bob's Salad");
+      
+      expect(aliceStew?.personalSourceName).toBe("Alice's Secret");
+      expect(bobSaladForAlice?.personalSourceName).toBeUndefined();
+
+      // Guest lists: sees neither personalSourceName
+      const anonCaller = await makeAnonCaller();
+      const anonResult = await anonCaller.recipes.list();
+      
+      const aliceStewForAnon = anonResult.items.find(r => r.name === "Alice's Stew");
+      const bobSaladForAnon = anonResult.items.find(r => r.name === "Bob's Salad");
+      
+      expect(aliceStewForAnon?.personalSourceName).toBeUndefined();
+      expect(bobSaladForAnon?.personalSourceName).toBeUndefined();
+    });
+  });
 });
 
 // ─── recipes.list — classificationName ───────────────────────────────────────
@@ -519,6 +558,34 @@ describe("recipes.byId", () => {
       });
     },
   );
+
+  it("strips personalSourceName from recipes.byId for non-owners and guests, but preserves for owner", async () => {
+    await withCleanDb(async () => {
+      const alice = await seedUser();
+      const bob = await seedUser();
+      const recipe = await new Recipe({
+        name: "Alice's Secret Stew",
+        userId: alice.id,
+        isPublic: true,
+        personalSourceName: "Mom's Secret",
+      }).save();
+
+      // Alice (owner) sees the personalSourceName
+      const aliceCaller = await makeAuthCaller(alice.id);
+      const aliceResult = await aliceCaller.recipes.byId({ id: recipe.id });
+      expect(aliceResult?.personalSourceName).toBe("Mom's Secret");
+
+      // Bob (non-owner) does not see it (undefined)
+      const bobCaller = await makeAuthCaller(bob.id);
+      const bobResult = await bobCaller.recipes.byId({ id: recipe.id });
+      expect(bobResult?.personalSourceName).toBeUndefined();
+
+      // Guest (anonymous) does not see it (undefined)
+      const anonCaller = await makeAnonCaller();
+      const anonResult = await anonCaller.recipes.byId({ id: recipe.id });
+      expect(anonResult?.personalSourceName).toBeUndefined();
+    });
+  });
 });
 
 // ─── recipes.create ───────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import mongoose from "mongoose"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
 import { Recipe, Cookbook } from "@/db/models"
 import { seedUserWithBetterAuth } from "./test-helpers"
-import { visibilityFilter } from "../_helpers"
+import { visibilityFilter, stripPersonalSourceName } from "../_helpers"
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }))
 
@@ -258,3 +258,85 @@ describe("enforceContentLimit — cookbooks", () => {
     })
   })
 })
+
+describe("stripPersonalSourceName", () => {
+  it("handles null/undefined input", () => {
+    expect(stripPersonalSourceName(null, "user1")).toBeNull()
+    expect(stripPersonalSourceName(undefined, "user1")).toBeUndefined()
+    expect(stripPersonalSourceName(42, "user1")).toBe(42)
+    expect(stripPersonalSourceName("hello", "user1")).toBe("hello")
+  })
+
+  it("strips personalSourceName for non-owners in a single recipe object", () => {
+    const recipe = {
+      userId: "user1",
+      personalSourceName: "Secret Source",
+      name: "Chocolate Cake",
+    }
+    const result = stripPersonalSourceName(recipe, "user2") as any
+    expect(result.personalSourceName).toBeUndefined()
+    expect(result.name).toBe("Chocolate Cake")
+  })
+
+  it("preserves personalSourceName for owners in a single recipe object", () => {
+    const recipe = {
+      userId: "user1",
+      personalSourceName: "Secret Source",
+      name: "Chocolate Cake",
+    }
+    const result = stripPersonalSourceName(recipe, "user1") as any
+    expect(result.personalSourceName).toBe("Secret Source")
+    expect(result.name).toBe("Chocolate Cake")
+  })
+
+  it("strips personalSourceName when viewer is unauthenticated (undefined/null)", () => {
+    const recipe = {
+      userId: "user1",
+      personalSourceName: "Secret Source",
+      name: "Chocolate Cake",
+    }
+    const result = stripPersonalSourceName(recipe, undefined) as any
+    expect(result.personalSourceName).toBeUndefined()
+  })
+
+  it("strips personalSourceName for non-owners in arrays", () => {
+    const recipes = [
+      { userId: "user1", personalSourceName: "Source A", name: "R1" },
+      { userId: "user2", personalSourceName: "Source B", name: "R2" },
+    ]
+    const result = stripPersonalSourceName(recipes, "user1") as any[]
+    expect(result[0].personalSourceName).toBe("Source A")
+    expect(result[1].personalSourceName).toBeUndefined()
+  })
+
+  it("strips personalSourceName in paginated object shapes (like { items: [...] })", () => {
+    const payload = {
+      items: [
+        { userId: "user1", personalSourceName: "Source A" },
+        { userId: "user2", personalSourceName: "Source B" },
+      ],
+      nextCursor: "abc",
+    }
+    const result = stripPersonalSourceName(payload, "user1") as any
+    expect(result.items[0].personalSourceName).toBe("Source A")
+    expect(result.items[1].personalSourceName).toBeUndefined()
+  })
+
+  it("recursively traverses nested objects (like cookbooks containing recipes)", () => {
+    const cookbook = {
+      name: "My Cook Book",
+      recipes: [
+        { userId: "user1", personalSourceName: "Source A" },
+        { userId: "user2", personalSourceName: "Source B" },
+      ],
+      nestedInfo: {
+        featuredRecipe: { userId: "user2", personalSourceName: "Source C" },
+      },
+    }
+    const result = stripPersonalSourceName(cookbook, "user1") as any
+    expect(result.recipes[0].personalSourceName).toBe("Source A")
+    expect(result.recipes[1].personalSourceName).toBeUndefined()
+    expect(result.nestedInfo.featuredRecipe.personalSourceName).toBeUndefined()
+  })
+})
+

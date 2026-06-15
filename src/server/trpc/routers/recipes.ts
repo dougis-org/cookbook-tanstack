@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, stripPersonalSourceName } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook, Source } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
@@ -75,8 +75,22 @@ const taxonomyIds = z.object({
   preparationIds: z.array(objectId).optional(),
 });
 
+const recipePrivacyMiddleware = async ({ ctx, next }: { ctx: any; next: () => Promise<any> }) => {
+  const result = await next();
+  if (result.ok) {
+    return {
+      ...result,
+      data: stripPersonalSourceName(result.data, ctx.user?.id),
+    };
+  }
+  return result;
+};
+
+const recipePublicProcedure = publicProcedure.use(recipePrivacyMiddleware);
+const recipeProtectedProcedure = protectedProcedure.use(recipePrivacyMiddleware);
+
 export const recipesRouter = router({
-  list: publicProcedure
+  list: recipePublicProcedure
     .input(
       z
         .object({
@@ -209,7 +223,7 @@ export const recipesRouter = router({
       return { items, total, page, pageSize, nextCursor };
     }),
 
-  byId: publicProcedure
+  byId: recipePublicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const visFilter = visibilityFilter(ctx.user);
@@ -282,7 +296,7 @@ export const recipesRouter = router({
       };
     }),
 
-  create: protectedProcedure
+  create: recipeProtectedProcedure
     .input(recipeFields.merge(taxonomyIds))
     .mutation(async ({ ctx, input }) => {
       // Pending recipes don't count against tier limits.
@@ -322,7 +336,7 @@ export const recipesRouter = router({
       };
     }),
 
-  update: protectedProcedure
+  update: recipeProtectedProcedure
     .input(
       z
         .object({ id: objectId })

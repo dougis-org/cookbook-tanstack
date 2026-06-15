@@ -146,3 +146,62 @@ export function createTaxonomyRouter(Model: any, arrayField: 'mealIds' | 'course
     ),
   });
 }
+
+/**
+ * Recursively traverses any data structure and strips `personalSourceName`
+ * from any recipe objects if the viewer is not the owner of that recipe.
+ */
+export function stripPersonalSourceName<T>(data: T, viewerUserId?: string): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  // Handle arrays
+  if (Array.isArray(data)) {
+    return data.map((item) => stripPersonalSourceName(item, viewerUserId)) as unknown as T;
+  }
+
+  // If it's not an object (e.g. primitive), return as-is
+  if (typeof data !== "object") {
+    return data;
+  }
+
+  // Check if it's a Mongoose document (it has a toObject method)
+  let obj = data as Record<string, any>;
+  let isDoc = false;
+  if (typeof obj.toObject === "function") {
+    obj = obj.toObject();
+    isDoc = true;
+  }
+
+  let modified = false;
+  let newObj = obj;
+
+  // Check if this object has both userId and personalSourceName
+  if ("userId" in obj && "personalSourceName" in obj) {
+    const ownerId = obj.userId?.toString();
+    if (!viewerUserId || ownerId !== viewerUserId) {
+      if (!isDoc && !modified) {
+        newObj = { ...obj };
+        modified = true;
+      }
+      delete newObj.personalSourceName;
+    }
+  }
+
+  // Recursively traverse object keys.
+  for (const key of Object.keys(newObj)) {
+    if (newObj[key] && typeof newObj[key] === "object") {
+      const traversed = stripPersonalSourceName(newObj[key], viewerUserId);
+      if (traversed !== newObj[key]) {
+        if (!isDoc && !modified) {
+          newObj = { ...newObj };
+          modified = true;
+        }
+        newObj[key] = traversed;
+      }
+    }
+  }
+
+  return newObj as T;
+}
