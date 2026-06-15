@@ -262,6 +262,7 @@ export const cookbooksRouter = router({
             chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
           };
           sanitizeRecipePersonalSource(stubRes, ctx.user?.id);
+          delete (stubRes as any).userId;
           return stubRes;
         })
         .filter((r): r is NonNullable<typeof r> => r !== null);

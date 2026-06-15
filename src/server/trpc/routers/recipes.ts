@@ -199,7 +199,6 @@ export const recipesRouter = router({
           id: r._id.toString() as string,
           userId: r.userId?.toString() as string,
           classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
-          personalSourceName: r.personalSourceName,
           classificationName:
             (r.classificationId as { name?: string } | null)?.name ?? null,
           hiddenByTier: (r.hiddenByTier ?? false) as boolean,
@@ -393,7 +392,7 @@ export const recipesRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
       if (d) {
-        const result = { ...d, id: d._id.toString() as string };
+        const result = { ...d, id: d._id.toString() as string, userId: d.userId?.toString() as string };
         sanitizeRecipePersonalSource(result, ctx.user.id);
         return result;
       }

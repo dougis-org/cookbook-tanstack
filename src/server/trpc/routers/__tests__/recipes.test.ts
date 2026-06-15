@@ -1910,6 +1910,24 @@ describe("visibility enforcement", () => {
         expect(result?.isPublic).toBe(false);
       });
     });
+
+    it("returns null if recipe is deleted concurrently during update execution", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({ name: "Public Recipe", userId: user.id, isPublic: true }).save();
+        const caller = await makeAuthCaller(user.id);
+        const findByIdAndUpdateSpy = vi.spyOn(Recipe, "findByIdAndUpdate").mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          lean: vi.fn().mockResolvedValueOnce(null),
+        } as any);
+        try {
+          const result = await caller.recipes.update({ id: recipe.id, name: "New Name" });
+          expect(result).toBeNull();
+        } finally {
+          findByIdAndUpdateSpy.mockRestore();
+        }
+      });
+    });
   });
 });
 
