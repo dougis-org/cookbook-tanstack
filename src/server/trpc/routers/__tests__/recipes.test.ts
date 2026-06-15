@@ -334,7 +334,8 @@ describe("recipes.list — userId field", () => {
       const bobSaladForAlice = aliceResult.items.find(r => r.name === "Bob's Salad");
       
       expect(aliceStew?.personalSourceName).toBe("Alice's Secret");
-      expect(bobSaladForAlice?.personalSourceName).toBeUndefined();
+      expect(bobSaladForAlice).toBeDefined();
+      expect(Object.hasOwn(bobSaladForAlice!, "personalSourceName")).toBe(false);
 
       // Guest lists: sees neither personalSourceName
       const anonCaller = await makeAnonCaller();
@@ -343,8 +344,10 @@ describe("recipes.list — userId field", () => {
       const aliceStewForAnon = anonResult.items.find(r => r.name === "Alice's Stew");
       const bobSaladForAnon = anonResult.items.find(r => r.name === "Bob's Salad");
       
-      expect(aliceStewForAnon?.personalSourceName).toBeUndefined();
-      expect(bobSaladForAnon?.personalSourceName).toBeUndefined();
+      expect(aliceStewForAnon).toBeDefined();
+      expect(Object.hasOwn(aliceStewForAnon!, "personalSourceName")).toBe(false);
+      expect(bobSaladForAnon).toBeDefined();
+      expect(Object.hasOwn(bobSaladForAnon!, "personalSourceName")).toBe(false);
     });
   });
 });
@@ -578,12 +581,14 @@ describe("recipes.byId", () => {
       // Bob (non-owner) does not see it (undefined)
       const bobCaller = await makeAuthCaller(bob.id);
       const bobResult = await bobCaller.recipes.byId({ id: recipe.id });
-      expect(bobResult?.personalSourceName).toBeUndefined();
+      expect(bobResult).not.toBeNull();
+      expect(Object.hasOwn(bobResult!, "personalSourceName")).toBe(false);
 
       // Guest (anonymous) does not see it (undefined)
       const anonCaller = await makeAnonCaller();
       const anonResult = await anonCaller.recipes.byId({ id: recipe.id });
-      expect(anonResult?.personalSourceName).toBeUndefined();
+      expect(anonResult).not.toBeNull();
+      expect(Object.hasOwn(anonResult!, "personalSourceName")).toBe(false);
     });
   });
 });

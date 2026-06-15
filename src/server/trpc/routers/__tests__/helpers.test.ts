@@ -274,7 +274,7 @@ describe("stripPersonalSourceName", () => {
       name: "Chocolate Cake",
     }
     const result = stripPersonalSourceName(recipe, "user2") as any
-    expect(result.personalSourceName).toBeUndefined()
+    expect(Object.hasOwn(result, "personalSourceName")).toBe(false)
     expect(result.name).toBe("Chocolate Cake")
   })
 
@@ -295,8 +295,10 @@ describe("stripPersonalSourceName", () => {
       personalSourceName: "Secret Source",
       name: "Chocolate Cake",
     }
-    const result = stripPersonalSourceName(recipe, undefined) as any
-    expect(result.personalSourceName).toBeUndefined()
+    const res1 = stripPersonalSourceName(recipe, undefined) as any
+    expect(Object.hasOwn(res1, "personalSourceName")).toBe(false)
+    const res2 = stripPersonalSourceName(recipe, null) as any
+    expect(Object.hasOwn(res2, "personalSourceName")).toBe(false)
   })
 
   it("strips personalSourceName for non-owners in arrays", () => {
@@ -306,7 +308,7 @@ describe("stripPersonalSourceName", () => {
     ]
     const result = stripPersonalSourceName(recipes, "user1") as any[]
     expect(result[0].personalSourceName).toBe("Source A")
-    expect(result[1].personalSourceName).toBeUndefined()
+    expect(Object.hasOwn(result[1], "personalSourceName")).toBe(false)
   })
 
   it("strips personalSourceName in paginated object shapes (like { items: [...] })", () => {
@@ -319,7 +321,7 @@ describe("stripPersonalSourceName", () => {
     }
     const result = stripPersonalSourceName(payload, "user1") as any
     expect(result.items[0].personalSourceName).toBe("Source A")
-    expect(result.items[1].personalSourceName).toBeUndefined()
+    expect(Object.hasOwn(result.items[1], "personalSourceName")).toBe(false)
   })
 
   it("recursively traverses nested objects (like cookbooks containing recipes)", () => {
@@ -335,8 +337,8 @@ describe("stripPersonalSourceName", () => {
     }
     const result = stripPersonalSourceName(cookbook, "user1") as any
     expect(result.recipes[0].personalSourceName).toBe("Source A")
-    expect(result.recipes[1].personalSourceName).toBeUndefined()
-    expect(result.nestedInfo.featuredRecipe.personalSourceName).toBeUndefined()
+    expect(Object.hasOwn(result.recipes[1], "personalSourceName")).toBe(false)
+    expect(Object.hasOwn(result.nestedInfo.featuredRecipe, "personalSourceName")).toBe(false)
   })
 
   it("does not traverse or mutate complex non-plain objects like Date or ObjectId", () => {

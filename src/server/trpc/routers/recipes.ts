@@ -75,7 +75,7 @@ const taxonomyIds = z.object({
   preparationIds: z.array(objectId).optional(),
 });
 
-const recipePrivacyMiddleware = async ({ ctx, next }: { ctx: any; next: () => Promise<any> }) => {
+const recipePublicProcedure = publicProcedure.use(async ({ ctx, next }) => {
   const result = await next();
   if (result.ok) {
     return {
@@ -84,10 +84,18 @@ const recipePrivacyMiddleware = async ({ ctx, next }: { ctx: any; next: () => Pr
     };
   }
   return result;
-};
+});
 
-const recipePublicProcedure = publicProcedure.use(recipePrivacyMiddleware);
-const recipeProtectedProcedure = protectedProcedure.use(recipePrivacyMiddleware);
+const recipeProtectedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const result = await next();
+  if (result.ok) {
+    return {
+      ...result,
+      data: stripPersonalSourceName(result.data, ctx.user?.id),
+    };
+  }
+  return result;
+});
 
 export const recipesRouter = router({
   list: recipePublicProcedure

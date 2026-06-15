@@ -159,7 +159,7 @@ function isPlainObject(value: any): boolean {
   return proto === null || proto === Object.prototype;
 }
 
-export function stripPersonalSourceName<T>(data: T, viewerUserId?: string): T {
+export function stripPersonalSourceName<T>(data: T, viewerUserId?: string | null): T {
   if (data === null || data === undefined) {
     return data;
   }
