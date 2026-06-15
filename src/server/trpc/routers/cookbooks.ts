@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource } from "./_helpers";
 import { Cookbook, Recipe, Collaborator, Notification } from "@/db/models";
 import { ObjectId } from "mongodb";
 import { hasAtLeastTier } from "@/types/user";
@@ -246,20 +246,24 @@ export const cookbooksRouter = router({
         .map((stub) => {
           const d = docFromStub(stub, recipeById);
           if (!d) return null;
-          return {
+          const stubRes = {
             id: d._id.toString() as string,
+            userId: d.userId?.toString() as string,
             name: d.name as string,
             imageUrl: (d.imageUrl ?? null) as string | null,
             prepTime: (d.prepTime ?? null) as number | null,
             cookTime: (d.cookTime ?? null) as number | null,
             servings: (d.servings ?? null) as number | null,
-            personalSourceName: (ctx.user && d.userId?.toString() === ctx.user.id ? (d.personalSourceName ?? null) : null) as string | null,
+            personalSourceName: d.personalSourceName,
             classificationName:
               (d.classificationId as { name?: string } | null)?.name ??
               (null as string | null),
             orderIndex: stub.orderIndex,
             chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
           };
+          sanitizeRecipePersonalSource(stubRes, ctx.user?.id);
+          delete (stubRes as any).userId;
+          return stubRes;
         })
         .filter((r): r is NonNullable<typeof r> => r !== null);
 
@@ -360,7 +364,7 @@ export const cookbooksRouter = router({
           const src = d.sourceId as { _id?: unknown; name?: string; url?: string } | null;
           const userIdStr = d.userId?.toString();
           const addedByName = (hasCollabs && userIdStr) ? (userNameMap.get(userIdStr) ?? null) : null;
-          return {
+          const stubRes = {
             id: d._id.toString() as string,
             name: d.name as string,
             userId: d.userId?.toString() as string,
@@ -372,7 +376,7 @@ export const cookbooksRouter = router({
             cookTime: (d.cookTime ?? null) as number | null,
             servings: (d.servings ?? null) as number | null,
             difficulty: (d.difficulty ?? null) as 'easy' | 'medium' | 'hard' | null,
-            personalSourceName: (ctx.user && d.userId?.toString() === ctx.user.id ? (d.personalSourceName ?? null) : null) as string | null,
+            personalSourceName: d.personalSourceName,
             sourceId: src?._id != null ? String(src._id) : (null as string | null),
             classificationId: cls?._id != null ? String(cls._id) : (null as string | null),
             classificationName: (cls?.name ?? null) as string | null,
@@ -397,6 +401,8 @@ export const cookbooksRouter = router({
             orderIndex: stub.orderIndex,
             chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
           };
+          sanitizeRecipePersonalSource(stubRes, ctx.user?.id);
+          return stubRes;
         })
         .filter((r): r is NonNullable<typeof r> => r !== null);
 

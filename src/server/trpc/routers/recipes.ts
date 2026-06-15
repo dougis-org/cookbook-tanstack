@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook, Source } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
@@ -193,17 +193,20 @@ export const recipesRouter = router({
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = (rawItems as any[]).map((r) => ({
-        ...r,
-        id: r._id.toString() as string,
-        userId: r.userId?.toString() as string,
-        classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
-        personalSourceName: (ctx.user && r.userId?.toString() === ctx.user.id ? (r.personalSourceName ?? null) : null) as string | null,
-        classificationName:
-          (r.classificationId as { name?: string } | null)?.name ?? null,
-        hiddenByTier: (r.hiddenByTier ?? false) as boolean,
-        marked: likedIds ? likedIds.has(r._id.toString()) : false,
-      }));
+      const items = (rawItems as any[]).map((r) => {
+        const item = {
+          ...r,
+          id: r._id.toString() as string,
+          userId: r.userId?.toString() as string,
+          classificationId: ((r.classificationId?._id ?? r.classificationId)?.toString() ?? null) as string | null,
+          classificationName:
+            (r.classificationId as { name?: string } | null)?.name ?? null,
+          hiddenByTier: (r.hiddenByTier ?? false) as boolean,
+          marked: likedIds ? likedIds.has(r._id.toString()) : false,
+        };
+        sanitizeRecipePersonalSource(item, ctx.user?.id);
+        return item;
+      });
 
       const nextCursor = page * pageSize < total ? page + 1 : undefined;
       return { items, total, page, pageSize, nextCursor };
@@ -231,7 +234,7 @@ export const recipesRouter = router({
 
       type PopItem = { _id: unknown; name: string };
 
-      return {
+      const result = {
         id: r._id.toString() as string,
         userId: r.userId.toString() as string,
         name: r.name as string,
@@ -245,7 +248,7 @@ export const recipesRouter = router({
         sourceId: ((r.sourceId?._id ?? r.sourceId)?.toString() ?? null) as
           | string
           | null,
-        personalSourceName: (ctx.user && r.userId?.toString() === ctx.user.id ? (r.personalSourceName ?? null) : null) as string | null,
+        personalSourceName: r.personalSourceName,
         classificationId: ((
           r.classificationId?._id ?? r.classificationId
         )?.toString() ?? null) as string | null,
@@ -280,6 +283,8 @@ export const recipesRouter = router({
           name: p.name,
         })),
       };
+      sanitizeRecipePersonalSource(result, ctx.user?.id);
+      return result;
     }),
 
   create: protectedProcedure
@@ -315,11 +320,13 @@ export const recipesRouter = router({
         preparationIds: preparationIds ?? [],
         ...(pendingVerification ? { pendingVerification } : {}),
       }).save();
-      return {
+      const result = {
         ...recipe.toObject(),
         id: recipe._id.toString(),
         userId: recipe.userId?.toString(),
       };
+      sanitizeRecipePersonalSource(result, ctx.user.id);
+      return result;
     }),
 
   update: protectedProcedure
@@ -384,7 +391,12 @@ export const recipesRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const d = doc as any;
-      return d ? { ...d, id: d._id.toString() as string } : null;
+      if (d) {
+        const result = { ...d, id: d._id.toString() as string, userId: d.userId?.toString() as string };
+        sanitizeRecipePersonalSource(result, ctx.user.id);
+        return result;
+      }
+      return null;
     }),
 
   delete: verifiedProcedure

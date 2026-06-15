@@ -1516,3 +1516,57 @@ describe("cookbooks collaboration notifications triggers", () => {
   });
 });
 
+describe("cookbooks - personalSourceName stripping", () => {
+  it("TC-5 (cookbooks.byId): strips personalSourceName from recipe stubs if the viewer is not the recipe owner", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const other = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+
+      // Cookbooks owner is `owner`
+      const cb = await seedCookbook(owner.id);
+
+      // Recipe 1 owned by owner
+      const r1 = await new Recipe({
+        name: `Recipe-1-${uid()}`,
+        userId: owner.id,
+        isPublic: true,
+        sourceId: personalSource.id,
+        personalSourceName: "Owner Recipe Source",
+      }).save();
+
+      // Recipe 2 owned by other
+      const r2 = await new Recipe({
+        name: `Recipe-2-${uid()}`,
+        userId: other.id,
+        isPublic: true,
+        sourceId: personalSource.id,
+        personalSourceName: "Other Recipe Source",
+      }).save();
+
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id);
+
+      // Viewer is `owner` (matches recipe 1 owner but not recipe 2)
+      const ownerCaller = await makeAuthCaller(owner.id);
+      const ownerResult = await ownerCaller.cookbooks.byId({ id: cb.id });
+      expect(ownerResult).not.toBeNull();
+      const ownerRecipes = ownerResult!.recipes;
+
+      const r1AsOwner = ownerRecipes.find((r) => r.id === r1.id);
+      const r2AsVisitor = ownerRecipes.find((r) => r.id === r2.id);
+
+      expect(r1AsOwner?.personalSourceName).toBe("Owner Recipe Source");
+      expect(r2AsVisitor).toBeDefined();
+      expect("personalSourceName" in r2AsVisitor!).toBe(false);
+
+      // Viewer is anonymous (matches neither recipe owner)
+      const anonCaller = await makeAnonCaller();
+      const anonResult = await anonCaller.cookbooks.byId({ id: cb.id });
+      expect(anonResult).not.toBeNull();
+      anonResult!.recipes.forEach((r) => {
+        expect("personalSourceName" in r).toBe(false);
+      });
+    });
+  });
+});
+

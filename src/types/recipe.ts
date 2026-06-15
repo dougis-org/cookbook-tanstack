@@ -14,7 +14,7 @@ export interface Recipe {
   cookTime: number | null;
   difficulty: Difficulty | null;
   sourceId: string | null;
-  personalSourceName: string | null;
+  personalSourceName?: string | null;
   classificationId: string | null;
   classificationName?: string | null;
   dateAdded: Date | null;

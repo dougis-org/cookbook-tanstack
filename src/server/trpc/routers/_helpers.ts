@@ -146,3 +146,22 @@ export function createTaxonomyRouter(Model: any, arrayField: 'mealIds' | 'course
     ),
   });
 }
+
+/**
+ * Strips the personalSourceName field from a recipe if the viewer is not the owner.
+ * If the viewer is the owner, leaves personalSourceName untouched (retaining its value or undefined).
+ */
+export function sanitizeRecipePersonalSource(
+  recipe: any,
+  viewerId: string | undefined | null,
+): void {
+  if (!recipe) return;
+  const recipeUserId = recipe.userId?.toString();
+  const isOwner = Boolean(recipeUserId && viewerId && recipeUserId === viewerId);
+
+  if (!isOwner) {
+    delete recipe.personalSourceName;
+  }
+}
+
+

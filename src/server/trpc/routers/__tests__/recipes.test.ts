@@ -1910,6 +1910,24 @@ describe("visibility enforcement", () => {
         expect(result?.isPublic).toBe(false);
       });
     });
+
+    it("returns null if recipe is deleted concurrently during update execution", async () => {
+      await withCleanDb(async () => {
+        const user = await seedUser();
+        const recipe = await new Recipe({ name: "Public Recipe", userId: user.id, isPublic: true }).save();
+        const caller = await makeAuthCaller(user.id);
+        const findByIdAndUpdateSpy = vi.spyOn(Recipe, "findByIdAndUpdate").mockReturnValueOnce({
+          select: vi.fn().mockReturnThis(),
+          lean: vi.fn().mockResolvedValueOnce(null),
+        } as any);
+        try {
+          const result = await caller.recipes.update({ id: recipe.id, name: "New Name" });
+          expect(result).toBeNull();
+        } finally {
+          findByIdAndUpdateSpy.mockRestore();
+        }
+      });
+    });
   });
 });
 
@@ -2195,3 +2213,107 @@ describe("recipes.byId — pending recipe access control", () => {
     });
   });
 });
+
+describe("recipes - personalSourceName visibility / stripping", () => {
+  it("TC-2 (recipes.byId): returns personalSourceName for owner, but deletes it for other authed and anonymous users", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const otherUser = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+
+      const recipe = await new Recipe({
+        name: "Test Recipe",
+        userId: owner.id,
+        isPublic: true,
+        sourceId: personalSource.id,
+        personalSourceName: "Secret Source",
+      }).save();
+
+      // Owner
+      const ownerCaller = await makeAuthCaller(owner.id);
+      const ownerResult = await ownerCaller.recipes.byId({ id: recipe.id });
+      expect(ownerResult?.personalSourceName).toBe("Secret Source");
+
+      // Other authed user
+      const otherCaller = await makeAuthCaller(otherUser.id);
+      const otherResult = await otherCaller.recipes.byId({ id: recipe.id });
+      expect(otherResult).not.toBeNull();
+      expect("personalSourceName" in otherResult!).toBe(false);
+
+      // Anonymous visitor
+      const anonCaller = await makeAnonCaller();
+      const anonResult = await anonCaller.recipes.byId({ id: recipe.id });
+      expect(anonResult).not.toBeNull();
+      expect("personalSourceName" in anonResult!).toBe(false);
+    });
+  });
+
+  it("TC-3 (recipes.list): does row-by-row visibility checks for personalSourceName", async () => {
+    await withCleanDb(async () => {
+      const owner1 = await seedUser();
+      const owner2 = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+
+      const recipe1 = await new Recipe({
+        name: "Recipe 1",
+        userId: owner1.id,
+        isPublic: true,
+        sourceId: personalSource.id,
+        personalSourceName: "Owner 1 Source",
+      }).save();
+
+      const recipe2 = await new Recipe({
+        name: "Recipe 2",
+        userId: owner2.id,
+        isPublic: true,
+        sourceId: personalSource.id,
+        personalSourceName: "Owner 2 Source",
+      }).save();
+
+      // Caller is owner1
+      const caller1 = await makeAuthCaller(owner1.id);
+      const list1 = await caller1.recipes.list();
+      const items1 = list1.items;
+      
+      const r1AsOwner = items1.find(i => i.id === recipe1.id);
+      const r2AsVisitor = items1.find(i => i.id === recipe2.id);
+
+      expect(r1AsOwner?.personalSourceName).toBe("Owner 1 Source");
+      expect(r2AsVisitor).toBeDefined();
+      expect("personalSourceName" in r2AsVisitor!).toBe(false);
+
+      // Caller is anonymous
+      const anonCaller = await makeAnonCaller();
+      const listAnon = await anonCaller.recipes.list();
+      const itemsAnon = listAnon.items;
+
+      itemsAnon.forEach(item => {
+        expect("personalSourceName" in item).toBe(false);
+      });
+    });
+  });
+
+  it("TC-4 (recipes.create & update): returns personalSourceName for the creator/updater", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const personalSource = await new Source({ name: "Personal", slug: "personal" }).save();
+      const caller = await makeAuthCaller(user.id);
+
+      // Create
+      const created = await caller.recipes.create({
+        name: "New Recipe",
+        sourceId: personalSource.id,
+        personalSourceName: "My Secret Source",
+      });
+      expect(created.personalSourceName).toBe("My Secret Source");
+
+      // Update
+      const updated = await caller.recipes.update({
+        id: created.id,
+        personalSourceName: "My New Secret Source",
+      });
+      expect(updated.personalSourceName).toBe("My New Secret Source");
+    });
+  });
+});
+

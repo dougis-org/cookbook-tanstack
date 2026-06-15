@@ -258,3 +258,46 @@ describe("enforceContentLimit — cookbooks", () => {
     })
   })
 })
+
+describe("sanitizeRecipePersonalSource", () => {
+  it("leaves personalSourceName present (retaining value or undefined) when viewer is the owner", async () => {
+    const { sanitizeRecipePersonalSource } = await import("../_helpers")
+    const recipe1 = { userId: "owner1", personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe1, "owner1")
+    expect(recipe1).toEqual({ userId: "owner1", personalSourceName: "Grandma" })
+
+    const recipe2 = { userId: "owner1" }
+    sanitizeRecipePersonalSource(recipe2, "owner1")
+    expect(recipe2).toEqual({ userId: "owner1" })
+  })
+
+  it("completely deletes personalSourceName when viewer is not the owner", async () => {
+    const { sanitizeRecipePersonalSource } = await import("../_helpers")
+    const recipe = { userId: "owner1", personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe, "other-user")
+    expect("personalSourceName" in recipe).toBe(false)
+  })
+
+  it("completely deletes personalSourceName when viewer is anonymous/undefined", async () => {
+    const { sanitizeRecipePersonalSource } = await import("../_helpers")
+    const recipe = { userId: "owner1", personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe, undefined)
+    expect("personalSourceName" in recipe).toBe(false)
+
+    const recipe2 = { userId: "owner1", personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe2, null as any)
+    expect("personalSourceName" in recipe2).toBe(false)
+  })
+
+  it("treats the recipe as owned by nobody and safely strips personalSourceName if userId is missing or corrupted", async () => {
+    const { sanitizeRecipePersonalSource } = await import("../_helpers")
+    const recipe1 = { personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe1, "owner1")
+    expect("personalSourceName" in recipe1).toBe(false)
+
+    const recipe2 = { userId: null, personalSourceName: "Grandma" }
+    sanitizeRecipePersonalSource(recipe2, "owner1")
+    expect("personalSourceName" in recipe2).toBe(false)
+  })
+})
+
