@@ -11,6 +11,11 @@ export const objectId = z
   .string()
   .regex(/^[a-f0-9]{24}$/i, "Invalid ID format");
 
+/** Escapes regex metacharacters so user input is treated as a literal substring. */
+export function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /**
  * Builds a Mongoose filter enforcing visibility for user-owned content.
  * Public docs are visible only when not hidden by tier; private docs are visible

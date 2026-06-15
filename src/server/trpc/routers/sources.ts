@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, publicProcedure, router } from "../init";
 import { Recipe, Source } from "@/db/models";
-import { objectId } from "./_helpers";
+import { objectId, escapeRegex } from "./_helpers";
 import { slugify } from "@/lib/slugify";
 
 function isDuplicateKeyError(err: unknown): boolean {
@@ -14,10 +14,7 @@ function isDuplicateKeyError(err: unknown): boolean {
   );
 }
 
-/** Escapes regex metacharacters so user input is treated as a literal substring. */
-function escapeRegex(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
@@ -34,6 +31,7 @@ export const sourcesRouter = router({
       id: s._id.toString(),
       name: s.name as string,
       url: (s.url ?? null) as string | null,
+      slug: (s.slug ?? null) as string | null,
       recipeCount: countMap.get(s._id.toString()) ?? 0,
     }));
   }),
@@ -51,6 +49,7 @@ export const sourcesRouter = router({
         id: s._id.toString(),
         name: s.name as string,
         url: (s.url ?? null) as string | null,
+        slug: (s.slug ?? null) as string | null,
       }));
     }),
 
@@ -64,6 +63,7 @@ export const sourcesRouter = router({
         id: source._id.toString(),
         name: source.name as string,
         url: (source.url ?? null) as string | null,
+        slug: (source.slug ?? null) as string | null,
       };
     }),
 
