@@ -13,7 +13,8 @@ describe('SingleSelectDropdown', () => {
 
   const setup = (props: Partial<ComponentProps<typeof SingleSelectDropdown>> = {}, open = true) => {
     const utils = render(<SingleSelectDropdown options={options} value="" onChange={vi.fn()} {...props} />)
-    const trigger = screen.getByRole('button', { name: props.selectedName || /Select/i })
+    const expectedName = props.selectedName || (props.value ? (options.find(o => o.id === props.value)?.name) : '') || /Select/i
+    const trigger = screen.getByRole('button', { name: expectedName })
     if (open) {
       fireEvent.click(trigger)
     }
@@ -89,5 +90,29 @@ describe('SingleSelectDropdown', () => {
     await waitFor(() => {
       expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
     })
+  })
+
+  it('derives selectedName from options if not provided in props', () => {
+    setup({ value: '2' }, false)
+    expect(screen.getByRole('button', { name: 'Breakfast' })).toBeInTheDocument()
+  })
+
+  it('resets search query when closed', async () => {
+    const { trigger } = setup()
+    
+    const searchInput = screen.getByRole('searchbox')
+    await userEvent.type(searchInput, 'xyz')
+    expect(searchInput).toHaveValue('xyz')
+    
+    // Close it
+    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
+    await waitFor(() => {
+      expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
+    })
+    
+    // Open it again and check search is empty
+    fireEvent.click(trigger)
+    const newSearchInput = screen.getByRole('searchbox')
+    expect(newSearchInput).toHaveValue('')
   })
 })

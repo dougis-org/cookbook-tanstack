@@ -81,11 +81,11 @@ If **ANY** required step fails, iterate and fix before pushing.
 ## PR and Merge
 
 - [x] Run pre-commit code review sub-agent; apply all findings; re-run tests
-- [x] Commit all changes to `feat/recipe-note-model` and push to remote
-- [x] Open PR from `feat/recipe-note-model` to `main`. PR body must include: `Closes #490`
-- [x] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge` (never `--admin`)
-- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [x] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+- [ ] Commit all changes to `feat/recipe-note-model` and push to remote
+- [ ] Open PR from `feat/recipe-note-model` to `main`. PR body must include: `Closes #490`
+- [ ] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge` (never `--admin`)
+- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [ ] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
   1. **Build and tests** — run all steps in [Remote push validation]; fix failures, commit, push before anything else
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address each unresolved thread, commit fixes, run validation, push, wait 180 seconds
   3. **CI check failures** — after comments resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix failing required checks, commit, validate, push, wait 180 seconds; restart loop from step 1
@@ -104,14 +104,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [x] `git checkout main` and `git pull --ff-only`
-- [x] Verify `src/db/models/RecipeNote.ts` and barrel export appear on `main`
-- [x] Mark all remaining tasks as complete
-- [x] Sync spec delta: copy `openspec/changes/recipe-note-model/specs/recipe-note-model/spec.md` to `openspec/specs/recipe-note-model/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/design.md` and `../../tasks.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/tasks.md`
-- [x] Archive the change: move `openspec/changes/recipe-note-model/` to `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` — stage both the copy and deletion in **a single commit**
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` exists and `openspec/changes/recipe-note-model/` is gone
-- [x] Create doc branch: `git checkout -b doc/archive-YYYY-MM-DD-recipe-note-model` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-note-model`
-- [x] Open PR from `doc/archive-YYYY-MM-DD-recipe-note-model` to `main` with title `docs: archive recipe-note-model (YYYY-MM-DD)` — do NOT push directly to `main`
-- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
-- [x] Monitor doc PR until merged; address any comments or CI failures on the doc branch
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/recipe-note-model doc/archive-YYYY-MM-DD-recipe-note-model`
+- [ ] `git checkout main` and `git pull --ff-only`
+- [ ] Verify `src/db/models/RecipeNote.ts` and barrel export appear on `main`
+- [ ] Mark all remaining tasks as complete
+- [ ] Sync spec delta: copy `openspec/changes/recipe-note-model/specs/recipe-note-model/spec.md` to `openspec/specs/recipe-note-model/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/design.md` and `../../tasks.md` → `../../changes/archive/YYYY-MM-DD-recipe-note-model/tasks.md`
+- [ ] Archive the change: move `openspec/changes/recipe-note-model/` to `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` — stage both the copy and deletion in **a single commit**
+- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-note-model/` exists and `openspec/changes/recipe-note-model/` is gone
+- [ ] Create doc branch: `git checkout -b doc/archive-YYYY-MM-DD-recipe-note-model` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-note-model`
+- [ ] Open PR from `doc/archive-YYYY-MM-DD-recipe-note-model` to `main` with title `docs: archive recipe-note-model (YYYY-MM-DD)` — do NOT push directly to `main`
+- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
+- [ ] Monitor doc PR until merged; address any comments or CI failures on the doc branch
+- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D feat/recipe-note-model doc/archive-YYYY-MM-DD-recipe-note-model`

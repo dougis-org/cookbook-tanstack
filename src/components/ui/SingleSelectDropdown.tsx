@@ -37,6 +37,14 @@ export default function SingleSelectDropdown({
 
   useEffect(() => {
     onOpenChange?.(open)
+    if (!open) {
+      setSearch('')
+      setDebouncedSearch('')
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+        debounceRef.current = null
+      }
+    }
   }, [open, onOpenChange])
 
   const debounceSearch = useCallback((val: string) => {
@@ -82,6 +90,10 @@ export default function SingleSelectDropdown({
   }, [options, debouncedSearch, value])
 
   function selectOption(id: string, name: string) {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+      debounceRef.current = null
+    }
     onChange(id, name)
     setOpen(false)
     setSearch('')
@@ -93,7 +105,13 @@ export default function SingleSelectDropdown({
     onChange('', '')
   }
 
-  const isActive = !!value && !!selectedName
+  const derivedSelectedName = useMemo(() => {
+    if (selectedName) return selectedName
+    const matchedOption = options.find((opt) => opt.id === value)
+    return matchedOption ? matchedOption.name : ''
+  }, [selectedName, options, value])
+
+  const isActive = !!value
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -110,7 +128,7 @@ export default function SingleSelectDropdown({
               : 'bg-[var(--theme-bg)] border-[var(--theme-border)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)]'
           }`}
         >
-          <span className="truncate">{isActive ? selectedName : placeholder}</span>
+          <span className="truncate">{isActive ? (derivedSelectedName || value) : placeholder}</span>
           <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 
