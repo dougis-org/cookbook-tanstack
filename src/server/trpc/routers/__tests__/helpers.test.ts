@@ -338,5 +338,13 @@ describe("stripPersonalSourceName", () => {
     expect(result.recipes[1].personalSourceName).toBeUndefined()
     expect(result.nestedInfo.featuredRecipe.personalSourceName).toBeUndefined()
   })
+
+  it("does not traverse or mutate complex non-plain objects like Date or ObjectId", () => {
+    const date = new Date()
+    const objectId = new mongoose.Types.ObjectId()
+    
+    expect(stripPersonalSourceName(date, "user1")).toBe(date)
+    expect(stripPersonalSourceName(objectId, "user1")).toBe(objectId)
+  })
 })
 

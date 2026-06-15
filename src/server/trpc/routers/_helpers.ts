@@ -151,6 +151,14 @@ export function createTaxonomyRouter(Model: any, arrayField: 'mealIds' | 'course
  * Recursively traverses any data structure and strips `personalSourceName`
  * from any recipe objects if the viewer is not the owner of that recipe.
  */
+function isPlainObject(value: any): boolean {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
+}
+
 export function stripPersonalSourceName<T>(data: T, viewerUserId?: string): T {
   if (data === null || data === undefined) {
     return data;
@@ -172,6 +180,11 @@ export function stripPersonalSourceName<T>(data: T, viewerUserId?: string): T {
   if (typeof obj.toObject === "function") {
     obj = obj.toObject();
     isDoc = true;
+  }
+
+  // If it's not a plain object (e.g., Date, ObjectId, etc.), return as-is
+  if (!isPlainObject(obj)) {
+    return data;
   }
 
   let modified = false;
