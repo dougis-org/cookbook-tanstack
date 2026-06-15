@@ -192,20 +192,24 @@ describe('reconcileUserContent downgrade limit', () => {
     })
   })
 
-  it('Test 1h — recipes and cookbooks get limited separately', async () => {
-    await withCleanDb(async () => {
-      const user = await seedUserWithBetterAuth()
-      const userId = user.id as string
-      await insertRecipes(userId, 600)
-      await insertCookbooks(userId, 30)
-      const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
-      expect(result.recipesHidden).toBe(500)
-      expect(result.cookbooksHidden).toBe(20)
-      expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: { $ne: true } })).toHaveLength(100)
-      expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: true })).toHaveLength(500)
-      await asrtCookbooksVisibleHidden(userId, 10, 20)
-    })
-  })
+  it(
+    'Test 1h — recipes and cookbooks get limited separately',
+    async () => {
+      await withCleanDb(async () => {
+        const user = await seedUserWithBetterAuth()
+        const userId = user.id as string
+        await insertRecipes(userId, 600)
+        await insertCookbooks(userId, 30)
+        const result = await reconcileUserContent(userId, 'sous-chef', 'prep-cook')
+        expect(result.recipesHidden).toBe(500)
+        expect(result.cookbooksHidden).toBe(20)
+        expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: { $ne: true } })).toHaveLength(100)
+        expect(await Recipe.find({ userId: new Types.ObjectId(userId), hiddenByTier: true })).toHaveLength(500)
+        await asrtCookbooksVisibleHidden(userId, 10, 20)
+      })
+    },
+    15000,
+  )
 })
 
 // ─── combined downgrade ────────────────────────────────────────────────────

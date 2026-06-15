@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc"
 import { getTierWallReason } from "@/lib/trpc-error"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
+import SingleSelectDropdown from "@/components/ui/SingleSelectDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
 import ImageUploadField from "@/components/ui/ImageUploadField"
@@ -425,24 +426,24 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <label htmlFor="classificationId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Category
             </label>
-            <select
+            <SingleSelectDropdown
               id="classificationId"
-              {...register("classificationId")}
-              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
-            >
-              <option value="">Select a category</option>
-              {classifications?.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
+              options={classifications || []}
+              value={watch("classificationId") || ""}
+              selectedName={classifications?.find(c => c.id === watch("classificationId"))?.name || ""}
+              onChange={(id) => setValue("classificationId", id, { shouldDirty: true })}
+              placeholder="Select a category"
+              emptyMessage="No categories found"
+            />
           </div>
 
           {/* Source */}
           <div>
-            <label className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
+            <label htmlFor="sourceId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Source (cookbook, website, etc.)
             </label>
             <SourcePickerDropdown
+              id="sourceId"
               value={selectedSourceId}
               selectedName={selectedSourceName}
               onChange={(id, name) => {
