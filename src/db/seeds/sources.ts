@@ -1,5 +1,5 @@
-import { slugify } from "@/lib/slugify";
-import { Source } from "@/db/models";
+import { slugify } from "../../lib/slugify";
+import { Source } from "../models";
 
 export async function backfillSourceSlugs() {
   const docs = await Source.find({ slug: { $exists: false } });

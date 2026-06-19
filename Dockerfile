@@ -21,6 +21,7 @@ COPY --from=builder --chown=node:node /app/.output ./.output
 COPY --from=builder --chown=node:node /app/package*.json ./
 # Copy application source needed by the Fly.io release_command (npm run db:seed)
 COPY --from=builder --chown=node:node /app/src ./src
+COPY --from=builder --chown=node:node /app/tsconfig.json ./tsconfig.json
 
 # Install only production dependencies (tsx + dotenv are in dependencies for db:seed)
 RUN npm ci --omit=dev
