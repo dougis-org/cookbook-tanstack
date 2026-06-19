@@ -49,6 +49,6 @@
 
 ## Post-Merge / Archive
 
-- [ ] Sync approved spec to `openspec/specs/category-picker-dropdown/spec.md`.
-- [ ] Archive the change: move `openspec/changes/category-dropdown-lazy-fetch/` to `openspec/changes/archive/2026-06-19-category-dropdown-lazy-fetch/`.
-- [ ] Push doc branch, create PR with auto-merge, and monitor to completion.
+- [x] Sync approved spec to `openspec/specs/category-picker-dropdown/spec.md`.
+- [x] Archive the change: move `openspec/changes/category-dropdown-lazy-fetch/` to `openspec/changes/archive/2026-06-19-category-dropdown-lazy-fetch/`.
+- [x] Push doc branch, create PR with auto-merge, and monitor to completion.
