@@ -22,7 +22,7 @@ For each task in `tasks.md`:
 - [x] **CategoryPickerDropdown Tests:**
   - [x] **Test Case 1:** Displays placeholder when empty and does not execute classifications query on mount.
   - [x] **Test Case 2:** Displays selected name immediately on mount without executing a network query.
-  - [x] **Test Case 3:** Executes classifications query and displays loading state when opened.
+  - [x] **Test Case 3:** Executes classifications query when opened (lazy-fetching options).
   - [x] **Test Case 4:** Correctly lists, filters, and selects category options, calling `onChange(id, name)`.
 - [x] **RecipeForm Integration Tests:**
   - [x] **Test Case 5:** `RecipeForm` schema validates and supports optional `classificationName`.

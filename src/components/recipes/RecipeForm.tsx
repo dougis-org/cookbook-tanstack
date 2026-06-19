@@ -59,6 +59,7 @@ interface RecipeWithRelations extends Recipe {
   courses?: TaxonomyItem[]
   preparations?: TaxonomyItem[]
   sourceName?: string | null
+  classificationName?: string | null
 }
 
 // ─── RecipeForm ───────────────────────────────────────────────────────────────

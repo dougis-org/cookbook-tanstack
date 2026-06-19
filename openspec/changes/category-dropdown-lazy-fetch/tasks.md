@@ -36,8 +36,8 @@
 
 ## Push & Merge
 
-- [ ] Push branch to remote: `git push origin feature/category-dropdown-lazy-fetch`
-- [ ] Create Pull Request (set to auto-merge) and ensure body includes `Closes #514`.
+- [x] Push branch to remote: `git push origin feature/category-dropdown-lazy-fetch`
+- [x] Create Pull Request (set to auto-merge) and ensure body includes `Closes #514`.
 
 ## Validation
 
