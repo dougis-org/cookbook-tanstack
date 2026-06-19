@@ -603,9 +603,21 @@ describe("RecipeForm", () => {
   })
 
   describe("category picker", () => {
-    it("renders category picker using SingleSelectDropdown", () => {
+    it("renders category picker using CategoryPickerDropdown", () => {
       renderWithProviders(<RecipeForm />)
       expect(screen.getByRole("button", { name: /Category/i })).toBeInTheDocument()
+    })
+
+    it("shows selected category name when initialData has a classificationId and classificationName", () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe({ classificationId: "cls1" }),
+            classificationName: "Dessert",
+          }}
+        />,
+      )
+      expect(screen.getByText(/dessert/i)).toBeInTheDocument()
     })
 
     it("updates form state when category is selected", async () => {

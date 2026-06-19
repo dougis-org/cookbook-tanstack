@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc"
 import { getTierWallReason } from "@/lib/trpc-error"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
 import SourceSelector from "@/components/ui/SourceSelector"
-import SingleSelectDropdown from "@/components/ui/SingleSelectDropdown"
+import CategoryPickerDropdown from "@/components/ui/CategoryPickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
 import ImageUploadField from "@/components/ui/ImageUploadField"
@@ -29,6 +29,7 @@ function sortedEqual(a: string[], b: string[]): boolean {
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
+  classificationName: z.string().optional(),
   ingredients: z.string().optional(),
   imageUrl: z.string().nullable().optional(),
   instructions: z.string().optional(),
@@ -58,6 +59,7 @@ interface RecipeWithRelations extends Recipe {
   courses?: TaxonomyItem[]
   preparations?: TaxonomyItem[]
   sourceName?: string | null
+  classificationName?: string | null
 }
 
 // ─── RecipeForm ───────────────────────────────────────────────────────────────
@@ -101,7 +103,6 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
   const initialPersonalSourceName = useMemo(() => initialData?.personalSourceName ?? "", [initialData?.personalSourceName])
 
-  const { data: classifications } = useQuery(trpc.classifications.list.queryOptions())
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
@@ -110,6 +111,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const formDefaults = useMemo(() => ({
     name: originalDataRef.current?.name ?? "",
     classificationId: originalDataRef.current?.classificationId ?? "",
+    classificationName: originalDataRef.current?.classificationName ?? "",
     ingredients: originalDataRef.current?.ingredients ?? "",
     imageUrl: originalDataRef.current?.imageUrl ?? undefined,
     instructions: originalDataRef.current?.instructions ?? "",
@@ -428,14 +430,15 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <label htmlFor="classificationId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Category
             </label>
-            <SingleSelectDropdown
+            <CategoryPickerDropdown
               id="classificationId"
-              options={classifications || []}
               value={watch("classificationId") || ""}
-              selectedName={classifications?.find(c => c.id === watch("classificationId"))?.name || ""}
-              onChange={(id) => setValue("classificationId", id, { shouldDirty: true })}
+              selectedName={watch("classificationName") || ""}
+              onChange={(id, name) => {
+                setValue("classificationId", id, { shouldDirty: true })
+                setValue("classificationName", name, { shouldDirty: true })
+              }}
               placeholder="Select a category"
-              emptyMessage="No categories found"
             />
           </div>
 
