@@ -58,6 +58,37 @@ function renderWithProviders(ui: React.ReactElement) {
   return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
 }
 
+function TestWrapper({
+  initialValue = 's-personal',
+  initialPersonalName = 'Aunt Mary',
+  onChange = vi.fn(),
+  onPersonalSourceNameChange = vi.fn(),
+}: {
+  initialValue?: string
+  initialPersonalName?: string
+  onChange?: (val: string) => void
+  onPersonalSourceNameChange?: (val: string) => void
+}) {
+  const [value, setValue] = React.useState(initialValue)
+  const [personalName, setPersonalName] = React.useState(initialPersonalName)
+  
+  return (
+    <SourceSelector
+      value={value}
+      initialName="Personal"
+      onChange={(val) => {
+        setValue(val)
+        onChange(val)
+      }}
+      personalSourceName={personalName}
+      onPersonalSourceNameChange={(val) => {
+        setPersonalName(val)
+        onPersonalSourceNameChange(val)
+      }}
+    />
+  )
+}
+
 describe('SourceSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -120,22 +151,12 @@ describe('SourceSelector', () => {
 
   it('calls onPersonalSourceNameChange when typing in the input', async () => {
     const onPersonalSourceNameChange = vi.fn()
-    const Wrapper = () => {
-      const [name, setName] = React.useState('')
-      return (
-        <SourceSelector
-          value="s-personal"
-          initialName="Personal"
-          onChange={vi.fn()}
-          personalSourceName={name}
-          onPersonalSourceNameChange={(val) => {
-            setName(val)
-            onPersonalSourceNameChange(val)
-          }}
-        />
-      )
-    }
-    renderWithProviders(<Wrapper />)
+    renderWithProviders(
+      <TestWrapper
+        initialPersonalName=""
+        onPersonalSourceNameChange={onPersonalSourceNameChange}
+      />,
+    )
 
     await waitFor(() => {
       expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
@@ -147,4 +168,55 @@ describe('SourceSelector', () => {
     expect(onPersonalSourceNameChange).toHaveBeenCalled()
     expect(onPersonalSourceNameChange).toHaveBeenLastCalledWith('Grandma')
   })
+
+  it('does not clear personalSourceName on source selection change', async () => {
+    const onPersonalSourceNameChange = vi.fn()
+    const onChange = vi.fn()
+
+    renderWithProviders(
+      <TestWrapper
+        onChange={onChange}
+        onPersonalSourceNameChange={onPersonalSourceNameChange}
+      />,
+    )
+    
+    await waitFor(() => {
+      expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+    })
+    
+    const clearButton = screen.getByRole('button')
+    await userEvent.click(clearButton)
+    
+    const input = screen.getByPlaceholderText(/search for a source/i)
+    await userEvent.type(input, 'Bon')
+    
+    const option = await screen.findByText('Bon Appetit')
+    await userEvent.click(option)
+    
+    expect(onChange).toHaveBeenLastCalledWith('s-bon')
+    expect(onPersonalSourceNameChange).not.toHaveBeenCalledWith('')
+  })
+
+  it('does not clear personalSourceName when clearing source', async () => {
+    const onPersonalSourceNameChange = vi.fn()
+    const onChange = vi.fn()
+
+    renderWithProviders(
+      <TestWrapper
+        onChange={onChange}
+        onPersonalSourceNameChange={onPersonalSourceNameChange}
+      />,
+    )
+    
+    await waitFor(() => {
+      expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+    })
+    
+    const clearButton = screen.getByRole('button')
+    await userEvent.click(clearButton)
+    
+    expect(onChange).toHaveBeenLastCalledWith('')
+    expect(onPersonalSourceNameChange).not.toHaveBeenCalledWith('')
+  })
 })
+

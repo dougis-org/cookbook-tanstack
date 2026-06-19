@@ -3,6 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { X } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 
+interface CachedSource {
+  id?: string
+  _id?: string
+  name: string
+  slug: string
+  url?: string | null
+}
+
 interface SourceSelectorProps {
   value: string
   initialName?: string
@@ -60,7 +68,7 @@ export default function SourceSelector({
     
     // Check byId query data directly if present
     const byIdQueryKey = trpc.sources.byId.queryOptions({ id: value }).queryKey
-    const cachedById = queryClient.getQueryData<any>(byIdQueryKey)
+    const cachedById = queryClient.getQueryData<CachedSource>(byIdQueryKey)
     if (cachedById) return cachedById
 
     // Scan all cached query arrays (e.g. search/list results) under sources
@@ -76,10 +84,16 @@ export default function SourceSelector({
       if (!data) continue
       
       if (Array.isArray(data)) {
-        const found = data.find((item: any) => item && (item.id === value || item._id === value))
-        if (found) return found
-      } else if (typeof data === "object" && ((data as any).id === value || (data as any)._id === value)) {
-        return data
+        const found = data.find((item: unknown) => {
+          const s = item as CachedSource | null | undefined
+          return s && (s.id === value || s._id === value)
+        })
+        if (found) return found as CachedSource
+      } else if (typeof data === "object") {
+        const s = data as CachedSource
+        if (s && (s.id === value || s._id === value)) {
+          return s
+        }
       }
     }
     return null
@@ -98,6 +112,7 @@ export default function SourceSelector({
 
   const selectedFromSearch = results.find((r) => r.id === value)
   const isPersonalSelected =
+    (selectedName?.toLowerCase() === "personal") ||
     (selectedSource?.slug === "personal") ||
     (selectedFromSearch?.slug === "personal") ||
     (cachedSource?.slug === "personal")
@@ -117,12 +132,6 @@ export default function SourceSelector({
     setInputText("")
     setQuery("")
     setOpen(false)
-
-    // Clear personal source name state if the selected source is not personal
-    const selectedSourceFromResults = results.find((r) => r.id === id)
-    if (!selectedSourceFromResults || selectedSourceFromResults.slug !== "personal") {
-      onPersonalSourceNameChange("")
-    }
   }
 
   function clearSource() {
@@ -130,7 +139,6 @@ export default function SourceSelector({
     setSelectedName("")
     setInputText("")
     setQuery("")
-    onPersonalSourceNameChange("")
   }
 
   const trimmedInput = inputText.trim()
