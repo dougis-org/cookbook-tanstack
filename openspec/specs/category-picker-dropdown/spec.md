@@ -1,9 +1,10 @@
 # category-picker-dropdown Specification
 
 ## Purpose
-TBD - created by archiving change category-dropdown-lazy-fetch. Update Purpose after archive.
+A single-select dropdown component (`CategoryPickerDropdown`) for selecting a category on the recipe form. To optimize performance and eliminate page-load delay, option queries are deferred (lazy-fetched) until the dropdown is opened, while displaying the selected category name immediately from preloaded data.
+
 ## Requirements
-### Requirement: ADDED Category Picker Dropdown Lazy Fetching
+### Requirement: Category Picker Dropdown Lazy Fetching
 
 The Category Picker Dropdown SHALL lazy-fetch option list values only when the dropdown panel is opened, rather than on page mount.
 
@@ -24,4 +25,11 @@ The Category Picker Dropdown SHALL lazy-fetch option list values only when the d
 - **Given** an existing recipe with `classificationId` and `classificationName` loaded
 - **When** the edit form mounts
 - **Then** the Category dropdown immediately displays the correct `classificationName` before any network query is executed
+
+## Traceability
+
+- Component implementation: [CategoryPickerDropdown.tsx](file:///home/doug/dev2/cookbook-tanstack/src/components/ui/CategoryPickerDropdown.tsx)
+- Unit and behavioral tests: [CategoryPickerDropdown.test.tsx](file:///home/doug/dev2/cookbook-tanstack/src/components/ui/__tests__/CategoryPickerDropdown.test.tsx)
+- Integration tests: [RecipeForm.test.tsx](file:///home/doug/dev2/cookbook-tanstack/src/components/recipes/__tests__/RecipeForm.test.tsx)
+
 
