@@ -569,6 +569,30 @@ describe("RecipeDetail", () => {
       props: {},
       assert: () => expect(screen.queryByText(/source:/i)).not.toBeInTheDocument(),
     },
+    {
+      label: "with personal source name suffix when personalSourceName is present",
+      props: { sourceName: "Personal", sourceUrl: null, personalSourceName: "Doug's Recipes" },
+      assert: () => {
+        const sourceP = screen.getByText(/source:/i).closest("p")!
+        expect(sourceP.textContent).toBe("Source: Personal · Doug's Recipes")
+      },
+    },
+    {
+      label: "without suffix when personalSourceName is absent/undefined",
+      props: { sourceName: "Personal", sourceUrl: null, personalSourceName: undefined },
+      assert: () => {
+        const sourceP = screen.getByText(/source:/i).closest("p")!
+        expect(sourceP.textContent).toBe("Source: Personal")
+      },
+    },
+    {
+      label: "without suffix when personalSourceName is whitespace-only",
+      props: { sourceName: "Personal", sourceUrl: null, personalSourceName: "   " },
+      assert: () => {
+        const sourceP = screen.getByText(/source:/i).closest("p")!
+        expect(sourceP.textContent).toBe("Source: Personal")
+      },
+    },
   ])("renders source $label", ({ props, assert }) => {
     render(<RecipeDetail recipe={{ ...makeRecipe(), ...props }} />)
     assert()
