@@ -41,6 +41,22 @@ The system SHALL return the `slug` field for all queried source records to enabl
 - **When** the client calls `sources.list`, `sources.search`, or `sources.byId`
 - **Then** each returned source object includes the `slug` property as a string.
 
+### Requirement: MODIFIED Client-side personalSourceName persistence
+
+The system SHALL preserve the `personalSourceName` state value in the UI client-side on source transitions, preventing data loss if a user toggles away and back.
+
+#### Scenario: Selected source changed to non-personal
+
+- **Given** the `SourceSelector` component has `"personal"` source selected and a personal name of `"Aunt Mary"` is entered
+- **When** the user selects a different source (e.g. `"Serious Eats"`)
+- **Then** the `onPersonalSourceNameChange` callback is NOT invoked with an empty string, retaining `"Aunt Mary"` in the parent state.
+
+#### Scenario: Selected source cleared
+
+- **Given** the `SourceSelector` component has `"personal"` source selected and a personal name of `"Aunt Mary"` is entered
+- **When** the user clicks the clear source button
+- **Then** the `onPersonalSourceNameChange` callback is NOT invoked with an empty string, retaining `"Aunt Mary"` in the parent state.
+
 ## REMOVED Requirements
 
 None.
@@ -51,14 +67,17 @@ None.
   - Expose `slug` in `sourcesRouter` queries -> MODIFIED sourcesRouter output schema
   - Render "Personal Name" input when slug is `"personal"` -> ADDED Personal Source Name field rendering
   - Prop callbacks and input binding -> ADDED personalSourceName callbacks
+  - Adjust `SourceSelector` client-side behavior to NOT clear name -> MODIFIED Client-side personalSourceName persistence
 - **Design decision -> Requirement**:
   - Decision 1 (Expose `slug` in tRPC responses) -> MODIFIED sourcesRouter output schema
   - Decision 2 (Query selected source details to check the slug) -> ADDED Personal Source Name field rendering
   - Decision 3 (Use `aria-describedby` for helper text) -> ADDED Personal Source Name field rendering
+  - Decision 2 (Retain `personalSourceName` client-side on source change) -> MODIFIED Client-side personalSourceName persistence
 - **Requirement -> Task(s)**:
   - MODIFIED sourcesRouter output schema -> Task 1 (Update sources tRPC router and tests)
   - ADDED Personal Source Name field rendering -> Task 2 (Implement SourceSelector UI input and styling)
   - ADDED personalSourceName callbacks -> Task 2 (Implement SourceSelector UI input and styling)
+  - Task 1 (Modify `SourceSelector.tsx` to not clear `personalSourceName` on selection change/clear) (see [`tasks.md`](../../changes/archive/2026-06-18-recipe-form-personal-source-name/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
@@ -69,6 +88,12 @@ None.
 - **Given** the `SourceSelector` component is rendered without a selected source ID (`value=""`)
 - **When** the component mounts or updates
 - **Then** no active `sources.byId` tRPC query is initiated, avoiding redundant network requests.
+
+#### Scenario: No extraneous state rendering
+
+- **Given** the `SourceSelector` is rendered with `personalSourceName` state active
+- **When** the selected source is changed
+- **Then** the component does not trigger unnecessary re-renders of the helper text since the text input is fully unmounted.
 
 ### Requirement: Accessibility
 
