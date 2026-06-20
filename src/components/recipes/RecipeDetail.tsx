@@ -15,7 +15,6 @@ export interface RecipeDetailProps {
     sourceName?: string | null
     sourceUrl?: string | null
     addedByName?: string | null
-    personalSourceName?: string | null
   }
   actions?: ReactNode
 }
