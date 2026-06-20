@@ -72,12 +72,12 @@ None.
   - Decision 1 (Expose `slug` in tRPC responses) -> MODIFIED sourcesRouter output schema
   - Decision 2 (Query selected source details to check the slug) -> ADDED Personal Source Name field rendering
   - Decision 3 (Use `aria-describedby` for helper text) -> ADDED Personal Source Name field rendering
-  - Decision 2 (Retain `personalSourceName` client-side on source change) -> MODIFIED Client-side personalSourceName persistence
+  - Decision 2 (Retain `personalSourceName` client-side on source change) [recipe-form-personal-source-name] -> MODIFIED Client-side personalSourceName persistence
 - **Requirement -> Task(s)**:
   - MODIFIED sourcesRouter output schema -> Task 1 (Update sources tRPC router and tests)
   - ADDED Personal Source Name field rendering -> Task 2 (Implement SourceSelector UI input and styling)
   - ADDED personalSourceName callbacks -> Task 2 (Implement SourceSelector UI input and styling)
-  - Task 1 (Modify `SourceSelector.tsx` to not clear `personalSourceName` on selection change/clear) (see [`tasks.md`](../../changes/archive/2026-06-18-recipe-form-personal-source-name/tasks.md))
+  - MODIFIED Client-side personalSourceName persistence -> Task 1 (Modify `SourceSelector.tsx` to not clear `personalSourceName` on selection change/clear) (see [`tasks.md`](../../changes/archive/2026-06-18-recipe-form-personal-source-name/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
