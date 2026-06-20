@@ -117,6 +117,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
     })
   }, [instructionLines])
   const trimmedNotes = recipe.notes?.trim() || null
+  const trimmedPersonalSource = recipe.personalSourceName?.trim() || null
   const hasNutrition =
     recipe.calories != null ||
     recipe.fat != null ||
@@ -166,6 +167,9 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                     </a>
                   ) : (
                     <span>{recipe.sourceName}</span>
+                  )}
+                  {trimmedPersonalSource && (
+                    <> · {trimmedPersonalSource}</>
                   )}
                 </p>
               )}
