@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import { getTierWallReason } from "@/lib/trpc-error"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
-import SourcePickerDropdown from "@/components/ui/SourcePickerDropdown"
+import SourceSelector from "@/components/ui/SourceSelector"
 import CategoryPickerDropdown from "@/components/ui/CategoryPickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
@@ -87,8 +87,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [selectedSourceId, setSelectedSourceId] = useState<string>(
     initialData?.sourceId ?? "",
   )
-  const [selectedSourceName, setSelectedSourceName] = useState<string>(
-    initialData?.sourceName ?? "",
+  const [personalSourceName, setPersonalSourceName] = useState<string>(
+    initialData?.personalSourceName ?? "",
   )
   const [pendingUpload, setPendingUpload] = useState<{
     fileId: string
@@ -101,7 +101,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialCourseIds = useMemo(() => initialData?.courses?.map((c) => c.id) ?? [], [initialData?.courses])
   const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
-  const initialSourceName = useMemo(() => initialData?.sourceName ?? "", [initialData?.sourceName])
+  const initialPersonalSourceName = useMemo(() => initialData?.personalSourceName ?? "", [initialData?.personalSourceName])
 
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
@@ -169,6 +169,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       name: values.name,
       classificationId: values.classificationId || undefined,
       sourceId: selectedSourceId || undefined,
+      personalSourceName: personalSourceName || null,
       ingredients: values.ingredients || undefined,
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
@@ -184,7 +185,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       sodium: toNum(values.sodium),
       protein: toNum(values.protein),
     }
-  }, [selectedSourceId])
+  }, [selectedSourceId, personalSourceName])
 
   const autoSaveOnSave = useCallback(async (values: RecipeFormValues) => {
     if (isEdit && initialData?.id) {
@@ -233,7 +234,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     !sortedEqual(selectedMealIds, initialMealIds) ||
     !sortedEqual(selectedCourseIds, initialCourseIds) ||
     !sortedEqual(selectedPrepIds, initialPrepIds) ||
-    selectedSourceId !== initialSourceId
+    selectedSourceId !== initialSourceId ||
+    personalSourceName !== initialPersonalSourceName
 
   const isFormDirty = isDirty || hasExternalChanges
   const isFormDirtyRef = useRef(false)
@@ -336,7 +338,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setSelectedCourseIds(initialCourseIds)
     setSelectedPrepIds(initialPrepIds)
     setSelectedSourceId(initialSourceId)
-    setSelectedSourceName(initialSourceName)
+    setPersonalSourceName(initialPersonalSourceName)
     purgeDraft()
     resetStatus()
   }
@@ -445,14 +447,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <label htmlFor="sourceId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Source (cookbook, website, etc.)
             </label>
-            <SourcePickerDropdown
+            <SourceSelector
               id="sourceId"
               value={selectedSourceId}
-              selectedName={selectedSourceName}
-              onChange={(id, name) => {
-                setSelectedSourceId(id)
-                setSelectedSourceName(name)
-              }}
+              initialName={initialData?.sourceName ?? ""}
+              onChange={setSelectedSourceId}
+              personalSourceName={personalSourceName}
+              onPersonalSourceNameChange={setPersonalSourceName}
             />
           </div>
 

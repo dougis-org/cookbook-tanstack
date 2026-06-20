@@ -75,7 +75,40 @@ vi.mock("@/lib/trpc", () => ({
     },
     sources: {
       list: { queryOptions: () => ({ queryKey: ["sources", "list"], queryFn: () => [{ id: "src1", name: "Serious Eats", url: null }] }) },
-      search: { queryOptions: () => ({ queryKey: ["sources", "search"], queryFn: () => [] }) },
+      byId: {
+        queryOptions: ({ id }: { id: string }) => ({
+          queryKey: ["sources", "byId", id],
+          queryFn: () => {
+            if (id === "src1") return { id: "src1", name: "Serious Eats", slug: "serious-eats", url: null }
+            if (id === "s-personal") return { id: "s-personal", name: "Personal", slug: "personal", url: null }
+            return null
+          },
+        }),
+      },
+      search: {
+        queryOptions: ({ query }: { query: string }) => ({
+          queryKey: ["sources", "search", query],
+          queryFn: () => {
+            const q = query.toLowerCase()
+            const all = [
+              { id: "src1", name: "Serious Eats", slug: "serious-eats", url: null },
+              { id: "s-personal", name: "Personal", slug: "personal", url: null },
+            ]
+            return all.filter((s) => s.name.toLowerCase().includes(q))
+          },
+        }),
+      },
+      create: {
+        mutationOptions: (options?: any) => ({
+          mutationFn: async (input: { name: string }) => {
+            const source = { id: "s-new", name: input.name, slug: "new-slug", url: null }
+            if (options?.onSuccess) {
+              options.onSuccess(source)
+            }
+            return source
+          },
+        }),
+      },
     },
   },
 }))
@@ -479,14 +512,14 @@ describe("RecipeForm", () => {
   })
 
   describe("source picker", () => {
-    it("renders source picker dropdown trigger and opens it to trigger fetch", async () => {
+    it("renders source selector input and typing opens dropdown", async () => {
       renderWithProviders(<RecipeForm />)
-      const trigger = screen.getByRole("button", { name: /Source/i })
-      expect(trigger).toBeInTheDocument()
+      const input = screen.getByPlaceholderText(/search for a source/i)
+      expect(input).toBeInTheDocument()
       
-      // Open to trigger lazy load
-      await userEvent.click(trigger)
-      expect(screen.getByRole("listbox")).toBeInTheDocument()
+      await userEvent.type(input, "Serious")
+      const option = await screen.findByText("Serious Eats")
+      expect(option).toBeInTheDocument()
     })
 
     it("shows selected source name when initialData has a sourceId and sourceName", () => {
@@ -494,6 +527,128 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={{ ...makeRecipe({ sourceId: "src1" }), sourceName: "Serious Eats" }} />,
       )
       expect(screen.getByText(/serious eats/i)).toBeInTheDocument()
+    })
+
+    it("RecipeForm submit includes personalSourceName in payload when source is Personal", async () => {
+      renderWithProviders(<RecipeForm />)
+      
+      await userEvent.type(screen.getByLabelText(/recipe name/i), "My Personal Recipe")
+      
+      const input = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input, "Pers")
+      const option = await screen.findByText("Personal")
+      await userEvent.click(option)
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      const personalNameInput = screen.getByLabelText(/personal name/i)
+      await userEvent.type(personalNameInput, "Aunt Mary")
+      
+      await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
+      
+      await waitFor(() => {
+        expect(mockCreateMutationFn).toHaveBeenCalled()
+      })
+      
+      const payload = mockCreateMutationFn.mock.calls[0]?.[0]
+      expect(payload).toEqual(expect.objectContaining({
+        name: "My Personal Recipe",
+        sourceId: "s-personal",
+        personalSourceName: "Aunt Mary",
+      }))
+    })
+
+    it("RecipeForm edit pre-fills personalSourceName from initialData", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe({ sourceId: "s-personal" }),
+            sourceName: "Personal",
+            personalSourceName: "Aunt Mary",
+          }}
+        />,
+      )
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      expect(screen.getByLabelText(/personal name/i)).toHaveValue("Aunt Mary")
+    })
+
+    it("RecipeForm revert resets personalSourceName to initial value", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={{
+            ...makeRecipe({ sourceId: "s-personal" }),
+            sourceName: "Personal",
+            personalSourceName: "Aunt Mary",
+          }}
+        />,
+      )
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      const personalNameInput = screen.getByLabelText(/personal name/i)
+      
+      await userEvent.clear(personalNameInput)
+      await userEvent.type(personalNameInput, "Uncle Bob")
+      expect(personalNameInput).toHaveValue("Uncle Bob")
+      
+      await userEvent.click(screen.getByRole("button", { name: /revert/i }))
+      
+      expect(personalNameInput).toHaveValue("Aunt Mary")
+    })
+
+    it("persists personalSourceName client-side when toggling Personal → non-personal → Personal", async () => {
+      renderWithProviders(<RecipeForm />)
+
+      // 1. Select Personal source
+      const input = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input, "Pers")
+      const personalOption = await screen.findByText("Personal")
+      await userEvent.click(personalOption)
+
+      // 2. Wait for Personal Name field and type "Aunt Mary"
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      const personalNameInput = screen.getByLabelText(/personal name/i)
+      await userEvent.type(personalNameInput, "Aunt Mary")
+
+      // 3. Clear source
+      const personalContainer = screen.getByText("Personal").parentElement!
+      const clearButton = personalContainer.querySelector("button")!
+      await userEvent.click(clearButton)
+
+      // 4. Select a non-personal source (Serious Eats)
+      const input2 = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input2, "Serious")
+      const seriousOption = await screen.findByText("Serious Eats")
+      await userEvent.click(seriousOption)
+
+      // 5. Verify Personal Name input is not rendered
+      await waitFor(() => {
+        expect(screen.queryByLabelText(/personal name/i)).not.toBeInTheDocument()
+      })
+
+      // 6. Clear Serious Eats
+      const seriousContainer = screen.getByText("Serious Eats").parentElement!
+      const clearButton2 = seriousContainer.querySelector("button")!
+      await userEvent.click(clearButton2)
+
+      // 7. Select Personal source again
+      const input3 = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input3, "Pers")
+      const personalOption2 = await screen.findByText("Personal")
+      await userEvent.click(personalOption2)
+
+      // 8. Verify the Personal Name input is rendered and still contains "Aunt Mary"
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      expect(screen.getByLabelText(/personal name/i)).toHaveValue("Aunt Mary")
     })
   })
 
