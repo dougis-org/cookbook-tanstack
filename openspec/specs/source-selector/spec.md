@@ -72,7 +72,7 @@ None.
   - Decision 1 (Expose `slug` in tRPC responses) -> MODIFIED sourcesRouter output schema
   - Decision 2 (Query selected source details to check the slug) -> ADDED Personal Source Name field rendering
   - Decision 3 (Use `aria-describedby` for helper text) -> ADDED Personal Source Name field rendering
-  - Decision 2 (Retain `personalSourceName` client-side on source change) [recipe-form-personal-source-name] -> MODIFIED Client-side personalSourceName persistence
+  - Decision 4 (Retain `personalSourceName` client-side on source change) [recipe-form-personal-source-name] -> MODIFIED Client-side personalSourceName persistence
 - **Requirement -> Task(s)**:
   - MODIFIED sourcesRouter output schema -> Task 1 (Update sources tRPC router and tests)
   - ADDED Personal Source Name field rendering -> Task 2 (Implement SourceSelector UI input and styling)
@@ -89,11 +89,9 @@ None.
 - **When** the component mounts or updates
 - **Then** no active `sources.byId` tRPC query is initiated, avoiding redundant network requests.
 
-#### Scenario: No extraneous state rendering
+#### Scenario: Rendering performance under source change
 
-- **Given** the `SourceSelector` is rendered with `personalSourceName` state active
-- **When** the selected source is changed
-- **Then** the component does not trigger unnecessary re-renders of the helper text since the text input is fully unmounted.
+See functional scenario: [Selected source changed to non-personal](#scenario-selected-source-changed-to-non-personal).
 
 ### Requirement: Accessibility
 
