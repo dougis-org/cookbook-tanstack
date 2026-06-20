@@ -34,6 +34,13 @@ The system SHALL accept and display the `personalSourceName` field inside `Recip
 - **When** the user types `"Uncle Bob"` into the Personal Name field and clicks `"Revert"`
 - **Then** the field resets to `"Aunt Mary"` and the form is marked clean.
 
+#### Scenario: Autosave fallback if save fails
+
+- **Given** a dirty form state including modified `personalSourceName`
+- **When** autosave triggers but network is offline
+- **Then** the save status goes to `"error"`
+- **And** the user is allowed to manually retry when online.
+
 ## MODIFIED Requirements
 
 ### Requirement: MODIFIED Normalize personalSourceName on create/update
@@ -72,7 +79,7 @@ None
 - Proposal element -> Requirement: Add `personalSourceName` to RecipeForm state and form-submit payload -> ADDED Wire personalSourceName to RecipeForm
 - Proposal element -> Requirement: Pass it (and its setter) into `SourceSelector` -> ADDED Wire personalSourceName to RecipeForm
 - Design decision -> Requirement: Decision 1 (Use React state in `RecipeForm` for `personalSourceName`) -> ADDED Wire personalSourceName to RecipeForm
-- Requirement -> Task(s): Task 2 (Implement state and payload wiring in `RecipeForm.tsx`) (see [`tasks.md`](../../changes/archive/2026-06-18-recipe-form-personal-source-name/tasks.md))
+- ADDED Wire personalSourceName to RecipeForm -> Task 2 (Implement state and payload wiring in `RecipeForm.tsx`) (see [`tasks.md`](../../changes/archive/2026-06-18-recipe-form-personal-source-name/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
@@ -97,10 +104,3 @@ See functional scenarios: N/A (this change is about data integrity, not security
 - **Given** the Personal source is missing from the database
 - **When** a user executes a `create` or `update` mutation
 - **Then** the mutation completes, treating `personalSourceId` as effectively missing (meaning it will scrub `personalSourceName` if `sourceId` was provided), without crashing the server
-
-#### Scenario: Autosave fallback if save fails
-
-- **Given** a dirty form state including modified `personalSourceName`
-- **When** autosave triggers but network is offline
-- **Then** the save status goes to `"error"`
-- **And** the user is allowed to manually retry when online.
