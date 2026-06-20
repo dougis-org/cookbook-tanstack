@@ -1,8 +1,8 @@
 ## Context
 
-- Relevant architecture: Frontend component `RecipeDetail.tsx` receives a `recipe` prop of type `RecipeDetail` and displays the name, image, metadata, classifications/taxonomy, ingredients, instructions, and source.
+- Relevant architecture: Frontend component `RecipeDetail.tsx` receives a `recipe` prop defined in `RecipeDetailProps` and displays the name, image, metadata, classifications/taxonomy, ingredients, instructions, and source.
 - Dependencies: tRPC `recipes.byId` query response schema. We assume it contains the optional `personalSourceName` field when the current user owns the recipe, and strips it otherwise.
-- Interfaces/contracts touched: `RecipeDetailProps` interface in `src/components/recipes/RecipeDetail.tsx` and the `Recipe` type definition in `src/types/recipe.ts`.
+- Interfaces/contracts touched: `RecipeDetailProps` interface in `src/components/recipes/RecipeDetail.tsx`.
 
 ## Goals / Non-Goals
 
