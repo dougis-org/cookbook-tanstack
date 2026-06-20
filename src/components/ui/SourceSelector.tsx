@@ -112,10 +112,13 @@ export default function SourceSelector({
 
   const selectedFromSearch = results.find((r) => r.id === value)
   const isPersonalSelected =
-    (selectedName?.toLowerCase() === "personal") ||
-    (selectedSource?.slug === "personal") ||
-    (selectedFromSearch?.slug === "personal") ||
-    (cachedSource?.slug === "personal")
+    selectedSource
+      ? selectedSource.slug === "personal"
+      : selectedFromSearch
+      ? selectedFromSearch.slug === "personal"
+      : cachedSource
+      ? cachedSource.slug === "personal"
+      : selectedName?.toLowerCase() === "personal"
 
   const createMutation = useMutation(
     trpc.sources.create.mutationOptions({

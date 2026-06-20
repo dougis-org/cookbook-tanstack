@@ -169,7 +169,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       name: values.name,
       classificationId: values.classificationId || undefined,
       sourceId: selectedSourceId || undefined,
-      personalSourceName: personalSourceName || undefined,
+      personalSourceName: personalSourceName || null,
       ingredients: values.ingredients || undefined,
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
