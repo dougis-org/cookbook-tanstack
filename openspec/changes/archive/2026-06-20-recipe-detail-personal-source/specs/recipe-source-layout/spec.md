@@ -48,7 +48,7 @@ No requirements are removed by this change.
 
 - **Given** any recipe detail rendering flow
 - **When** the source line is rendered
-- **Then** the parsing and trimming of `personalSourceName` has negligible impact (<1ms) on component render time.
+- **Then** the parsing and trimming of `personalSourceName` introduces no added asynchronous work, network requests, or meaningful additional rendering complexity.
 
 ### Requirement: Security
 
