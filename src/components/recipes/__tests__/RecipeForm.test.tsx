@@ -600,6 +600,56 @@ describe("RecipeForm", () => {
       
       expect(personalNameInput).toHaveValue("Aunt Mary")
     })
+
+    it("persists personalSourceName client-side when toggling Personal → non-personal → Personal", async () => {
+      renderWithProviders(<RecipeForm />)
+
+      // 1. Select Personal source
+      const input = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input, "Pers")
+      const personalOption = await screen.findByText("Personal")
+      await userEvent.click(personalOption)
+
+      // 2. Wait for Personal Name field and type "Aunt Mary"
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      const personalNameInput = screen.getByLabelText(/personal name/i)
+      await userEvent.type(personalNameInput, "Aunt Mary")
+
+      // 3. Clear source
+      const personalContainer = screen.getByText("Personal").parentElement!
+      const clearButton = personalContainer.querySelector("button")!
+      await userEvent.click(clearButton)
+
+      // 4. Select a non-personal source (Serious Eats)
+      const input2 = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input2, "Serious")
+      const seriousOption = await screen.findByText("Serious Eats")
+      await userEvent.click(seriousOption)
+
+      // 5. Verify Personal Name input is not rendered
+      await waitFor(() => {
+        expect(screen.queryByLabelText(/personal name/i)).not.toBeInTheDocument()
+      })
+
+      // 6. Clear Serious Eats
+      const seriousContainer = screen.getByText("Serious Eats").parentElement!
+      const clearButton2 = seriousContainer.querySelector("button")!
+      await userEvent.click(clearButton2)
+
+      // 7. Select Personal source again
+      const input3 = screen.getByPlaceholderText(/search for a source/i)
+      await userEvent.type(input3, "Pers")
+      const personalOption2 = await screen.findByText("Personal")
+      await userEvent.click(personalOption2)
+
+      // 8. Verify the Personal Name input is rendered and still contains "Aunt Mary"
+      await waitFor(() => {
+        expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+      })
+      expect(screen.getByLabelText(/personal name/i)).toHaveValue("Aunt Mary")
+    })
   })
 
   describe("category picker", () => {

@@ -448,6 +448,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               Source (cookbook, website, etc.)
             </label>
             <SourceSelector
+              id="sourceId"
               value={selectedSourceId}
               initialName={initialData?.sourceName ?? ""}
               onChange={setSelectedSourceId}

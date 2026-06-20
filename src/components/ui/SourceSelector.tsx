@@ -6,8 +6,8 @@ import { trpc } from "@/lib/trpc"
 interface CachedSource {
   id?: string
   _id?: string
-  name: string
-  slug: string
+  name?: string
+  slug?: string | null
   url?: string | null
 }
 
@@ -17,6 +17,7 @@ interface SourceSelectorProps {
   onChange: (id: string) => void
   personalSourceName: string
   onPersonalSourceNameChange: (v: string) => void
+  id?: string
 }
 
 export default function SourceSelector({
@@ -25,6 +26,7 @@ export default function SourceSelector({
   onChange,
   personalSourceName,
   onPersonalSourceNameChange,
+  id,
 }: SourceSelectorProps) {
   const [inputText, setInputText] = useState("")
   const [query, setQuery] = useState("")
@@ -112,13 +114,10 @@ export default function SourceSelector({
 
   const selectedFromSearch = results.find((r) => r.id === value)
   const isPersonalSelected =
-    selectedSource
-      ? selectedSource.slug === "personal"
-      : selectedFromSearch
-      ? selectedFromSearch.slug === "personal"
-      : cachedSource
-      ? cachedSource.slug === "personal"
-      : selectedName?.toLowerCase() === "personal"
+    selectedSource?.slug === "personal" ||
+    selectedFromSearch?.slug === "personal" ||
+    cachedSource?.slug === "personal" ||
+    selectedName?.toLowerCase() === "personal"
 
   const createMutation = useMutation(
     trpc.sources.create.mutationOptions({
@@ -151,7 +150,7 @@ export default function SourceSelector({
   return (
     <div ref={containerRef} className="relative">
       {value && selectedName ? (
-        <div className="flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-bg)]">
+        <div id={id} className="flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-bg)]">
           <span className="flex-1 text-[var(--theme-fg)]">{selectedName}</span>
           <button type="button" onClick={clearSource} className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-fg)]">
             <X className="w-4 h-4" />
@@ -159,6 +158,7 @@ export default function SourceSelector({
         </div>
       ) : (
         <input
+          id={id}
           type="text"
           placeholder="Search for a source..."
           value={inputText}

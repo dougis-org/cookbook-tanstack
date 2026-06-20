@@ -169,7 +169,7 @@ describe('SourceSelector', () => {
     expect(onPersonalSourceNameChange).toHaveBeenLastCalledWith('Grandma')
   })
 
-  it('does not clear personalSourceName on source selection change', async () => {
+  it('does not clear personalSourceName on clear followed by new source selection', async () => {
     const onPersonalSourceNameChange = vi.fn()
     const onChange = vi.fn()
 
@@ -217,6 +217,69 @@ describe('SourceSelector', () => {
     
     expect(onChange).toHaveBeenLastCalledWith('')
     expect(onPersonalSourceNameChange).not.toHaveBeenCalledWith('')
+  })
+
+  it('resolves source from cache when data in cache is object-shaped', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    
+    // Set query cache data with object-shaped structure under a query key that starts with 'sources'
+    queryClient.setQueryData(
+      ['sources', 'detail', 's-cached-object'],
+      { id: 's-cached-object', name: 'Cached Object Source', slug: 'personal' }
+    )
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <SourceSelector
+          value="s-cached-object"
+          onChange={vi.fn()}
+          personalSourceName=""
+          onPersonalSourceNameChange={vi.fn()}
+        />
+      </QueryClientProvider>
+    )
+
+    // Verify it resolves the name and displays it, showing it found the cached object
+    await waitFor(() => {
+      expect(screen.getByText('Cached Object Source')).toBeInTheDocument()
+      expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
+    })
+  })
+
+  it('wires the id prop to the input element and selected container', async () => {
+    const { rerender } = renderWithProviders(
+      <SourceSelector
+        id="test-source-id"
+        value=""
+        onChange={vi.fn()}
+        personalSourceName=""
+        onPersonalSourceNameChange={vi.fn()}
+      />
+    )
+
+    const input = screen.getByPlaceholderText(/search for a source/i)
+    expect(input).toHaveAttribute('id', 'test-source-id')
+
+    // Rerender with value/name selected
+    rerender(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <SourceSelector
+          id="test-source-id"
+          value="s-personal"
+          initialName="Personal"
+          onChange={vi.fn()}
+          personalSourceName=""
+          onPersonalSourceNameChange={vi.fn()}
+        />
+      </QueryClientProvider>
+    )
+
+    await waitFor(() => {
+      const container = screen.getByText('Personal').parentElement
+      expect(container).toHaveAttribute('id', 'test-source-id')
+    })
   })
 })
 
