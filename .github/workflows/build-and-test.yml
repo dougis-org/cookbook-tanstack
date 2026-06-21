@@ -16,7 +16,7 @@ jobs:
   ci-fast:
     # Skip on draft PRs
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
-    timeout-minutes: 30
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -46,8 +46,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -108,8 +108,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -153,8 +153,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
-          cache: 'npm'
+          node-version: "24"
+          cache: "npm"
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
@@ -167,6 +167,7 @@ jobs:
           path: .output
 
       - name: Install Playwright system dependencies
+        timeout-minutes: 4
         run: DEBIAN_FRONTEND=noninteractive npx playwright install-deps chrome
 
       - name: Seed database
@@ -242,7 +243,7 @@ jobs:
         uses: ./.github/actions/codacy-reporter
         with:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
-          final: 'true'
+          final: "true"
 
   notify-failure:
     needs: [ci-fast, ci-integration, ci-e2e]
