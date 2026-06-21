@@ -8,7 +8,7 @@ config()
 // Dynamic import ensures db/index.ts evaluates after env vars are set
 const { default: mongoose } = await import("../index")
 
-async function main() {
+export async function main() {
   try {
     console.log("Starting database seed...\n")
     // Wait for connection
@@ -20,13 +20,14 @@ async function main() {
     const { seedCourses } = await import("./courses")
     const { seedPreparations } = await import("./preparations")
     const { seedClassifications } = await import("./classifications")
-    const { backfillSourceSlugs } = await import("./sources")
+    const { backfillSourceSlugs, seedSources } = await import("./sources")
 
     await seedMeals()
     await seedCourses()
     await seedPreparations()
     await seedClassifications()
     await backfillSourceSlugs()
+    await seedSources()
 
     console.log("\nSeed complete!")
   } finally {
@@ -34,7 +35,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error("Seed failed:", error)
-  process.exit(1)
-})
+if (!process.env.VITEST) {
+  main().catch((error) => {
+    console.error("Seed failed:", error)
+    process.exit(1)
+  })
+}

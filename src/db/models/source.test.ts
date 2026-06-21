@@ -130,3 +130,60 @@ describe("backfillSourceSlugs()", () => {
     });
   });
 });
+
+describe("seedSources()", () => {
+  it("TC-3.1 — Verify seedSources() inserts a Source document with slug: 'personal' and name: 'Personal' when the database is empty", async () => {
+    await withCleanDb(async () => {
+      const { seedSources } = await import("@/db/seeds/sources");
+
+      const initialCount = await Source.countDocuments({ slug: "personal" });
+      expect(initialCount).toBe(0);
+
+      await seedSources();
+
+      const doc = await Source.findOne({ slug: "personal" });
+      expect(doc).toBeDefined();
+      expect(doc?.name).toBe("Personal");
+    });
+  });
+
+  it("TC-3.2 — Verify seedSources() is idempotent", async () => {
+    await withCleanDb(async () => {
+      const { seedSources } = await import("@/db/seeds/sources");
+
+      await seedSources();
+      await seedSources();
+      await seedSources();
+
+      const count = await Source.countDocuments({ slug: "personal" });
+      expect(count).toBe(1);
+
+      const docs = await Source.find({ slug: "personal" });
+      expect(docs.length).toBe(1);
+      expect(docs[0].name).toBe("Personal");
+    });
+  });
+});
+
+describe("db:seed Integration", () => {
+  it("TC-4.1 — Verify running the full db:seed entrypoint seeds the Personal source correctly", async () => {
+    await withCleanDb(async () => {
+      const initialCount = await Source.countDocuments({ slug: "personal" });
+      expect(initialCount).toBe(0);
+
+      const mongoose = (await import("mongoose")).default;
+      const disconnectSpy = vi.spyOn(mongoose, "disconnect").mockImplementation(async () => {});
+
+      // Use a dynamic import to get the main function and run it
+      const { main } = await import("../seeds/index");
+      await main();
+
+      const doc = await Source.findOne({ slug: "personal" });
+      expect(doc).toBeDefined();
+      expect(doc?.name).toBe("Personal");
+
+      disconnectSpy.mockRestore();
+    });
+  });
+});
+
