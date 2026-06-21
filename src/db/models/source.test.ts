@@ -142,7 +142,7 @@ describe("seedSources()", () => {
       await seedSources();
 
       const doc = await Source.findOne({ slug: "personal" });
-      expect(doc).toBeDefined();
+      expect(doc).not.toBeNull();
       expect(doc?.name).toBe("Personal");
     });
   });
@@ -174,15 +174,17 @@ describe("db:seed Integration", () => {
       const mongoose = (await import("mongoose")).default;
       const disconnectSpy = vi.spyOn(mongoose, "disconnect").mockImplementation(async () => {});
 
-      // Use a dynamic import to get the main function and run it
-      const { main } = await import("../seeds/index");
-      await main();
+      try {
+        // Use a dynamic import to get the main function and run it
+        const { main } = await import("../seeds/index");
+        await main();
 
-      const doc = await Source.findOne({ slug: "personal" });
-      expect(doc).toBeDefined();
-      expect(doc?.name).toBe("Personal");
-
-      disconnectSpy.mockRestore();
+        const doc = await Source.findOne({ slug: "personal" });
+        expect(doc).not.toBeNull();
+        expect(doc?.name).toBe("Personal");
+      } finally {
+        disconnectSpy.mockRestore();
+      }
     });
   });
 });

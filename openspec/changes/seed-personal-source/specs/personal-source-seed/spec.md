@@ -16,7 +16,7 @@ The system SHALL idempotently seed a default "Personal" source with slug "person
 
 - **Given** the database already contains a source with slug "personal" and name "Personal"
 - **When** `npm run db:seed` is executed
-- **Then** the database is not duplicated and no error is thrown, leaving exactly one source with slug "personal"
+- **Then** no duplicate source document is created and no error is thrown, leaving exactly one source with slug "personal" in the database
 
 ## MODIFIED Requirements
 
