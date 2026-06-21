@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/design.md) document, not a replacement.
+This document details _changes_ to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/design.md) document, not a replacement.
 
 ### Requirement: ADDED Source precedes chiclet wrapper in DOM
 
@@ -101,11 +101,11 @@ No requirements are removed by this change. Source attribution continues to be c
 - All header requirements → Task: Update RecipeDetail.tsx header section
 - DOM order requirement → Task: Update RecipeDetail.test.tsx assertions
 
-- Proposal element: Update RecipeDetail UI logic -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Proposal element: Render only if non-empty -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Design decision: Decision 1 (Render personalSourceName dynamically inside Source line) -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Design decision: Decision 2 (Testing approach) -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Requirement -> Task(s): Task 1 (Modify RecipeDetail.tsx) and Task 2 (Extend RecipeDetail.test.tsx) (defined in [`tasks.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/tasks.md))
+- Proposal element: Update RecipeDetail UI logic → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Proposal element: Render only if non-empty → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 1 (Render personalSourceName dynamically inside Source line) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 2 (Testing approach) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Requirement → Task(s): Task 1 (Modify RecipeDetail.tsx) and Task 2 (Extend RecipeDetail.test.tsx) (defined in [`tasks.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
