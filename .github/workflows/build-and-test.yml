@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-unit:
+  ci-fast:
     # Skip on draft PRs
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     timeout-minutes: 30
@@ -93,10 +93,10 @@ jobs:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
           coverage-file: coverage/lcov.info
 
-  integration:
-    needs: build-and-unit
+  ci-integration:
+    needs: ci-fast
     timeout-minutes: 15
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     env:
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
@@ -126,10 +126,10 @@ jobs:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
           coverage-file: coverage/lcov.info
 
-  e2e:
-    needs: build-and-unit
+  ci-e2e:
+    needs: ci-fast
     timeout-minutes: 30
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-2
     env:
       MONGODB_URI: mongodb://localhost:27017/cookbook
       BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
@@ -230,8 +230,8 @@ jobs:
           coverage-file: e2e-coverage/lcov.info
 
   finalize-coverage:
-    needs: [build-and-unit, integration, e2e]
-    if: always() && needs.build-and-unit.result == 'success'
+    needs: [ci-fast, ci-integration, ci-e2e]
+    if: always() && needs.ci-fast.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -245,7 +245,7 @@ jobs:
           final: 'true'
 
   notify-failure:
-    needs: [build-and-unit, integration, e2e]
+    needs: [ci-fast, ci-integration, ci-e2e]
     if: failure() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
