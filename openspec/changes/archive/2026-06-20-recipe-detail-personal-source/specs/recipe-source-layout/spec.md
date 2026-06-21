@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details _changes_ to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
 
 No entirely new requirements are added.
 
@@ -34,11 +34,11 @@ No requirements are removed by this change.
 
 ## Traceability
 
-- Proposal element: Update RecipeDetail UI logic -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Proposal element: Render only if non-empty -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Design decision: Decision 1 (Render personalSourceName dynamically inside Source line) -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Design decision: Decision 2 (Testing approach) -> Requirement: MODIFIED Source attribution display includes personalSourceName
-- Requirement -> Task(s): Task 1 (Modify RecipeDetail.tsx) and Task 2 (Extend RecipeDetail.test.tsx)
+- Proposal element: Update RecipeDetail UI logic → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Proposal element: Render only if non-empty → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 1 (Render personalSourceName dynamically inside Source line) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 2 (Testing approach) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Requirement → Task(s): Task 1 (Modify RecipeDetail.tsx) and Task 2 (Extend RecipeDetail.test.tsx)
 
 ## Non-Functional Acceptance Criteria
 
@@ -48,7 +48,7 @@ No requirements are removed by this change.
 
 - **Given** any recipe detail rendering flow
 - **When** the source line is rendered
-- **Then** the parsing and trimming of `personalSourceName` has negligible impact (<1ms) on component render time.
+- **Then** the parsing and trimming of `personalSourceName` introduces no added asynchronous work, network requests, or meaningful additional rendering complexity.
 
 ### Requirement: Security
 

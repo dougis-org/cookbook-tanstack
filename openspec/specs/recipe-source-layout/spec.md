@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
+This document details _changes_ to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/design.md) document, not a replacement.
 
 ### Requirement: ADDED Source precedes chiclet wrapper in DOM
 
@@ -62,6 +62,28 @@ The system SHALL apply `print:hidden` to the actions wrapper div so action butto
 - **When** the component renders
 - **Then** no actions wrapper div is rendered (conditional rendering unchanged)
 
+### Requirement: MODIFIED Source attribution display includes personalSourceName
+
+The system SHALL append the custom personal source name, preceded by a middle-dot separator `·` (U+00B7), to the source attribution line if `personalSourceName` is present and has a non-empty, non-whitespace value.
+
+#### Scenario: Owner viewing recipe with personal source name
+
+- **Given** a recipe has `sourceName` set to `"Personal"` and `personalSourceName` set to a non-empty string (e.g. `"Aunt Mary"`)
+- **When** the `RecipeDetail` component renders
+- **Then** the source attribution paragraph displays `"Source: Personal · Aunt Mary"`
+
+#### Scenario: Owner viewing recipe with empty or whitespace personal source name
+
+- **Given** a recipe has `sourceName` set to `"Personal"` and `personalSourceName` is undefined, null, or empty/whitespace-only (e.g. `"   "`)
+- **When** the `RecipeDetail` component renders
+- **Then** the source attribution paragraph displays `"Source: Personal"` and no middle-dot separator is rendered
+
+#### Scenario: Non-owner viewing personal recipe
+
+- **Given** a personal recipe is viewed by a non-owner or unauthenticated user (where `personalSourceName` is absent/stripped by the backend)
+- **When** the `RecipeDetail` component renders
+- **Then** the source attribution paragraph displays `"Source: Personal"` and no middle-dot separator is rendered
+
 ## REMOVED Requirements
 
 No requirements are removed by this change. Source attribution continues to be conditionally rendered when `sourceName` is present.
@@ -76,8 +98,14 @@ No requirements are removed by this change. Source attribution continues to be c
 - Design Decision 2 (inner wrapper flex) → Requirement: Inner wrapper has print flex-row classes
 - Design Decision 3 (print:hidden on actions) → Requirement: Actions wrapper is hidden on print
 - Design Decision 4 (source element unchanged) → Requirement: Source text size remains text-sm
-- All requirements → Task: Update RecipeDetail.tsx header section
+- All header requirements → Task: Update RecipeDetail.tsx header section
 - DOM order requirement → Task: Update RecipeDetail.test.tsx assertions
+
+- Proposal element: Update RecipeDetail UI logic → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Proposal element: Render only if non-empty → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 1 (Render personalSourceName dynamically inside Source line) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Design Decision: Decision 2 (Testing approach) → Requirement: MODIFIED Source attribution display includes personalSourceName
+- Requirement → Task(s): Task 1 (Modify RecipeDetail.tsx) and Task 2 (Extend RecipeDetail.test.tsx) (defined in [`tasks.md`](../../changes/archive/2026-06-20-recipe-detail-personal-source/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
@@ -96,3 +124,15 @@ No requirements are removed by this change. Source attribution continues to be c
 - **Given** the component change is applied
 - **When** `npm run test` is executed
 - **Then** all existing tests pass (zero regressions); updated DOM-order assertions in `RecipeDetail.test.tsx` also pass
+
+### Requirement: Performance — Rendering overhead
+
+#### Scenario: Rendering overhead
+
+- **Given** any recipe detail rendering flow
+- **When** the source line is rendered
+- **Then** the parsing and trimming of `personalSourceName` introduces no added asynchronous work, network requests, or meaningful additional rendering complexity.
+
+### Requirement: Security
+
+See functional scenario: Non-owner viewing personal recipe.
