@@ -31,7 +31,7 @@ None.
 - Proposal element -> Requirement: Seed "Personal" source with slug "personal" -> ADDED Seeding Personal Source
 - Design decision -> Requirement: Decision 1 (seedSources() function) -> ADDED Seeding Personal Source
 - Design decision -> Requirement: Decision 2 (seed execution order) -> ADDED Seeding Personal Source
-- Requirement -> Task(s): ADDED Seeding Personal Source -> (See tasks.md)
+- Requirement -> Task(s): ADDED Seeding Personal Source -> (See [tasks.md](../../changes/archive/2026-06-20-seed-personal-source/tasks.md))
 
 ## Non-Functional Acceptance Criteria
 
@@ -51,4 +51,4 @@ See functional scenarios. No new access control properties introduced.
 
 - **Given** the database seeding script runs concurrently or is called repeatedly
 - **When** multiple upsert operations for slug "personal" are requested
-- **Then** the database uses unique indexes on slug to enforce exactly one document and remains consistent without crash
+- **Then** the database enforces exactly one document with slug "personal" and any duplicate key errors are handled gracefully without application crash
