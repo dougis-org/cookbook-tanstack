@@ -74,17 +74,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change
-- [ ] Sync approved spec deltas into `openspec/specs/` (global spec). After copying each `spec.md` to `openspec/specs/personal-source-seed/spec.md`, update all relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/2026-06-20-seed-personal-source/design.md`, and similarly for `../../tasks.md` and any other relative paths into the change directory.
-- [ ] Archive the change: move `openspec/changes/seed-personal-source/` to `openspec/changes/archive/2026-06-20-seed-personal-source/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/2026-06-20-seed-personal-source/` exists and `openspec/changes/seed-personal-source/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-06-20-seed-personal-source` then `git push -u origin doc/archive-2026-06-20-seed-personal-source`
-- [ ] Open a PR from `doc/archive-2026-06-20-seed-personal-source` to `main` with title `docs: archive seed-personal-source (2026-06-20)` — **do NOT push directly to main**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D feature/seed-personal-source doc/archive-2026-06-20-seed-personal-source`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change
+- [x] Sync approved spec deltas into `openspec/specs/` (global spec). After copying each `spec.md` to `openspec/specs/personal-source-seed/spec.md`, update all relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/2026-06-20-seed-personal-source/design.md`, and similarly for `../../tasks.md` and any other relative paths into the change directory.
+- [x] Archive the change: move `openspec/changes/seed-personal-source/` to `openspec/changes/archive/2026-06-20-seed-personal-source/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/2026-06-20-seed-personal-source/` exists and `openspec/changes/seed-personal-source/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-06-20-seed-personal-source` then `git push -u origin doc/archive-2026-06-20-seed-personal-source`
+- [x] Open a PR from `doc/archive-2026-06-20-seed-personal-source` to `main` with title `docs: archive seed-personal-source (2026-06-20)` — **do NOT push directly to main**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feature/seed-personal-source doc/archive-2026-06-20-seed-personal-source`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D feature/seed-personal-source doc/archive-2026-06-20-seed-personal-source`
