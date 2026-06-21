@@ -20,6 +20,7 @@ jobs:
     # When this workflow pushes "[ci-submodule-sync]" to main, the resulting
     # push event will have actor=github-actions[bot] and this guard fires.
     if: github.actor != 'github-actions[bot]'
+    timeout-minutes: 3
 
     steps:
       - name: Checkout main with submodules

@@ -167,7 +167,7 @@ jobs:
           path: .output
 
       - name: Install Playwright system dependencies
-        run: npx playwright install-deps chrome
+        run: DEBIAN_FRONTEND=noninteractive npx playwright install-deps chrome
 
       - name: Seed database
         run: npm run db:seed
