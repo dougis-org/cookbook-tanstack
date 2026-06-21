@@ -30,3 +30,13 @@ export async function backfillSourceSlugs() {
   await Source.bulkWrite(bulkOps);
   console.log(`backfillSourceSlugs: updated ${docs.length} documents`);
 }
+
+export async function seedSources() {
+  await Source.updateOne(
+    { slug: "personal" },
+    { $set: { name: "Personal", slug: "personal" } },
+    { upsert: true, runValidators: true },
+  );
+  console.log("seedSources: seeded 'Personal' source");
+}
+
