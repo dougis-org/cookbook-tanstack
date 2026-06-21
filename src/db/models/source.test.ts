@@ -176,7 +176,7 @@ describe("db:seed Integration", () => {
       expect(initialCount).toBe(0);
 
       // Use a dynamic import to get the main function and run it
-      const { main } = await import("../seeds/index");
+      const { main } = await import("@/db/seeds/index");
       await main();
 
       await verifyPersonalSource();
