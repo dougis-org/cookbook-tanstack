@@ -1,7 +1,7 @@
 # Milestone 05: Search & Navigation
 
 **Duration**: 2 weeks
-**Status**: Not Started
+**Status**: In Progress
 **Dependencies**: Milestone 02 (Core Recipe Management)
 
 ## Overview
