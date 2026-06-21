@@ -3,6 +3,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
 import { Source } from "@/db/models";
 
+async function verifyPersonalSource() {
+  const doc = await Source.findOne({ slug: "personal" });
+  expect(doc).not.toBeNull();
+  expect(doc?.name).toBe("Personal");
+}
+
 describe("Source model — slug field", () => {
   it("TC-1.1 — slug is required: save without slug rejects with ValidatorError", async () => {
     await withCleanDb(async () => {
@@ -141,9 +147,7 @@ describe("seedSources()", () => {
 
       await seedSources();
 
-      const doc = await Source.findOne({ slug: "personal" });
-      expect(doc).not.toBeNull();
-      expect(doc?.name).toBe("Personal");
+      await verifyPersonalSource();
     });
   });
 
@@ -171,20 +175,11 @@ describe("db:seed Integration", () => {
       const initialCount = await Source.countDocuments({ slug: "personal" });
       expect(initialCount).toBe(0);
 
-      const mongoose = (await import("mongoose")).default;
-      const disconnectSpy = vi.spyOn(mongoose, "disconnect").mockImplementation(async () => {});
+      // Use a dynamic import to get the main function and run it
+      const { main } = await import("../seeds/index");
+      await main();
 
-      try {
-        // Use a dynamic import to get the main function and run it
-        const { main } = await import("../seeds/index");
-        await main();
-
-        const doc = await Source.findOne({ slug: "personal" });
-        expect(doc).not.toBeNull();
-        expect(doc?.name).toBe("Personal");
-      } finally {
-        disconnectSpy.mockRestore();
-      }
+      await verifyPersonalSource();
     });
   });
 });

@@ -35,7 +35,7 @@ export async function seedSources() {
   await Source.updateOne(
     { slug: "personal" },
     { $set: { name: "Personal", slug: "personal" } },
-    { upsert: true },
+    { upsert: true, runValidators: true },
   );
   console.log("seedSources: seeded 'Personal' source");
 }

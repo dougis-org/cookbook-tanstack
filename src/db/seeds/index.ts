@@ -9,35 +9,35 @@ config()
 const { default: mongoose } = await import("../index")
 
 export async function main() {
-  try {
-    console.log("Starting database seed...\n")
-    // Wait for connection
-    if (mongoose.connection.readyState !== 1) {
-      await mongoose.connection.asPromise()
-    }
-
-    const { seedMeals } = await import("./meals")
-    const { seedCourses } = await import("./courses")
-    const { seedPreparations } = await import("./preparations")
-    const { seedClassifications } = await import("./classifications")
-    const { backfillSourceSlugs, seedSources } = await import("./sources")
-
-    await seedMeals()
-    await seedCourses()
-    await seedPreparations()
-    await seedClassifications()
-    await backfillSourceSlugs()
-    await seedSources()
-
-    console.log("\nSeed complete!")
-  } finally {
-    await mongoose.disconnect()
+  console.log("Starting database seed...\n")
+  // Wait for connection
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connection.asPromise()
   }
+
+  const { seedMeals } = await import("./meals")
+  const { seedCourses } = await import("./courses")
+  const { seedPreparations } = await import("./preparations")
+  const { seedClassifications } = await import("./classifications")
+  const { backfillSourceSlugs, seedSources } = await import("./sources")
+
+  await seedMeals()
+  await seedCourses()
+  await seedPreparations()
+  await seedClassifications()
+  await backfillSourceSlugs()
+  await seedSources()
+
+  console.log("\nSeed complete!")
 }
 
-if (!process.env.VITEST) {
-  main().catch((error) => {
-    console.error("Seed failed:", error)
-    process.exit(1)
-  })
+if (!process.env.VITEST && !process.env.VITEST_POOL_ID) {
+  main()
+    .catch((error) => {
+      console.error("Seed failed:", error)
+      process.exit(1)
+    })
+    .finally(async () => {
+      await mongoose.disconnect()
+    })
 }
