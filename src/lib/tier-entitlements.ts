@@ -49,6 +49,10 @@ export function canCreatePrivate(tier: string | null | undefined): boolean {
   return hasAtLeastTier({ tier }, 'sous-chef')
 }
 
+export function canUsePrivateRecipeNotes(tier: string | null | undefined): boolean {
+  return hasAtLeastTier({ tier }, 'sous-chef')
+}
+
 export function canImport(tier: string | null | undefined): boolean {
   return hasAtLeastTier({ tier }, 'executive-chef')
 }
