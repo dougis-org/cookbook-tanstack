@@ -39,6 +39,7 @@ Private content starts at Sous Chef.
 | Recipe visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook chapters | View only | No chapter cap | No chapter cap | No chapter cap | No chapter cap |
+| Private Recipe Notes | No | No | No | Yes | Yes |
 | Recipe import | No | No | No | No | Yes |
 
 ## Tier Definitions
