@@ -6,6 +6,7 @@ import {
   getCookbookLimit,
   showUserAds,
   canCreatePrivate,
+  canUsePrivateRecipeNotes,
   canImport,
   type EntitlementTier,
 } from '@/lib/tier-entitlements'
@@ -73,6 +74,20 @@ describe('canCreatePrivate', () => {
     ['executive-chef', true],
   ] as const)('%s → %s', (tier, expected) => {
     expect(canCreatePrivate(tier)).toBe(expected)
+  })
+})
+
+describe('canUsePrivateRecipeNotes', () => {
+  it.each([
+    ['anonymous', false],
+    ['home-cook', false],
+    ['prep-cook', false],
+    ['sous-chef', true],
+    ['executive-chef', true],
+    [null, false],
+    [undefined, false],
+  ] as const)('%s → %s', (tier, expected) => {
+    expect(canUsePrivateRecipeNotes(tier)).toBe(expected)
   })
 })
 

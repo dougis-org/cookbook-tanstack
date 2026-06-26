@@ -39,6 +39,7 @@ Private content starts at Sous Chef.
 | Recipe visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook visibility | Not applicable | Public only | Public only | Public or private | Public or private |
 | Cookbook chapters | View only | No chapter cap | No chapter cap | No chapter cap | No chapter cap |
+| Private Recipe Notes | No | No | No | Yes | Yes |
 | Recipe import | No | No | No | No | Yes |
 
 ## Tier Definitions
@@ -73,6 +74,10 @@ create up to 500 recipes and 25 cookbooks.
 
 Sous Chef unlocks private recipes and private cookbooks.
 
+Sous Chef users have access to Private Recipe Notes — per-user notes attached to a
+recipe (distinct from the public `note` field on Recipe documents, which is part of
+the recipe itself and visible to anyone who can view the recipe).
+
 ### Executive Chef
 
 Executive Chef is the power-user tier. Executive Chef users do not see ads and
@@ -81,6 +86,8 @@ can create up to 2,500 recipes and 200 cookbooks.
 Executive Chef includes public and private content creation, recipe import, and
 room for future advanced capabilities such as bulk tools, premium sharing, or
 collaboration. Limits are intentionally high but finite rather than unlimited.
+
+Executive Chef users inherit Private Recipe Notes access from Sous Chef.
 
 ## Content Visibility Rules
 
@@ -126,6 +133,7 @@ changes the model.
 | --- | --- |
 | Ad suppression | Prep Cook and above |
 | Private recipes and cookbooks | Sous Chef and above |
+| Private Recipe Notes | Sous Chef and above |
 | Recipe import | Executive Chef only |
 | Bulk import/export | Executive Chef candidate |
 | Advanced sharing | Sous Chef or Executive Chef candidate |
