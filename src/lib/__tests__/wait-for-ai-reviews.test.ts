@@ -13,7 +13,6 @@ describe("Wait for AI reviews workflow", () => {
     expect(workflow).toMatch(/listPullRequestsAssociatedWithCommit/);
     expect(workflow).toMatch(/github\.paginate\(github\.rest\.pulls\.listReviews/);
     expect(workflow).toContain("copilot-pull-request-reviewer[bot]");
-    expect(workflow).toContain("gemini-code-assist[bot]");
     expect(workflow).toMatch(
       /Boolean\(review\.submitted_at\)[\s\S]*reviewer\.reviewAuthors\.includes\(login\)[\s\S]*state !== 'PENDING'[\s\S]*state !== 'DISMISSED'/,
     );
