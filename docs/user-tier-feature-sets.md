@@ -74,9 +74,9 @@ create up to 500 recipes and 25 cookbooks.
 
 Sous Chef unlocks private recipes and private cookbooks.
 
-Sous Chef users have access to Private Recipe Notes — per-user notes attached to a recipe
-(distinct from the public `note` field on Recipe documents, which is part of the recipe itself
-and visible to anyone who can view the recipe).
+Sous Chef users have access to Private Recipe Notes — per-user notes attached to a
+recipe (distinct from the public `note` field on Recipe documents, which is part of
+the recipe itself and visible to anyone who can view the recipe).
 
 ### Executive Chef
 
