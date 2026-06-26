@@ -12,9 +12,12 @@ export const privateRecipeNotesRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = new Types.ObjectId(ctx.user.id)
       const recipeId = new Types.ObjectId(input.recipeId)
-      const note = await RecipeNote.findOne({ userId, recipeId }).lean()
+      if (!canUsePrivateRecipeNotes(ctx.user.tier)) {
+        const exists = await RecipeNote.exists({ userId, recipeId })
+        return { hasNote: !!exists, note: null }
+      }
+      const note = await RecipeNote.findOne({ userId, recipeId }, { body: 1, updatedAt: 1 }).lean()
       if (!note) return { hasNote: false, note: null }
-      if (!canUsePrivateRecipeNotes(ctx.user.tier)) return { hasNote: true, note: null }
       return { hasNote: true, note: { body: note.body, updatedAt: note.updatedAt } }
     }),
 
@@ -27,12 +30,14 @@ export const privateRecipeNotesRouter = router({
         _id: recipeId,
         $or: [{ isPublic: true }, { userId }],
         deleted: { $ne: true },
+        hiddenByTier: { $ne: true },
+        pendingVerification: { $ne: true },
       }).lean()
       if (!recipe) throw new TRPCError({ code: "NOT_FOUND" })
       await RecipeNote.findOneAndUpdate(
         { userId, recipeId },
         { body: input.body },
-        { upsert: true },
+        { upsert: true, runValidators: true },
       )
       return { success: true }
     }),
