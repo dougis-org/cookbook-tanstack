@@ -25,6 +25,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'home-cook',
       canCreatePrivate: false,
+      canUsePrivateRecipeNotes: false,
       canImport: false,
       recipeLimit: 10,
       cookbookLimit: 1,
@@ -37,6 +38,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'prep-cook',
       canCreatePrivate: false,
+      canUsePrivateRecipeNotes: false,
       canImport: false,
       recipeLimit: 100,
       cookbookLimit: 10,
@@ -49,6 +51,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'sous-chef',
       canCreatePrivate: true,
+      canUsePrivateRecipeNotes: true,
       canImport: false,
       recipeLimit: 500,
       cookbookLimit: 25,
@@ -61,6 +64,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'executive-chef',
       canCreatePrivate: true,
+      canUsePrivateRecipeNotes: true,
       canImport: true,
       recipeLimit: 2500,
       cookbookLimit: 200,
@@ -73,6 +77,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'home-cook',
       canCreatePrivate: false,
+      canUsePrivateRecipeNotes: false,
       canImport: false,
       recipeLimit: 10,
       cookbookLimit: 1,
@@ -85,6 +90,7 @@ describe('useTierEntitlements', () => {
     expect(result.current).toEqual({
       tier: 'home-cook',
       canCreatePrivate: false,
+      canUsePrivateRecipeNotes: false,
       canImport: false,
       recipeLimit: 10,
       cookbookLimit: 1,
