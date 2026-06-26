@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-26-add-private-recipe-notes-entitlement/design.md) document, not a replacement.
 
 ### Requirement: ADDED Private Recipe Notes listed in tier feature-set docs
 
