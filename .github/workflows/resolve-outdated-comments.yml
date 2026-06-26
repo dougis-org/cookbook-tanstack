@@ -19,6 +19,7 @@ jobs:
     # Keep skipping draft PRs; remove this if you want drafts included
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v6
