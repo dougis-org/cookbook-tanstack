@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the `design.md` document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-26-add-private-recipe-notes-entitlement/design.md) document, not a replacement.
 
 ### Requirement: ADDED EntitlementTier type
 
@@ -122,6 +122,44 @@ The system SHALL export `canImport(tier: EntitlementTier): boolean` returning `t
 
 ---
 
+### Requirement: ADDED canUsePrivateRecipeNotes helper
+
+The system SHALL export a `canUsePrivateRecipeNotes(tier: string | null | undefined): boolean`
+function from `src/lib/tier-entitlements.ts` that returns `true` if and only if the tier is
+`sous-chef` or `executive-chef`.
+
+#### Scenario: Returns false for tiers below sous-chef
+
+- **Given** a caller passes a tier string of `'anonymous'`, `'home-cook'`, or `'prep-cook'`
+- **When** `canUsePrivateRecipeNotes(tier)` is called
+- **Then** it returns `false`
+
+#### Scenario: Returns true for sous-chef
+
+- **Given** a caller passes `'sous-chef'`
+- **When** `canUsePrivateRecipeNotes('sous-chef')` is called
+- **Then** it returns `true`
+
+#### Scenario: Returns true for executive-chef
+
+- **Given** a caller passes `'executive-chef'`
+- **When** `canUsePrivateRecipeNotes('executive-chef')` is called
+- **Then** it returns `true`
+
+#### Scenario: Returns false for null tier
+
+- **Given** a caller passes `null` (e.g., unauthenticated user with no tier set)
+- **When** `canUsePrivateRecipeNotes(null)` is called
+- **Then** it returns `false`
+
+#### Scenario: Returns false for undefined tier
+
+- **Given** a caller passes `undefined`
+- **When** `canUsePrivateRecipeNotes(undefined)` is called
+- **Then** it returns `false`
+
+---
+
 ## MODIFIED Requirements
 
 ### Requirement: MODIFIED ad-policy exports
@@ -153,6 +191,7 @@ Reason for removal: The `!hasAtLeastTier(session.user, 'prep-cook')` inline chec
 ## Traceability
 
 - Proposal: "Single source of truth for all numeric and boolean entitlement values" → Requirements: TIER_LIMITS, getRecipeLimit, getCookbookLimit, showUserAds, canCreatePrivate, canImport
+- Proposal element "add canUsePrivateRecipeNotes at sous-chef+" → Requirement: ADDED canUsePrivateRecipeNotes helper
 - Proposal: "`anonymous` uses wider `EntitlementTier` union" → Requirement: ADDED EntitlementTier type
 - Proposal: "Rename `isAdEligible` → `isPageAdEligible`" → Requirement: MODIFIED ad-policy exports
 - Design Decision 1 → EntitlementTier type requirement
@@ -180,3 +219,27 @@ Reason for removal: The `!hasAtLeastTier(session.user, 'prep-cook')` inline chec
 - **Given** `src/lib/tier-entitlements.ts` is read
 - **When** reviewing the file header
 - **Then** a comment references `docs/user-tier-feature-sets.md` as the authoritative source
+
+### Requirement: Performance (canUsePrivateRecipeNotes)
+
+#### Scenario: Latency budget
+
+- **Given** the function is called in a hot request path
+- **When** `canUsePrivateRecipeNotes` is invoked
+- **Then** it completes synchronously with no I/O and negligible CPU overhead (constant-time
+  `TIER_RANK` Record lookup and a single numeric comparison via `hasAtLeastTier`)
+
+### Requirement: Security (canUsePrivateRecipeNotes)
+
+See functional scenarios above: "Returns false for tiers below sous-chef", "Returns false for null
+tier", "Returns false for undefined tier". All access-control boundaries are fully expressed there.
+
+### Requirement: Reliability (canUsePrivateRecipeNotes)
+
+#### Scenario: Recovery behavior for unrecognised tier
+
+- **Given** the function receives an unrecognised tier string (e.g., a future tier not yet in
+  `TIER_RANK`)
+- **When** `canUsePrivateRecipeNotes(unknownTier)` is called
+- **Then** `hasAtLeastTier` defaults the unknown value to `home-cook` rank, so the function
+  returns `false` (safe default — deny rather than grant)
