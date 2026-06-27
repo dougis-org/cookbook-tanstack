@@ -1,4 +1,0 @@
-/home/doug/dev/cookbook-tanstack/src/lib/__tests__/wait-for-ai-reviews.test.ts
-/home/doug/dev/cookbook-tanstack/src/server/trpc/router.ts
-/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/__tests__/privateRecipeNotes.test.ts
-/home/doug/dev/cookbook-tanstack/src/server/trpc/routers/privateRecipeNotes.ts

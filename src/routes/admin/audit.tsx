@@ -8,7 +8,7 @@ const auditSearchSchema = z.object({
   userId: z.string().optional(),
   from: z.string().optional(),
   to: z.string().optional(),
-  page: z.number().int().min(1).default(1).catch(1),
+  page: z.coerce.number().int().min(1).default(1).catch(1),
 })
 
 export const Route = createFileRoute('/admin/audit')({
@@ -26,8 +26,8 @@ export function AdminAuditPage() {
   const { data } = useQuery(
     trpc.admin.auditLog.list.queryOptions({
       userId: search.userId,
-      from: search.from,
-      to: search.to,
+      from: search.from ? new Date(search.from + 'T00:00:00.000Z').toISOString() : undefined,
+      to: search.to ? new Date(search.to + 'T23:59:59.999Z').toISOString() : undefined,
       page,
     }),
   )

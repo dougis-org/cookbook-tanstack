@@ -70,4 +70,5 @@ src/e2e/e2e-coverage/lcov.info
 .verity/.conversation-buffer
 .verity/.last-reviewed-sha
 .verity/.task-context/
+.codacy/generated/
 .claude/settings.local.json
