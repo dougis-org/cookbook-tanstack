@@ -144,7 +144,7 @@ changes the model.
 
 | Enforcement Area | File |
 |---|---|
-| Tier limits and boolean entitlements | `src/lib/tier-entitlements.ts` |
+| Tier limits, `CAPABILITY_TIERS` map (boolean gate source of truth), and `can()` helper | `src/lib/tier-entitlements.ts` |
 | Client-side tier hook | `src/hooks/useTierEntitlements.ts` |
 | Recipe count + private enforcement | `src/server/trpc/routers/recipes.ts` |
 | Cookbook count + private enforcement | `src/server/trpc/routers/cookbooks.ts` |
@@ -152,3 +152,5 @@ changes the model.
 | Downgrade/upgrade reconciliation | `src/lib/reconcile-user-content.ts` |
 | Admin tier change entry point | `src/server/trpc/routers/admin.ts` |
 | Tier-wall UI | `src/components/ui/TierWall.tsx` |
+
+> **Adding a new boolean capability:** Add one entry to `CAPABILITY_TIERS` in `src/lib/tier-entitlements.ts` with the capability key and minimum required tier. The `can()` helper picks it up automatically — no other changes required.

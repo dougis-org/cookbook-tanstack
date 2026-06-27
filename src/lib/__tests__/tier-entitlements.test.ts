@@ -2,12 +2,14 @@ import { describe, it, expect } from 'vitest'
 import {
   TIER_LIMITS,
   TIER_DESCRIPTIONS,
+  CAPABILITY_TIERS,
   getRecipeLimit,
   getCookbookLimit,
   showUserAds,
   canCreatePrivate,
   canUsePrivateRecipeNotes,
   canImport,
+  can,
   type EntitlementTier,
 } from '@/lib/tier-entitlements'
 
@@ -117,5 +119,43 @@ describe('canImport', () => {
     ['executive-chef', true],
   ] as const)('%s → %s', (tier, expected) => {
     expect(canImport(tier)).toBe(expected)
+  })
+})
+
+describe('CAPABILITY_TIERS', () => {
+  it('deep-equals the expected capability-to-tier map', () => {
+    expect(CAPABILITY_TIERS).toEqual({
+      createPrivate: 'sous-chef',
+      privateRecipeNotes: 'sous-chef',
+      import: 'executive-chef',
+    })
+  })
+})
+
+describe('can()', () => {
+  describe.each(['createPrivate', 'privateRecipeNotes'] as const)('%s (sous-chef gate)', (capability) => {
+    it.each([
+      ['anonymous', false],
+      ['home-cook', false],
+      ['prep-cook', false],
+      ['sous-chef', true],
+      ['executive-chef', true],
+      [null, false],
+      [undefined, false],
+    ] as const)('%s → %s', (tier, expected) => {
+      expect(can(capability, tier)).toBe(expected)
+    })
+  })
+
+  describe('import (executive-chef gate)', () => {
+    it.each([
+      ['anonymous', false],
+      ['home-cook', false],
+      ['prep-cook', false],
+      ['sous-chef', false],
+      ['executive-chef', true],
+    ] as const)('%s → %s', (tier, expected) => {
+      expect(can('import', tier)).toBe(expected)
+    })
   })
 })
