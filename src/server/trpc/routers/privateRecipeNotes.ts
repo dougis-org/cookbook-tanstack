@@ -36,10 +36,10 @@ export const privateRecipeNotesRouter = router({
         ...visibilityFilter(ctx.user),
         deleted: { $ne: true },
       }).lean()
-      if (!recipe) throw new TRPCError({ code: "NOT_FOUND" })
+      if (!recipe) throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })
       await RecipeNote.findOneAndUpdate(
         { userId, recipeId },
-        { body: input.body },
+        { $set: { body: input.body } },
         { upsert: true, runValidators: true },
       )
       return { success: true }
@@ -50,7 +50,7 @@ export const privateRecipeNotesRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { userId, recipeId } = toIds(ctx.user.id, input.recipeId)
       const result = await RecipeNote.deleteOne({ userId, recipeId })
-      if (result.deletedCount === 0) throw new TRPCError({ code: "NOT_FOUND" })
+      if (result.deletedCount === 0) throw new TRPCError({ code: "NOT_FOUND", message: "Note not found" })
       return { success: true }
     }),
 })

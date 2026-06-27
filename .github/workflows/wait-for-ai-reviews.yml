@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 11
     steps:
-      - name: Wait until Copilot and Gemini reviews are complete
+      - name: Wait until Copilot review is complete
         uses: actions/github-script@v8
         with:
           script: |
