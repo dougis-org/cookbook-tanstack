@@ -7,6 +7,9 @@ import { canUsePrivateRecipeNotes } from "@/lib/tier-entitlements"
 import { objectId, visibilityFilter } from "./_helpers"
 
 function toIds(userId: string, recipeId: string) {
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid session user ID" })
+  }
   return {
     userId: new Types.ObjectId(userId),
     recipeId: new Types.ObjectId(recipeId),
