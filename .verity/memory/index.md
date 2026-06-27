@@ -4,10 +4,20 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (1)
+## decisions/ (6)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
+- [[n019-do-not-reveal-note-text-to-unauthorized-tiers]] — **Do not reveal note text to unauthorized tiers**
+  *decision* · 88%
+- [[n020-verify-recipe-access-before-creating-or-updating-n]] — **Verify recipe access before creating or updating notes**
+  *decision* · 85% · scope: `src/server/**/recipe*`
+- [[n021-run-validators-on-mongoose-update-writes]] — **Run validators on Mongoose update writes**
+  *decision* · 84%
+- [[n022-bound-pr-review-waits-with-polling-and-a-timeout]] — **Bound PR review waits with polling and a timeout**
+  *decision* · 84% · scope: `.github/workflows/**`
+- [[n023-reject-invalid-session-user-ids-before-constructin]] — **Reject invalid session user IDs before constructing ObjectId**
+  *decision* · 84% · scope: `src/server/trpc/**`
 
 ## patterns/ (1)
 
