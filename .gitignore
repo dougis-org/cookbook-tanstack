@@ -66,4 +66,8 @@ src/e2e/e2e-coverage/lcov.info
 .verity/.last-intent
 .verity/.memory-sync-state.json
 .verity/memory/log.md
+.verity/.snapshot/
+.verity/.conversation-buffer
+.verity/.last-reviewed-sha
+.verity/.task-context/
 .claude/settings.local.json
