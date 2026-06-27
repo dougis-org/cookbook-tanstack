@@ -42,17 +42,15 @@ import { AdminAuditPage } from '@/routes/admin/audit'
 
 // ─── Test data ───────────────────────────────────────────────────────────────
 
-function makeEntry(overrides: Record<string, unknown> = {}) {
-  return {
-    id: 'entry-1',
-    createdAt: new Date('2024-03-15T10:30:00Z').toISOString(),
-    adminEmail: 'admin@test.com',
-    targetEmail: 'user@test.com',
-    before: { tier: 'home-cook' },
-    after: { tier: 'sous-chef' },
-    ...overrides,
-  }
-}
+const makeEntry = (overrides: Record<string, unknown> = {}) => ({
+  id: 'entry-1',
+  createdAt: new Date('2024-03-15T10:30:00Z').toISOString(),
+  adminEmail: 'admin@test.com',
+  targetEmail: 'user@test.com',
+  before: { tier: 'home-cook' },
+  after: { tier: 'sous-chef' },
+  ...overrides,
+})
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
