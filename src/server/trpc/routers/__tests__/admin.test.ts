@@ -9,6 +9,8 @@ let mockFindUsers: ReturnType<typeof vi.fn>
 let mockFindOneUser: ReturnType<typeof vi.fn>
 let mockUpdateOne: ReturnType<typeof vi.fn>
 let mockInsertOne: ReturnType<typeof vi.fn>
+let mockAuditLogFind: ReturnType<typeof vi.fn>
+let mockAuditLogCount: ReturnType<typeof vi.fn>
 const { mockSendEmail, mockReconcileUserContent } = vi.hoisted(() => ({
   mockSendEmail: vi.fn().mockResolvedValue({ messageId: 'test-id' }),
   mockReconcileUserContent: vi.fn().mockResolvedValue({
@@ -56,6 +58,15 @@ vi.mock('@/db/models', async (importOriginal) => {
     AdminAuditLog: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (...args: any[]) => (mockInsertOne as (...a: any[]) => unknown)(...args),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      find: (filter: unknown) => ({
+        sort: () => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          skip: () => ({ limit: () => (mockAuditLogFind as (...a: any[]) => unknown)(filter) }),
+        }),
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      countDocuments: (...args: any[]) => (mockAuditLogCount as (...a: any[]) => unknown)(...args),
     },
   }
 })
@@ -98,6 +109,22 @@ function makeUserDoc(overrides: Record<string, unknown> = {}) {
     updatedAt: new Date(),
     tier: 'home-cook',
     isAdmin: false,
+    ...overrides,
+  }
+}
+
+function makeAuditDoc(overrides: Record<string, unknown> = {}) {
+  return {
+    _id: { toString: () => 'auditid000000000000000001' },
+    adminId: ADMIN_ID,
+    adminEmail: 'admin@test.com',
+    targetUserId: TARGET_ID,
+    targetEmail: 'target@test.com',
+    action: 'set-tier',
+    before: { tier: 'home-cook' },
+    after: { tier: 'sous-chef' },
+    createdAt: new Date('2024-01-15T12:00:00Z'),
+    updatedAt: new Date('2024-01-15T12:00:00Z'),
     ...overrides,
   }
 }
@@ -321,5 +348,126 @@ describe('admin.users.setTier', () => {
         }),
       })
     )
+  })
+})
+
+describe('admin.auditLog.list', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFindUsers = vi.fn().mockResolvedValue([])
+    mockFindOneUser = vi.fn()
+    mockUpdateOne = vi.fn()
+    mockInsertOne = vi.fn().mockResolvedValue({ acknowledged: true })
+    mockAuditLogFind = vi.fn().mockResolvedValue([])
+    mockAuditLogCount = vi.fn().mockResolvedValue(0)
+  })
+
+  it('returns all entries with offset pagination when no filters applied', async () => {
+    const entries = Array.from({ length: 30 }, (_, i) =>
+      makeAuditDoc({ _id: { toString: () => `id${i.toString().padStart(20, '0')}` }, createdAt: new Date(2024, 0, 30 - i) }),
+    )
+    mockAuditLogFind.mockResolvedValue(entries.slice(0, 25))
+    mockAuditLogCount.mockResolvedValue(30)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({})
+
+    expect(result.total).toBe(30)
+    expect(result.entries).toHaveLength(25)
+  })
+
+  it('returns page 2 correctly with correct entry count', async () => {
+    const entries = Array.from({ length: 5 }, (_, i) =>
+      makeAuditDoc({ _id: { toString: () => `id${i.toString().padStart(20, '0')}` } }),
+    )
+    mockAuditLogFind.mockResolvedValue(entries)
+    mockAuditLogCount.mockResolvedValue(30)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({ page: 2 })
+
+    expect(result.entries).toHaveLength(5)
+    expect(result.total).toBe(30)
+  })
+
+  it('returns empty entries for out-of-range page', async () => {
+    mockAuditLogFind.mockResolvedValue([])
+    mockAuditLogCount.mockResolvedValue(10)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({ page: 99 })
+
+    expect(result.entries).toHaveLength(0)
+    expect(result.total).toBe(10)
+  })
+
+  it('filters by userId and returns only matching entries', async () => {
+    const userAEntries = Array.from({ length: 5 }, (_, i) =>
+      makeAuditDoc({ _id: { toString: () => `id${i.toString().padStart(20, '0')}` }, targetUserId: TARGET_ID }),
+    )
+    mockAuditLogFind.mockResolvedValue(userAEntries)
+    mockAuditLogCount.mockResolvedValue(5)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({ userId: TARGET_ID })
+
+    expect(result.total).toBe(5)
+    expect(result.entries).toHaveLength(5)
+    expect(mockAuditLogFind).toHaveBeenCalledWith(expect.objectContaining({ targetUserId: TARGET_ID }))
+  })
+
+  it('filters by date range and returns only entries in range', async () => {
+    const entry = makeAuditDoc({ createdAt: new Date('2024-03-15T12:00:00Z') })
+    mockAuditLogFind.mockResolvedValue([entry])
+    mockAuditLogCount.mockResolvedValue(1)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({
+      from: '2024-03-01T00:00:00Z',
+      to: '2024-03-31T23:59:59Z',
+    })
+
+    expect(result.entries).toHaveLength(1)
+    expect(mockAuditLogFind).toHaveBeenCalledWith(
+      expect.objectContaining({ createdAt: expect.objectContaining({ $gte: expect.any(Date), $lte: expect.any(Date) }) }),
+    )
+  })
+
+  it('returns valid response when collection is empty', async () => {
+    mockAuditLogFind.mockResolvedValue([])
+    mockAuditLogCount.mockResolvedValue(0)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({})
+
+    expect(result).toEqual({ entries: [], total: 0 })
+  })
+
+  it('throws FORBIDDEN when caller is not admin', async () => {
+    const caller = await makeNonAdminCaller(TARGET_ID)
+    await expect(caller.admin.auditLog.list({})).rejects.toMatchObject({ code: 'FORBIDDEN' })
+  })
+
+  it('throws UNAUTHORIZED when session is absent', async () => {
+    const caller = await makeAnonCaller()
+    await expect(caller.admin.auditLog.list({})).rejects.toMatchObject({ code: 'UNAUTHORIZED' })
+  })
+
+  it('maps entry fields to the expected shape', async () => {
+    const doc = makeAuditDoc()
+    mockAuditLogFind.mockResolvedValue([doc])
+    mockAuditLogCount.mockResolvedValue(1)
+
+    const caller = await makeAdminCaller(ADMIN_ID)
+    const result = await caller.admin.auditLog.list({})
+
+    expect(result.entries[0]).toMatchObject({
+      id: expect.any(String),
+      createdAt: expect.any(String),
+      adminEmail: 'admin@test.com',
+      targetEmail: 'target@test.com',
+      before: { tier: 'home-cook' },
+      after: { tier: 'sous-chef' },
+    })
   })
 })

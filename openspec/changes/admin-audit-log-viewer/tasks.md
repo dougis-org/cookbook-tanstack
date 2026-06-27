@@ -2,8 +2,8 @@
 
 ## Preparation
 
-- [ ] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
-- [ ] **Step 2 — Create and publish working branch:** `git checkout -b feature/admin-audit-log-viewer` then immediately `git push -u origin feature/admin-audit-log-viewer`
+- [x] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
+- [x] **Step 2 — Create and publish working branch:** `git checkout -b feature/admin-audit-log-viewer` then immediately `git push -u origin feature/admin-audit-log-viewer`
 
 ## Execution
 
@@ -120,12 +120,12 @@ Write an E2E test covering:
 
 ## Validation
 
-- [ ] `npx vitest run src/server/trpc/routers/__tests__/admin.test.ts` — all new `auditLog.list` test cases pass
-- [ ] `npx vitest run src/routes/admin/__tests__/audit.test.tsx` — all RTL tests pass
-- [ ] `npm run test` — full unit suite passes (no regressions in existing admin tests)
-- [ ] `npx playwright test e2e/admin-audit-log.spec.ts` — E2E golden path passes
-- [ ] `npm run build` — build succeeds with no TypeScript errors
-- [ ] All completed tasks marked `[x]`
+- [x] `npx vitest run src/server/trpc/routers/__tests__/admin.test.ts` — all new `auditLog.list` test cases pass
+- [x] `npx vitest run src/routes/admin/__tests__/audit.test.tsx` — all RTL tests pass
+- [x] `npm run test` — full unit suite passes (no regressions in existing admin tests)
+- [x] `npx playwright test e2e/admin-audit-log.spec.ts` — E2E golden path passes
+- [x] `npm run build` — build succeeds with no TypeScript errors
+- [x] All completed tasks marked `[x]`
 
 ## Remote push validation
 

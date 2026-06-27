@@ -27,6 +27,13 @@ function AdminLayout() {
           >
             Users
           </Link>
+          <Link
+            to="/admin/audit"
+            className="text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
+            activeProps={{ className: 'text-sm text-[var(--theme-accent)] font-medium' }}
+          >
+            Audit Log
+          </Link>
         </nav>
         <Outlet />
       </div>
