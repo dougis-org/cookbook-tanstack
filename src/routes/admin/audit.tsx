@@ -4,21 +4,18 @@ import { useQuery } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
 import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
 
+const dateParam = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined)
+
 const auditSearchSchema = z.object({
   userId: z.string().optional(),
-  from: z.string().optional(),
-  to: z.string().optional(),
+  from: dateParam,
+  to: dateParam,
   page: z.coerce.number().int().min(1).default(1).catch(1),
-})
-
-export const Route = createFileRoute('/admin/audit')({
-  validateSearch: auditSearchSchema,
-  component: AdminAuditPage,
 })
 
 const LIMIT = 25
 
-export function AdminAuditPage() {
+export const AdminAuditPage = () => {
   const search = Route.useSearch()
   const navigate = useNavigate({ from: '/admin/audit' })
   const page = search.page ?? 1
@@ -56,7 +53,7 @@ export function AdminAuditPage() {
             type="text"
             placeholder="Filter by user ID…"
             defaultValue={search.userId ?? ''}
-            onChange={(e) => updateSearch({ userId: e.target.value || undefined })}
+            onBlur={(e) => updateSearch({ userId: e.target.value || undefined })}
             className="text-sm rounded border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] px-3 py-1.5"
           />
         </div>
@@ -156,3 +153,8 @@ export function AdminAuditPage() {
     </div>
   )
 }
+
+export const Route = createFileRoute('/admin/audit')({
+  validateSearch: auditSearchSchema,
+  component: AdminAuditPage,
+})
