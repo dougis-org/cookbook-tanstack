@@ -7,7 +7,7 @@ import { TIER_DISPLAY_NAMES } from '@/lib/tier-entitlements'
 const dateParam = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().catch(undefined)
 
 const auditSearchSchema = z.object({
-  userId: z.string().optional(),
+  userId: z.string().min(1).max(255).optional().catch(undefined),
   from: dateParam,
   to: dateParam,
   page: z.coerce.number().int().min(1).default(1).catch(1),
