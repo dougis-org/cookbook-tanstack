@@ -154,6 +154,8 @@ describe('can()', () => {
       ['prep-cook', false],
       ['sous-chef', false],
       ['executive-chef', true],
+      [null, false],
+      [undefined, false],
     ] as const)('%s → %s', (tier, expected) => {
       expect(can('import', tier)).toBe(expected)
     })
