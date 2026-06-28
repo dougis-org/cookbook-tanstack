@@ -119,7 +119,7 @@ const auditLogRouter = router({
   list: adminProcedure
     .input(
       z.object({
-        userId: z.string().optional(),
+        userId: objectId.optional(),
         from: z.string().datetime().optional(),
         to: z.string().datetime().optional(),
         page: z.number().int().min(1).default(1),

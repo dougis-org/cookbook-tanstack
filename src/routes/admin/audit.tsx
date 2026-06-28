@@ -52,8 +52,8 @@ export const AdminAuditPage = () => {
             id="audit-userId"
             type="text"
             placeholder="Filter by user ID…"
-            defaultValue={search.userId ?? ''}
-            onBlur={(e) => updateSearch({ userId: e.target.value || undefined })}
+            value={search.userId ?? ''}
+            onChange={(e) => updateSearch({ userId: e.target.value || undefined })}
             className="text-sm rounded border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] px-3 py-1.5"
           />
         </div>
@@ -64,7 +64,7 @@ export const AdminAuditPage = () => {
           <input
             id="audit-from"
             type="date"
-            defaultValue={search.from ?? ''}
+            value={search.from ?? ''}
             onChange={(e) => updateSearch({ from: e.target.value || undefined })}
             className="text-sm rounded border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] px-3 py-1.5"
           />
@@ -76,7 +76,7 @@ export const AdminAuditPage = () => {
           <input
             id="audit-to"
             type="date"
-            defaultValue={search.to ?? ''}
+            value={search.to ?? ''}
             onChange={(e) => updateSearch({ to: e.target.value || undefined })}
             className="text-sm rounded border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] px-3 py-1.5"
           />
