@@ -86,11 +86,11 @@ If **ANY** required step fails, iterate and address before pushing.
 ## PR and Merge
 
 - [x] Ensure `openspec-review-code` sub-agent was run and all findings addressed before final commit
-- [ ] Commit all changes and push to `refactor/tier-entitlements-capability-map`
-- [ ] Open PR: title `refactor: tier-entitlements to data-driven capability map`, body **must include** `Closes #538`
-- [ ] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
-- [ ] Wait 180 seconds for CI to start and agentic reviewers to post comments
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user:
+- [x] Commit all changes and push to `refactor/tier-entitlements-capability-map`
+- [x] Open PR: title `refactor: tier-entitlements to data-driven capability map`, body **must include** `Closes #538`
+- [x] **IMMEDIATELY** enable auto-merge: `gh pr merge <PR-URL> --auto --merge`
+- [x] Wait 180 seconds for CI to start and agentic reviewers to post comments
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if `CLOSED` exit and notify the user:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, push
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address every unresolved thread, commit fixes, run validation, push, wait 180 seconds
   3. **CI check failures** — after all comments resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix failing required checks, commit, validate, push, wait 180 seconds; restart loop
@@ -108,16 +108,16 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Sync approved spec deltas into `openspec/specs/`:
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Sync approved spec deltas into `openspec/specs/`:
   - Copy `openspec/changes/refactor-tier-entitlements-capability-map/specs/capability-map/spec.md` → `openspec/specs/capability-map/spec.md` (create dir if needed); update relative links to point to archive location
   - Copy `openspec/changes/refactor-tier-entitlements-capability-map/specs/can-helper/spec.md` → `openspec/specs/can-helper/spec.md`; update relative links
-- [ ] Archive the change: move `openspec/changes/refactor-tier-entitlements-capability-map/` to `openspec/changes/archive/YYYY-MM-DD-refactor-tier-entitlements-capability-map/` **in a single atomic commit** (stage copy + delete together)
-- [ ] Confirm archive exists and original directory is gone
-- [ ] **Create a doc branch**: `git checkout -b doc/archive-YYYY-MM-DD-refactor-tier-entitlements-capability-map` then push
-- [ ] Open a PR from the doc branch to `main` with title `docs: archive refactor-tier-entitlements-capability-map (YYYY-MM-DD)`
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
-- [ ] Monitor doc PR until merged (same loop as implementation PR)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D refactor/tier-entitlements-capability-map doc/archive-YYYY-MM-DD-refactor-tier-entitlements-capability-map`
+- [x] Archive the change: move `openspec/changes/refactor-tier-entitlements-capability-map/` to `openspec/changes/archive/2026-06-28-refactor-tier-entitlements-capability-map/` **in a single atomic commit** (stage copy + delete together)
+- [x] Confirm archive exists and original directory is gone
+- [x] **Create a doc branch**: `git checkout -b doc/archive-2026-06-28-refactor-tier-entitlements-capability-map` then push
+- [x] Open a PR from the doc branch to `main` with title `docs: archive refactor-tier-entitlements-capability-map (2026-06-28)`
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
+- [x] Monitor doc PR until merged (same loop as implementation PR)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D refactor/tier-entitlements-capability-map doc/archive-2026-06-28-refactor-tier-entitlements-capability-map`
