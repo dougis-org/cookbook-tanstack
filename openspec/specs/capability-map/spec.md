@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-06-28-refactor-tier-entitlements-capability-map/design.md) document, not a replacement.
 
 ### Requirement: ADDED `CAPABILITY_TIERS` constant
 
