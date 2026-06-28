@@ -1,8 +1,6 @@
 import { useAuth } from './useAuth'
 import {
-  canCreatePrivate,
-  canUsePrivateRecipeNotes,
-  canImport,
+  can,
   getRecipeLimit,
   getCookbookLimit,
   TIER_ORDER,
@@ -22,9 +20,9 @@ export function useTierEntitlements() {
 
   return {
     tier,
-    canCreatePrivate: canCreatePrivate(tier),
-    canUsePrivateRecipeNotes: canUsePrivateRecipeNotes(tier),
-    canImport: canImport(tier),
+    canCreatePrivate: can('createPrivate', tier),
+    canUsePrivateRecipeNotes: can('privateRecipeNotes', tier),
+    canImport: can('import', tier),
     recipeLimit: getRecipeLimit(tier),
     cookbookLimit: getCookbookLimit(tier),
   }

@@ -3,6 +3,19 @@ import { hasAtLeastTier, type UserTier } from '@/types/user'
 
 export type EntitlementTier = UserTier | 'anonymous'
 
+export const CAPABILITY_TIERS = {
+  createPrivate:      'sous-chef',
+  privateRecipeNotes: 'sous-chef',
+  import:             'executive-chef',
+} as const satisfies Record<string, UserTier>
+
+export function can(
+  capability: keyof typeof CAPABILITY_TIERS,
+  tier: string | null | undefined,
+): boolean {
+  return hasAtLeastTier({ tier }, CAPABILITY_TIERS[capability])
+}
+
 // ─── Enforcement Contract ───────────────────────────────────────────────────
 //
 // Tier enforcement spans three distinct layers with a strict separation of
@@ -46,15 +59,15 @@ export function showUserAds(tier: EntitlementTier): boolean {
 }
 
 export function canCreatePrivate(tier: string | null | undefined): boolean {
-  return hasAtLeastTier({ tier }, 'sous-chef')
+  return can('createPrivate', tier)
 }
 
 export function canUsePrivateRecipeNotes(tier: string | null | undefined): boolean {
-  return hasAtLeastTier({ tier }, 'sous-chef')
+  return can('privateRecipeNotes', tier)
 }
 
 export function canImport(tier: string | null | undefined): boolean {
-  return hasAtLeastTier({ tier }, 'executive-chef')
+  return can('import', tier)
 }
 
 export const TIER_ORDER: EntitlementTier[] = [
