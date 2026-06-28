@@ -115,6 +115,50 @@ const usersRouter = router({
     }),
 })
 
+const auditLogRouter = router({
+  list: adminProcedure
+    .input(
+      z.object({
+        userId: z.string().optional(),
+        from: z.string().datetime().optional(),
+        to: z.string().datetime().optional(),
+        page: z.number().int().min(1).default(1),
+        limit: z.number().int().min(1).max(100).default(25),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { AdminAuditLog } = await import('@/db/models')
+
+      const filter: Record<string, unknown> = {}
+      if (input.userId) filter.targetUserId = input.userId
+      if (input.from || input.to) {
+        const createdAt: Record<string, Date> = {}
+        if (input.from) createdAt.$gte = new Date(input.from)
+        if (input.to) createdAt.$lte = new Date(input.to)
+        filter.createdAt = createdAt
+      }
+
+      const total = await AdminAuditLog.countDocuments(filter)
+      const docs = await AdminAuditLog.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((input.page - 1) * input.limit)
+        .limit(input.limit)
+
+      return {
+        total,
+        entries: docs.map((e) => ({
+          id: String(e._id),
+          createdAt: e.createdAt.toISOString(),
+          adminEmail: e.adminEmail,
+          targetEmail: e.targetEmail,
+          before: { tier: e.before.tier },
+          after: { tier: e.after.tier },
+        })),
+      }
+    }),
+})
+
 export const adminRouter = router({
   users: usersRouter,
+  auditLog: auditLogRouter,
 })

@@ -30,6 +30,9 @@ const adminAuditLogSchema = new Schema<AdminAuditLogDocument>(
   { timestamps: true, collection: 'adminAuditLog' },
 )
 
+adminAuditLogSchema.index({ targetUserId: 1, createdAt: -1 })
+adminAuditLogSchema.index({ createdAt: -1 })
+
 export const AdminAuditLog =
   mongoose.models.AdminAuditLog ??
   mongoose.model<AdminAuditLogDocument>('AdminAuditLog', adminAuditLogSchema)

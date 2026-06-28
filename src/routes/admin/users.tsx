@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { trpc } from '@/lib/trpc'
@@ -119,17 +119,13 @@ export function AdminUsersPage() {
                     </select>
                   </td>
                   <td className="px-4 py-3">
-                    <a
-                      href={`/admin/audit?userId=${user.id}`}
-                      aria-disabled="true"
-                      tabIndex={-1}
-                      onClick={(e) => e.preventDefault()}
-                      data-user-id={user.id}
-                      className="text-xs text-[var(--theme-fg-subtle)] opacity-50 cursor-not-allowed"
-                      title="Audit log viewer coming soon"
+                    <Link
+                      to="/admin/audit"
+                      search={{ userId: user.id }}
+                      className="text-xs text-[var(--theme-accent)] hover:underline"
                     >
                       View audit log
-                    </a>
+                    </Link>
                   </td>
                 </tr>
               )

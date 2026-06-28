@@ -136,13 +136,6 @@ describe('AdminUsersPage', () => {
     expect(mockMutate).toHaveBeenCalledWith({ userId: USER_A_ID, tier: 'sous-chef' })
   })
 
-  it('each row contains an audit log placeholder element with userId in data attribute', () => {
-    render(<AdminUsersPage />)
-    const auditLinks = screen.getAllByText(/View audit log/)
-    expect(auditLinks).toHaveLength(mockUsers.length)
-    expect(auditLinks[1]).toHaveAttribute('data-user-id', USER_A_ID)
-  })
-
   it('confirmation modal shows warning when downgrading tier', () => {
     render(<AdminUsersPage />)
     const bobSelect = screen.getByLabelText('Change tier for bob@test.com')
@@ -176,5 +169,17 @@ describe('AdminUsersPage', () => {
     expect(screen.getByText(/⚠️ This will make all private recipes/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
     expect(mockMutate).toHaveBeenCalledWith({ userId: USER_B_ID, tier: 'home-cook' })
+  })
+
+  it('"View audit log" link has correct href and is not disabled', () => {
+    render(<AdminUsersPage />)
+    const links = screen.getAllByRole('link', { name: 'View audit log' })
+    expect(links.length).toBeGreaterThan(0)
+    const aliceLink = links.find((l) => l.getAttribute('href')?.includes(USER_A_ID))
+    if (!aliceLink) throw new Error(`No "View audit log" link found for ${USER_A_ID}`)
+    expect(aliceLink.getAttribute('href')).toContain(`/admin/audit`)
+    expect(aliceLink.getAttribute('href')).toContain(`userId=${USER_A_ID}`)
+    expect(aliceLink).not.toHaveAttribute('aria-disabled')
+    expect(aliceLink.className).not.toContain('cursor-not-allowed')
   })
 })
