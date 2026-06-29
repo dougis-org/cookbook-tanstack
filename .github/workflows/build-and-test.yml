@@ -88,9 +88,11 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        uses: ./.github/actions/codacy-reporter
+        uses: dougis-org/cicd-tooling/.github/actions/codacy-reporter@main
         with:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          codacy-username: dougis-org
+          codacy-project-name: cookbook-tanstack
           coverage-file: coverage/lcov.info
 
   integration:
@@ -121,9 +123,11 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        uses: ./.github/actions/codacy-reporter
+        uses: dougis-org/cicd-tooling/.github/actions/codacy-reporter@main
         with:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          codacy-username: dougis-org
+          codacy-project-name: cookbook-tanstack
           coverage-file: coverage/lcov.info
 
   e2e:
@@ -224,9 +228,11 @@ jobs:
       - name: Upload coverage to Codacy
         if: always()
         continue-on-error: true
-        uses: ./.github/actions/codacy-reporter
+        uses: dougis-org/cicd-tooling/.github/actions/codacy-reporter@main
         with:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          codacy-username: dougis-org
+          codacy-project-name: cookbook-tanstack
           coverage-file: e2e-coverage/lcov.info
 
   finalize-coverage:
@@ -239,9 +245,11 @@ jobs:
 
       - name: Finalize coverage on Codacy
         continue-on-error: true
-        uses: ./.github/actions/codacy-reporter
+        uses: dougis-org/cicd-tooling/.github/actions/codacy-reporter@main
         with:
           codacy-api-token: ${{ secrets.CODACY_API_TOKEN }}
+          codacy-username: dougis-org
+          codacy-project-name: cookbook-tanstack
           final: 'true'
 
   notify-failure:
