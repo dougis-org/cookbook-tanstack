@@ -19,6 +19,8 @@ exclude_patterns:
   - .github/workflows/**
   - .opencode/**
   - .kiro/**
+  - .verity/**
+  - .vscode/**
 
 # Exclude SQL migration files from SQL Server-specific analysis
 exclude_paths:
