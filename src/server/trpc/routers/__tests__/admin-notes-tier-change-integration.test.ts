@@ -21,9 +21,9 @@ const makeAdminCaller = () => {
   return makeAuthCaller(adminId, { email: 'admin@test.com', isAdmin: true })
 }
 
-const assertDbTier = async (userId: string, expectedTier: UserTier) => {
+const readDbTier = async (userId: string): Promise<UserTier> => {
   const dbUser = await getMongoClient().db().collection('user').findOne({ _id: new Types.ObjectId(userId) })
-  expect(dbUser?.tier).toBe(expectedTier)
+  return dbUser?.tier as UserTier
 }
 
 describe('admin.users.setTier — notes tier visibility', () => {
@@ -38,9 +38,10 @@ describe('admin.users.setTier — notes tier visibility', () => {
 
       const adminCaller = await makeAdminCaller()
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'home-cook' })
-      await assertDbTier(user.id, 'home-cook')
+      const tier1 = await readDbTier(user.id)
+      expect(tier1).toBe('home-cook')
 
-      const homeCookCaller = await makeAuthCaller(user.id, { tier: 'home-cook' })
+      const homeCookCaller = await makeAuthCaller(user.id, { tier: tier1 })
       const result = await homeCookCaller.privateRecipeNotes.get({ recipeId })
       expect(result).toEqual({ hasNote: true, note: null })
     })
@@ -57,11 +58,12 @@ describe('admin.users.setTier — notes tier visibility', () => {
 
       const adminCaller = await makeAdminCaller()
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'home-cook' })
-      await assertDbTier(user.id, 'home-cook')
+      expect(await readDbTier(user.id)).toBe('home-cook')
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'sous-chef' })
-      await assertDbTier(user.id, 'sous-chef')
+      const restoredTier = await readDbTier(user.id)
+      expect(restoredTier).toBe('sous-chef')
 
-      const restoredCaller = await makeAuthCaller(user.id, { tier: 'sous-chef' })
+      const restoredCaller = await makeAuthCaller(user.id, { tier: restoredTier })
       const result = await restoredCaller.privateRecipeNotes.get({ recipeId })
       expect(result.hasNote).toBe(true)
       expect(result.note).not.toBeNull()
@@ -78,9 +80,10 @@ describe('admin.users.setTier — notes tier visibility', () => {
 
       const adminCaller = await makeAdminCaller()
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'executive-chef' })
-      await assertDbTier(user.id, 'executive-chef')
+      const upgradedTier = await readDbTier(user.id)
+      expect(upgradedTier).toBe('executive-chef')
 
-      const execChefCaller = await makeAuthCaller(user.id, { tier: 'executive-chef' })
+      const execChefCaller = await makeAuthCaller(user.id, { tier: upgradedTier })
       const result = await execChefCaller.privateRecipeNotes.get({ recipeId })
       expect(result).toEqual({ hasNote: false, note: null })
     })
@@ -101,9 +104,9 @@ describe('admin.users.setTier — notes tier visibility', () => {
 
       const adminCaller = await makeAdminCaller()
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'home-cook' })
-      await assertDbTier(user.id, 'home-cook')
+      expect(await readDbTier(user.id)).toBe('home-cook')
       await adminCaller.admin.users.setTier({ userId: user.id, tier: 'home-cook' })
-      await assertDbTier(user.id, 'home-cook')
+      expect(await readDbTier(user.id)).toBe('home-cook')
 
       const noteAfter = await RecipeNote.findOne({ userId: userObjId, recipeId: recipe._id }).lean()
       expect(noteAfter).toEqual(noteBefore)
