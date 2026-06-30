@@ -7,7 +7,7 @@ import { getMongoClient } from '@/db'
 import { seedUserWithBetterAuth, makeAuthCaller } from './test-helpers'
 import type { UserTier } from '@/types/user'
 
-async function seedUserWithTier(tier: UserTier) {
+const seedUserWithTier = async (tier: UserTier) => {
   const user = await seedUserWithBetterAuth()
   await getMongoClient().db().collection('user').updateOne(
     { _id: new Types.ObjectId(user.id) },
@@ -16,12 +16,12 @@ async function seedUserWithTier(tier: UserTier) {
   return user
 }
 
-function makeAdminCaller() {
+const makeAdminCaller = () => {
   const adminId = new Types.ObjectId().toHexString()
   return makeAuthCaller(adminId, { email: 'admin@test.com', isAdmin: true })
 }
 
-async function assertDbTier(userId: string, expectedTier: UserTier) {
+const assertDbTier = async (userId: string, expectedTier: UserTier) => {
   const dbUser = await getMongoClient().db().collection('user').findOne({ _id: new Types.ObjectId(userId) })
   expect(dbUser?.tier).toBe(expectedTier)
 }
