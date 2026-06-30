@@ -6,5 +6,6 @@ on:
 
 jobs:
   sync:
+    permissions:
+      contents: write
     uses: dougis-org/cicd-tooling/.github/workflows/sync-openspec-shared.yml@main
-    secrets: inherit

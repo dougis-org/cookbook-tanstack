@@ -7,4 +7,7 @@ on:
 
 jobs:
   wait-for-ai-reviews:
+    permissions:
+      checks: read
+      pull-requests: read
     uses: dougis-org/cicd-tooling/.github/workflows/wait-for-ai-reviews.yml@main
