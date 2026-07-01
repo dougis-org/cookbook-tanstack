@@ -16,6 +16,7 @@ vi.mock('@/components/recipes/RecipeDetail', () => ({
 vi.mock('@/components/recipes/RelatedRecipesSection', () => ({ default: () => null }))
 vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null }))
 vi.mock('@/components/recipes/ExportButton', () => ({ default: () => null }))
+vi.mock('@/components/recipes/PrivateRecipeNotes', () => ({ default: () => null }))
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 
 const mockUseAuth = vi.fn()
