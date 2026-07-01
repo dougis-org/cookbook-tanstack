@@ -74,7 +74,7 @@ const NoteBody = ({
     )
   }
 
-  if (data?.note) {
+  if (data?.note?.body.trim()) {
     return <p className="whitespace-pre-wrap text-[var(--theme-fg)]">{data.note.body}</p>
   }
 
@@ -183,7 +183,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     <div className="bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-sm)] p-6 mt-8 print:hidden">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-2xl font-bold text-[var(--theme-fg)]">Private Notes</h2>
-        <EditButton visible={!isEditing && !!data?.note} onEdit={handleEdit} />
+        <EditButton visible={!isEditing && Boolean(data?.note?.body?.trim())} onEdit={handleEdit} />
       </div>
 
       <NoteBody
