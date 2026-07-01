@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (8)
+## decisions/ (10)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -22,6 +22,10 @@
   *decision* · 77% · scope: `.gitignore`, `**/.gitignore`
 - [[n025-coerce-url-query-params-before-numeric-validation]] — **Coerce URL query params before numeric validation**
   *decision* · 84% · scope: `src/**/routes/**`, `src/**/admin/**`
+- [[n026-exclude-generated-or-agent-owned-directories-from]] — **Exclude generated or agent-owned directories from Codacy scans**
+  *decision* · 78% · scope: `.codacy.yml`
+- [[n027-grant-reusable-workflows-only-the-permissions-they]] — **Grant reusable workflows only the permissions they actually need**
+  *decision* · 86% · scope: `.github/workflows/*.yml`
 
 ## patterns/ (1)
 
