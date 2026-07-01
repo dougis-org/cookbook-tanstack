@@ -4,7 +4,7 @@ import { Pencil, Save, X } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 
-export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
+const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const queryClient = useQueryClient()
 
@@ -138,3 +138,5 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
     </div>
   )
 }
+
+export default PrivateRecipeNotes
