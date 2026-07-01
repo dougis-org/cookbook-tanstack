@@ -4,6 +4,91 @@ import { Pencil, Save, X } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 
+interface NoteData {
+  hasNote: boolean
+  note: { body: string; updatedAt: Date } | null
+}
+
+interface NoteBodyProps {
+  isEditing: boolean
+  data: NoteData | undefined
+  editBody: string
+  setEditBody: (v: string) => void
+  saveError: string
+  isPending: boolean
+  savedBody: string
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  onSave: () => void
+  onCancel: () => void
+  onAddNote: () => void
+}
+
+const NoteBody = ({
+  isEditing,
+  data,
+  editBody,
+  setEditBody,
+  saveError,
+  isPending,
+  savedBody,
+  textareaRef,
+  onSave,
+  onCancel,
+  onAddNote,
+}: NoteBodyProps) => {
+  if (isEditing) {
+    return (
+      <div>
+        <textarea
+          ref={textareaRef}
+          aria-label="Private note content"
+          value={editBody}
+          onChange={(e) => setEditBody(e.target.value)}
+          rows={6}
+          maxLength={10000}
+          className="w-full rounded-lg border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
+        />
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-sm text-[var(--theme-fg-subtle)]">{editBody.length} / 10000</span>
+        </div>
+        {saveError && <p className="text-[var(--theme-error)] text-sm mt-2">{saveError}</p>}
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={onSave}
+            disabled={isPending || editBody === savedBody}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            Save
+          </button>
+          <button
+            onClick={onCancel}
+            disabled={isPending}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors disabled:opacity-50"
+          >
+            <X className="w-4 h-4" />
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (data?.note) {
+    return <p className="whitespace-pre-wrap text-[var(--theme-fg)]">{data.note.body}</p>
+  }
+
+  return (
+    <button
+      onClick={onAddNote}
+      className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors inline-flex items-center gap-2"
+    >
+      <Pencil className="w-4 h-4" />
+      Add a note
+    </button>
+  )
+}
+
 const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const queryClient = useQueryClient()
@@ -47,7 +132,6 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   )
 
   if (!canUsePrivateRecipeNotes) return null
-
   if (isError) return null
 
   if (isLoading) {
@@ -59,8 +143,10 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     )
   }
 
+  const savedBody = data?.note?.body ?? ''
+
   const handleEdit = () => {
-    setEditBody(data?.note?.body ?? '')
+    setEditBody(savedBody)
     setSaveError('')
     setIsEditing(true)
   }
@@ -90,51 +176,19 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
         )}
       </div>
 
-      {isEditing ? (
-        <div>
-          <textarea
-            ref={textareaRef}
-            aria-label="Private note content"
-            value={editBody}
-            onChange={(e) => setEditBody(e.target.value)}
-            rows={6}
-            maxLength={10000}
-            className="w-full rounded-lg border border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-fg)] p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)]"
-          />
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-sm text-[var(--theme-fg-subtle)]">{editBody.length} / 10000</span>
-          </div>
-          {saveError && <p className="text-[var(--theme-error)] text-sm mt-2">{saveError}</p>}
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={handleSave}
-              disabled={upsertMutation.isPending || editBody === (data?.note?.body ?? '')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              Save
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={upsertMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors disabled:opacity-50"
-            >
-              <X className="w-4 h-4" />
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : data?.note ? (
-        <p className="whitespace-pre-wrap text-[var(--theme-fg)]">{data.note.body}</p>
-      ) : (
-        <button
-          onClick={handleEdit}
-          className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors inline-flex items-center gap-2"
-        >
-          <Pencil className="w-4 h-4" />
-          Add a note
-        </button>
-      )}
+      <NoteBody
+        isEditing={isEditing}
+        data={data}
+        editBody={editBody}
+        setEditBody={setEditBody}
+        saveError={saveError}
+        isPending={upsertMutation.isPending}
+        savedBody={savedBody}
+        textareaRef={textareaRef}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        onAddNote={handleEdit}
+      />
     </div>
   )
 }
