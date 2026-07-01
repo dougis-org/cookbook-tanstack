@@ -9,7 +9,7 @@ describe("Wait for AI reviews workflow", () => {
   it("delegates to the shared cicd-tooling reusable workflow", () => {
     const workflow = readFileSync(workflowPath, "utf8");
 
-    expect(workflow).toMatch(/uses:\s*dougis-org\/cicd-tooling\/.github\/workflows\/wait-for-ai-reviews\.yml/);
+    expect(workflow).toMatch(/uses:\s*dougis-org\/cicd-tooling\/\.github\/workflows\/wait-for-ai-reviews\.yml/);
   });
 
   it("declares the permissions required by the called workflow", () => {
