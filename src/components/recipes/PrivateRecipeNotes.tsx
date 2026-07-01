@@ -10,7 +10,7 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
 
   const queryOptions = trpc.privateRecipeNotes.get.queryOptions({ recipeId })
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     ...queryOptions,
     enabled: canUsePrivateRecipeNotes,
   })
@@ -42,6 +42,8 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
   )
 
   if (!canUsePrivateRecipeNotes) return null
+
+  if (isError) return null
 
   if (isLoading) {
     return (
@@ -86,6 +88,8 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
       {isEditing ? (
         <div>
           <textarea
+            aria-label="Private note content"
+            autoFocus
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
             rows={6}
@@ -107,7 +111,8 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
             </button>
             <button
               onClick={handleCancel}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors"
+              disabled={upsertMutation.isPending}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors disabled:opacity-50"
             >
               <X className="w-4 h-4" />
               Cancel

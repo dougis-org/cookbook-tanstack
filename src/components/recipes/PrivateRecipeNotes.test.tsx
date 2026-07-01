@@ -61,6 +61,20 @@ function seedQueryClient(data: unknown) {
   queryClient.setQueryData(NOTE_QUERY_KEY, data)
 }
 
+async function openAddNote() {
+  seedQueryClient(emptyNoteData)
+  renderComponent()
+  await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
+  fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
+}
+
+async function openEditNote(body: string) {
+  seedQueryClient(makeNote(body))
+  renderComponent()
+  await waitFor(() => expect(screen.getByText(body)).toBeInTheDocument())
+  fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+}
+
 beforeEach(() => {
   queryClient = new QueryClient({
     defaultOptions: {
@@ -81,6 +95,14 @@ describe('PrivateRecipeNotes', () => {
       const { container } = renderComponent()
       expect(container).toBeEmptyDOMElement()
       expect(mockGetFn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('query error state', () => {
+    it('renders null when query fails to avoid misleading empty state', async () => {
+      mockGetFn.mockRejectedValue(new Error('Network error'))
+      const { container } = renderComponent()
+      await waitFor(() => expect(container).toBeEmptyDOMElement())
     })
   })
 
@@ -116,11 +138,7 @@ describe('PrivateRecipeNotes', () => {
 
   describe('edit mode', () => {
     it('clicking edit shows textarea with body value and counter', async () => {
-      seedQueryClient(makeNote('Existing text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Existing text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Existing text')
 
       const textarea = screen.getByRole('textbox')
       expect(textarea).toBeInTheDocument()
@@ -131,11 +149,7 @@ describe('PrivateRecipeNotes', () => {
     })
 
     it('clicking Add a note shows empty textarea', async () => {
-      seedQueryClient(emptyNoteData)
-      renderComponent()
-      await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
+      await openAddNote()
 
       const textarea = screen.getByRole('textbox')
       expect((textarea as HTMLTextAreaElement).value).toBe('')
@@ -145,11 +159,7 @@ describe('PrivateRecipeNotes', () => {
 
   describe('character counter', () => {
     it('updates counter as user types', async () => {
-      seedQueryClient(emptyNoteData)
-      renderComponent()
-      await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
+      await openAddNote()
       const textarea = screen.getByRole('textbox')
 
       fireEvent.change(textarea, { target: { value: 'Hello' } })
@@ -162,33 +172,18 @@ describe('PrivateRecipeNotes', () => {
 
   describe('Save button disabled states', () => {
     it('Save is disabled when body is unchanged', async () => {
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
-
+      await openEditNote('Original text')
       expect(screen.getByRole('button', { name: /save/i })).toBeDisabled()
     })
 
     it('Save is enabled after editing', async () => {
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Original text')
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Changed text' } })
-
       expect(screen.getByRole('button', { name: /save/i })).not.toBeDisabled()
     })
 
     it('Save is disabled when empty note textarea is empty', async () => {
-      seedQueryClient(emptyNoteData)
-      renderComponent()
-      await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
-
+      await openAddNote()
       expect(screen.getByRole('button', { name: /save/i })).toBeDisabled()
     })
   })
@@ -196,11 +191,7 @@ describe('PrivateRecipeNotes', () => {
   describe('Save success', () => {
     it('calls upsert and returns to read mode with updated text', async () => {
       mockGetFn.mockResolvedValue(makeNote('Updated text'))
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Original text')
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Updated text' } })
       fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
@@ -217,30 +208,23 @@ describe('PrivateRecipeNotes', () => {
   })
 
   describe('Save disabled while pending', () => {
-    it('Save button is disabled while mutation is in flight', async () => {
+    it('Save and Cancel buttons are disabled while mutation is in flight', async () => {
       mockUpsertFn.mockImplementation(() => new Promise(() => {}))
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Original text')
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Changed' } })
       fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
       await waitFor(() =>
         expect(screen.getByRole('button', { name: /save/i })).toBeDisabled(),
       )
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled()
     })
   })
 
   describe('Save failure and rollback', () => {
     it('shows error message and stays in edit mode on save failure', async () => {
       mockUpsertFn.mockRejectedValue(new Error('Server error'))
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Original text')
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Changed text' } })
       fireEvent.click(screen.getByRole('button', { name: /save/i }))
 
@@ -257,11 +241,7 @@ describe('PrivateRecipeNotes', () => {
 
   describe('Cancel', () => {
     it('returns to read mode showing original body when cancelled', async () => {
-      seedQueryClient(makeNote('Original text'))
-      renderComponent()
-      await waitFor(() => expect(screen.getByText('Original text')).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /edit note/i }))
+      await openEditNote('Original text')
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Something else' } })
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
 
@@ -271,11 +251,7 @@ describe('PrivateRecipeNotes', () => {
     })
 
     it('returns to empty state when cancelled from Add a note', async () => {
-      seedQueryClient(emptyNoteData)
-      renderComponent()
-      await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
-
-      fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
+      await openAddNote()
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Something' } })
       fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
 
