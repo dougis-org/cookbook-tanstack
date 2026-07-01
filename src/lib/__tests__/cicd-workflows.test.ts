@@ -15,26 +15,30 @@ describe("CI/CD Centralized Workflows", () => {
     expect(reporterSteps.length).toBeGreaterThan(1);
     
     for (let i = 1; i < reporterSteps.length; i++) {
-      const stepConfig = reporterSteps[i].split("\n\n")[0]; // Look at the immediate block
+      // Split by newline and take the next 10 lines to be independent of double-newline formatting
+      const stepConfig = reporterSteps[i].split("\n").slice(0, 10).join("\n");
+      expect(stepConfig).toMatch(/^@main/);
       expect(stepConfig).toMatch(/codacy-username:\s*dougis-org/);
       expect(stepConfig).toMatch(/codacy-project-name:\s*cookbook-tanstack/);
     }
   });
 
-  it("Resolve-outdated-comments workflow maintains required write permissions", () => {
+  it("Resolve-outdated-comments workflow maintains required write permissions and delegates to @main", () => {
     const path = resolve(repoRoot, ".github/workflows/resolve-outdated-comments.yml");
     const workflow = readFileSync(path, "utf8");
 
+    expect(workflow).toMatch(/uses:\s*dougis-org\/cicd-tooling\/\.github\/workflows\/resolve-outdated-comments\.yml@main/);
     expect(workflow).toMatch(/permissions:\s*([\s\S]*?)\n\s*uses:/);
     const permissionsBlock = workflow.match(/permissions:\s*([\s\S]*?)\n\s*uses:/)?.[1] || "";
     expect(permissionsBlock).toMatch(/contents:\s*write/);
     expect(permissionsBlock).toMatch(/pull-requests:\s*write/);
   });
 
-  it("Sync-openspec-shared workflow maintains required contents: write permissions", () => {
+  it("Sync-openspec-shared workflow maintains required contents: write permissions and delegates to @main", () => {
     const path = resolve(repoRoot, ".github/workflows/sync-openspec-shared.yml");
     const workflow = readFileSync(path, "utf8");
 
+    expect(workflow).toMatch(/uses:\s*dougis-org\/cicd-tooling\/\.github\/workflows\/sync-openspec-shared\.yml@main/);
     expect(workflow).toMatch(/permissions:\s*([\s\S]*?)\n\s*uses:/);
     const permissionsBlock = workflow.match(/permissions:\s*([\s\S]*?)\n\s*uses:/)?.[1] || "";
     expect(permissionsBlock).toMatch(/contents:\s*write/);
