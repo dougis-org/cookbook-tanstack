@@ -61,14 +61,14 @@ function seedQueryClient(data: unknown) {
   queryClient.setQueryData(NOTE_QUERY_KEY, data)
 }
 
-async function openAddNote() {
+const openAddNote = async () => {
   seedQueryClient(emptyNoteData)
   renderComponent()
   await waitFor(() => expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument())
   fireEvent.click(screen.getByRole('button', { name: /add a note/i }))
 }
 
-async function openEditNote(body: string) {
+const openEditNote = async (body: string) => {
   seedQueryClient(makeNote(body))
   renderComponent()
   await waitFor(() => expect(screen.getByText(body)).toBeInTheDocument())

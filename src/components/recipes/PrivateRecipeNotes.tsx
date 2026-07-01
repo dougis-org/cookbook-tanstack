@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Save, X } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
@@ -18,6 +18,11 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editBody, setEditBody] = useState('')
   const [saveError, setSaveError] = useState('')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isEditing) textareaRef.current?.focus()
+  }, [isEditing])
 
   const upsertMutation = useMutation(
     trpc.privateRecipeNotes.upsert.mutationOptions({
@@ -54,18 +59,18 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
     )
   }
 
-  function handleEdit() {
+  const handleEdit = () => {
     setEditBody(data?.note?.body ?? '')
     setSaveError('')
     setIsEditing(true)
   }
 
-  function handleCancel() {
+  const handleCancel = () => {
     setIsEditing(false)
     setSaveError('')
   }
 
-  function handleSave() {
+  const handleSave = () => {
     setSaveError('')
     upsertMutation.mutate({ recipeId, body: editBody })
   }
@@ -88,8 +93,8 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
       {isEditing ? (
         <div>
           <textarea
+            ref={textareaRef}
             aria-label="Private note content"
-            autoFocus
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
             rows={6}
