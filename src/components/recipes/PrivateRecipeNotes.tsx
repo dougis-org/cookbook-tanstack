@@ -31,9 +31,7 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
         return { snapshot }
       },
       onError: (_err, _vars, context) => {
-        if (context?.snapshot !== undefined) {
-          queryClient.setQueryData(queryOptions.queryKey, context.snapshot)
-        }
+        queryClient.setQueryData(queryOptions.queryKey, context?.snapshot)
         setSaveError('Failed to save note. Please try again.')
       },
       onSuccess: () => {
@@ -97,7 +95,7 @@ export default function PrivateRecipeNotes({ recipeId }: { recipeId: string }) {
           <div className="flex items-center justify-between mt-2">
             <span className="text-sm text-[var(--theme-fg-subtle)]">{editBody.length} / 10000</span>
           </div>
-          {saveError && <p className="text-red-500 text-sm mt-2">{saveError}</p>}
+          {saveError && <p className="text-[var(--theme-error)] text-sm mt-2">{saveError}</p>}
           <div className="flex gap-2 mt-3">
             <button
               onClick={handleSave}
