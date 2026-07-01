@@ -9,6 +9,7 @@ import RecipeDetail from '@/components/recipes/RecipeDetail'
 import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
 import DeleteConfirmModal from '@/components/recipes/DeleteConfirmModal'
 import ExportButton from '@/components/recipes/ExportButton'
+import PrivateRecipeNotes from '@/components/recipes/PrivateRecipeNotes'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import PrintButton from '@/components/ui/PrintButton'
 import ShareButton from '@/components/ui/ShareButton'
@@ -127,6 +128,8 @@ export function RecipeDetailPage() {
           </div>
         }
       />
+
+      <PrivateRecipeNotes recipeId={recipeId} />
 
       <div className="mt-8 flex justify-center gap-4">
         <ExportButton recipe={recipe} />
