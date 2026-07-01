@@ -89,6 +89,24 @@ const NoteBody = ({
   )
 }
 
+interface EditButtonProps {
+  visible: boolean
+  onEdit: () => void
+}
+
+const EditButton = ({ visible, onEdit }: EditButtonProps) => {
+  if (!visible) return null
+  return (
+    <button
+      aria-label="Edit note"
+      onClick={onEdit}
+      className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
+    >
+      <Pencil className="w-4 h-4" />
+    </button>
+  )
+}
+
 const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const queryClient = useQueryClient()
@@ -106,7 +124,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (isEditing) textareaRef.current?.focus()
+    textareaRef.current?.focus()
   }, [isEditing])
 
   const upsertMutation = useMutation(
@@ -165,15 +183,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     <div className="bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-sm)] p-6 mt-8 print:hidden">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-2xl font-bold text-[var(--theme-fg)]">Private Notes</h2>
-        {!isEditing && data?.note && (
-          <button
-            aria-label="Edit note"
-            onClick={handleEdit}
-            className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-        )}
+        <EditButton visible={!isEditing && !!data?.note} onEdit={handleEdit} />
       </div>
 
       <NoteBody

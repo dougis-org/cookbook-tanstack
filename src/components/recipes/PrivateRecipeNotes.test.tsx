@@ -32,10 +32,6 @@ vi.mock('@/hooks/useTierEntitlements', () => ({
   useTierEntitlements: () => ({ canUsePrivateRecipeNotes: canUseNotes }),
 }))
 
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ isLoggedIn: true, session: null }),
-}))
-
 import PrivateRecipeNotes from '@/components/recipes/PrivateRecipeNotes'
 
 const RECIPE_ID = 'abc123'
