@@ -30,7 +30,7 @@ export default function RecipeNotesUpgradeNudge({ state }: Props) {
     <div
       className="up-card flex items-center gap-2 rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface)] px-3 py-2 text-sm text-[var(--theme-fg-muted)]"
     >
-      <Lock size={16} className="shrink-0 text-[var(--theme-fg-subtle)]" />
+      <Lock size={16} className="shrink-0 text-[var(--theme-fg-subtle)]" aria-hidden="true" />
       <span className="up-body">{copy}</span>
       <Link
         to={ctaTo}
