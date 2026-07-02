@@ -121,11 +121,11 @@ Blocking resolution flow:
 - [x] `git checkout main` and `git pull --ff-only`
 - [x] Verify the merged changes appear on the default branch
 - [x] Mark all remaining tasks as complete (`- [x]`)
-- [x] Sync approved spec delta: copy `openspec/changes/private-recipe-notes-component/specs/private-recipe-notes-component/spec.md` to `openspec/specs/private-recipe-notes-component/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/YYYY-MM-DD-private-recipe-notes-component/design.md` and `../../tasks.md` → `../../changes/archive/YYYY-MM-DD-private-recipe-notes-component/tasks.md`
-- [x] Archive the change: move `openspec/changes/private-recipe-notes-component/` to `openspec/changes/archive/YYYY-MM-DD-private-recipe-notes-component/` — stage both the new location and the deletion in a single commit
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-private-recipe-notes-component/` exists and `openspec/changes/private-recipe-notes-component/` is gone
-- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-private-recipe-notes-component` then `git push -u origin doc/archive-YYYY-MM-DD-private-recipe-notes-component`
-- [x] Open a PR from `doc/archive-YYYY-MM-DD-private-recipe-notes-component` to `main` with title `docs: archive private-recipe-notes-component (YYYY-MM-DD)`
+- [x] Sync approved spec delta: copy `openspec/changes/private-recipe-notes-component/specs/private-recipe-notes-component/spec.md` to `openspec/specs/private-recipe-notes-component/spec.md`; update relative links in the copied file: replace `../../design.md` → `../../changes/archive/2026-07-01-private-recipe-notes-component/design.md` and `../../tasks.md` → `../../changes/archive/2026-07-01-private-recipe-notes-component/tasks.md`
+- [x] Archive the change: move `openspec/changes/private-recipe-notes-component/` to `openspec/changes/archive/2026-07-01-private-recipe-notes-component/` — stage both the new location and the deletion in a single commit
+- [x] Confirm `openspec/changes/archive/2026-07-01-private-recipe-notes-component/` exists and `openspec/changes/private-recipe-notes-component/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-01-private-recipe-notes-component` then `git push -u origin doc/archive-2026-07-01-private-recipe-notes-component`
+- [x] Open a PR from `doc/archive-2026-07-01-private-recipe-notes-component` to `main` with title `docs: archive private-recipe-notes-component (2026-07-01)`
 - [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
 - [x] Monitor the doc PR until it merges; address any comments or CI failures on the doc branch
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/private-recipe-notes-component doc/archive-YYYY-MM-DD-private-recipe-notes-component`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/private-recipe-notes-component doc/archive-2026-07-01-private-recipe-notes-component`
