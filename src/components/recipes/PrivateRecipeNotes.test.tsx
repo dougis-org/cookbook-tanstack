@@ -8,6 +8,7 @@ let mockGetFn: any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockUpsertFn: any
 let canUseNotes: boolean
+let isLoggedIn: boolean
 
 vi.mock('@/lib/trpc', () => ({
   trpc: {
@@ -30,6 +31,14 @@ vi.mock('@/lib/trpc', () => ({
 
 vi.mock('@/hooks/useTierEntitlements', () => ({
   useTierEntitlements: () => ({ canUsePrivateRecipeNotes: canUseNotes }),
+}))
+
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ isLoggedIn }),
+}))
+
+vi.mock('@/components/recipes/RecipeNotesUpgradeNudge', () => ({
+  default: ({ state }: { state: string }) => <div data-testid={`nudge-${state}`} />,
 }))
 
 import PrivateRecipeNotes from '@/components/recipes/PrivateRecipeNotes'
@@ -79,18 +88,60 @@ beforeEach(() => {
     },
   })
   canUseNotes = true
+  isLoggedIn = true
   // default emptyNoteData; override per-test when post-success refetch must return updated data
   mockGetFn = vi.fn().mockResolvedValue(emptyNoteData)
   mockUpsertFn = vi.fn().mockResolvedValue({ success: true })
 })
 
 describe('PrivateRecipeNotes', () => {
-  describe('non-entitled user', () => {
-    it('renders null and fires no query when canUsePrivateRecipeNotes is false', () => {
+  describe('render branches', () => {
+    it('Branch 1 — anonymous: shows anonymous nudge and fires no query', () => {
+      isLoggedIn = false
       canUseNotes = false
-      const { container } = renderComponent()
-      expect(container).toBeEmptyDOMElement()
+      renderComponent()
+      expect(screen.getByTestId('nudge-anonymous')).toBeInTheDocument()
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
       expect(mockGetFn).not.toHaveBeenCalled()
+    })
+
+    it('Branch 2 — below-tier with no note: shows below-tier nudge, no textarea', async () => {
+      isLoggedIn = true
+      canUseNotes = false
+      seedQueryClient({ hasNote: false, note: null })
+      renderComponent()
+      await waitFor(() => expect(screen.getByTestId('nudge-below-tier')).toBeInTheDocument())
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    })
+
+    it('Branch 3 — below-tier with existing note (downgrade): shows hidden-by-downgrade nudge, no note body', async () => {
+      isLoggedIn = true
+      canUseNotes = false
+      seedQueryClient({ hasNote: true, note: null })
+      renderComponent()
+      await waitFor(() => expect(screen.getByTestId('nudge-hidden-by-downgrade')).toBeInTheDocument())
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    })
+
+    it('Branch 4 — entitled user with existing note: shows note body, no nudge', async () => {
+      isLoggedIn = true
+      canUseNotes = true
+      seedQueryClient(makeNote('My private note'))
+      renderComponent()
+      await waitFor(() => expect(screen.getByText('My private note')).toBeInTheDocument())
+      expect(screen.queryByTestId(/^nudge-/)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('below-tier loading state', () => {
+    it('renders nothing (not skeleton) while hasNote is loading for below-tier user', async () => {
+      isLoggedIn = true
+      canUseNotes = false
+      mockGetFn.mockImplementation(() => new Promise(() => {}))
+      const { container } = renderComponent()
+      await waitFor(() => expect(container).toBeEmptyDOMElement())
+      expect(screen.queryByTestId('private-notes-skeleton')).not.toBeInTheDocument()
+      expect(screen.queryByTestId(/^nudge-/)).not.toBeInTheDocument()
     })
   })
 
