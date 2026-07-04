@@ -137,7 +137,7 @@ describe('PrivateRecipeNotes', () => {
     it('renders nothing (not skeleton) while hasNote is loading for below-tier user', async () => {
       isLoggedIn = true
       canUseNotes = false
-      mockGetFn.mockImplementation(() => new Promise(() => {}))
+      mockGetFn.mockImplementation(() => new Promise(() => undefined))
       const { container } = renderComponent()
       await waitFor(() => expect(container).toBeEmptyDOMElement())
       expect(screen.queryByTestId('private-notes-skeleton')).not.toBeInTheDocument()

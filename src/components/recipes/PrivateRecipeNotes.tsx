@@ -152,13 +152,13 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     }),
   )
 
-  if (!isLoggedIn) return <RecipeNotesUpgradeNudge state="anonymous" />
+  if (!isLoggedIn) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="anonymous" /></div>
   if (isError) return null
 
   if (!canUsePrivateRecipeNotes) {
     if (isLoading) return null
-    if (data?.hasNote) return <RecipeNotesUpgradeNudge state="hidden-by-downgrade" />
-    return <RecipeNotesUpgradeNudge state="below-tier" />
+    if (data?.hasNote) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="hidden-by-downgrade" /></div>
+    return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="below-tier" /></div>
   }
 
   if (isLoading) {
