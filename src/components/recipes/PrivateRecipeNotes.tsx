@@ -109,6 +109,8 @@ const EditButton = ({ visible, onEdit }: EditButtonProps) => {
   )
 }
 
+const NUDGE_CLASS = 'mt-8 print:hidden'
+
 const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   const { isLoggedIn } = useAuth()
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
@@ -152,13 +154,13 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     }),
   )
 
-  if (!isLoggedIn) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="anonymous" /></div>
+  if (!isLoggedIn) return <div className={NUDGE_CLASS}><RecipeNotesUpgradeNudge state="anonymous" /></div>
   if (isError) return null
 
   if (!canUsePrivateRecipeNotes) {
     if (isLoading) return null
-    if (data?.hasNote) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="hidden-by-downgrade" /></div>
-    return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="below-tier" /></div>
+    if (data?.hasNote) return <div className={NUDGE_CLASS}><RecipeNotesUpgradeNudge state="hidden-by-downgrade" /></div>
+    return <div className={NUDGE_CLASS}><RecipeNotesUpgradeNudge state="below-tier" /></div>
   }
 
   if (isLoading) {
