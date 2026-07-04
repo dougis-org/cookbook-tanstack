@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Save, X } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
+import { useAuth } from '@/hooks/useAuth'
+import RecipeNotesUpgradeNudge from '@/components/recipes/RecipeNotesUpgradeNudge'
 
 interface NoteData {
   hasNote: boolean
@@ -108,6 +110,7 @@ const EditButton = ({ visible, onEdit }: EditButtonProps) => {
 }
 
 const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
+  const { isLoggedIn } = useAuth()
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const queryClient = useQueryClient()
 
@@ -115,7 +118,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
 
   const { data, isLoading, isError } = useQuery({
     ...queryOptions,
-    enabled: canUsePrivateRecipeNotes,
+    enabled: isLoggedIn,
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -149,8 +152,14 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     }),
   )
 
-  if (!canUsePrivateRecipeNotes) return null
+  if (!isLoggedIn) return <RecipeNotesUpgradeNudge state="anonymous" />
   if (isError) return null
+
+  if (!canUsePrivateRecipeNotes) {
+    if (isLoading) return null
+    if (data?.hasNote) return <RecipeNotesUpgradeNudge state="hidden-by-downgrade" />
+    return <RecipeNotesUpgradeNudge state="below-tier" />
+  }
 
   if (isLoading) {
     return (
