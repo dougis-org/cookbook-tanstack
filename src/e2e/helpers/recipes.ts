@@ -68,12 +68,34 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
 }
 
 /**
+ * Click the "Personal" option in the source combobox without filling the name field.
+ * Use this when asserting the Personal Name input state after selection.
+ */
+export async function clickPersonalSourceOption(page: Page) {
+  const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
+  await page.getByPlaceholder("Search for a source...").fill("Personal");
+  const searchResponse = await responsePromise;
+  if (!searchResponse.ok()) {
+    throw new Error(
+      `sources.search failed (${searchResponse.status()}) — is the "Personal" source seeded? Body: ${await searchResponse.text()}`,
+    );
+  }
+  const personalButton = page.getByRole("button", { name: "Personal" });
+  await personalButton
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => {
+      throw new Error(
+        'Personal source option not found in dropdown — verify the "Personal" source is present in the database seed.',
+      );
+    });
+  await personalButton.click();
+}
+
+/**
  * Select "Personal" from the source combobox and fill in the personal name.
  * Searches for "Personal" → waits for debounced tRPC response → clicks option → fills name.
  */
 export async function selectPersonalSource(page: Page, name: string) {
-  await page.getByPlaceholder("Search for a source...").fill("Personal");
-  await page.waitForResponse(/\/api\/trpc\/sources\.search/);
-  await page.getByRole("button", { name: "Personal" }).click();
+  await clickPersonalSourceOption(page);
   await page.getByLabel("Personal Name").fill(name);
 }

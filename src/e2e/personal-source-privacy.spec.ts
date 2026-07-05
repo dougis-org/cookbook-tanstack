@@ -5,14 +5,26 @@ import { gotoAndWaitForHydration } from "./helpers/app";
 import {
   getUniqueRecipeName,
   selectPersonalSource,
+  clickPersonalSourceOption,
 } from "./helpers/recipes";
+
+const PERSONAL_NAME = "Aunt Mary";
 
 // tRPC batch GET format: /api/trpc/recipes.byId?batch=1&input={"0":{"json":{"id":"..."}}}
 async function assertPersonalNameNotInResponse(page: Page, recipeId: string) {
   const input = encodeURIComponent(JSON.stringify({ "0": { json: { id: recipeId } } }));
   const response = await page.request.get(`/api/trpc/recipes.byId?batch=1&input=${input}`);
-  expect(response.ok()).toBe(true);
-  expect(await response.text()).not.toContain("Aunt Mary");
+  const body = await response.text();
+  expect(
+    response.ok(),
+    `recipes.byId request for recipe ${recipeId} failed with HTTP ${response.status()}. Body: ${body}`,
+  ).toBe(true);
+  const json = JSON.parse(body) as Array<{ result?: unknown; error?: unknown }>;
+  expect(
+    json[0]?.error,
+    `tRPC returned an error for recipe ${recipeId}: ${JSON.stringify(json[0]?.error)}`,
+  ).toBeUndefined();
+  expect(body, `Privacy leak: "${PERSONAL_NAME}" was present in recipes.byId response for recipe ${recipeId}`).not.toContain(PERSONAL_NAME);
 }
 
 test.describe("Personal source privacy", () => {
@@ -27,17 +39,19 @@ test.describe("Personal source privacy", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await page.getByLabel("Recipe Name").waitFor({ state: "visible" });
     await page.getByLabel("Recipe Name").fill(getUniqueRecipeName("Personal Privacy"));
-    await selectPersonalSource(page, "Aunt Mary");
+    await selectPersonalSource(page, PERSONAL_NAME);
     await page.getByRole("button", { name: /Create Recipe/ }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9]+$/);
 
     recipeUrl = page.url();
-    recipeId = recipeUrl.split("/").pop()!;
+    const extractedId = recipeUrl.split("/").pop();
+    expect(extractedId, `Expected a recipe ID at the end of "${recipeUrl}" but got "${extractedId}"`).toMatch(/^[a-f0-9]{24}$/);
+    recipeId = extractedId!;
   });
 
   test("owner happy path", async ({ page }) => {
     await gotoAndWaitForHydration(page, recipeUrl);
-    await expect(page.getByText(/Personal.*·.*Aunt Mary/)).toBeVisible();
+    await expect(page.getByText(new RegExp(`Personal.*·.*${PERSONAL_NAME}`))).toBeVisible();
   });
 
   test("cross-user privacy (DOM + network)", async ({ page }) => {
@@ -46,7 +60,7 @@ test.describe("Personal source privacy", () => {
     await gotoAndWaitForHydration(page, recipeUrl);
 
     await expect(page.getByText(/Source:.*Personal/)).toBeVisible();
-    await expect(page.getByText("Aunt Mary")).not.toBeVisible();
+    await expect(page.getByText(PERSONAL_NAME)).not.toBeVisible();
     await assertPersonalNameNotInResponse(page, recipeId);
   });
 
@@ -55,7 +69,7 @@ test.describe("Personal source privacy", () => {
     await gotoAndWaitForHydration(page, recipeUrl);
 
     await expect(page.getByText(/Source:.*Personal/)).toBeVisible();
-    await expect(page.getByText("Aunt Mary")).not.toBeVisible();
+    await expect(page.getByText(PERSONAL_NAME)).not.toBeVisible();
     await assertPersonalNameNotInResponse(page, recipeId);
   });
 
@@ -66,16 +80,24 @@ test.describe("Personal source privacy", () => {
     // Clear the Personal source and select a non-Personal one
     await page.locator("#sourceId").getByRole("button").click();
     const altSourceName = `Alt Source ${Date.now()}`;
+    const altResponsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
     await page.getByPlaceholder("Search for a source...").fill(altSourceName);
-    await page.waitForResponse(/\/api\/trpc\/sources\.search/);
+    await altResponsePromise;
     await page.getByRole("button", { name: new RegExp(`Create "${altSourceName}"`) }).click();
+    // Wait until the SourceSelector reflects the new source (create mutation + onSuccess complete)
+    // before saving — otherwise the form submits with sourceId: undefined and the server keeps
+    // personalSourceName unchanged (because it falls back to the still-Personal stored sourceId).
+    await expect(page.locator("#sourceId")).toContainText(altSourceName, { timeout: 5000 });
     await page.getByRole("button", { name: /Update Recipe/ }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9]+$/);
+    // Confirm the server cleared personalSourceName before navigating to the edit form.
+    // This makes the server-enforcement guarantee explicit and prevents the test from
+    // passing due to stale React Query cache rather than actual server state.
+    await assertPersonalNameNotInResponse(page, recipeId);
 
-    // Edit again: clear the alt source, re-select Personal, assert name is empty
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}/edit`);
     await page.locator("#sourceId").getByRole("button").click();
-    await selectPersonalSource(page, "");
+    await clickPersonalSourceOption(page);
 
     await expect(page.getByLabel("Personal Name")).toHaveValue("");
   });

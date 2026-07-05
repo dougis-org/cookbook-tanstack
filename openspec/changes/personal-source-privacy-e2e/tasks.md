@@ -90,13 +90,13 @@ If ANY required step fails, iterate and fix before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes and push to `test/personal-source-privacy-e2e`
-- [ ] Open PR from `test/personal-source-privacy-e2e` to `main`. PR body **MUST** include `Closes #509`
-- [ ] **Issue lifecycle: mark in-review** — run `gh issue edit #509 --add-label "in-review" --remove-label "in-progress"`. Move the project item to "In Review" via `gh project item-edit` (same discovery as above; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit all changes and push to `test/personal-source-privacy-e2e`
+- [x] Open PR from `test/personal-source-privacy-e2e` to `main`. PR body **MUST** include `Closes #509`
+- [x] **Issue lifecycle: mark in-review** — run `gh issue edit #509 --add-label "in-review" --remove-label "in-progress"`. Move the project item to "In Review" via `gh project item-edit` (same discovery as above; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
 - [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall and wait for human guidance.
-- [ ] **Enable auto-merge only after the review gate passes:** `gh pr merge <PR-URL> --auto --merge`
+- [x] **Enable auto-merge only after the review gate passes:** `gh pr merge <PR-URL> --auto --merge`
 - [ ] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`:
   1. **Build and tests** — run all steps in [Remote push validation]; fix failures, commit, push before anything else
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address unresolved threads, commit, validate, push, wait 180s
