@@ -66,3 +66,14 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
 
   await page.getByRole("button", { name: /(Create|Update) Recipe/ }).click();
 }
+
+/**
+ * Select "Personal" from the source combobox and fill in the personal name.
+ * Searches for "Personal" → waits for debounced tRPC response → clicks option → fills name.
+ */
+export async function selectPersonalSource(page: Page, name: string) {
+  await page.getByPlaceholder("Search for a source...").fill("Personal");
+  await page.waitForResponse(/\/api\/trpc\/sources\.search/);
+  await page.getByRole("button", { name: "Personal" }).click();
+  await page.getByLabel("Personal Name").fill(name);
+}
