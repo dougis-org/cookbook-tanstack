@@ -56,12 +56,8 @@ export function RecipePageRow({
 
 function TocRecipeItem({
   recipe,
-  index,
-  pageNumber,
 }: {
   recipe: TocRecipe
-  index: number
-  pageNumber: number
 }) {
   return (
     <li className="print:break-inside-avoid">
@@ -70,14 +66,10 @@ function TocRecipeItem({
         params={{ recipeId: recipe.id }}
         className="flex items-baseline gap-3 group py-2 border-b border-[color:var(--theme-print-border)]"
       >
-        <RecipeIndexNumber index={index} />
         <span className="text-[var(--theme-print-fg)] group-hover:text-[var(--theme-print-accent)] transition-colors">
           {recipe.name}
         </span>
         <span className="flex-1" />
-        <span className="text-[var(--theme-print-fg-subtle)] text-xs tabular-nums print:text-sm shrink-0">
-          #{pageNumber}
-        </span>
         <RecipeTimeSpan
           prepTime={recipe.prepTime}
           cookTime={recipe.cookTime}
@@ -115,50 +107,29 @@ export function CookbookTocList({
       .filter((r) => !r.chapterId)
       .sort((a, b) => a.orderIndex - b.orderIndex)
 
-    const displayOrder = getDisplayOrderedRecipes(recipes, sortedChapters)
-    const pageMap = buildPageMap(displayOrder)
-
-    type ChapterRow = { chapter: TocChapter; rows: { recipe: TocRecipe; index: number }[] }
-    let globalIndex = 0
-    const chapterRows: ChapterRow[] = sortedChapters.map((chapter) => ({
-      chapter,
-      rows: (recipesByChapter.get(chapter.id) ?? []).map((recipe) => ({
-        recipe,
-        index: globalIndex++,
-      })),
-    }))
-    const uncategorizedRows = uncategorized.map((recipe) => ({
-      recipe,
-      index: globalIndex++,
-    }))
-
     return (
       <div className="space-y-6">
-        {chapterRows.map(({ chapter, rows }) => (
+        {sortedChapters.map((chapter) => (
           <div key={chapter.id}>
             <h2 className={`text-lg font-semibold text-[var(--theme-print-fg)] mb-2 border-b border-[color:var(--theme-print-border)] pb-1 print:break-after-avoid print:text-lg ${PRINT_HEADING_DENSITY_SECTION}`}>
               {chapter.name}
             </h2>
             <ol className={TOC_LIST_CLASSES}>
-              {rows.map(({ recipe, index }) => (
+              {(recipesByChapter.get(chapter.id) ?? []).map((recipe) => (
                 <TocRecipeItem
                   key={recipe.id}
                   recipe={recipe}
-                  index={index}
-                  pageNumber={pageMap.get(recipe.id) ?? index + 1}
                 />
               ))}
             </ol>
           </div>
         ))}
-        {uncategorizedRows.length > 0 && (
+        {uncategorized.length > 0 && (
           <ol className={TOC_LIST_CLASSES}>
-            {uncategorizedRows.map(({ recipe, index }) => (
+            {uncategorized.map((recipe) => (
               <TocRecipeItem
                 key={recipe.id}
                 recipe={recipe}
-                index={index}
-                pageNumber={pageMap.get(recipe.id) ?? index + 1}
               />
             ))}
           </ol>
@@ -167,15 +138,12 @@ export function CookbookTocList({
     )
   }
 
-  const pageMap = buildPageMap(recipes)
   return (
     <ol className={TOC_LIST_CLASSES}>
-      {recipes.map((recipe, index) => (
+      {recipes.map((recipe) => (
         <TocRecipeItem
           key={recipe.id}
           recipe={recipe}
-          index={index}
-          pageNumber={pageMap.get(recipe.id) ?? index + 1}
         />
       ))}
     </ol>
