@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import type { Page } from "@playwright/test";
-import { registerAndLogin, login } from "./helpers/auth";
+import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import {
   getUniqueRecipeName,
@@ -41,11 +41,10 @@ async function assertPersonalNameNotInResponse(page: Page, recipeId: string) {
 test.describe("Personal source privacy", () => {
   let recipeId: string;
   let recipeUrl: string;
-  let userACreds: { email: string; password: string };
 
   test.beforeEach(async ({ page }) => {
     await page.context().clearCookies();
-    userACreds = await registerAndLogin(page);
+    await registerAndLogin(page);
 
     await gotoAndWaitForHydration(page, "/recipes/new");
     await page.getByLabel("Recipe Name").waitFor({ state: "visible" });
@@ -87,7 +86,6 @@ test.describe("Personal source privacy", () => {
   });
 
   test("source switch clears", async ({ page }) => {
-    await login(page, userACreds.email, userACreds.password);
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}/edit`);
 
     // Clear the Personal source and select a non-Personal one
@@ -101,7 +99,7 @@ test.describe("Personal source privacy", () => {
         `sources.search failed (${altSearchResponse.status()}) while searching for "${altSourceName}". Body: ${await altSearchResponse.text()}`,
       );
     }
-    await page.getByRole("button", { name: new RegExp(`Create "${altSourceName}"`) }).click();
+    await page.getByRole("button", { name: `Create "${altSourceName}"` }).click();
     // Wait until the SourceSelector reflects the new source (create mutation + onSuccess complete)
     // before saving — otherwise the form submits with sourceId: undefined and the server keeps
     // personalSourceName unchanged (because it falls back to the still-Personal stored sourceId).
