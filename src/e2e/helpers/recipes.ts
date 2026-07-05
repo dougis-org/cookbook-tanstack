@@ -74,6 +74,7 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
  * Registers waitForResponse before filling the search field to avoid a race with the
  * tRPC sources.search request. The response status is validated before the click.
  */
+// skipcq: JS-0067 -- named export, not a global; matches every other helper in this module
 export async function clickPersonalSourceOption(page: Page) {
   const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
   await page.getByPlaceholder("Search for a source...").fill("Personal");
@@ -98,6 +99,7 @@ export async function clickPersonalSourceOption(page: Page) {
  * Select "Personal" from the source combobox and fill in the personal name.
  * Searches for "Personal" → waits for the tRPC sources.search response → clicks option → fills name.
  */
+// skipcq: JS-0067 -- named export, not a global; matches every other helper in this module
 export async function selectPersonalSource(page: Page, name: string) {
   await clickPersonalSourceOption(page);
   await page.getByLabel("Personal Name").fill(name);

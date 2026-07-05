@@ -14,6 +14,7 @@ const PERSONAL_NAME = "Aunt Mary";
 // The actual request URL-encodes the input parameter via encodeURIComponent.
 // Uses page.request, which inherits the page's current auth cookies — call under the
 // intended session (owner, cross-user, or unauthenticated) to exercise the right code path.
+// skipcq: JS-0067 -- module-scoped helper, not a global; same pattern used throughout src/e2e
 async function assertPersonalNameNotInResponse(page: Page, recipeId: string) {
   const input = encodeURIComponent(JSON.stringify({ "0": { json: { id: recipeId } } }));
   const response = await page.request.get(`/api/trpc/recipes.byId?batch=1&input=${input}`);
@@ -90,7 +91,7 @@ test.describe("Personal source privacy", () => {
 
     // Clear the Personal source and select a non-Personal one
     await page.locator("#sourceId").getByRole("button").click();
-    const altSourceName = `Alt Source ${Date.now()}`;
+    const altSourceName = getUniqueRecipeName("Alt Source");
     const altResponsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
     await page.getByPlaceholder("Search for a source...").fill(altSourceName);
     const altSearchResponse = await altResponsePromise;

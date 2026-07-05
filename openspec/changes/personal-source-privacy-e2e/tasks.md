@@ -15,7 +15,7 @@
 
 - [x] **Task 1 — Add `selectPersonalSource` helper to `src/e2e/helpers/recipes.ts`**
   - Add a `selectPersonalSource(page: Page, name: string)` export that:
-    1. Fills `page.getByPlaceholder("Search for a source…")` with `"Personal"`
+    1. Fills `page.getByPlaceholder("Search for a source...")` with `"Personal"`
     2. Calls `page.waitForResponse(/\/api\/trpc\/sources\.search/)` to wait for the debounced search
     3. Clicks `page.getByRole("button", { name: "Personal" })` in the dropdown
     4. Fills `page.getByLabel("Personal Name")` with `name`
