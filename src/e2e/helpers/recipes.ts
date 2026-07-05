@@ -70,6 +70,9 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
 /**
  * Click the "Personal" option in the source combobox without filling the name field.
  * Use this when asserting the Personal Name input state after selection.
+ *
+ * Registers waitForResponse before filling the search field to avoid a race with the
+ * tRPC sources.search request. The response status is validated before the click.
  */
 export async function clickPersonalSourceOption(page: Page) {
   const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
@@ -80,12 +83,12 @@ export async function clickPersonalSourceOption(page: Page) {
       `sources.search failed (${searchResponse.status()}) — is the "Personal" source seeded? Body: ${await searchResponse.text()}`,
     );
   }
-  const personalButton = page.getByRole("button", { name: "Personal" });
+  const personalButton = page.getByRole("button", { name: "Personal", exact: true });
   await personalButton
     .waitFor({ state: "visible", timeout: 5000 })
-    .catch(() => {
+    .catch((err: Error) => {
       throw new Error(
-        'Personal source option not found in dropdown — verify the "Personal" source is present in the database seed.',
+        `Personal source option not found in dropdown — verify the "Personal" source is present in the database seed. Original cause: ${err.message}`,
       );
     });
   await personalButton.click();
@@ -93,7 +96,7 @@ export async function clickPersonalSourceOption(page: Page) {
 
 /**
  * Select "Personal" from the source combobox and fill in the personal name.
- * Searches for "Personal" → waits for debounced tRPC response → clicks option → fills name.
+ * Searches for "Personal" → waits for the tRPC sources.search response → clicks option → fills name.
  */
 export async function selectPersonalSource(page: Page, name: string) {
   await clickPersonalSourceOption(page);

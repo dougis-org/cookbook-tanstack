@@ -10,7 +10,10 @@ import {
 
 const PERSONAL_NAME = "Aunt Mary";
 
-// tRPC batch GET format: /api/trpc/recipes.byId?batch=1&input={"0":{"json":{"id":"..."}}}
+// tRPC batch GET format (decoded): /api/trpc/recipes.byId?batch=1&input={"0":{"json":{"id":"..."}}}
+// The actual request URL-encodes the input parameter via encodeURIComponent.
+// Uses page.request, which inherits the page's current auth cookies — call under the
+// intended session (owner, cross-user, or unauthenticated) to exercise the right code path.
 async function assertPersonalNameNotInResponse(page: Page, recipeId: string) {
   const input = encodeURIComponent(JSON.stringify({ "0": { json: { id: recipeId } } }));
   const response = await page.request.get(`/api/trpc/recipes.byId?batch=1&input=${input}`);
@@ -19,7 +22,15 @@ async function assertPersonalNameNotInResponse(page: Page, recipeId: string) {
     response.ok(),
     `recipes.byId request for recipe ${recipeId} failed with HTTP ${response.status()}. Body: ${body}`,
   ).toBe(true);
-  const json = JSON.parse(body) as Array<{ result?: unknown; error?: unknown }>;
+  let json: Array<{ result?: unknown; error?: unknown }>;
+  try {
+    json = JSON.parse(body) as Array<{ result?: unknown; error?: unknown }>;
+  } catch {
+    throw new Error(
+      `recipes.byId response for recipe ${recipeId} was not valid JSON.\n` +
+        `Body (first 500 chars): ${body.slice(0, 500)}`,
+    );
+  }
   expect(
     json[0]?.error,
     `tRPC returned an error for recipe ${recipeId}: ${JSON.stringify(json[0]?.error)}`,
@@ -45,8 +56,10 @@ test.describe("Personal source privacy", () => {
 
     recipeUrl = page.url();
     const extractedId = recipeUrl.split("/").pop();
-    expect(extractedId, `Expected a recipe ID at the end of "${recipeUrl}" but got "${extractedId}"`).toMatch(/^[a-f0-9]{24}$/);
-    recipeId = extractedId!;
+    if (!extractedId?.match(/^[a-f0-9]{24}$/)) {
+      throw new Error(`Expected a 24-char hex recipe ID at the end of "${recipeUrl}" but got "${extractedId}"`);
+    }
+    recipeId = extractedId;
   });
 
   test("owner happy path", async ({ page }) => {
@@ -60,7 +73,7 @@ test.describe("Personal source privacy", () => {
     await gotoAndWaitForHydration(page, recipeUrl);
 
     await expect(page.getByText(/Source:.*Personal/)).toBeVisible();
-    await expect(page.getByText(PERSONAL_NAME)).not.toBeVisible();
+    await expect(page.getByText(PERSONAL_NAME)).not.toBeAttached();
     await assertPersonalNameNotInResponse(page, recipeId);
   });
 
@@ -69,7 +82,7 @@ test.describe("Personal source privacy", () => {
     await gotoAndWaitForHydration(page, recipeUrl);
 
     await expect(page.getByText(/Source:.*Personal/)).toBeVisible();
-    await expect(page.getByText(PERSONAL_NAME)).not.toBeVisible();
+    await expect(page.getByText(PERSONAL_NAME)).not.toBeAttached();
     await assertPersonalNameNotInResponse(page, recipeId);
   });
 
@@ -82,7 +95,12 @@ test.describe("Personal source privacy", () => {
     const altSourceName = `Alt Source ${Date.now()}`;
     const altResponsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
     await page.getByPlaceholder("Search for a source...").fill(altSourceName);
-    await altResponsePromise;
+    const altSearchResponse = await altResponsePromise;
+    if (!altSearchResponse.ok()) {
+      throw new Error(
+        `sources.search failed (${altSearchResponse.status()}) while searching for "${altSourceName}". Body: ${await altSearchResponse.text()}`,
+      );
+    }
     await page.getByRole("button", { name: new RegExp(`Create "${altSourceName}"`) }).click();
     // Wait until the SourceSelector reflects the new source (create mutation + onSuccess complete)
     // before saving — otherwise the form submits with sourceId: undefined and the server keeps
