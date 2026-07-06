@@ -332,6 +332,21 @@ describe('/pricing', () => {
     })
   })
 
+  describe('private recipe notes capability display', () => {
+    const cases = [
+      { tier: 'home-cook', expected: 'No private notes' },
+      { tier: 'prep-cook', expected: 'No private notes' },
+      { tier: 'sous-chef', expected: 'Private notes ✓' },
+      { tier: 'executive-chef', expected: 'Private notes ✓' },
+    ] as const
+
+    it.each(cases)('$tier displays "$expected"', ({ tier, expected }) => {
+      render(<PricingPage />)
+      const card = screen.getByTestId(`tier-card-${tier}`)
+      expect(card.textContent).toContain(expected)
+    })
+  })
+
   describe("pricing route validation", () => {
     it("validates search query params", () => {
       const validateSearch = Route.options.validateSearch as any
