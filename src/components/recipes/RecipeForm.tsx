@@ -68,6 +68,9 @@ interface RecipeFormProps {
   initialData?: RecipeWithRelations
 }
 
+// skipcq: JS-0067 -- ES module default export, not a global scope function; DeepSource's
+// global-scope check misidentifies module-scoped exports. Same suppression rationale as
+// src/e2e/helpers/recipes.ts and src/e2e/personal-source-privacy.spec.ts (JS-0067).
 export default function RecipeForm({ initialData }: RecipeFormProps) {
   const navigate = useNavigate()
   const router = useRouter()
@@ -398,6 +401,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="name"
               type="text"
               placeholder="Enter recipe name"
+              spellCheck
               {...register("name")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
@@ -466,6 +470,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="notes"
               rows={3}
               placeholder="Add notes about this recipe"
+              spellCheck
               {...register("notes")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             />
@@ -582,6 +587,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="ingredients"
               rows={8}
               placeholder="Enter ingredients, one per line"
+              spellCheck
               {...register("ingredients")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
@@ -596,6 +602,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="instructions"
               rows={8}
               placeholder="Enter instructions, one step per line"
+              spellCheck
               {...register("instructions")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />

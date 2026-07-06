@@ -221,6 +221,15 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/difficulty/i)).toBeInTheDocument()
     })
 
+    it("enables spellcheck for name, notes, ingredients, and instructions fields", () => {
+      renderWithProviders(<RecipeForm />)
+
+      expect(screen.getByLabelText(/recipe name/i)).toHaveAttribute("spellcheck", "true")
+      expect(screen.getByLabelText(/notes/i)).toHaveAttribute("spellcheck", "true")
+      expect(screen.getByLabelText(/ingredients/i)).toHaveAttribute("spellcheck", "true")
+      expect(screen.getByLabelText(/instructions/i)).toHaveAttribute("spellcheck", "true")
+    })
+
     it("renders nutrition fields", () => {
       renderWithProviders(<RecipeForm />)
 
