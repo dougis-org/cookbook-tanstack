@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-07-06-fix-toc-e2e-doubled-numbers/design.md) document, not a replacement.
 
 ### Requirement: MODIFIED E2E coverage for cookbook print TOC ordering
 
