@@ -332,6 +332,21 @@ describe('/pricing', () => {
     })
   })
 
+  describe('create-private capability display', () => {
+    const cases = [
+      { tier: 'home-cook', expected: 'Public only' },
+      { tier: 'prep-cook', expected: 'Public only' },
+      { tier: 'sous-chef', expected: 'Private recipes ✓' },
+      { tier: 'executive-chef', expected: 'Private recipes ✓' },
+    ] as const
+
+    it.each(cases)('$tier displays "$expected"', ({ tier, expected }) => {
+      render(<PricingPage />)
+      const card = screen.getByTestId(`tier-card-${tier}`)
+      expect(card.textContent).toContain(expected)
+    })
+  })
+
   describe('private recipe notes capability display', () => {
     const cases = [
       { tier: 'home-cook', expected: 'No private notes' },
