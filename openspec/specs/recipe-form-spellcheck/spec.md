@@ -1,6 +1,6 @@
 ## ADDED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../changes/archive/2026-07-06-recipe-form-native-spellcheck/design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-07-06-recipe-form-native-spellcheck/design.md) document, not a replacement.
 
 ### Requirement: ADDED Editable text fields in the recipe form enable native spellcheck
 
