@@ -10,8 +10,7 @@ import {
   TIER_PRICING,
   showUserAds,
   type EntitlementTier,
-  canCreatePrivate,
-  canImport,
+  can,
 } from "@/lib/tier-entitlements"
 import { RefreshCw, ShieldCheck, Download, ChevronDown, ChevronUp } from "lucide-react"
 
@@ -105,8 +104,9 @@ function TierCard({ tier, isCurrentTier, isAnnual, currentTier, isFocused }: Tie
           </span>{" "}
           cookbooks
         </p>
-        <p>{canCreatePrivate(tier) ? "Private recipes ✓" : "Public only"}</p>
-        <p>{canImport(tier) ? "Import ✓" : "No import"}</p>
+        <p>{can("createPrivate", tier) ? "Private recipes ✓" : "Public only"}</p>
+        <p>{can("import", tier) ? "Import ✓" : "No import"}</p>
+        <p>{can("privateRecipeNotes", tier) ? "Private notes ✓" : "No private notes"}</p>
         <p>{showUserAds(tier) ? "Ad Supported" : "No Ads"}</p>
       </div>
 

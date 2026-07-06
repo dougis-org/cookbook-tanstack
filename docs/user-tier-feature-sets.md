@@ -57,6 +57,10 @@ to 10 public recipes and 1 public cookbook.
 Home Cook users cannot create private recipes, create private cookbooks, or
 import recipes.
 
+Home Cook users do not have access to Private Recipe Notes (per-user notes
+attached to a recipe); the public `notes` field on a recipe remains available
+to Home Cook users as with any other tier.
+
 ### Prep Cook
 
 Prep Cook is the entry paid tier. Its primary benefit is ad removal. Prep Cook
@@ -67,6 +71,10 @@ Prep Cook users still cannot create private recipes, create private cookbooks,
 or import recipes. This keeps the lower paid tier focused on ad removal and
 public contribution.
 
+Prep Cook users do not have access to Private Recipe Notes (per-user notes
+attached to a recipe); the public `notes` field on a recipe remains available
+to Prep Cook users as with any other tier.
+
 ### Sous Chef
 
 Sous Chef is the personal library tier. Sous Chef users do not see ads and can
@@ -75,7 +83,7 @@ create up to 500 recipes and 25 cookbooks.
 Sous Chef unlocks private recipes and private cookbooks.
 
 Sous Chef users have access to Private Recipe Notes — per-user notes attached to a
-recipe (distinct from the public `note` field on Recipe documents, which is part of
+recipe (distinct from the public `notes` field on Recipe documents, which is part of
 the recipe itself and visible to anyone who can view the recipe).
 
 ### Executive Chef
