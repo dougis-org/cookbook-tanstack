@@ -68,17 +68,25 @@ test.describe("Cookbook Print Route — public cookbook", () => {
   });
 
   // 4.3
-  test("TOC section lists all recipes in cookbook order with correct 1-based position numbers", async ({
+  test("TOC section lists all recipes in cookbook order without duplicate position numbers", async ({
     page,
   }) => {
     await gotoAndWaitForHydration(
       page,
       `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
-    await expect(page.getByText("1.")).toBeVisible();
-    await expect(page.getByText("2.")).toBeVisible();
-    await expect(page.getByText(recipe1Name).first()).toBeVisible();
-    await expect(page.getByText(recipe2Name).first()).toBeVisible();
+
+    const toc = page.locator(".cookbook-toc-page");
+    const tocItems = await toc.locator("li").allTextContents();
+    const recipe1Index = tocItems.findIndex((text) => text.includes(recipe1Name));
+    const recipe2Index = tocItems.findIndex((text) => text.includes(recipe2Name));
+    expect(recipe1Index).toBeGreaterThanOrEqual(0);
+    expect(recipe2Index).toBeGreaterThanOrEqual(0);
+    expect(recipe1Index).toBeLessThan(recipe2Index);
+
+    await expect(toc.getByText("1.", { exact: true })).toHaveCount(0);
+    await expect(toc.getByText("2.", { exact: true })).toHaveCount(0);
+    await expect(toc.getByText(/^#\d+$/)).toHaveCount(0);
   });
 
   test("displayonly mode shows #N labels for recipe sections and no pg-prefixed labels", async ({
