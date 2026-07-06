@@ -68,7 +68,9 @@ interface RecipeFormProps {
   initialData?: RecipeWithRelations
 }
 
-// skipcq: JS-0067 -- default export component, not a global; matches every other component in src/components
+// skipcq: JS-0067 -- ES module default export, not a global scope function; DeepSource's
+// global-scope check misidentifies module-scoped exports. Same suppression rationale as
+// src/e2e/helpers/recipes.ts and src/e2e/personal-source-privacy.spec.ts (JS-0067).
 export default function RecipeForm({ initialData }: RecipeFormProps) {
   const navigate = useNavigate()
   const router = useRouter()

@@ -9,7 +9,7 @@
 
 ## Preflight
 
-- [x] **Verify `pr-review-toolkit:review-pr` is available** — confirmed present in the current skills list (`pr-review-toolkit:review-pr: Comprehensive PR review using specialized agents`). No halt needed.
+- [x] **Check that `pr-review-toolkit:review-pr` is available** in the current skills list before relying on it later in this workflow; halt and ask for guidance if it is missing. Checked this session — present as `pr-review-toolkit:review-pr: Comprehensive PR review using specialized agents`. No halt needed.
 
 ## Execution
 
@@ -49,11 +49,11 @@ If **ANY** required step fails, iterate and fix before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit changes to `copilot/featforms-implement-native-spell-check` and push to remote (`git push origin copilot/featforms-implement-native-spell-check`)
-- [ ] **Update PR #570's description** to reflect the expanded scope (title field added, shorthand fix applied) and add a PR comment referencing this OpenSpec change (`openspec/changes/recipe-form-native-spellcheck/`) and issue #568. Since PR #570 already exists, do not open a new PR. Confirm the PR body includes `Closes #568` (add it if missing).
-- [ ] **Issue lifecycle: mark in-review:** run `gh issue edit 568 --add-label "in-review" --remove-label "in-progress"`. Move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same discovery pattern as the in-progress step; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit changes to `copilot/featforms-implement-native-spell-check` and push to remote (`git push origin copilot/featforms-implement-native-spell-check`)
+- [x] **Update PR #570's description** to reflect the expanded scope (title field added, shorthand fix applied) and add a PR comment referencing this OpenSpec change (`openspec/changes/recipe-form-native-spellcheck/`) and issue #568. Since PR #570 already exists, do not open a new PR. Confirm the PR body includes `Closes #568` (add it if missing).
+- [x] **Issue lifecycle: mark in-review:** run `gh issue edit 568 --add-label "in-review" --remove-label "in-progress"`. Move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same discovery pattern as the in-progress step; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
 - [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr` against PR #570; address all findings (commit, push, re-run) until zero findings remain — including the 3 pre-existing DeepSource threads, which should already be resolved by the shorthand fix but must be explicitly confirmed/resolved via GraphQL `resolveReviewThread` once DeepSource re-analyzes and shows the finding cleared. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance.
 - [ ] **Enable auto-merge only after the review gate passes (zero findings) and all review threads are resolved:** `gh pr merge https://github.com/dougis-org/cookbook-tanstack/pull/570 --auto --merge` (NEVER use `--admin` to force the merge)
 - [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view 570 --json state` returns `MERGED`; if it returns `CLOSED`, exit and notify the user — never wait for a human to report the merge; never force-merge:
