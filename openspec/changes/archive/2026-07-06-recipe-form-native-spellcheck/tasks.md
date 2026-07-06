@@ -54,9 +54,9 @@ If **ANY** required step fails, iterate and fix before pushing.
 - [x] **Update PR #570's description** to reflect the expanded scope (title field added, shorthand fix applied) and add a PR comment referencing this OpenSpec change (`openspec/changes/recipe-form-native-spellcheck/`) and issue #568. Since PR #570 already exists, do not open a new PR. Confirm the PR body includes `Closes #568` (add it if missing).
 - [x] **Issue lifecycle: mark in-review:** run `gh issue edit 568 --add-label "in-review" --remove-label "in-progress"`. Move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same discovery pattern as the in-progress step; warn and skip if not found).
 - [x] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr` against PR #570; address all findings (commit, push, re-run) until zero findings remain — including the 3 pre-existing DeepSource threads, which should already be resolved by the shorthand fix but must be explicitly confirmed/resolved via GraphQL `resolveReviewThread` once DeepSource re-analyzes and shows the finding cleared. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings) and all review threads are resolved:** `gh pr merge https://github.com/dougis-org/cookbook-tanstack/pull/570 --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view 570 --json state` returns `MERGED`; if it returns `CLOSED`, exit and notify the user — never wait for a human to report the merge; never force-merge:
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr` against PR #570; address all findings (commit, push, re-run) until zero findings remain — including the 3 pre-existing DeepSource threads, which should already be resolved by the shorthand fix but must be explicitly confirmed/resolved via GraphQL `resolveReviewThread` once DeepSource re-analyzes and shows the finding cleared. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance.
+- [x] **Enable auto-merge only after the review gate passes (zero findings) and all review threads are resolved:** `gh pr merge https://github.com/dougis-org/cookbook-tanstack/pull/570 --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view 570 --json state` returns `MERGED`; if it returns `CLOSED`, exit and notify the user — never wait for a human to report the merge; never force-merge:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view 570 --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
   3. **CI check failures** — only after all comments are resolved, poll `gh pr checks 570 --json isRequired,state`; fix any failing required checks (especially the DeepSource JavaScript check), commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
@@ -77,14 +77,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main` (spot-check `src/components/recipes/RecipeForm.tsx` for bare `spellCheck` on all four fields)
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (none expected beyond this OpenSpec change; confirm no README/AGENTS.md references need updating)
-- [ ] Sync approved spec deltas into `openspec/specs/recipe-form-spellcheck/spec.md`. After copying, update relative links that pointed into the change directory: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/design.md`, and similarly for `../../tasks.md`
-- [ ] Archive the change: move `openspec/changes/recipe-form-native-spellcheck/` to `openspec/changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/` and stage both the new location and the deletion of the old location in a single commit
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/` exists and `openspec/changes/recipe-form-native-spellcheck/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-recipe-form-native-spellcheck` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-form-native-spellcheck`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main` (spot-check `src/components/recipes/RecipeForm.tsx` for bare `spellCheck` on all four fields)
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (none expected beyond this OpenSpec change; confirm no README/AGENTS.md references need updating)
+- [x] Sync approved spec deltas into `openspec/specs/recipe-form-spellcheck/spec.md`. After copying, update relative links that pointed into the change directory: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/design.md`, and similarly for `../../tasks.md`
+- [x] Archive the change: move `openspec/changes/recipe-form-native-spellcheck/` to `openspec/changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/` and stage both the new location and the deletion of the old location in a single commit
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-form-native-spellcheck/` exists and `openspec/changes/recipe-form-native-spellcheck/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-recipe-form-native-spellcheck` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-form-native-spellcheck`
 - [ ] Open a PR from `doc/archive-YYYY-MM-DD-recipe-form-native-spellcheck` to `main` with title `docs: archive recipe-form-native-spellcheck (YYYY-MM-DD)` — do NOT push directly to `main`
 - [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
