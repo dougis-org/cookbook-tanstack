@@ -95,9 +95,9 @@ If ANY required step fails, iterate and fix before pushing.
 - [x] Open PR from `test/personal-source-privacy-e2e` to `main`. PR body **MUST** include `Closes #509`
 - [x] **Issue lifecycle: mark in-review** — run `gh issue edit #509 --add-label "in-review" --remove-label "in-progress"`. Move the project item to "In Review" via `gh project item-edit` (same discovery as above; warn and skip if not found).
 - [x] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall and wait for human guidance.
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall and wait for human guidance.
 - [x] **Enable auto-merge only after the review gate passes:** `gh pr merge <PR-URL> --auto --merge`
-- [ ] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`:
+- [x] **Iterate until merged** — repeat the following priority loop until `gh pr view <PR-URL> --json state` returns `MERGED`:
   1. **Build and tests** — run all steps in [Remote push validation]; fix failures, commit, push before anything else
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; address unresolved threads, commit, validate, push, wait 180s
   3. **CI check failures** — after all comments resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix failing required checks, commit, validate, push, wait 180s; restart loop from step 1
@@ -116,17 +116,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No doc updates required (test-only change)
-- [ ] Sync approved spec deltas into `openspec/specs/`:
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No doc updates required (test-only change)
+- [x] Sync approved spec deltas into `openspec/specs/`:
   - Copy `openspec/changes/personal-source-privacy-e2e/specs/privacy-contract/spec.md` → `openspec/specs/privacy-contract/spec.md`
   - Copy `openspec/changes/personal-source-privacy-e2e/specs/source-switch-clears/spec.md` → `openspec/specs/source-switch-clears/spec.md`
   - Copy `openspec/changes/personal-source-privacy-e2e/specs/selector-conditional/spec.md` → `openspec/specs/selector-conditional/spec.md`
   - Update relative links in each copied file: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-personal-source-privacy-e2e/design.md` and similarly for `../../tasks.md`
-- [ ] Archive the change: move `openspec/changes/personal-source-privacy-e2e/` to `openspec/changes/archive/YYYY-MM-DD-personal-source-privacy-e2e/` — **stage both the new location and deletion of the old in a single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-personal-source-privacy-e2e/` exists and `openspec/changes/personal-source-privacy-e2e/` is gone
+- [x] Archive the change: move `openspec/changes/personal-source-privacy-e2e/` to `openspec/changes/archive/YYYY-MM-DD-personal-source-privacy-e2e/` — **stage both the new location and deletion of the old in a single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-personal-source-privacy-e2e/` exists and `openspec/changes/personal-source-privacy-e2e/` is gone
 - [ ] **Create a doc branch:** `git checkout -b doc/archive-YYYY-MM-DD-personal-source-privacy-e2e` then `git push -u origin doc/archive-YYYY-MM-DD-personal-source-privacy-e2e`
 - [ ] Open a PR from `doc/archive-YYYY-MM-DD-personal-source-privacy-e2e` to `main` with title `docs: archive personal-source-privacy-e2e (YYYY-MM-DD)`
 - [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
