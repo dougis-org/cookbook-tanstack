@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+This document details *changes* to requirements and is additive to the [`design.md`](../../changes/archive/2026-07-05-private-recipe-notes-tier-docs/design.md) document, not a replacement.
 
 ### Requirement: MODIFIED Pricing page tier cards display Private Recipe Notes availability
 
@@ -12,7 +12,7 @@ The `src/routes/pricing.tsx` tier card SHALL include a Private Recipe Notes feat
 - **When** they inspect the Sous Chef or Executive Chef tier card
 - **Then** the card contains a row indicating Private Recipe Notes are included (e.g., "Private notes ✓")
 
-#### Scenario: Home Cook, Prep Cook, and Anonymous cards show Private Recipe Notes not included
+#### Scenario: Home Cook and Prep Cook cards show Private Recipe Notes not included
 
 - **Given** a user views the `/pricing` page
 - **When** they inspect the Home Cook or Prep Cook tier card
@@ -62,4 +62,4 @@ No access-control logic changes. Entitlement is read-only display on a public pr
 
 - **Given** the updated `src/routes/pricing.tsx`
 - **When** the pricing page is rendered with any valid `EntitlementTier` value
-- **Then** no runtime error occurs and all five tier cards display the Private Recipe Notes row
+- **Then** no runtime error occurs and all four rendered tier cards (Home Cook, Prep Cook, Sous Chef, Executive Chef; the `anonymous` tier is excluded from the card grid) display the Private Recipe Notes row
