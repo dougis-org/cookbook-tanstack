@@ -68,6 +68,7 @@ interface RecipeFormProps {
   initialData?: RecipeWithRelations
 }
 
+// skipcq: JS-0067 -- default export component, not a global; matches every other component in src/components
 export default function RecipeForm({ initialData }: RecipeFormProps) {
   const navigate = useNavigate()
   const router = useRouter()
