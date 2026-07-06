@@ -80,7 +80,7 @@ keeping all required sections.
 - [x] Run security/code quality checks required by project standards
   (Codacy CLI analysis on the changed test file, if available locally)
 - [x] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -101,27 +101,27 @@ If **ANY** required step fails, iterate and fix before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all
+- [x] Ensure the `openspec-review-code` sub-agent was run and all
   findings were automatically addressed before the final commit
-- [ ] Commit the test-file change to `copilot/fix-table-of-contents-numbers`
+- [x] Commit the test-file change to `copilot/fix-table-of-contents-numbers`
   with a message referencing both issues, e.g. `test(e2e): fix stale TOC
   position-number assertions for #565 (#567)`
-- [ ] Push to remote: `git push origin copilot/fix-table-of-contents-numbers`
-- [ ] **No new PR needed** — the push updates existing PR #567 directly.
+- [x] Push to remote: `git push origin copilot/fix-table-of-contents-numbers`
+- [x] **No new PR needed** — the push updates existing PR #567 directly.
   Confirm the PR body still contains reference to issue #565 (it already
   does per PR #567's description); no `Closes #N` edit required.
-- [ ] Issue/PR already carries appropriate labels from its existing
+- [x] Issue/PR already carries appropriate labels from its existing
   review cycle — no label transition needed for this fix commit.
-- [ ] Wait 60 seconds for CI to start on the updated PR #567
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr` against PR
+- [x] Wait 60 seconds for CI to start on the updated PR #567
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr` against PR
   #567; address all findings (commit, push, re-run) until zero findings
   remain. If findings persist after three or more iterations with no
   progress, report the stall with remaining findings listed and wait for
   human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero
+- [x] **Enable auto-merge only after the review gate passes (zero
   findings) and CI ("Build and test workflow") is green:** `gh pr merge
   567 --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop
+- [x] **Iterate until merged** — repeat the following priority loop
   continuously until `gh pr view 567 --json state` returns `MERGED`; if
   it returns `CLOSED`, exit and notify the user — never wait for a human
   to report the merge; never force-merge:
@@ -154,32 +154,32 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes (including this test fix) appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] No repository documentation updates are needed for this test-only fix
-- [ ] Sync approved spec delta into `openspec/specs/`: copy
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes (including this test fix) appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] No repository documentation updates are needed for this test-only fix
+- [x] Sync approved spec delta into `openspec/specs/`: copy
   `specs/cookbook-print-toc-e2e-coverage/spec.md` to
   `openspec/specs/cookbook-print-toc-e2e-coverage/spec.md`
-- [ ] Archive the change: move
+- [x] Archive the change: move
   `openspec/changes/fix-toc-e2e-doubled-numbers/` to
   `openspec/changes/archive/YYYY-MM-DD-fix-toc-e2e-doubled-numbers/` and
   stage both the new location and the deletion of the old location in a
   single commit
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-fix-toc-e2e-doubled-numbers/`
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-fix-toc-e2e-doubled-numbers/`
   exists and `openspec/changes/fix-toc-e2e-doubled-numbers/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates:
+- [x] **Create a doc branch** for the archive and spec updates:
   `git checkout -b doc/archive-YYYY-MM-DD-fix-toc-e2e-doubled-numbers`
   then `git push -u origin doc/archive-YYYY-MM-DD-fix-toc-e2e-doubled-numbers`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-fix-toc-e2e-doubled-numbers`
+- [x] Open a PR from `doc/archive-YYYY-MM-DD-fix-toc-e2e-doubled-numbers`
   to `main` with title `docs: archive fix-toc-e2e-doubled-numbers
   (YYYY-MM-DD)` — do NOT push directly to `main`
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge
   <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation
+- [x] Monitor the doc PR until it merges (same loop as the implementation
   PR — address comments and CI failures, push to the same doc branch,
   repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D
   copilot/fix-table-of-contents-numbers doc/archive-YYYY-MM-DD-fix-toc-e2e-doubled-numbers`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D
