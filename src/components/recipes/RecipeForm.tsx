@@ -398,6 +398,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="name"
               type="text"
               placeholder="Enter recipe name"
+              spellCheck
               {...register("name")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-surface-raised)] text-[var(--theme-fg)]"
             />
@@ -466,7 +467,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="notes"
               rows={3}
               placeholder="Add notes about this recipe"
-              spellCheck={true}
+              spellCheck
               {...register("notes")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             />
@@ -583,7 +584,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="ingredients"
               rows={8}
               placeholder="Enter ingredients, one per line"
-              spellCheck={true}
+              spellCheck
               {...register("ingredients")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
@@ -598,7 +599,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               id="instructions"
               rows={8}
               placeholder="Enter instructions, one step per line"
-              spellCheck={true}
+              spellCheck
               {...register("instructions")}
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] font-mono text-sm"
             />
