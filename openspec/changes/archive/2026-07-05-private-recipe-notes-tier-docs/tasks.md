@@ -83,11 +83,11 @@ Blocking resolution flow:
 - [x] Sync approved spec deltas into `openspec/specs/`:
   - Copy `openspec/changes/private-recipe-notes-tier-docs/specs/tier-doc-private-notes/spec.md` → `openspec/specs/tier-doc-private-notes/spec.md`
   - Copy `openspec/changes/private-recipe-notes-tier-docs/specs/pricing-card-private-notes/spec.md` → `openspec/specs/pricing-card-private-notes/spec.md`
-  - Update relative links in each copied spec: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-private-recipe-notes-tier-docs/design.md` and similarly for `../../tasks.md`
-- [x] Archive the change: move `openspec/changes/private-recipe-notes-tier-docs/` to `openspec/changes/archive/YYYY-MM-DD-private-recipe-notes-tier-docs/` **and stage both the new location and the deletion of the old location in a single commit**
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-private-recipe-notes-tier-docs/` exists and `openspec/changes/private-recipe-notes-tier-docs/` is gone
-- [x] **Create a doc branch:** `git checkout -b doc/archive-YYYY-MM-DD-private-recipe-notes-tier-docs` then `git push -u origin doc/archive-YYYY-MM-DD-private-recipe-notes-tier-docs`
-- [x] Open a PR from `doc/archive-YYYY-MM-DD-private-recipe-notes-tier-docs` to `main` with title `docs: archive private-recipe-notes-tier-docs (YYYY-MM-DD)`
-- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge`
+  - Update relative links in each copied spec: replace `../../design.md` with `../../changes/archive/2026-07-05-private-recipe-notes-tier-docs/design.md` and similarly for `../../tasks.md`
+- [x] Archive the change: move `openspec/changes/private-recipe-notes-tier-docs/` to `openspec/changes/archive/2026-07-05-private-recipe-notes-tier-docs/` **and stage both the new location and the deletion of the old location in a single commit**
+- [x] Confirm `openspec/changes/archive/2026-07-05-private-recipe-notes-tier-docs/` exists and `openspec/changes/private-recipe-notes-tier-docs/` is gone
+- [x] **Create a doc branch:** `git checkout -b doc/archive-2026-07-05-private-recipe-notes-tier-docs` then `git push -u origin doc/archive-2026-07-05-private-recipe-notes-tier-docs`
+- [x] Open a PR from `doc/archive-2026-07-05-private-recipe-notes-tier-docs` to `main` with title `docs: archive private-recipe-notes-tier-docs (2026-07-05)` (PR https://github.com/dougis-org/cookbook-tanstack/pull/573)
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge 573 --auto --squash` (feature PR https://github.com/dougis-org/cookbook-tanstack/pull/571)
 - [x] Monitor the doc PR until it merges; address any comments or CI failures, push to the doc branch, repeat
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/private-notes-tier-docs-500 doc/archive-YYYY-MM-DD-private-recipe-notes-tier-docs`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feat/private-notes-tier-docs-500 doc/archive-2026-07-05-private-recipe-notes-tier-docs`
