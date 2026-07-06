@@ -1004,7 +1004,8 @@ describe("RecipeDetail — print density (recipe-print-density-2026-04-09)", () 
       const { container } = render(
         <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
       )
-      const badge = container.querySelector("li.recipe-instruction-step span")!
+      const badge = container.querySelector("li.recipe-instruction-step span")
+      if (!badge) throw new Error("expected instruction step badge to be present")
       expect(badge.textContent).toBe("1")
       expect(badge).toHaveClass(
         "w-8",
@@ -1023,18 +1024,21 @@ describe("RecipeDetail — print density (recipe-print-density-2026-04-09)", () 
       const { container } = render(
         <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
       )
-      const li = container.querySelector("li.recipe-instruction-step")!
+      const li = container.querySelector("li.recipe-instruction-step")
+      if (!li) throw new Error("expected instruction step <li> to be present")
       expect(li).toHaveClass("flex", "gap-4", "print:block")
 
-      const p = li.querySelector("p")!
-      expect(p).toHaveClass("flex-1", "pt-1", "print:pt-0")
+      const paragraph = li.querySelector("p")
+      if (!paragraph) throw new Error("expected instruction step <p> to be present")
+      expect(paragraph).toHaveClass("flex-1", "pt-1", "print:pt-0")
     })
 
     it("spacer <li> is unaffected: no print classes, no badge", () => {
       const { container } = render(
         <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\n\nCook pasta" })} />,
       )
-      const spacer = container.querySelector("li.recipe-instruction-spacer")!
+      const spacer = container.querySelector("li.recipe-instruction-spacer")
+      if (!spacer) throw new Error("expected spacer <li> to be present")
       expect(spacer.className).toBe("recipe-instruction-spacer h-2")
       expect(spacer.querySelector("span")).toBeNull()
     })
