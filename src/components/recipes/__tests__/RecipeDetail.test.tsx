@@ -980,4 +980,68 @@ describe("RecipeDetail — print density (recipe-print-density-2026-04-09)", () 
       expect(section).toHaveClass("print:mb-4")
     })
   })
+
+  describe("instruction step print classes (remove-print-instruction-numbering)", () => {
+    it("instructions <ol> includes print:space-y-1 alongside space-y-4", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta\nMix sauce" })} />,
+      )
+      const ol = container.querySelector("ol")
+      expect(ol).not.toBeNull()
+      expect(ol).toHaveClass("space-y-4", "print:space-y-1")
+    })
+
+    it("instruction step number badge <span> has print:hidden", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+      )
+      const badge = container.querySelector("li.recipe-instruction-step span")
+      expect(badge).not.toBeNull()
+      expect(badge).toHaveClass("print:hidden")
+    })
+
+    it("instruction step badge still renders step number and screen classes unchanged", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+      )
+      const badge = container.querySelector("li.recipe-instruction-step span")
+      if (!badge) throw new Error("expected instruction step badge to be present")
+      expect(badge.textContent).toBe("1")
+      expect(badge).toHaveClass(
+        "w-8",
+        "h-8",
+        "bg-[var(--theme-accent)]",
+        "text-white",
+        "rounded-full",
+        "flex",
+        "items-center",
+        "justify-center",
+        "font-semibold",
+      )
+    })
+
+    it("instruction step <li> has print:block override and step <p> has print:pt-0", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+      )
+      const li = container.querySelector("li.recipe-instruction-step")
+      if (!li) throw new Error("expected instruction step <li> to be present")
+      expect(li).toHaveClass("flex", "gap-4", "print:block")
+
+      const paragraph = li.querySelector("p")
+      if (!paragraph) throw new Error("expected instruction step <p> to be present")
+      expect(paragraph).toHaveClass("flex-1", "pt-1", "print:pt-0")
+    })
+
+    it("spacer <li> is unaffected: no print classes, no badge", () => {
+      const { container } = render(
+        <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\n\nCook pasta" })} />,
+      )
+      const spacer = container.querySelector("li.recipe-instruction-spacer")
+      if (!spacer) throw new Error("expected spacer <li> to be present")
+      expect(spacer).toHaveClass("recipe-instruction-spacer", "h-2")
+      expect(Array.from(spacer.classList).some((c) => c.startsWith("print:"))).toBe(false)
+      expect(spacer.querySelector("span")).toBeNull()
+    })
+  })
 })
