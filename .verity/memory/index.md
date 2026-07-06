@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (11)
+## decisions/ (13)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -28,6 +28,10 @@
   *decision* · 86% · scope: `.github/workflows/*.yml`
 - [[n028-use-optimistic-cache-writes-with-rollback-for-note]] — **Use optimistic cache writes with rollback for note saves**
   *decision* · 78% · scope: `src/components/**/PrivateRecipeNotes*`
+- [[n029-assert-personal-source-privacy-at-the-network-laye]] — **Assert Personal source privacy at the network layer**
+  *decision* · 90%
+- [[n030-whitelist-entitlement-tiers-in-route-search-valida]] — **Whitelist entitlement tiers in route search validation**
+  *decision* · 78% · scope: `src/routes/**`
 
 ## patterns/ (1)
 
