@@ -326,7 +326,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               Instructions
             </h2>
             {instructionLines.length > 0 ? (
-              <ol className="space-y-4">
+              <ol className="space-y-4 print:space-y-1">
                 {instructionSteps.map((step, index) =>
                   step.isSpacer ? (
                     <li
@@ -338,12 +338,12 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   ) : (
                     <li
                       key={index}
-                      className="recipe-instruction-step flex gap-4 text-[var(--theme-fg-muted)]"
+                      className="recipe-instruction-step flex gap-4 print:block text-[var(--theme-fg-muted)]"
                     >
-                      <span className="shrink-0 w-8 h-8 bg-[var(--theme-accent)] text-white rounded-full flex items-center justify-center font-semibold">
+                      <span className="shrink-0 w-8 h-8 bg-[var(--theme-accent)] text-white rounded-full flex items-center justify-center font-semibold print:hidden">
                         {step.number}
                       </span>
-                      <p className="flex-1 pt-1">{step.content}</p>
+                      <p className="flex-1 pt-1 print:pt-0">{step.content}</p>
                     </li>
                   ),
                 )}
