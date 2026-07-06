@@ -140,7 +140,7 @@ export function CookbookTocList({
 
   return (
     <ol className={TOC_LIST_CLASSES}>
-      {recipes.map((recipe) => (
+      {recipes.slice().sort((a, b) => a.orderIndex - b.orderIndex).map((recipe) => (
         <TocRecipeItem
           key={recipe.id}
           recipe={recipe}
