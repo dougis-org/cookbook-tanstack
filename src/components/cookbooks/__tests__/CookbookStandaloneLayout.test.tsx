@@ -49,14 +49,14 @@ const chapteredRecipes = [
 
 describe('CookbookTocList', () => {
   // 2.1
-  it('flat TOC renders all recipe names and sequential 1-based position numbers', () => {
+  it('flat TOC renders all recipe names without any index numbers', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
     expect(screen.getByText('Soup')).toBeInTheDocument()
     expect(screen.getByText('Salad')).toBeInTheDocument()
     expect(screen.getByText('Pasta')).toBeInTheDocument()
-    expect(screen.getByText('1.')).toBeInTheDocument()
-    expect(screen.getByText('2.')).toBeInTheDocument()
-    expect(screen.getByText('3.')).toBeInTheDocument()
+    expect(screen.queryByText('1.')).toBeNull()
+    expect(screen.queryByText('2.')).toBeNull()
+    expect(screen.queryByText('3.')).toBeNull()
   })
 
   // 2.2
@@ -100,18 +100,11 @@ describe('CookbookTocList', () => {
   })
 
   // 2.6
-  it('chapter-grouped TOC uses a single global counter (recipe 3 in chapter 2 is "3.")', () => {
+  it('chapter-grouped TOC does not render any numeric index labels', () => {
     render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
-    const mainHeading = screen.getByText('Mains')
-    const mainsSection = mainHeading.closest('div')
-    expect(mainsSection).not.toBeNull()
-    // Pasta is the 3rd recipe globally, so it must show "3." not "1."
-    expect(mainsSection!).toContainElement(screen.getByText('3.'))
-    // "1." and "2." belong to Starters
-    const startersSection = screen.getByText('Starters').closest('div')
-    expect(startersSection).not.toBeNull()
-    expect(startersSection!).toContainElement(screen.getByText('1.'))
-    expect(startersSection!).toContainElement(screen.getByText('2.'))
+    expect(screen.queryByText('1.')).toBeNull()
+    expect(screen.queryByText('2.')).toBeNull()
+    expect(screen.queryByText('3.')).toBeNull()
   })
 
   // 2.7
@@ -143,17 +136,17 @@ describe('CookbookTocList', () => {
     }
   })
 
-  // 2.9 — page numbers
-  it('flat TOC renders #1 on the first recipe', () => {
+  // 2.9 — no page numbers in TOC list
+  it('flat TOC does not render any #N page numbers', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
-    expect(screen.getByText('#1')).toBeInTheDocument()
+    expect(screen.queryByText('#1')).toBeNull()
+    expect(screen.queryByText('#2')).toBeNull()
+    expect(screen.queryByText('#3')).toBeNull()
   })
 
-  it('flat TOC renders sequential #N position numbers for all recipes', () => {
+  it('flat TOC renders no "#N" text at all', () => {
     render(<CookbookTocList recipes={flatRecipes} chapters={[]} />)
-    expect(screen.getByText('#1')).toBeInTheDocument()
-    expect(screen.getByText('#2')).toBeInTheDocument()
-    expect(screen.getByText('#3')).toBeInTheDocument()
+    expect(screen.queryByText(/^#\d+$/)).toBeNull()
   })
 
   it('flat TOC renders no "pg " text', () => {
@@ -161,13 +154,9 @@ describe('CookbookTocList', () => {
     expect(screen.queryByText(/^pg \d+$/)).toBeNull()
   })
 
-  it('chapter-grouped TOC renders correct #N position numbers across chapter groups', () => {
+  it('chapter-grouped TOC renders no #N page numbers', () => {
     render(<CookbookTocList recipes={chapteredRecipes} chapters={chaptersData} />)
-    // Starters: r1→#1, r2→#2; Mains: r3→#3
-    const pageNumbers = screen.getAllByText(/^#\d+$/)
-    expect(pageNumbers).toHaveLength(3)
-    const mainsSection = screen.getByText('Mains').closest('div')!
-    expect(mainsSection).toHaveTextContent('#3')
+    expect(screen.queryByText(/^#\d+$/)).toBeNull()
   })
 
   it('uncategorized recipes are included in the TOC when chapters exist', () => {
@@ -177,7 +166,7 @@ describe('CookbookTocList', () => {
     ]
     render(<CookbookTocList recipes={recipesWithUncategorized} chapters={chaptersData} />)
     expect(screen.getByText('Dessert')).toBeInTheDocument()
-    expect(screen.getByText('#4')).toBeInTheDocument()
+    expect(screen.queryByText('#4')).toBeNull()
   })
 })
 
