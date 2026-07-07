@@ -557,7 +557,7 @@ describe("RecipeForm", () => {
       await waitFor(() => {
         expect(mockUpdateMutationFn).toHaveBeenCalled()
       })
-      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({ id: "test-id", prepTime: null, cookTime: null }),
       )
     })
@@ -1028,11 +1028,11 @@ describe("RecipeForm", () => {
       expect(localStorage.getItem(`recipe-draft-${initialData.id}`)).toBeNull()
     })
 
-    it("re-derives the N/A toggle from a restored draft's blank prepTime, so submit still sends null", async () => {
-      const initialData = makeRecipe({ name: "Original", prepTime: 30 })
+    it("restores the persisted N/A toggle from a draft, so submit still sends null", async () => {
+      const initialData = makeRecipe({ name: "Original", prepTime: 30, cookTime: 45 })
       localStorage.setItem(
         `recipe-draft-${initialData.id}`,
-        JSON.stringify({ name: "Original", prepTime: "" }),
+        JSON.stringify({ name: "Original", prepTime: "", prepTimeNA: true, cookTime: "45", cookTimeNA: false }),
       )
 
       renderWithProviders(<RecipeForm initialData={initialData} />)
@@ -1050,7 +1050,7 @@ describe("RecipeForm", () => {
       await waitFor(() => {
         expect(mockUpdateMutationFn).toHaveBeenCalled()
       })
-      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({ id: initialData.id, prepTime: null }),
       )
     })

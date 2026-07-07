@@ -26,6 +26,8 @@ function sortedEqual(a: string[], b: string[]): boolean {
   return as.every((v, i) => v === bs[i])
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; see the default-export
+// suppression note below for the same DeepSource false-positive rationale.
 // null, undefined, and 0 are all "N/A" for prep/cook time (see openspec/changes/add-na-cook-prep-time).
 function isTimeNA(value: number | null | undefined): boolean {
   return value === null || value === undefined || value === 0
@@ -41,6 +43,8 @@ const recipeFormSchema = z.object({
   notes: z.string().optional(),
   prepTime: z.string().optional(),
   cookTime: z.string().optional(),
+  prepTimeNA: z.boolean(),
+  cookTimeNA: z.boolean(),
   servings: z.string().optional(),
   difficulty: z.string().optional(),
   isPublic: z.boolean(),
@@ -98,8 +102,6 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [personalSourceName, setPersonalSourceName] = useState<string>(
     initialData?.personalSourceName ?? "",
   )
-  const [prepTimeNA, setPrepTimeNA] = useState<boolean>(!!initialData && isTimeNA(initialData.prepTime))
-  const [cookTimeNA, setCookTimeNA] = useState<boolean>(!!initialData && isTimeNA(initialData.cookTime))
   const [pendingUpload, setPendingUpload] = useState<{
     fileId: string
     url: string
@@ -112,8 +114,6 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
   const initialPersonalSourceName = useMemo(() => initialData?.personalSourceName ?? "", [initialData?.personalSourceName])
-  const initialPrepTimeNA = useMemo(() => !!initialData && isTimeNA(initialData.prepTime), [initialData])
-  const initialCookTimeNA = useMemo(() => !!initialData && isTimeNA(initialData.cookTime), [initialData])
 
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
@@ -130,6 +130,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     notes: originalDataRef.current?.notes ?? "",
     prepTime: isTimeNA(originalDataRef.current?.prepTime) ? "" : originalDataRef.current?.prepTime?.toString() ?? "",
     cookTime: isTimeNA(originalDataRef.current?.cookTime) ? "" : originalDataRef.current?.cookTime?.toString() ?? "",
+    prepTimeNA: !!originalDataRef.current && isTimeNA(originalDataRef.current.prepTime),
+    cookTimeNA: !!originalDataRef.current && isTimeNA(originalDataRef.current.cookTime),
     servings: originalDataRef.current?.servings?.toString() ?? "",
     difficulty: originalDataRef.current?.difficulty ?? "",
     isPublic: originalDataRef.current?.isPublic ?? true,
@@ -186,8 +188,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
-      prepTime: prepTimeNA ? null : toNum(values.prepTime),
-      cookTime: cookTimeNA ? null : toNum(values.cookTime),
+      prepTime: values.prepTimeNA ? null : toNum(values.prepTime),
+      cookTime: values.cookTimeNA ? null : toNum(values.cookTime),
       servings: toNum(values.servings),
       difficulty: toDifficulty(values.difficulty),
       isPublic: values.isPublic,
@@ -197,7 +199,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       sodium: toNum(values.sodium),
       protein: toNum(values.protein),
     }
-  }, [selectedSourceId, personalSourceName, prepTimeNA, cookTimeNA])
+  }, [selectedSourceId, personalSourceName])
 
   const autoSaveOnSave = useCallback(async (values: RecipeFormValues) => {
     if (isEdit && initialData?.id) {
@@ -237,12 +239,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   const handleRestoreDraft = () => {
     if (draft) {
+      // prepTimeNA/cookTimeNA are registered RHF fields, so the draft
+      // snapshot already captured them — reset restores the toggle state
+      // exactly as it was, with no need to re-derive it from other fields.
       reset(draft)
-      // Drafts only capture RHF string field values, not the N/A toggle
-      // booleans — re-derive them so a restored empty field still submits
-      // as an explicit null instead of silently reverting to "no change".
-      setPrepTimeNA(isEdit && isTimeNA(toNum(draft.prepTime)))
-      setCookTimeNA(isEdit && isTimeNA(toNum(draft.cookTime)))
       setShowDraftPrompt(false)
     }
   }
@@ -252,9 +252,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     !sortedEqual(selectedCourseIds, initialCourseIds) ||
     !sortedEqual(selectedPrepIds, initialPrepIds) ||
     selectedSourceId !== initialSourceId ||
-    personalSourceName !== initialPersonalSourceName ||
-    prepTimeNA !== initialPrepTimeNA ||
-    cookTimeNA !== initialCookTimeNA
+    personalSourceName !== initialPersonalSourceName
 
   const isFormDirty = isDirty || hasExternalChanges
   const isFormDirtyRef = useRef(false)
@@ -358,8 +356,6 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setSelectedPrepIds(initialPrepIds)
     setSelectedSourceId(initialSourceId)
     setPersonalSourceName(initialPersonalSourceName)
-    setPrepTimeNA(initialPrepTimeNA)
-    setCookTimeNA(initialCookTimeNA)
     purgeDraft()
     resetStatus()
   }
@@ -505,10 +501,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   <input
                     id="prepTimeNA"
                     type="checkbox"
-                    checked={prepTimeNA}
+                    checked={watch("prepTimeNA")}
                     onChange={(e) => {
                       const checked = e.target.checked
-                      setPrepTimeNA(checked)
+                      setValue("prepTimeNA", checked, { shouldDirty: true })
                       if (checked) setValue("prepTime", "", { shouldDirty: true })
                     }}
                     className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
@@ -520,7 +516,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 id="prepTime"
                 type="number"
                 placeholder="30"
-                disabled={prepTimeNA}
+                disabled={watch("prepTimeNA")}
                 {...register("prepTime")}
                 className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
@@ -534,10 +530,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   <input
                     id="cookTimeNA"
                     type="checkbox"
-                    checked={cookTimeNA}
+                    checked={watch("cookTimeNA")}
                     onChange={(e) => {
                       const checked = e.target.checked
-                      setCookTimeNA(checked)
+                      setValue("cookTimeNA", checked, { shouldDirty: true })
                       if (checked) setValue("cookTime", "", { shouldDirty: true })
                     }}
                     className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
@@ -549,7 +545,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                 id="cookTime"
                 type="number"
                 placeholder="45"
-                disabled={cookTimeNA}
+                disabled={watch("cookTimeNA")}
                 {...register("cookTime")}
                 className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
