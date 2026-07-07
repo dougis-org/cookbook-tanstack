@@ -215,6 +215,14 @@ describe('RecipePageRow', () => {
     )
     expect(screen.getByText('N/A prep, 15m cook')).toBeInTheDocument()
   })
+
+  it('shows N/A for an undefined prep/cook time', () => {
+    const { prepTime, cookTime, ...rest } = recipe
+    void prepTime
+    void cookTime
+    render(<RecipePageRow recipe={rest} index={0} pageNumber={1} />)
+    expect(screen.getByText('N/A prep, N/A cook')).toBeInTheDocument()
+  })
 })
 
 // ─── CookbookPageHeader ───────────────────────────────────────────────────────

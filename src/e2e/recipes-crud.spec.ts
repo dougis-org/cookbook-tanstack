@@ -150,6 +150,25 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
     await expect(page.getByText("N/A").first()).toBeVisible();
     await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+
+    // Reverse direction: un-toggle Prep Time N/A and give it a real value,
+    // and toggle Cook Time to N/A instead — both directions in one round trip.
+    await page.getByRole("link", { name: "Edit Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
+    await page.getByLabel("Recipe Name").waitFor();
+
+    const naToggles = page.getByRole("checkbox", { name: "N/A" });
+    await expect(naToggles.first()).toBeChecked();
+    await naToggles.first().uncheck();
+    await expect(prepTimeInput).not.toBeDisabled();
+    await prepTimeInput.fill("20");
+    await naToggles.nth(1).check();
+
+    await page.getByRole("button", { name: "Update Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+    await expect(page.getByText("20 min", { exact: true })).toBeVisible();
+    await expect(page.getByText("N/A").first()).toBeVisible();
   });
 
   test("should delete a recipe via confirmation modal", async ({ page }) => {

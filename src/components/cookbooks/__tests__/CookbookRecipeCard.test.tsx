@@ -92,6 +92,16 @@ describe('StaticRecipeCard', () => {
     expect(screen.getByText('Prep N/A · Cook N/A')).toBeInTheDocument()
   })
 
+  it('shows N/A for undefined prep/cook time', () => {
+    render(
+      <StaticRecipeCard
+        recipe={{ id: 'r-4', name: 'Undefined Time Dish' }}
+        index={0}
+      />,
+    )
+    expect(screen.getByText('Prep N/A · Cook N/A')).toBeInTheDocument()
+  })
+
   it('renders 1-based index number', () => {
     render(<StaticRecipeCard recipe={baseRecipe} index={2} />)
     expect(screen.getByText('3')).toBeInTheDocument()

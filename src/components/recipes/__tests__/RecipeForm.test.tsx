@@ -541,6 +541,26 @@ describe("RecipeForm", () => {
       )
       expect(mockFetch).not.toHaveBeenCalled()
     })
+
+    it("sends both prepTime and cookTime as null when both toggles are activated independently", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={makeRecipe({ name: "Original", prepTime: 30, cookTime: 45 })}
+        />,
+      )
+
+      const [prepToggle, cookToggle] = screen.getAllByRole("checkbox", { name: /n\/a/i })
+      await userEvent.click(prepToggle)
+      await userEvent.click(cookToggle)
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", prepTime: null, cookTime: null }),
+      )
+    })
   })
 
   describe("validation", () => {
@@ -1006,6 +1026,33 @@ describe("RecipeForm", () => {
 
       expect(screen.getByLabelText(/recipe name/i)).toHaveValue("Original")
       expect(localStorage.getItem(`recipe-draft-${initialData.id}`)).toBeNull()
+    })
+
+    it("re-derives the N/A toggle from a restored draft's blank prepTime, so submit still sends null", async () => {
+      const initialData = makeRecipe({ name: "Original", prepTime: 30 })
+      localStorage.setItem(
+        `recipe-draft-${initialData.id}`,
+        JSON.stringify({ name: "Original", prepTime: "" }),
+      )
+
+      renderWithProviders(<RecipeForm initialData={initialData} />)
+
+      const prepInput = screen.getByLabelText(/prep time/i)
+      expect(prepInput).not.toBeDisabled()
+
+      const restoreBtn = await screen.findByRole("button", { name: /restore/i })
+      fireEvent.click(restoreBtn)
+
+      expect(prepInput).toBeDisabled()
+
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ id: initialData.id, prepTime: null }),
+      )
     })
   })
 })
