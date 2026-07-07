@@ -497,7 +497,7 @@ describe("RecipeForm", () => {
       await waitFor(() => {
         expect(mockUpdateMutationFn).toHaveBeenCalled()
       })
-      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({ id: "test-id", prepTime: null }),
       )
     })
@@ -536,7 +536,7 @@ describe("RecipeForm", () => {
       await waitFor(() => {
         expect(mockUpdateMutationFn).toHaveBeenCalled()
       })
-      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
         expect.objectContaining({ id: "test-id", cookTime: 25 }),
       )
       expect(mockFetch).not.toHaveBeenCalled()
