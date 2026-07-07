@@ -305,6 +305,33 @@ describe("RecipeForm", () => {
       expect(screen.getByText("Click to upload")).toBeInTheDocument()
     })
 
+    it("does not default the N/A toggle on for a new recipe", () => {
+      renderWithProviders(<RecipeForm />)
+
+      expect(screen.getByLabelText(/prep time/i)).not.toBeDisabled()
+      expect(screen.getByLabelText(/cook time/i)).not.toBeDisabled()
+    })
+
+    it("defaults the N/A toggle on, disables, and blanks the input for a legacy null prepTime", () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ prepTime: null, cookTime: 20 })} />,
+      )
+
+      expect(screen.getByLabelText(/prep time/i)).toBeDisabled()
+      expect(screen.getByLabelText(/prep time/i)).toHaveValue(null)
+      expect(screen.getByLabelText(/cook time/i)).not.toBeDisabled()
+    })
+
+    it("defaults the N/A toggle on, disables, and blanks the input for a legacy zero cookTime", () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ prepTime: 10, cookTime: 0 })} />,
+      )
+
+      expect(screen.getByLabelText(/cook time/i)).toBeDisabled()
+      expect(screen.getByLabelText(/cook time/i)).toHaveValue(null)
+      expect(screen.getByLabelText(/prep time/i)).not.toBeDisabled()
+    })
+
     it("passes initialData.imageUrl to ImageUploadField", () => {
       renderWithProviders(
         <RecipeForm
@@ -454,6 +481,65 @@ describe("RecipeForm", () => {
         "data-value",
         "https://ik.imagekit.io/demo/existing.jpg",
       )
+    })
+  })
+
+  describe("N/A toggle for prep/cook time", () => {
+    it("sends prepTime: null when the N/A toggle is activated", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
+      )
+
+      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
+      await userEvent.click(naToggles[0])
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", prepTime: null }),
+      )
+    })
+
+    it("disables the Prep Time input once the N/A toggle is checked", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
+      )
+
+      const prepInput = screen.getByLabelText(/prep time/i)
+      expect(prepInput).not.toBeDisabled()
+
+      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
+      await userEvent.click(naToggles[0])
+
+      expect(prepInput).toBeDisabled()
+    })
+
+    it("re-enables and clears the input when the N/A toggle is switched off", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", cookTime: null })} />,
+      )
+
+      const cookInput = screen.getByLabelText(/cook time/i)
+      expect(cookInput).toBeDisabled()
+
+      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
+      await userEvent.click(naToggles[1])
+
+      expect(cookInput).not.toBeDisabled()
+      expect(cookInput).toHaveValue(null)
+
+      await userEvent.type(cookInput, "25")
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", cookTime: 25 }),
+      )
+      expect(mockFetch).not.toHaveBeenCalled()
     })
   })
 

@@ -61,6 +61,17 @@ describe("RecipeCard", () => {
     expect(screen.getByText("Cook: 45 min")).toBeInTheDocument()
   })
 
+  it.each([
+    { label: "null", prepTime: null, cookTime: null },
+    { label: "undefined", prepTime: undefined, cookTime: undefined },
+    { label: "0", prepTime: 0, cookTime: 0 },
+  ])("renders N/A for prep and cook time when $label", ({ prepTime, cookTime }) => {
+    render(<RecipeCard recipe={makeRecipe({ prepTime, cookTime })} />)
+
+    expect(screen.getByText("Prep: N/A")).toBeInTheDocument()
+    expect(screen.getByText("Cook: N/A")).toBeInTheDocument()
+  })
+
   it("renders difficulty badge when provided", () => {
     render(<RecipeCard recipe={makeRecipe({ difficulty: "easy" })} />)
 

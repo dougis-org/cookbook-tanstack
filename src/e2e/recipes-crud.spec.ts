@@ -113,6 +113,45 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(servingsContainer.locator('[aria-live="polite"]')).toHaveText("6");
   });
 
+  test("should toggle Prep Time to N/A and persist it as N/A after reload", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    const recipeName = getUniqueRecipeName("NA Prep Time");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipeName,
+      prepTime: "15",
+      cookTime: "30",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Navigate to edit page
+    await page.getByRole("link", { name: "Edit Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
+    await page.getByLabel("Recipe Name").waitFor();
+
+    // Toggle Prep Time to N/A — the input should become disabled
+    const prepTimeInput = page.getByLabel("Prep Time (minutes)");
+    await page.getByRole("checkbox", { name: "N/A" }).first().check();
+    await expect(prepTimeInput).toBeDisabled();
+
+    await page.getByRole("button", { name: "Update Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+
+    // Prep Time shows N/A; Cook Time still shows its original value
+    await expect(page.getByText("N/A").first()).toBeVisible();
+    await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+
+    // Reload to confirm it was actually persisted, not just local UI state
+    await page.reload();
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+    await expect(page.getByText("N/A").first()).toBeVisible();
+    await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+  });
+
   test("should delete a recipe via confirmation modal", async ({ page }) => {
     await registerAndLogin(page);
 

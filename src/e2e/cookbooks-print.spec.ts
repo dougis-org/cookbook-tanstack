@@ -89,6 +89,20 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     await expect(toc.getByText(/^#\d+$/)).toHaveCount(0);
   });
 
+  test("TOC shows N/A for recipes with no prep/cook time set, not a blank or omitted segment", async ({
+    page,
+  }) => {
+    await gotoAndWaitForHydration(
+      page,
+      `/cookbooks/${cookbookId}/print?displayonly=1`,
+    );
+
+    // Neither PrintRecipe1 nor PrintRecipe2 has prepTime/cookTime set, so both
+    // are N/A — the TOC's time span must say so rather than rendering blank.
+    const toc = page.locator(".cookbook-toc-page");
+    await expect(toc.getByText("N/A prep, N/A cook").first()).toBeVisible();
+  });
+
   test("displayonly mode shows #N labels for recipe sections and no pg-prefixed labels", async ({
     page,
   }) => {

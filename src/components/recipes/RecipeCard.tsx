@@ -2,6 +2,7 @@ import { Heart, User } from 'lucide-react'
 import type { Recipe } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
+import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 
 interface RecipeCardProps {
   recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
@@ -55,12 +56,8 @@ export default function RecipeCard({ recipe, marked, isOwner }: RecipeCardProps)
         )}
         <div className="flex justify-between items-center text-sm text-[var(--theme-fg-subtle)]">
           <div className="flex gap-3">
-            {recipe.prepTime && (
-              <span>Prep: {recipe.prepTime} min</span>
-            )}
-            {recipe.cookTime && (
-              <span>Cook: {recipe.cookTime} min</span>
-            )}
+            <span>Prep: {formatMinutesOrNA(recipe.prepTime)}</span>
+            <span>Cook: {formatMinutesOrNA(recipe.cookTime)}</span>
           </div>
           {recipe.difficulty && (
             <span className="capitalize px-2 py-1 bg-[var(--theme-surface-hover)] rounded">

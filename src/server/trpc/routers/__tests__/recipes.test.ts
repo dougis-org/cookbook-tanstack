@@ -591,6 +591,46 @@ describe("recipes.create", () => {
       expect(result.personalSourceName).toBeUndefined();
     });
   });
+
+  it("creates a recipe with cookTime explicitly set to N/A (null)", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.create({
+        name: "No Cook Time Recipe",
+        cookTime: null,
+      });
+      expect(result).toMatchObject({ cookTime: null });
+      const saved = await Recipe.findById(result.id).lean();
+      expect(saved?.cookTime).toBeNull();
+    });
+  });
+
+  it("creates a recipe with prepTime/cookTime of 0", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.create({
+        name: "Instant Recipe",
+        prepTime: 0,
+        cookTime: 0,
+      });
+      expect(result).toMatchObject({ prepTime: 0, cookTime: 0 });
+    });
+  });
+
+  it("rejects negative prepTime/cookTime on create", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id);
+      await expect(
+        caller.recipes.create({ name: "Bad Recipe", prepTime: -1 }),
+      ).rejects.toThrow();
+      await expect(
+        caller.recipes.create({ name: "Bad Recipe", cookTime: -1 }),
+      ).rejects.toThrow();
+    });
+  });
 });
 
 // ─── recipes.update ───────────────────────────────────────────────────────────
@@ -654,6 +694,104 @@ describe("recipes.update", () => {
       expect(result).toMatchObject({ imageUrl: null });
       const persisted = await Recipe.findById(recipe.id).lean();
       expect(persisted?.imageUrl).toBeNull();
+    });
+  });
+
+  it("clears prepTime to N/A (null) when update receives null", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Timed Recipe",
+        userId: user.id,
+        prepTime: 30,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.update({
+        id: recipe.id,
+        prepTime: null,
+      });
+
+      expect(result).toMatchObject({ prepTime: null });
+      const persisted = await Recipe.findById(recipe.id).lean();
+      expect(persisted?.prepTime).toBeNull();
+    });
+  });
+
+  it("clears cookTime to N/A (null) when update receives null", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Timed Recipe",
+        userId: user.id,
+        cookTime: 45,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.update({
+        id: recipe.id,
+        cookTime: null,
+      });
+
+      expect(result).toMatchObject({ cookTime: null });
+      const persisted = await Recipe.findById(recipe.id).lean();
+      expect(persisted?.cookTime).toBeNull();
+    });
+  });
+
+  it("leaves prepTime unchanged when omitted from the update payload", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Timed Recipe",
+        userId: user.id,
+        prepTime: 20,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await caller.recipes.update({ id: recipe.id, name: "Timed Recipe Renamed" });
+
+      const persisted = await Recipe.findById(recipe.id).lean();
+      expect(persisted?.prepTime).toBe(20);
+    });
+  });
+
+  it("accepts 0 as a valid prepTime/cookTime value on update", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Timed Recipe",
+        userId: user.id,
+        prepTime: 10,
+        cookTime: 10,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      const result = await caller.recipes.update({
+        id: recipe.id,
+        prepTime: 0,
+        cookTime: 0,
+      });
+
+      expect(result).toMatchObject({ prepTime: 0, cookTime: 0 });
+    });
+  });
+
+  it("rejects negative prepTime/cookTime on update", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const recipe = await new Recipe({
+        name: "Timed Recipe",
+        userId: user.id,
+      }).save();
+
+      const caller = await makeAuthCaller(user.id);
+      await expect(
+        caller.recipes.update({ id: recipe.id, prepTime: -5 }),
+      ).rejects.toThrow();
+      await expect(
+        caller.recipes.update({ id: recipe.id, cookTime: -5 }),
+      ).rejects.toThrow();
     });
   });
 

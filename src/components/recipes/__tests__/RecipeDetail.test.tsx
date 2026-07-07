@@ -725,54 +725,51 @@ describe("RecipeDetail — compact print meta line", () => {
   })
 
   describe("TC-4: compact line content, partial fields (FR3 edge)", () => {
-    it("omits null fields and joins only present fields", () => {
+    it("shows N/A for a null field and joins with the present fields", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ prepTime: 20, cookTime: null, servings: null, difficulty: "easy" })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: 20m · Easy")
-      expect(line.textContent).not.toContain("Cook:")
+      expect(line.textContent).toBe("Prep: 20m · Cook: N/A · Easy")
       expect(line.textContent).not.toContain("Serves:")
     })
   })
 
   describe("TC-5: all fields null (FR4)", () => {
-    it("does not render print-meta-line when all meta fields are null", () => {
+    it("still renders print-meta-line showing N/A for prep/cook time when all meta fields are null", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ prepTime: null, cookTime: null, servings: null, difficulty: null })}
         />,
       )
-      expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+      const line = screen.getByTestId("print-meta-line")
+      expect(line.textContent).toBe("Prep: N/A · Cook: N/A")
     })
   })
 
   describe("TC-6: single field present (FR4)", () => {
-    it("shows only the present field with no separator", () => {
+    it("shows N/A for the missing prep time alongside the present cook time", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ prepTime: null, cookTime: 45, servings: null, difficulty: null })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Cook: 45m")
-      expect(line.textContent).not.toContain(" · ")
+      expect(line.textContent).toBe("Prep: N/A · Cook: 45m")
     })
   })
 
-  describe("TC-7: zero prepTime/cookTime matches grid behavior (guard consistency)", () => {
-    it("omits prepTime and cookTime when they are 0 (truthy guard, consistent with grid)", () => {
+  describe("TC-7: zero prepTime/cookTime is treated as N/A (0 == N/A)", () => {
+    it("shows N/A for prepTime and cookTime when they are 0", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ prepTime: 0, cookTime: 0, servings: 4, difficulty: "easy" })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Serves: 4 · Easy")
-      expect(line.textContent).not.toContain("Prep:")
-      expect(line.textContent).not.toContain("Cook:")
+      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy")
     })
   })
 
@@ -797,7 +794,7 @@ describe("RecipeDetail — compact print meta line", () => {
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Serves: 4 · Easy · Added by: Alice")
+      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy · Added by: Alice")
     })
 
     it("does not render Added by section when addedByName is absent/null", () => {
@@ -807,7 +804,7 @@ describe("RecipeDetail — compact print meta line", () => {
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Serves: 4 · Easy")
+      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy")
       expect(line.textContent).not.toContain("Added by:")
     })
   })

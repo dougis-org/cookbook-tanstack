@@ -26,6 +26,11 @@ function sortedEqual(a: string[], b: string[]): boolean {
   return as.every((v, i) => v === bs[i])
 }
 
+// null, undefined, and 0 are all "N/A" for prep/cook time (see openspec/changes/add-na-cook-prep-time).
+function isTimeNA(value: number | null | undefined): boolean {
+  return value === null || value === undefined || value === 0
+}
+
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(500),
   classificationId: z.string().optional(),
@@ -93,6 +98,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const [personalSourceName, setPersonalSourceName] = useState<string>(
     initialData?.personalSourceName ?? "",
   )
+  const [prepTimeNA, setPrepTimeNA] = useState<boolean>(!!initialData && isTimeNA(initialData.prepTime))
+  const [cookTimeNA, setCookTimeNA] = useState<boolean>(!!initialData && isTimeNA(initialData.cookTime))
   const [pendingUpload, setPendingUpload] = useState<{
     fileId: string
     url: string
@@ -105,6 +112,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const initialPrepIds = useMemo(() => initialData?.preparations?.map((p) => p.id) ?? [], [initialData?.preparations])
   const initialSourceId = useMemo(() => initialData?.sourceId ?? "", [initialData?.sourceId])
   const initialPersonalSourceName = useMemo(() => initialData?.personalSourceName ?? "", [initialData?.personalSourceName])
+  const initialPrepTimeNA = useMemo(() => !!initialData && isTimeNA(initialData.prepTime), [initialData])
+  const initialCookTimeNA = useMemo(() => !!initialData && isTimeNA(initialData.cookTime), [initialData])
 
   const { data: allMeals } = useQuery(trpc.meals.list.queryOptions())
   const { data: allCourses } = useQuery(trpc.courses.list.queryOptions())
@@ -119,8 +128,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     imageUrl: originalDataRef.current?.imageUrl ?? undefined,
     instructions: originalDataRef.current?.instructions ?? "",
     notes: originalDataRef.current?.notes ?? "",
-    prepTime: originalDataRef.current?.prepTime?.toString() ?? "",
-    cookTime: originalDataRef.current?.cookTime?.toString() ?? "",
+    prepTime: isTimeNA(originalDataRef.current?.prepTime) ? "" : originalDataRef.current?.prepTime?.toString() ?? "",
+    cookTime: isTimeNA(originalDataRef.current?.cookTime) ? "" : originalDataRef.current?.cookTime?.toString() ?? "",
     servings: originalDataRef.current?.servings?.toString() ?? "",
     difficulty: originalDataRef.current?.difficulty ?? "",
     isPublic: originalDataRef.current?.isPublic ?? true,
@@ -177,8 +186,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
-      prepTime: toNum(values.prepTime),
-      cookTime: toNum(values.cookTime),
+      prepTime: prepTimeNA ? null : toNum(values.prepTime),
+      cookTime: cookTimeNA ? null : toNum(values.cookTime),
       servings: toNum(values.servings),
       difficulty: toDifficulty(values.difficulty),
       isPublic: values.isPublic,
@@ -188,7 +197,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       sodium: toNum(values.sodium),
       protein: toNum(values.protein),
     }
-  }, [selectedSourceId, personalSourceName])
+  }, [selectedSourceId, personalSourceName, prepTimeNA, cookTimeNA])
 
   const autoSaveOnSave = useCallback(async (values: RecipeFormValues) => {
     if (isEdit && initialData?.id) {
@@ -229,6 +238,11 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const handleRestoreDraft = () => {
     if (draft) {
       reset(draft)
+      // Drafts only capture RHF string field values, not the N/A toggle
+      // booleans — re-derive them so a restored empty field still submits
+      // as an explicit null instead of silently reverting to "no change".
+      setPrepTimeNA(isEdit && isTimeNA(toNum(draft.prepTime)))
+      setCookTimeNA(isEdit && isTimeNA(toNum(draft.cookTime)))
       setShowDraftPrompt(false)
     }
   }
@@ -238,7 +252,9 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     !sortedEqual(selectedCourseIds, initialCourseIds) ||
     !sortedEqual(selectedPrepIds, initialPrepIds) ||
     selectedSourceId !== initialSourceId ||
-    personalSourceName !== initialPersonalSourceName
+    personalSourceName !== initialPersonalSourceName ||
+    prepTimeNA !== initialPrepTimeNA ||
+    cookTimeNA !== initialCookTimeNA
 
   const isFormDirty = isDirty || hasExternalChanges
   const isFormDirtyRef = useRef(false)
@@ -342,6 +358,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     setSelectedPrepIds(initialPrepIds)
     setSelectedSourceId(initialSourceId)
     setPersonalSourceName(initialPersonalSourceName)
+    setPrepTimeNA(initialPrepTimeNA)
+    setCookTimeNA(initialCookTimeNA)
     purgeDraft()
     resetStatus()
   }
@@ -479,27 +497,61 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           {/* Timings & Servings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="prepTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
-                Prep Time (minutes)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="prepTime" className="block text-sm font-medium text-[var(--theme-fg-muted)]">
+                  Prep Time (minutes)
+                </label>
+                <label htmlFor="prepTimeNA" className="flex items-center gap-1 text-xs font-medium text-[var(--theme-fg-muted)]">
+                  <input
+                    id="prepTimeNA"
+                    type="checkbox"
+                    checked={prepTimeNA}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setPrepTimeNA(checked)
+                      if (checked) setValue("prepTime", "", { shouldDirty: true })
+                    }}
+                    className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+                  />
+                  N/A
+                </label>
+              </div>
               <input
                 id="prepTime"
                 type="number"
                 placeholder="30"
+                disabled={prepTimeNA}
                 {...register("prepTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
             </div>
             <div>
-              <label htmlFor="cookTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
-                Cook Time (minutes)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="cookTime" className="block text-sm font-medium text-[var(--theme-fg-muted)]">
+                  Cook Time (minutes)
+                </label>
+                <label htmlFor="cookTimeNA" className="flex items-center gap-1 text-xs font-medium text-[var(--theme-fg-muted)]">
+                  <input
+                    id="cookTimeNA"
+                    type="checkbox"
+                    checked={cookTimeNA}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setCookTimeNA(checked)
+                      if (checked) setValue("cookTime", "", { shouldDirty: true })
+                    }}
+                    className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+                  />
+                  N/A
+                </label>
+              </div>
               <input
                 id="cookTime"
                 type="number"
                 placeholder="45"
+                disabled={cookTimeNA}
                 {...register("cookTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
             </div>
             <div>
