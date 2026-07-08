@@ -86,6 +86,61 @@ describe("sources.list", () => {
   });
 });
 
+// ─── sources.listPage ─────────────────────────────────────────────────────────
+
+describe("sources.listPage", () => {
+  it("returns a page sorted by name ascending with a nextCursor when more remain", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      await Promise.all(
+        Array.from({ length: 105 }, (_, i) =>
+          new Source({
+            name: `Page-${id}-${String(i).padStart(3, "0")}`,
+            slug: `page-${id}-${i}`,
+          }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.listPage({ cursor: 0 });
+      expect(result.items).toHaveLength(100);
+      const names = result.items.map((s) => s.name);
+      expect(names).toEqual([...names].sort());
+      expect(result.nextCursor).toBe(100);
+    });
+  });
+
+  it("returns the remainder and nextCursor null when fewer than limit remain", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      await Promise.all(
+        Array.from({ length: 3 }, (_, i) =>
+          new Source({ name: `Rem-${id}-${i}`, slug: `rem-${id}-${i}` }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.listPage({ cursor: 0, limit: 100 });
+      expect(result.items.length).toBeGreaterThanOrEqual(3);
+      expect(result.nextCursor).toBeNull();
+    });
+  });
+
+  it("rejects a negative cursor", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(caller.sources.listPage({ cursor: -1 })).rejects.toThrow();
+    });
+  });
+
+  it("rejects a limit greater than 100", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(
+        caller.sources.listPage({ cursor: 0, limit: 101 }),
+      ).rejects.toThrow();
+    });
+  });
+});
+
 // ─── sources.search ───────────────────────────────────────────────────────────
 
 describe("sources.search", () => {
@@ -110,7 +165,7 @@ describe("sources.search", () => {
     });
   });
 
-  it("limits results to at most 10", async () => {
+  it("returns up to the validated limit (default 100), sorted by name ascending", async () => {
     await withCleanDb(async () => {
       const id = uid();
       await Promise.all(
@@ -119,9 +174,56 @@ describe("sources.search", () => {
         ),
       );
       const caller = await makeAnonCaller();
-      expect(
-        (await caller.sources.search({ query: `SearchLimit-${id}` })).length,
-      ).toBeLessThanOrEqual(10);
+      const result = await caller.sources.search({ query: `SearchLimit-${id}` });
+      expect(result.length).toBe(15);
+      expect(result.length).toBeLessThanOrEqual(100);
+      const names = result.map((s) => s.name);
+      expect(names).toEqual([...names].sort());
+    });
+  });
+
+  it("respects an explicit limit lower than the total matches", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      await Promise.all(
+        Array.from({ length: 15 }, (_, i) =>
+          new Source({ name: `SearchCap-${id}-${i}`, slug: `search-cap-${id}-${i}` }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.search({
+        query: `SearchCap-${id}`,
+        limit: 5,
+      });
+      expect(result).toHaveLength(5);
+    });
+  });
+
+  it("rejects an empty query", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(caller.sources.search({ query: "" })).rejects.toThrow();
+    });
+  });
+
+  it("rejects a query longer than 255 characters", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(
+        caller.sources.search({ query: "x".repeat(256) }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("rejects a limit outside 1-100", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(
+        caller.sources.search({ query: "a", limit: 0 }),
+      ).rejects.toThrow();
+      await expect(
+        caller.sources.search({ query: "a", limit: 101 }),
+      ).rejects.toThrow();
     });
   });
 });

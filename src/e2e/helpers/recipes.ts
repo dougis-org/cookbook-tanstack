@@ -76,15 +76,16 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
  */
 // skipcq: JS-0067 -- named export, not a global; matches every other helper in this module
 export async function clickPersonalSourceOption(page: Page) {
+  await page.locator("#sourceId").click();
   const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
-  await page.getByPlaceholder("Search for a source...").fill("Personal");
+  await page.getByPlaceholder("Search...").fill("Personal");
   const searchResponse = await responsePromise;
   if (!searchResponse.ok()) {
     throw new Error(
       `sources.search failed (${searchResponse.status()}) — is the "Personal" source seeded? Body: ${await searchResponse.text()}`,
     );
   }
-  const personalButton = page.getByRole("button", { name: "Personal", exact: true });
+  const personalButton = page.getByRole("option", { name: "Personal", exact: true });
   await personalButton
     .waitFor({ state: "visible", timeout: 5000 })
     .catch((err: Error) => {

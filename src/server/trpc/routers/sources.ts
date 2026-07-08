@@ -14,7 +14,15 @@ function isDuplicateKeyError(err: unknown): boolean {
   );
 }
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toSourceSummary(doc: any) {
+  return {
+    id: doc._id.toString(),
+    name: doc.name as string,
+    url: (doc.url ?? null) as string | null,
+    slug: (doc.slug ?? null) as string | null,
+  };
+}
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
@@ -28,29 +36,47 @@ export const sourcesRouter = router({
     ]);
     const countMap = new Map(counts.map((c) => [c._id?.toString(), c.count]));
     return docs.map((s) => ({
-      id: s._id.toString(),
-      name: s.name as string,
-      url: (s.url ?? null) as string | null,
-      slug: (s.slug ?? null) as string | null,
+      ...toSourceSummary(s),
       recipeCount: countMap.get(s._id.toString()) ?? 0,
     }));
   }),
 
-  search: publicProcedure
-    .input(z.object({ query: z.string().min(1).max(255) }))
+  listPage: publicProcedure
+    .input(
+      z.object({
+        cursor: z.number().int().nonnegative().default(0),
+        limit: z.number().int().min(1).max(100).default(100),
+      }),
+    )
     .query(async ({ input }) => {
-      const escaped = escapeRegex(input.query.trim());
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const docs = (await Source.find()
+        .sort({ name: 1 })
+        .skip(input.cursor)
+        .limit(input.limit)
+        .lean()) as any[];
+      return {
+        items: docs.map(toSourceSummary),
+        nextCursor:
+          docs.length === input.limit ? input.cursor + docs.length : null,
+      };
+    }),
+
+  search: publicProcedure
+    .input(
+      z.object({
+        query: z.string().trim().min(1).max(255),
+        limit: z.number().int().min(1).max(100).default(100),
+      }),
+    )
+    .query(async ({ input }) => {
+      const escaped = escapeRegex(input.query);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const docs = (await Source.find({ name: { $regex: escaped, $options: "i" } })
         .sort({ name: 1 })
-        .limit(10)
+        .limit(input.limit)
         .lean()) as any[];
-      return docs.map((s) => ({
-        id: s._id.toString(),
-        name: s.name as string,
-        url: (s.url ?? null) as string | null,
-        slug: (s.slug ?? null) as string | null,
-      }));
+      return docs.map(toSourceSummary);
     }),
 
   byId: publicProcedure
@@ -59,12 +85,7 @@ export const sourcesRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const source = (await Source.findById(input.id).lean()) as any;
       if (!source) return null;
-      return {
-        id: source._id.toString(),
-        name: source.name as string,
-        url: (source.url ?? null) as string | null,
-        slug: (source.slug ?? null) as string | null,
-      };
+      return toSourceSummary(source);
     }),
 
   create: protectedProcedure

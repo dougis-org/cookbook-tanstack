@@ -75,6 +75,18 @@ vi.mock("@/lib/trpc", () => ({
     },
     sources: {
       list: { queryOptions: () => ({ queryKey: ["sources", "list"], queryFn: () => [{ id: "src1", name: "Serious Eats", url: null }] }) },
+      listPage: {
+        queryOptions: ({ cursor }: { cursor: number }) => ({
+          queryKey: ["sources", "listPage", cursor],
+          queryFn: () => ({
+            items: [
+              { id: "s-personal", name: "Personal", slug: "personal", url: null },
+              { id: "src1", name: "Serious Eats", slug: "serious-eats", url: null },
+            ],
+            nextCursor: null,
+          }),
+        }),
+      },
       byId: {
         queryOptions: ({ id }: { id: string }) => ({
           queryKey: ["sources", "byId", id],
@@ -521,12 +533,12 @@ describe("RecipeForm", () => {
   })
 
   describe("source picker", () => {
-    it("renders source selector input and typing opens dropdown", async () => {
+    it("renders a click-to-open Source dropdown that lists sources on open", async () => {
       renderWithProviders(<RecipeForm />)
-      const input = screen.getByPlaceholderText(/search for a source/i)
-      expect(input).toBeInTheDocument()
-      
-      await userEvent.type(input, "Serious")
+      const trigger = screen.getByRole("button", { name: /^source \(/i })
+      expect(trigger).toBeInTheDocument()
+
+      await userEvent.click(trigger)
       const option = await screen.findByText("Serious Eats")
       expect(option).toBeInTheDocument()
     })
@@ -540,26 +552,25 @@ describe("RecipeForm", () => {
 
     it("RecipeForm submit includes personalSourceName in payload when source is Personal", async () => {
       renderWithProviders(<RecipeForm />)
-      
+
       await userEvent.type(screen.getByLabelText(/recipe name/i), "My Personal Recipe")
-      
-      const input = screen.getByPlaceholderText(/search for a source/i)
-      await userEvent.type(input, "Pers")
+
+      await userEvent.click(screen.getByRole("button", { name: /^source \(/i }))
       const option = await screen.findByText("Personal")
       await userEvent.click(option)
-      
+
       await waitFor(() => {
         expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
       })
       const personalNameInput = screen.getByLabelText(/personal name/i)
       await userEvent.type(personalNameInput, "Aunt Mary")
-      
+
       await userEvent.click(screen.getByRole("button", { name: /create recipe/i }))
-      
+
       await waitFor(() => {
         expect(mockCreateMutationFn).toHaveBeenCalled()
       })
-      
+
       const payload = mockCreateMutationFn.mock.calls[0]?.[0]
       expect(payload).toEqual(expect.objectContaining({
         name: "My Personal Recipe",
@@ -578,7 +589,7 @@ describe("RecipeForm", () => {
           }}
         />,
       )
-      
+
       await waitFor(() => {
         expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
       })
@@ -595,18 +606,18 @@ describe("RecipeForm", () => {
           }}
         />,
       )
-      
+
       await waitFor(() => {
         expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
       })
       const personalNameInput = screen.getByLabelText(/personal name/i)
-      
+
       await userEvent.clear(personalNameInput)
       await userEvent.type(personalNameInput, "Uncle Bob")
       expect(personalNameInput).toHaveValue("Uncle Bob")
-      
+
       await userEvent.click(screen.getByRole("button", { name: /revert/i }))
-      
+
       expect(personalNameInput).toHaveValue("Aunt Mary")
     })
 
@@ -614,8 +625,7 @@ describe("RecipeForm", () => {
       renderWithProviders(<RecipeForm />)
 
       // 1. Select Personal source
-      const input = screen.getByPlaceholderText(/search for a source/i)
-      await userEvent.type(input, "Pers")
+      await userEvent.click(screen.getByRole("button", { name: /^source \(/i }))
       const personalOption = await screen.findByText("Personal")
       await userEvent.click(personalOption)
 
@@ -627,13 +637,10 @@ describe("RecipeForm", () => {
       await userEvent.type(personalNameInput, "Aunt Mary")
 
       // 3. Clear source
-      const personalContainer = screen.getByText("Personal").parentElement!
-      const clearButton = personalContainer.querySelector("button")!
-      await userEvent.click(clearButton)
+      await userEvent.click(screen.getByLabelText("Clear option"))
 
       // 4. Select a non-personal source (Serious Eats)
-      const input2 = screen.getByPlaceholderText(/search for a source/i)
-      await userEvent.type(input2, "Serious")
+      await userEvent.click(screen.getByRole("button", { name: /^source \(/i }))
       const seriousOption = await screen.findByText("Serious Eats")
       await userEvent.click(seriousOption)
 
@@ -643,13 +650,10 @@ describe("RecipeForm", () => {
       })
 
       // 6. Clear Serious Eats
-      const seriousContainer = screen.getByText("Serious Eats").parentElement!
-      const clearButton2 = seriousContainer.querySelector("button")!
-      await userEvent.click(clearButton2)
+      await userEvent.click(screen.getByLabelText("Clear option"))
 
       // 7. Select Personal source again
-      const input3 = screen.getByPlaceholderText(/search for a source/i)
-      await userEvent.type(input3, "Pers")
+      await userEvent.click(screen.getByRole("button", { name: /^source \(/i }))
       const personalOption2 = await screen.findByText("Personal")
       await userEvent.click(personalOption2)
 
@@ -658,6 +662,22 @@ describe("RecipeForm", () => {
         expect(screen.getByLabelText(/personal name/i)).toBeInTheDocument()
       })
       expect(screen.getByLabelText(/personal name/i)).toHaveValue("Aunt Mary")
+    })
+
+    it("does not render an inline create-on-type affordance", async () => {
+      renderWithProviders(<RecipeForm />)
+      await userEvent.click(screen.getByRole("button", { name: /^source \(/i }))
+      const searchInput = screen.getByRole("searchbox")
+      await userEvent.type(searchInput, "no-such-source-xyz")
+
+      await waitFor(() => {
+        expect(screen.queryByText(/create "/i)).not.toBeInTheDocument()
+      })
+    })
+
+    it("renders an Add New Source button outside the dropdown popover", async () => {
+      renderWithProviders(<RecipeForm />)
+      expect(screen.getByRole("button", { name: /add new source/i })).toBeInTheDocument()
     })
   })
 
