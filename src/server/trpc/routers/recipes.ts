@@ -16,6 +16,10 @@ import { fetchAndNormalizeRecipe } from "@/lib/recipe-url-import";
 import { urlImportRateLimiter } from "@/lib/rate-limiter";
 import { createAnthropicExtractor } from "@/lib/ai-extractor";
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's global-scope
+// check misidentifies module-scoped functions.
+// skipcq: JS-R1005 -- flat field-by-field mapping, not branching control flow; each
+// `??` maps one independent field and cannot be meaningfully split.
 function buildImportedRecipeFields(fields: ImportedRecipeInput, userId: string, isPublic: boolean) {
   return {
     name: fields.name,
