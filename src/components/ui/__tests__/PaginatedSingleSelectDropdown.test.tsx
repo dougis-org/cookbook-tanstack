@@ -231,4 +231,100 @@ describe('PaginatedSingleSelectDropdown', () => {
 
     expect(onChange).toHaveBeenCalledWith('Item-0', 'Item-000')
   })
+
+  it('shows a retry option when the initial page fetch fails, and recovers on retry', async () => {
+    const fetchPage = vi.fn()
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce({ items: makeOptions('Item', 2), nextCursor: null })
+    const fetchSearch = vi.fn().mockResolvedValue([])
+
+    render(
+      <PaginatedSingleSelectDropdown
+        value=""
+        onChange={vi.fn()}
+        fetchPage={fetchPage}
+        fetchSearch={fetchSearch}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    const retryButton = await screen.findByRole('button', { name: /retry/i })
+
+    fireEvent.click(retryButton)
+
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
+    expect(fetchPage).toHaveBeenCalledTimes(2)
+  })
+
+  it('shows a retry option when loading the next page fails, and recovers on retry', async () => {
+    const fetchPage = vi.fn()
+      .mockResolvedValueOnce({ items: makeOptions('Item', 100), nextCursor: 100 })
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce({ items: makeOptions('Item', 5, 100), nextCursor: null })
+    const fetchSearch = vi.fn().mockResolvedValue([])
+
+    render(
+      <PaginatedSingleSelectDropdown
+        value=""
+        onChange={vi.fn()}
+        fetchPage={fetchPage}
+        fetchSearch={fetchSearch}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(100))
+
+    const listbox = screen.getByRole('listbox')
+    Object.defineProperty(listbox, 'scrollHeight', { value: 1000, configurable: true })
+    Object.defineProperty(listbox, 'clientHeight', { value: 200, configurable: true })
+    Object.defineProperty(listbox, 'scrollTop', { value: 800, configurable: true })
+    fireEvent.scroll(listbox)
+
+    const retryButton = await screen.findByRole('button', { name: /retry/i })
+    fireEvent.click(retryButton)
+
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(105))
+    expect(fetchPage).toHaveBeenCalledTimes(3)
+  })
+
+  it('shows a retry option when search fails, and recovers on retry', async () => {
+    vi.useFakeTimers()
+    const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Browse', 1), nextCursor: null })
+    const fetchSearch = vi.fn()
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce(makeOptions('Found', 1))
+
+    render(
+      <PaginatedSingleSelectDropdown
+        value=""
+        onChange={vi.fn()}
+        fetchPage={fetchPage}
+        fetchSearch={fetchSearch}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    await act(async () => {
+      await vi.runAllTimersAsync()
+    })
+
+    const searchInput = screen.getByRole('searchbox')
+    fireEvent.change(searchInput, { target: { value: 'Found' } })
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(300)
+    })
+
+    const retryButton = screen.getByRole('button', { name: /retry/i })
+    fireEvent.click(retryButton)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0)
+    })
+
+    const items = screen.getAllByRole('option')
+    expect(items).toHaveLength(1)
+    expect(items[0]).toHaveTextContent('Found-0')
+    expect(fetchSearch).toHaveBeenCalledTimes(2)
+    vi.useRealTimers()
+  })
 })

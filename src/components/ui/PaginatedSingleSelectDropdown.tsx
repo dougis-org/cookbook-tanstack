@@ -49,12 +49,21 @@ export default function PaginatedSingleSelectDropdown({
   const [browseCursor, setBrowseCursor] = useState<number | null>(0)
   const [searchResults, setSearchResults] = useState<PaginatedOption[] | null>(null)
   const [hasFetchedFirstPage, setHasFetchedFirstPage] = useState(false)
+  const [browseError, setBrowseError] = useState(false)
+  const [nextPageError, setNextPageError] = useState(false)
+  const [searchError, setSearchError] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const requestSeqRef = useRef(0)
+  // Search requests get their own sequence counter so only the latest of two
+  // overlapping searches is applied; browse-mode fetches are already
+  // serialized by hasFetchedFirstPage/loadingNextPageRef and don't need one
+  // (their results are harmless to apply even if a search started meanwhile,
+  // since displayedOptions hides browseItems while a search is active).
+  const searchSeqRef = useRef(0)
   const loadingNextPageRef = useRef(false)
+  const loadingFirstPageRef = useRef(false)
 
   const isSearchActive = debouncedSearch.length > 0
 
@@ -75,17 +84,30 @@ export default function PaginatedSingleSelectDropdown({
     onSearchChange?.(search)
   }, [search, onSearchChange])
 
+  const runFirstPage = useCallback(() => {
+    if (loadingFirstPageRef.current) return
+    loadingFirstPageRef.current = true
+    fetchPage(0)
+      .then((result) => {
+        setHasFetchedFirstPage(true)
+        setBrowseError(false)
+        setBrowseItems(result.items)
+        setBrowseCursor(result.nextCursor)
+      })
+      .catch(() => {
+        setBrowseError(true)
+      })
+      .finally(() => {
+        loadingFirstPageRef.current = false
+      })
+  }, [fetchPage])
+
   // Fetch the first browsing-mode page once, the first time the dropdown opens.
+  // hasFetchedFirstPage is only set on success so a failure can be retried.
   useEffect(() => {
-    if (!open || hasFetchedFirstPage) return
-    setHasFetchedFirstPage(true)
-    const seq = ++requestSeqRef.current
-    fetchPage(0).then((result) => {
-      if (seq !== requestSeqRef.current) return
-      setBrowseItems(result.items)
-      setBrowseCursor(result.nextCursor)
-    })
-  }, [open, hasFetchedFirstPage, fetchPage])
+    if (!open || hasFetchedFirstPage || loadingFirstPageRef.current) return
+    runFirstPage()
+  }, [open, hasFetchedFirstPage, runFirstPage])
 
   const debounceSearch = useCallback((val: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -94,20 +116,31 @@ export default function PaginatedSingleSelectDropdown({
 
   useEffect(() => () => { if (debounceRef.current) clearTimeout(debounceRef.current) }, [])
 
-  // Search-mode fetch: starting a search bumps the request sequence so any
-  // in-flight browsing-mode page fetch is discarded when it resolves.
+  const runSearch = useCallback((query: string) => {
+    const seq = ++searchSeqRef.current
+    fetchSearch(query)
+      .then((results) => {
+        if (seq !== searchSeqRef.current) return
+        setSearchError(false)
+        setSearchResults(results)
+      })
+      .catch(() => {
+        if (seq !== searchSeqRef.current) return
+        setSearchError(true)
+      })
+  }, [fetchSearch])
+
+  // Search-mode fetch: each call gets its own sequence number so only the
+  // most recent of two overlapping searches is applied.
   useEffect(() => {
     if (!open) return
     if (debouncedSearch.length === 0) {
       setSearchResults(null)
+      setSearchError(false)
       return
     }
-    const seq = ++requestSeqRef.current
-    fetchSearch(debouncedSearch).then((results) => {
-      if (seq !== requestSeqRef.current) return
-      setSearchResults(results)
-    })
-  }, [debouncedSearch, open, fetchSearch])
+    runSearch(debouncedSearch)
+  }, [debouncedSearch, open, runSearch])
 
   useEffect(() => {
     if (!open) return
@@ -132,13 +165,18 @@ export default function PaginatedSingleSelectDropdown({
   function loadNextPage() {
     if (loadingNextPageRef.current || browseCursor === null) return
     loadingNextPageRef.current = true
-    const seq = ++requestSeqRef.current
-    fetchPage(browseCursor).then((result) => {
-      loadingNextPageRef.current = false
-      if (seq !== requestSeqRef.current) return
-      setBrowseItems((prev) => [...prev, ...result.items])
-      setBrowseCursor(result.nextCursor)
-    })
+    fetchPage(browseCursor)
+      .then((result) => {
+        setNextPageError(false)
+        setBrowseItems((prev) => [...prev, ...result.items])
+        setBrowseCursor(result.nextCursor)
+      })
+      .catch(() => {
+        setNextPageError(true)
+      })
+      .finally(() => {
+        loadingNextPageRef.current = false
+      })
   }
 
   function handleListScroll(e: UIEvent<HTMLUListElement>) {
@@ -206,7 +244,7 @@ export default function PaginatedSingleSelectDropdown({
               ref={inputRef}
               type="search"
               aria-label="Search options"
-              placeholder="Search..."
+              placeholder="Search…"
               value={search}
               onChange={(e) => {
                 const val = e.target.value
@@ -222,7 +260,29 @@ export default function PaginatedSingleSelectDropdown({
             onScroll={handleListScroll}
             className="max-h-60 overflow-y-auto py-1"
           >
-            {displayedOptions.length === 0 ? (
+            {isSearchActive && searchError ? (
+              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
+                Search failed.{' '}
+                <button
+                  type="button"
+                  onClick={() => runSearch(debouncedSearch)}
+                  className="text-[var(--theme-accent)] hover:underline"
+                >
+                  Retry
+                </button>
+              </li>
+            ) : !isSearchActive && browseError ? (
+              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
+                Failed to load sources.{' '}
+                <button
+                  type="button"
+                  onClick={runFirstPage}
+                  className="text-[var(--theme-accent)] hover:underline"
+                >
+                  Retry
+                </button>
+              </li>
+            ) : displayedOptions.length === 0 ? (
               <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">{emptyMessage}</li>
             ) : (
               displayedOptions.map((option) => (
@@ -240,6 +300,18 @@ export default function PaginatedSingleSelectDropdown({
                   </button>
                 </li>
               ))
+            )}
+            {!isSearchActive && nextPageError && (
+              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
+                Failed to load more.{' '}
+                <button
+                  type="button"
+                  onClick={loadNextPage}
+                  className="text-[var(--theme-accent)] hover:underline"
+                >
+                  Retry
+                </button>
+              </li>
             )}
           </ul>
         </div>
