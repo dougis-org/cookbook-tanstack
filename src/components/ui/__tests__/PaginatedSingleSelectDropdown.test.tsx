@@ -213,7 +213,15 @@ describe('PaginatedSingleSelectDropdown', () => {
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(100))
 
     scrollListboxToBottom()
-    fireEvent.click(await screen.findByRole('button', { name: /retry/i }))
+    await screen.findByRole('button', { name: /retry/i })
+
+    // Closing and reopening the dropdown clears the stale error state rather
+    // than showing a leftover "Failed to load more" message.
+    fireEvent.keyDown(document, { key: 'Escape' })
+    openDropdown()
+    expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument()
+
+    scrollListboxToBottom()
 
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(105))
     expect(fetchPage).toHaveBeenCalledTimes(3)

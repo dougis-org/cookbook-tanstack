@@ -30,6 +30,8 @@ interface PaginatedSingleSelectDropdownProps {
 const SCROLL_BOTTOM_THRESHOLD = 4
 const SEARCH_DEBOUNCE_MS = 300
 
+// skipcq: JS-0067 -- ES module default export, not a global scope function; same
+// suppression rationale as RecipeForm.tsx
 export default function PaginatedSingleSelectDropdown({
   id,
   value,
@@ -73,6 +75,8 @@ export default function PaginatedSingleSelectDropdown({
       setSearch('')
       setDebouncedSearch('')
       setSearchResults(null)
+      setSearchError(false)
+      setNextPageError(false)
       if (debounceRef.current) {
         clearTimeout(debounceRef.current)
         debounceRef.current = null
@@ -81,8 +85,11 @@ export default function PaginatedSingleSelectDropdown({
   }, [open, onOpenChange])
 
   useEffect(() => {
+    // Only report live user input, not the internal reset-to-empty that
+    // happens when the dropdown closes.
+    if (!open) return
     onSearchChange?.(search)
-  }, [search, onSearchChange])
+  }, [search, open, onSearchChange])
 
   const runFirstPage = useCallback(() => {
     if (loadingFirstPageRef.current) return

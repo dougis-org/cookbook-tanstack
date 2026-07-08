@@ -14,6 +14,8 @@ interface RecipeSourcePickerProps {
   onPersonalSourceNameChange: (v: string) => void
 }
 
+// skipcq: JS-0067 -- ES module default export, not a global scope function; same
+// suppression rationale as RecipeForm.tsx
 export default function RecipeSourcePicker({
   id,
   value,
@@ -30,7 +32,7 @@ export default function RecipeSourcePicker({
   const lastSearchTextRef = useRef("")
 
   const handleSearchChange = useCallback((text: string) => {
-    if (text) lastSearchTextRef.current = text
+    lastSearchTextRef.current = text
   }, [])
 
   const { data: selectedSource } = useQuery({

@@ -119,7 +119,22 @@ describe("sources.listPage", () => {
       );
       const caller = await makeAnonCaller();
       const result = await caller.sources.listPage({ cursor: 0, limit: 100 });
-      expect(result.items.length).toBeGreaterThanOrEqual(3);
+      expect(result.items.length).toBe(3);
+      expect(result.nextCursor).toBeNull();
+    });
+  });
+
+  it("returns nextCursor null when the remaining count exactly equals the limit", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      await Promise.all(
+        Array.from({ length: 5 }, (_, i) =>
+          new Source({ name: `Exact-${id}-${i}`, slug: `exact-${id}-${i}` }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.listPage({ cursor: 0, limit: 5 });
+      expect(result.items.length).toBe(5);
       expect(result.nextCursor).toBeNull();
     });
   });

@@ -210,6 +210,26 @@ describe('RecipeSourcePicker', () => {
     expect((modalNameInput as HTMLInputElement).value).toBe('Bon Appetit Magazine')
   })
 
+  it('pre-fills the creation modal empty after the search text is cleared', async () => {
+    renderWithProviders(
+      <RecipeSourcePicker
+        value=""
+        onChange={vi.fn()}
+        personalSourceName=""
+        onPersonalSourceNameChange={vi.fn()}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /select a source/i }))
+    const searchInput = screen.getByRole('searchbox')
+    await userEvent.type(searchInput, 'Bon Appetit Magazine')
+    await userEvent.clear(searchInput)
+
+    await userEvent.click(screen.getByRole('button', { name: /add new source/i }))
+
+    const modalNameInput = await screen.findByLabelText(/^name$/i)
+    expect((modalNameInput as HTMLInputElement).value).toBe('')
+  })
+
   it('creating a source via the modal selects it in the picker and closes the modal', async () => {
     renderWithProviders(<StatefulPicker />)
     fireEvent.click(screen.getByRole('button', { name: /select a source/i }))

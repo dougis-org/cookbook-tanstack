@@ -15,14 +15,12 @@ function isDuplicateKeyError(err: unknown): boolean {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toSourceSummary(doc: any) {
-  return {
-    id: doc._id.toString(),
-    name: doc.name as string,
-    url: (doc.url ?? null) as string | null,
-    slug: (doc.slug ?? null) as string | null,
-  };
-}
+const toSourceSummary = (doc: any) => ({
+  id: doc._id.toString(),
+  name: doc.name as string,
+  url: (doc.url ?? null) as string | null,
+  slug: (doc.slug ?? null) as string | null,
+});
 
 export const sourcesRouter = router({
   list: publicProcedure.query(async () => {
@@ -49,16 +47,20 @@ export const sourcesRouter = router({
       }),
     )
     .query(async ({ input }) => {
+      // Fetch one extra document to detect whether a next page exists without
+      // an extra round trip or a stale nextCursor when the count is an exact
+      // multiple of the page size.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const docs = (await Source.find()
         .sort({ name: 1 })
         .skip(input.cursor)
-        .limit(input.limit)
+        .limit(input.limit + 1)
         .lean()) as any[];
+      const hasNextPage = docs.length > input.limit;
+      const items = hasNextPage ? docs.slice(0, input.limit) : docs;
       return {
-        items: docs.map(toSourceSummary),
-        nextCursor:
-          docs.length === input.limit ? input.cursor + docs.length : null,
+        items: items.map(toSourceSummary),
+        nextCursor: hasNextPage ? input.cursor + items.length : null,
       };
     }),
 

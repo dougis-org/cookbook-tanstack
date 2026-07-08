@@ -8,6 +8,8 @@ interface AddSourceModalProps {
   onCreated: (source: { id: string; name: string }) => void
 }
 
+// skipcq: JS-0067 -- ES module default export, not a global scope function; same
+// suppression rationale as RecipeForm.tsx
 export default function AddSourceModal({
   initialName = "",
   onClose,
