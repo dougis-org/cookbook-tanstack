@@ -78,7 +78,7 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
 export async function clickPersonalSourceOption(page: Page) {
   await page.locator("#sourceId").click();
   const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
-  await page.getByPlaceholder("Search...").fill("Personal");
+  await page.getByPlaceholder("Search…").fill("Personal");
   const searchResponse = await responsePromise;
   if (!searchResponse.ok()) {
     throw new Error(

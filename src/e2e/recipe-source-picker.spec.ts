@@ -14,8 +14,8 @@ test.describe("Recipe form Source picker", () => {
     const recipeName = getUniqueRecipeName("Source Select");
     await page.getByLabel("Recipe Name").fill(recipeName);
 
-    await page.locator("#sourceId").click();
     const responsePromise = page.waitForResponse(/\/api\/trpc\/sources\.listPage/);
+    await page.locator("#sourceId").click();
     await responsePromise;
     await page.getByRole("option", { name: "Personal", exact: true }).click();
 

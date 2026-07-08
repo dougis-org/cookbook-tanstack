@@ -44,7 +44,12 @@ export default function RecipeSourcePicker({
       setSelectedSlug(null)
       return
     }
-    if (metaRef.current.has(value)) return
+    const cached = metaRef.current.get(value)
+    if (cached) {
+      setSelectedName(cached.name)
+      setSelectedSlug(cached.slug ?? null)
+      return
+    }
     if (selectedSource) {
       setSelectedName(selectedSource.name)
       setSelectedSlug(selectedSource.slug ?? null)

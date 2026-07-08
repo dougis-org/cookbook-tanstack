@@ -11,26 +11,55 @@ function makeOptions(prefix: string, count: number, offset = 0): PaginatedOption
   }))
 }
 
+function renderDropdown({
+  fetchPage,
+  fetchSearch,
+  onChange = vi.fn(),
+}: {
+  fetchPage: ReturnType<typeof vi.fn>
+  fetchSearch: ReturnType<typeof vi.fn>
+  onChange?: ReturnType<typeof vi.fn>
+}) {
+  return render(
+    <PaginatedSingleSelectDropdown
+      value=""
+      onChange={onChange}
+      fetchPage={fetchPage}
+      fetchSearch={fetchSearch}
+    />,
+  )
+}
+
+function openDropdown() {
+  fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+}
+
+function scrollListboxToBottom() {
+  const listbox = screen.getByRole('listbox')
+  Object.defineProperty(listbox, 'scrollHeight', { value: 1000, configurable: true })
+  Object.defineProperty(listbox, 'clientHeight', { value: 200, configurable: true })
+  Object.defineProperty(listbox, 'scrollTop', { value: 800, configurable: true })
+  fireEvent.scroll(listbox)
+}
+
+async function flushTimers(ms?: number) {
+  await act(async () => {
+    if (ms === undefined) await vi.runAllTimersAsync()
+    else await vi.advanceTimersByTimeAsync(ms)
+  })
+}
+
+const SEARCH_DEBOUNCE_MS = 300
+
 describe('PaginatedSingleSelectDropdown', () => {
   it('fetches exactly one page on open and renders items in the received order', async () => {
-    const page1: PageResult = { items: makeOptions('Item', 3), nextCursor: null }
-    const fetchPage = vi.fn().mockResolvedValue(page1)
+    const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Item', 3), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
+    openDropdown()
 
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-
-    await waitFor(() => {
-      expect(screen.getAllByRole('option')).toHaveLength(3)
-    })
+    await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
     expect(fetchPage).toHaveBeenCalledTimes(1)
     expect(fetchPage).toHaveBeenCalledWith(0)
     const items = screen.getAllByRole('option')
@@ -39,30 +68,16 @@ describe('PaginatedSingleSelectDropdown', () => {
   })
 
   it('loads and appends the next page on scroll-to-bottom without reordering', async () => {
-    const page1: PageResult = { items: makeOptions('Item', 100), nextCursor: 100 }
-    const page2: PageResult = { items: makeOptions('Item', 5, 100), nextCursor: null }
     const fetchPage = vi.fn()
-      .mockResolvedValueOnce(page1)
-      .mockResolvedValueOnce(page2)
+      .mockResolvedValueOnce({ items: makeOptions('Item', 100), nextCursor: 100 })
+      .mockResolvedValueOnce({ items: makeOptions('Item', 5, 100), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    openDropdown()
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(100))
 
-    const listbox = screen.getByRole('listbox')
-    Object.defineProperty(listbox, 'scrollHeight', { value: 1000, configurable: true })
-    Object.defineProperty(listbox, 'clientHeight', { value: 200, configurable: true })
-    Object.defineProperty(listbox, 'scrollTop', { value: 800, configurable: true })
-    fireEvent.scroll(listbox)
+    scrollListboxToBottom()
 
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(105))
     expect(fetchPage).toHaveBeenNthCalledWith(2, 100)
@@ -76,27 +91,13 @@ describe('PaginatedSingleSelectDropdown', () => {
     vi.useFakeTimers()
     const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Browse', 2), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue(makeOptions('Found', 1))
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
+    openDropdown()
+    await flushTimers()
 
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-    await act(async () => {
-      await vi.runAllTimersAsync()
-    })
-
-    const searchInput = screen.getByRole('searchbox')
-    fireEvent.change(searchInput, { target: { value: 'Found' } })
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(300)
-    })
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Found' } })
+    await flushTimers(SEARCH_DEBOUNCE_MS)
 
     expect(fetchSearch).toHaveBeenCalledWith('Found')
     const items = screen.getAllByRole('option')
@@ -114,33 +115,17 @@ describe('PaginatedSingleSelectDropdown', () => {
     const fetchSearch = vi.fn().mockResolvedValue(makeOptions('Found', 1))
 
     vi.useFakeTimers()
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
+    renderDropdown({ fetchPage, fetchSearch })
 
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-    await act(async () => {
-      await vi.runAllTimersAsync()
-    })
+    openDropdown()
+    await flushTimers()
     expect(screen.getAllByRole('option')).toHaveLength(100)
 
-    const listbox = screen.getByRole('listbox')
-    Object.defineProperty(listbox, 'scrollHeight', { value: 1000, configurable: true })
-    Object.defineProperty(listbox, 'clientHeight', { value: 200, configurable: true })
-    Object.defineProperty(listbox, 'scrollTop', { value: 800, configurable: true })
-    fireEvent.scroll(listbox)
+    scrollListboxToBottom()
     expect(fetchPage).toHaveBeenCalledTimes(2)
 
-    const searchInput = screen.getByRole('searchbox')
-    fireEvent.change(searchInput, { target: { value: 'Found' } })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(300)
-    })
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Found' } })
+    await flushTimers(SEARCH_DEBOUNCE_MS)
     expect(screen.getAllByRole('option')).toHaveLength(1)
 
     await act(async () => {
@@ -158,33 +143,19 @@ describe('PaginatedSingleSelectDropdown', () => {
     vi.useFakeTimers()
     const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Browse', 2), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue(makeOptions('Found', 1))
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-    await act(async () => {
-      await vi.runAllTimersAsync()
-    })
+    openDropdown()
+    await flushTimers()
     expect(fetchPage).toHaveBeenCalledTimes(1)
 
     const searchInput = screen.getByRole('searchbox')
     fireEvent.change(searchInput, { target: { value: 'Found' } })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(300)
-    })
+    await flushTimers(SEARCH_DEBOUNCE_MS)
     expect(screen.getAllByRole('option')).toHaveLength(1)
 
     fireEvent.change(searchInput, { target: { value: '' } })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(300)
-    })
+    await flushTimers(SEARCH_DEBOUNCE_MS)
 
     const items = screen.getAllByRole('option')
     expect(items).toHaveLength(2)
@@ -196,17 +167,9 @@ describe('PaginatedSingleSelectDropdown', () => {
   it('holds at most one page-fetcher call and one page of items with no scroll/search interaction', async () => {
     const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Item', 100), nextCursor: 100 })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    openDropdown()
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(100))
     expect(fetchPage).toHaveBeenCalledTimes(1)
   })
@@ -215,17 +178,9 @@ describe('PaginatedSingleSelectDropdown', () => {
     const onChange = vi.fn()
     const fetchPage = vi.fn().mockResolvedValue({ items: makeOptions('Item', 2), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch, onChange })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={onChange}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    openDropdown()
     const option = await screen.findByText('Item-000')
     await userEvent.click(option)
 
@@ -237,20 +192,10 @@ describe('PaginatedSingleSelectDropdown', () => {
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce({ items: makeOptions('Item', 2), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-    const retryButton = await screen.findByRole('button', { name: /retry/i })
-
-    fireEvent.click(retryButton)
+    openDropdown()
+    fireEvent.click(await screen.findByRole('button', { name: /retry/i }))
 
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(2))
     expect(fetchPage).toHaveBeenCalledTimes(2)
@@ -262,27 +207,13 @@ describe('PaginatedSingleSelectDropdown', () => {
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce({ items: makeOptions('Item', 5, 100), nextCursor: null })
     const fetchSearch = vi.fn().mockResolvedValue([])
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
+    openDropdown()
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(100))
 
-    const listbox = screen.getByRole('listbox')
-    Object.defineProperty(listbox, 'scrollHeight', { value: 1000, configurable: true })
-    Object.defineProperty(listbox, 'clientHeight', { value: 200, configurable: true })
-    Object.defineProperty(listbox, 'scrollTop', { value: 800, configurable: true })
-    fireEvent.scroll(listbox)
-
-    const retryButton = await screen.findByRole('button', { name: /retry/i })
-    fireEvent.click(retryButton)
+    scrollListboxToBottom()
+    fireEvent.click(await screen.findByRole('button', { name: /retry/i }))
 
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(105))
     expect(fetchPage).toHaveBeenCalledTimes(3)
@@ -294,32 +225,16 @@ describe('PaginatedSingleSelectDropdown', () => {
     const fetchSearch = vi.fn()
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce(makeOptions('Found', 1))
+    renderDropdown({ fetchPage, fetchSearch })
 
-    render(
-      <PaginatedSingleSelectDropdown
-        value=""
-        onChange={vi.fn()}
-        fetchPage={fetchPage}
-        fetchSearch={fetchSearch}
-      />,
-    )
+    openDropdown()
+    await flushTimers()
 
-    fireEvent.click(screen.getByRole('button', { name: /select an option/i }))
-    await act(async () => {
-      await vi.runAllTimersAsync()
-    })
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'Found' } })
+    await flushTimers(SEARCH_DEBOUNCE_MS)
 
-    const searchInput = screen.getByRole('searchbox')
-    fireEvent.change(searchInput, { target: { value: 'Found' } })
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(300)
-    })
-
-    const retryButton = screen.getByRole('button', { name: /retry/i })
-    fireEvent.click(retryButton)
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(0)
-    })
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }))
+    await flushTimers(0)
 
     const items = screen.getAllByRole('option')
     expect(items).toHaveLength(1)
