@@ -1,3 +1,5 @@
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped exports.
 /**
  * Formats a recipe's prep/cook time for display. `null`, `undefined`, and `0`
  * are all treated as "not applicable" per product decision (see

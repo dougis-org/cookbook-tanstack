@@ -12,6 +12,8 @@ interface RecipeCardProps {
   isOwner?: boolean
 }
 
+// skipcq: JS-0067 -- ES module default export, not a global scope function; DeepSource's
+// global-scope check misidentifies module-scoped exports.
 export default function RecipeCard({ recipe, marked, isOwner }: RecipeCardProps) {
   return (
     <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow">

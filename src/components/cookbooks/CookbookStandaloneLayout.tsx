@@ -169,6 +169,8 @@ export function CookbookStandalonePage({
   )
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped exports.
 export function RecipeTimeSpan({
   prepTime,
   cookTime,
