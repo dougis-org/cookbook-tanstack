@@ -7,8 +7,8 @@ export interface IRecipe extends Document {
   instructions?: string;
   notes?: string;
   servings?: number;
-  prepTime?: number;
-  cookTime?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
   difficulty?: "easy" | "medium" | "hard";
   sourceId?: Types.ObjectId;
   personalSourceName?: string;

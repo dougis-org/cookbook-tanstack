@@ -18,19 +18,13 @@ import TierWall from "@/components/ui/TierWall"
 import StatusIndicator from "./StatusIndicator"
 import { useAuth } from "@/hooks/useAuth"
 import PostSubmitVerifyGate from "./PostSubmitVerifyGate"
+import { isTimeNA } from "@/lib/recipeDisplay"
 
 function sortedEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false
   const as = [...a].sort()
   const bs = [...b].sort()
   return as.every((v, i) => v === bs[i])
-}
-
-// skipcq: JS-0067 -- ES module scope function, not a global; see the default-export
-// suppression note below for the same DeepSource false-positive rationale.
-// null, undefined, and 0 are all "N/A" for prep/cook time (see openspec/changes/add-na-cook-prep-time).
-function isTimeNA(value: number | null | undefined): boolean {
-  return value === null || value === undefined || value === 0
 }
 
 const recipeFormSchema = z.object({

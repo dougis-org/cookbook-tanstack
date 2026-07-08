@@ -1,5 +1,15 @@
 import { describe, it, expect } from "vitest"
-import { formatMinutesOrNA } from "@/lib/recipeDisplay"
+import { formatMinutesOrNA, isTimeNA } from "@/lib/recipeDisplay"
+
+describe("isTimeNA", () => {
+  it.each([null, undefined, 0])("returns true for %s", (value) => {
+    expect(isTimeNA(value)).toBe(true)
+  })
+
+  it("returns false for a positive number", () => {
+    expect(isTimeNA(15)).toBe(false)
+  })
+})
 
 describe("formatMinutesOrNA", () => {
   it("returns N/A for null", () => {
