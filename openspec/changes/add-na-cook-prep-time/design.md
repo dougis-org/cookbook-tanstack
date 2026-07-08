@@ -17,7 +17,7 @@
 
 - No new "no-cook" concept distinct from N/A.
 - No change to `servings`, `difficulty`, nutrition fields, or the general shape of the `update` mutation's field-spreading logic beyond what `prepTime`/`cookTime` need.
-- No migration of existing data — a stored `cookTime: 0` is left as-is in the database; only display/validation treatment changes to read it as N/A.
+- No bulk/background migration of existing data — a stored `cookTime: 0` is not proactively rewritten. It reads and displays as N/A immediately (via `formatMinutesOrNA`) without any migration step. Note: because the `RecipeForm` N/A toggle defaults to ON for a legacy `0`/`null` value in edit mode, the *next* time that specific recipe is saved or autosaved, its stored value will be written forward as literal `null` — this is expected, incidental normalization from ordinary editing, not a migration this change performs.
 
 ## Decisions
 
@@ -106,8 +106,8 @@
 ## Rollback / Mitigation
 
 - Rollback trigger: If the N/A toggle causes unexpected data loss (e.g., toggling N/A accidentally clears a value on unrelated save paths) discovered post-merge.
-- Rollback steps: Revert the `RecipeForm.tsx` and `recipeFields` schema commits; no data migration is required to roll back since no existing data is rewritten by this change (only new saves after deployment would have written `null` where a value was previously required).
-- Data migration considerations: None. This change never rewrites existing `0`/positive values in the database; it only changes what new writes can contain and how existing values are displayed.
+- Rollback steps: Revert the `RecipeForm.tsx` and `recipeFields` schema commits; no bulk data migration/backfill is required to roll back — the schema change is purely additive (nullable+nonnegative), and any `null` values written forward via normal editing after deployment are valid data under the old schema's read paths too (they already render/behave as N/A via existing `?? null` fallbacks).
+- Data migration considerations: No bulk/background migration runs as part of this change. It does not rewrite existing `0`/positive values in bulk; it only changes what new writes can contain and how existing values are displayed. Positive values are never touched. A legacy `0` will be normalized to `null` incidentally the next time that specific recipe is saved (because the form's N/A toggle defaults ON for a `0` in edit mode) — this is a side effect of ordinary editing, not a migration step.
 - Verification after rollback: Confirm `prepTime`/`cookTime` inputs in `RecipeForm.tsx` again reject empty submission the same way as before this change (manual smoke test + existing `recipes-crud.spec.ts` e2e coverage).
 
 ## Operational Blocking Policy

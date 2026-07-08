@@ -21,4 +21,8 @@ describe("formatMinutesOrNA", () => {
   it("returns the value with an 'm' unit when specified", () => {
     expect(formatMinutesOrNA(15, "m")).toBe("15m")
   })
+
+  it("does not mask NaN as N/A, so invalid data stays visibly wrong", () => {
+    expect(formatMinutesOrNA(NaN)).toBe("NaN min")
+  })
 })

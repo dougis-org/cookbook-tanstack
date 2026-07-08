@@ -80,4 +80,4 @@ See functional scenarios: "Negative prepTime or cookTime is still rejected" (exi
 
 - **Given** a recipe document already has a legacy `cookTime: 0` or `prepTime: 0` value from before this change
 - **When** the document is read by any existing query (`byId`, `list`, cookbook population)
-- **Then** the value is returned unchanged (`0`) with no error, and no migration or rewrite is triggered by this capability
+- **Then** the value is returned unchanged (`0`) with no error, and no migration or rewrite is triggered by the read path itself. (Note: saving/autosaving that specific recipe through the edit form is a separate, client-initiated write — see `recipe-time-display`'s N/A toggle requirement — and will write the value forward as `null`, which is expected, ordinary editing behavior, not a migration.)

@@ -134,7 +134,7 @@ test.describe("Recipe CRUD Operations", () => {
 
     // Toggle Prep Time to N/A — the input should become disabled
     const prepTimeInput = page.getByLabel("Prep Time (minutes)");
-    await page.getByRole("checkbox", { name: "N/A" }).first().check();
+    await page.getByRole("checkbox", { name: "Prep Time N/A" }).check();
     await expect(prepTimeInput).toBeDisabled();
 
     await page.getByRole("button", { name: "Update Recipe" }).click();
@@ -157,12 +157,13 @@ test.describe("Recipe CRUD Operations", () => {
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
     await page.getByLabel("Recipe Name").waitFor();
 
-    const naToggles = page.getByRole("checkbox", { name: "N/A" });
-    await expect(naToggles.first()).toBeChecked();
-    await naToggles.first().uncheck();
+    const prepTimeNAToggle = page.getByRole("checkbox", { name: "Prep Time N/A" });
+    const cookTimeNAToggle = page.getByRole("checkbox", { name: "Cook Time N/A" });
+    await expect(prepTimeNAToggle).toBeChecked();
+    await prepTimeNAToggle.uncheck();
     await expect(prepTimeInput).not.toBeDisabled();
     await prepTimeInput.fill("20");
-    await naToggles.nth(1).check();
+    await cookTimeNAToggle.check();
 
     await page.getByRole("button", { name: "Update Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);

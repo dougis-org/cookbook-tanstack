@@ -1785,6 +1785,42 @@ describe("recipes.import", () => {
       ).rejects.toThrow();
     });
   });
+
+  it("preserves an explicit null prepTime/cookTime rather than collapsing to undefined", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+
+      const result = await caller.recipes.import({
+        name: "NA Time Import",
+        prepTime: null,
+        cookTime: null,
+        _version: "1",
+      });
+
+      const saved = await Recipe.findById(result.id).lean();
+      expect(saved?.prepTime).toBeNull();
+      expect(saved?.cookTime).toBeNull();
+    });
+  });
+
+  it("accepts 0 as a valid prepTime/cookTime value on import", async () => {
+    await withCleanDb(async () => {
+      const user = await seedUser();
+      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+
+      const result = await caller.recipes.import({
+        name: "Instant Import",
+        prepTime: 0,
+        cookTime: 0,
+        _version: "1",
+      });
+
+      const saved = await Recipe.findById(result.id).lean();
+      expect(saved?.prepTime).toBe(0);
+      expect(saved?.cookTime).toBe(0);
+    });
+  });
 });
 
 // ─── recipes.import — tier gate and count limit ───────────────────────────────

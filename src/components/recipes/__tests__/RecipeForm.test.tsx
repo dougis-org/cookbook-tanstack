@@ -227,8 +227,8 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/ingredients/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/instructions/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/notes/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/prep time/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/cook time/i)).toBeInTheDocument()
+      expect(screen.getByLabelText("Prep Time (minutes)")).toBeInTheDocument()
+      expect(screen.getByLabelText("Cook Time (minutes)")).toBeInTheDocument()
       expect(screen.getByLabelText(/servings/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/difficulty/i)).toBeInTheDocument()
     })
@@ -292,8 +292,8 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/notes/i)).toHaveValue("A classic dish")
       expect(screen.getByLabelText(/ingredients/i)).toHaveValue("Pasta\nSauce")
       expect(screen.getByLabelText(/instructions/i)).toHaveValue("Boil\nMix")
-      expect(screen.getByLabelText(/prep time/i)).toHaveValue(10)
-      expect(screen.getByLabelText(/cook time/i)).toHaveValue(20)
+      expect(screen.getByLabelText("Prep Time (minutes)")).toHaveValue(10)
+      expect(screen.getByLabelText("Cook Time (minutes)")).toHaveValue(20)
       expect(screen.getByLabelText(/servings/i)).toHaveValue(4)
       expect(screen.getByLabelText(/difficulty/i)).toHaveValue("easy")
     })
@@ -308,8 +308,8 @@ describe("RecipeForm", () => {
     it("does not default the N/A toggle on for a new recipe", () => {
       renderWithProviders(<RecipeForm />)
 
-      expect(screen.getByLabelText(/prep time/i)).not.toBeDisabled()
-      expect(screen.getByLabelText(/cook time/i)).not.toBeDisabled()
+      expect(screen.getByLabelText("Prep Time (minutes)")).not.toBeDisabled()
+      expect(screen.getByLabelText("Cook Time (minutes)")).not.toBeDisabled()
     })
 
     it("defaults the N/A toggle on, disables, and blanks the input for a legacy null prepTime", () => {
@@ -317,9 +317,9 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={makeRecipe({ prepTime: null, cookTime: 20 })} />,
       )
 
-      expect(screen.getByLabelText(/prep time/i)).toBeDisabled()
-      expect(screen.getByLabelText(/prep time/i)).toHaveValue(null)
-      expect(screen.getByLabelText(/cook time/i)).not.toBeDisabled()
+      expect(screen.getByLabelText("Prep Time (minutes)")).toBeDisabled()
+      expect(screen.getByLabelText("Prep Time (minutes)")).toHaveValue(null)
+      expect(screen.getByLabelText("Cook Time (minutes)")).not.toBeDisabled()
     })
 
     it("defaults the N/A toggle on, disables, and blanks the input for a legacy zero cookTime", () => {
@@ -327,9 +327,9 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={makeRecipe({ prepTime: 10, cookTime: 0 })} />,
       )
 
-      expect(screen.getByLabelText(/cook time/i)).toBeDisabled()
-      expect(screen.getByLabelText(/cook time/i)).toHaveValue(null)
-      expect(screen.getByLabelText(/prep time/i)).not.toBeDisabled()
+      expect(screen.getByLabelText("Cook Time (minutes)")).toBeDisabled()
+      expect(screen.getByLabelText("Cook Time (minutes)")).toHaveValue(null)
+      expect(screen.getByLabelText("Prep Time (minutes)")).not.toBeDisabled()
     })
 
     it("passes initialData.imageUrl to ImageUploadField", () => {
@@ -490,8 +490,7 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
       )
 
-      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
-      await userEvent.click(naToggles[0])
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
       await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
 
       await waitFor(() => {
@@ -507,11 +506,10 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
       )
 
-      const prepInput = screen.getByLabelText(/prep time/i)
+      const prepInput = screen.getByLabelText("Prep Time (minutes)")
       expect(prepInput).not.toBeDisabled()
 
-      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
-      await userEvent.click(naToggles[0])
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
 
       expect(prepInput).toBeDisabled()
     })
@@ -521,11 +519,10 @@ describe("RecipeForm", () => {
         <RecipeForm initialData={makeRecipe({ name: "Original", cookTime: null })} />,
       )
 
-      const cookInput = screen.getByLabelText(/cook time/i)
+      const cookInput = screen.getByLabelText("Cook Time (minutes)")
       expect(cookInput).toBeDisabled()
 
-      const naToggles = screen.getAllByRole("checkbox", { name: /n\/a/i })
-      await userEvent.click(naToggles[1])
+      await userEvent.click(screen.getByRole("checkbox", { name: "Cook Time N/A" }))
 
       expect(cookInput).not.toBeDisabled()
       expect(cookInput).toHaveValue(null)
@@ -549,9 +546,8 @@ describe("RecipeForm", () => {
         />,
       )
 
-      const [prepToggle, cookToggle] = screen.getAllByRole("checkbox", { name: /n\/a/i })
-      await userEvent.click(prepToggle)
-      await userEvent.click(cookToggle)
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
+      await userEvent.click(screen.getByRole("checkbox", { name: "Cook Time N/A" }))
       await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
 
       await waitFor(() => {
@@ -1037,7 +1033,7 @@ describe("RecipeForm", () => {
 
       renderWithProviders(<RecipeForm initialData={initialData} />)
 
-      const prepInput = screen.getByLabelText(/prep time/i)
+      const prepInput = screen.getByLabelText("Prep Time (minutes)")
       expect(prepInput).not.toBeDisabled()
 
       const restoreBtn = await screen.findByRole("button", { name: /restore/i })

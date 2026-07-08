@@ -9,6 +9,6 @@ export function formatMinutesOrNA(
   value: number | null | undefined = undefined,
   unit: " min" | "m" = " min",
 ): string {
-  if (!value) return "N/A"
+  if (value == null || value === 0) return "N/A"
   return `${value}${unit}`
 }

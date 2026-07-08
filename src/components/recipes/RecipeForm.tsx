@@ -243,10 +243,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   const handleRestoreDraft = () => {
     if (draft) {
-      // prepTimeNA/cookTimeNA are registered RHF fields, so the draft
-      // snapshot already captured them — reset restores the toggle state
-      // exactly as it was, with no need to re-derive it from other fields.
-      reset(draft)
+      // prepTimeNA/cookTimeNA are part of RHF's tracked form state (via
+      // defaultValues/watch/setValue), so a draft saved by this version of
+      // the form already captures them. Merge over formDefaults rather than
+      // resetting to the draft alone so a draft saved by an older version
+      // of the form (missing these keys) still gets valid boolean defaults
+      // instead of `undefined`, which would fail the required-boolean schema.
+      reset({ ...formDefaults, ...draft })
       setShowDraftPrompt(false)
     }
   }
@@ -505,6 +508,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   <input
                     id="prepTimeNA"
                     type="checkbox"
+                    aria-label="Prep Time N/A"
                     checked={watch("prepTimeNA")}
                     onChange={(e) => {
                       const checked = e.target.checked
@@ -534,6 +538,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
                   <input
                     id="cookTimeNA"
                     type="checkbox"
+                    aria-label="Cook Time N/A"
                     checked={watch("cookTimeNA")}
                     onChange={(e) => {
                       const checked = e.target.checked
