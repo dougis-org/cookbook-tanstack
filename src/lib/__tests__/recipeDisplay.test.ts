@@ -7,7 +7,7 @@ describe("formatMinutesOrNA", () => {
   })
 
   it("returns N/A for undefined", () => {
-    expect(formatMinutesOrNA(undefined)).toBe("N/A")
+    expect(formatMinutesOrNA()).toBe("N/A")
   })
 
   it("returns N/A for 0", () => {

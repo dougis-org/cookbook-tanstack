@@ -6,7 +6,7 @@
 // skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
 // global-scope check misidentifies module-scoped exports.
 export function formatMinutesOrNA(
-  value: number | null | undefined,
+  value: number | null | undefined = undefined,
   unit: " min" | "m" = " min",
 ): string {
   if (!value) return "N/A"

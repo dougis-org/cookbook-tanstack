@@ -120,6 +120,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
 
   const originalDataRef = useRef(initialData)
+  // skipcq: JS-R1005 -- flat field-by-field default mapping, not branching control flow;
+  // each `??`/ternary maps one independent form field and cannot be meaningfully split.
   const formDefaults = useMemo(() => ({
     name: originalDataRef.current?.name ?? "",
     classificationId: originalDataRef.current?.classificationId ?? "",
@@ -178,6 +180,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     return Number.isFinite(n) ? n : undefined
   }
 
+  // skipcq: JS-R1005 -- flat field-by-field payload mapping, not branching control flow;
+  // each `||`/ternary maps one independent form field and cannot be meaningfully split.
   const toPayload = useCallback((values: RecipeFormValues) => {
     return {
       name: values.name,
