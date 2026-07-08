@@ -30,6 +30,21 @@ interface PaginatedSingleSelectDropdownProps {
 const SCROLL_BOTTOM_THRESHOLD = 4
 const SEARCH_DEBOUNCE_MS = 300
 
+function RetryRow({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
+      {message}{' '}
+      <button
+        type="button"
+        onClick={onRetry}
+        className="text-[var(--theme-accent)] hover:underline"
+      >
+        Retry
+      </button>
+    </li>
+  )
+}
+
 // skipcq: JS-0067 -- ES module default export, not a global scope function; same
 // suppression rationale as RecipeForm.tsx
 export default function PaginatedSingleSelectDropdown({
@@ -54,6 +69,8 @@ export default function PaginatedSingleSelectDropdown({
   const [browseError, setBrowseError] = useState(false)
   const [nextPageError, setNextPageError] = useState(false)
   const [searchError, setSearchError] = useState(false)
+  const [isLoadingFirstPage, setIsLoadingFirstPage] = useState(false)
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -94,6 +111,7 @@ export default function PaginatedSingleSelectDropdown({
   const runFirstPage = useCallback(() => {
     if (loadingFirstPageRef.current) return
     loadingFirstPageRef.current = true
+    setIsLoadingFirstPage(true)
     fetchPage(0)
       .then((result) => {
         setHasFetchedFirstPage(true)
@@ -106,6 +124,7 @@ export default function PaginatedSingleSelectDropdown({
       })
       .finally(() => {
         loadingFirstPageRef.current = false
+        setIsLoadingFirstPage(false)
       })
   }, [fetchPage])
 
@@ -125,6 +144,7 @@ export default function PaginatedSingleSelectDropdown({
 
   const runSearch = useCallback((query: string) => {
     const seq = ++searchSeqRef.current
+    setIsLoadingSearch(true)
     fetchSearch(query)
       .then((results) => {
         if (seq !== searchSeqRef.current) return
@@ -134,6 +154,10 @@ export default function PaginatedSingleSelectDropdown({
       .catch(() => {
         if (seq !== searchSeqRef.current) return
         setSearchError(true)
+      })
+      .finally(() => {
+        if (seq !== searchSeqRef.current) return
+        setIsLoadingSearch(false)
       })
   }, [fetchSearch])
 
@@ -187,7 +211,7 @@ export default function PaginatedSingleSelectDropdown({
   }
 
   function handleListScroll(e: UIEvent<HTMLUListElement>) {
-    if (isSearchActive) return
+    if (isSearchActive || !hasFetchedFirstPage) return
     const el = e.currentTarget
     if (el.scrollHeight - el.scrollTop - el.clientHeight < SCROLL_BOTTOM_THRESHOLD) {
       loadNextPage()
@@ -267,28 +291,12 @@ export default function PaginatedSingleSelectDropdown({
             onScroll={handleListScroll}
             className="max-h-60 overflow-y-auto py-1"
           >
-            {isSearchActive && searchError ? (
-              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
-                Search failed.{' '}
-                <button
-                  type="button"
-                  onClick={() => runSearch(debouncedSearch)}
-                  className="text-[var(--theme-accent)] hover:underline"
-                >
-                  Retry
-                </button>
-              </li>
+            {(isSearchActive ? isLoadingSearch : isLoadingFirstPage) && displayedOptions.length === 0 ? (
+              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">Loading…</li>
+            ) : isSearchActive && searchError ? (
+              <RetryRow message="Search failed." onRetry={() => runSearch(debouncedSearch)} />
             ) : !isSearchActive && browseError ? (
-              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
-                Failed to load sources.{' '}
-                <button
-                  type="button"
-                  onClick={runFirstPage}
-                  className="text-[var(--theme-accent)] hover:underline"
-                >
-                  Retry
-                </button>
-              </li>
+              <RetryRow message="Failed to load sources." onRetry={runFirstPage} />
             ) : displayedOptions.length === 0 ? (
               <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">{emptyMessage}</li>
             ) : (
@@ -309,16 +317,7 @@ export default function PaginatedSingleSelectDropdown({
               ))
             )}
             {!isSearchActive && nextPageError && (
-              <li className="px-4 py-2 text-sm text-[var(--theme-fg-subtle)]">
-                Failed to load more.{' '}
-                <button
-                  type="button"
-                  onClick={loadNextPage}
-                  className="text-[var(--theme-accent)] hover:underline"
-                >
-                  Retry
-                </button>
-              </li>
+              <RetryRow message="Failed to load more." onRetry={loadNextPage} />
             )}
           </ul>
         </div>

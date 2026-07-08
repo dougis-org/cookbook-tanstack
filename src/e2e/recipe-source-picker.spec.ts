@@ -1,7 +1,17 @@
 import { test, expect } from "@bgotink/playwright-coverage";
+import type { Page } from "@playwright/test";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { getUniqueRecipeName } from "./helpers/recipes";
+
+async function saveAndReopenEditForm(page: Page) {
+  await page.getByRole("button", { name: /Create Recipe/ }).click();
+  await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+  await page.getByRole("link", { name: "Edit Recipe" }).click();
+  await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
+  await page.getByLabel("Recipe Name").waitFor();
+}
 
 test.describe("Recipe form Source picker", () => {
   test.beforeEach(async ({ page }) => {
@@ -19,12 +29,7 @@ test.describe("Recipe form Source picker", () => {
     await responsePromise;
     await page.getByRole("option", { name: "Personal", exact: true }).click();
 
-    await page.getByRole("button", { name: /Create Recipe/ }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    await page.getByRole("link", { name: "Edit Recipe" }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
-    await page.getByLabel("Recipe Name").waitFor();
+    await saveAndReopenEditForm(page);
     await expect(page.locator("#sourceId")).toContainText("Personal");
   });
 
@@ -39,12 +44,7 @@ test.describe("Recipe form Source picker", () => {
     await page.getByRole("button", { name: "Create Source" }).click();
     await expect(page.locator("#sourceId")).toContainText(newSourceName, { timeout: 5000 });
 
-    await page.getByRole("button", { name: /Create Recipe/ }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    await page.getByRole("link", { name: "Edit Recipe" }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
-    await page.getByLabel("Recipe Name").waitFor();
+    await saveAndReopenEditForm(page);
     await expect(page.locator("#sourceId")).toContainText(newSourceName);
   });
 
@@ -60,12 +60,7 @@ test.describe("Recipe form Source picker", () => {
     const categoryName = (await firstOption.textContent())?.trim();
     await firstOption.click();
 
-    await page.getByRole("button", { name: /Create Recipe/ }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-
-    await page.getByRole("link", { name: "Edit Recipe" }).click();
-    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
-    await page.getByLabel("Recipe Name").waitFor();
+    await saveAndReopenEditForm(page);
     if (categoryName) {
       await expect(page.locator("#classificationId")).toContainText(categoryName);
     }

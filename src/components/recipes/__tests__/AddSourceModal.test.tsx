@@ -77,4 +77,15 @@ describe('AddSourceModal', () => {
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }))
     expect(onClose).toHaveBeenCalled()
   })
+
+  it('pressing Enter while focused on the Cancel button does not submit', async () => {
+    const onClose = vi.fn()
+    const onCreated = vi.fn()
+    renderWithProviders(
+      <AddSourceModal initialName="Some Source" onClose={onClose} onCreated={onCreated} />,
+    )
+    screen.getByRole('button', { name: /cancel/i }).focus()
+    await userEvent.keyboard('{Enter}')
+    expect(onCreated).not.toHaveBeenCalled()
+  })
 })

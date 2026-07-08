@@ -89,68 +89,43 @@ describe("sources.list", () => {
 // ─── sources.listPage ─────────────────────────────────────────────────────────
 
 describe("sources.listPage", () => {
-  it("returns a page sorted by name ascending with a nextCursor when more remain", async () => {
-    await withCleanDb(async () => {
-      const id = uid();
-      await Promise.all(
-        Array.from({ length: 105 }, (_, i) =>
-          new Source({
-            name: `Page-${id}-${String(i).padStart(3, "0")}`,
-            slug: `page-${id}-${i}`,
-          }).save(),
-        ),
-      );
-      const caller = await makeAnonCaller();
-      const result = await caller.sources.listPage({ cursor: 0 });
-      expect(result.items).toHaveLength(100);
-      const names = result.items.map((s) => s.name);
-      expect(names).toEqual([...names].sort());
-      expect(result.nextCursor).toBe(100);
-    });
-  });
+  it.each([
+    { total: 105, limit: undefined, expectedItems: 100, expectedNextCursor: 100 },
+    { total: 3, limit: 100, expectedItems: 3, expectedNextCursor: null },
+    { total: 5, limit: 5, expectedItems: 5, expectedNextCursor: null },
+  ])(
+    "with $total sources and limit $limit, returns $expectedItems items sorted by name with nextCursor $expectedNextCursor",
+    async ({ total, limit, expectedItems, expectedNextCursor }) => {
+      await withCleanDb(async () => {
+        const id = uid();
+        await Promise.all(
+          Array.from({ length: total }, (_, i) =>
+            new Source({
+              name: `Page-${id}-${String(i).padStart(3, "0")}`,
+              slug: `page-${id}-${i}`,
+            }).save(),
+          ),
+        );
+        const caller = await makeAnonCaller();
+        const result = await caller.sources.listPage(
+          limit === undefined ? { cursor: 0 } : { cursor: 0, limit },
+        );
+        expect(result.items).toHaveLength(expectedItems);
+        const names = result.items.map((s) => s.name);
+        expect(names).toEqual([...names].sort());
+        expect(result.nextCursor).toBe(expectedNextCursor);
+      });
+    },
+  );
 
-  it("returns the remainder and nextCursor null when fewer than limit remain", async () => {
-    await withCleanDb(async () => {
-      const id = uid();
-      await Promise.all(
-        Array.from({ length: 3 }, (_, i) =>
-          new Source({ name: `Rem-${id}-${i}`, slug: `rem-${id}-${i}` }).save(),
-        ),
-      );
-      const caller = await makeAnonCaller();
-      const result = await caller.sources.listPage({ cursor: 0, limit: 100 });
-      expect(result.items.length).toBe(3);
-      expect(result.nextCursor).toBeNull();
-    });
-  });
-
-  it("returns nextCursor null when the remaining count exactly equals the limit", async () => {
-    await withCleanDb(async () => {
-      const id = uid();
-      await Promise.all(
-        Array.from({ length: 5 }, (_, i) =>
-          new Source({ name: `Exact-${id}-${i}`, slug: `exact-${id}-${i}` }).save(),
-        ),
-      );
-      const caller = await makeAnonCaller();
-      const result = await caller.sources.listPage({ cursor: 0, limit: 5 });
-      expect(result.items.length).toBe(5);
-      expect(result.nextCursor).toBeNull();
-    });
-  });
-
-  it("rejects a negative cursor", async () => {
-    await withCleanDb(async () => {
-      const caller = await makeAnonCaller();
-      await expect(caller.sources.listPage({ cursor: -1 })).rejects.toThrow();
-    });
-  });
-
-  it("rejects a limit greater than 100", async () => {
+  it.each([
+    { cursor: -1, limit: undefined },
+    { cursor: 0, limit: 101 },
+  ])("rejects invalid pagination input (cursor=$cursor, limit=$limit)", async ({ cursor, limit }) => {
     await withCleanDb(async () => {
       const caller = await makeAnonCaller();
       await expect(
-        caller.sources.listPage({ cursor: 0, limit: 101 }),
+        caller.sources.listPage(limit === undefined ? { cursor } : { cursor, limit }),
       ).rejects.toThrow();
     });
   });
@@ -214,30 +189,16 @@ describe("sources.search", () => {
     });
   });
 
-  it("rejects an empty query", async () => {
-    await withCleanDb(async () => {
-      const caller = await makeAnonCaller();
-      await expect(caller.sources.search({ query: "" })).rejects.toThrow();
-    });
-  });
-
-  it("rejects a query longer than 255 characters", async () => {
-    await withCleanDb(async () => {
-      const caller = await makeAnonCaller();
-      await expect(
-        caller.sources.search({ query: "x".repeat(256) }),
-      ).rejects.toThrow();
-    });
-  });
-
-  it("rejects a limit outside 1-100", async () => {
+  it.each([
+    { query: "", limit: undefined },
+    { query: "x".repeat(256), limit: undefined },
+    { query: "a", limit: 0 },
+    { query: "a", limit: 101 },
+  ])("rejects invalid search input (query length=$query.length, limit=$limit)", async ({ query, limit }) => {
     await withCleanDb(async () => {
       const caller = await makeAnonCaller();
       await expect(
-        caller.sources.search({ query: "a", limit: 0 }),
-      ).rejects.toThrow();
-      await expect(
-        caller.sources.search({ query: "a", limit: 101 }),
+        caller.sources.search(limit === undefined ? { query } : { query, limit }),
       ).rejects.toThrow();
     });
   });
