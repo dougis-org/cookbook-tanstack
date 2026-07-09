@@ -101,23 +101,25 @@ vi.mock("@/lib/trpc", () => ({
         queryOptions: ({ query }: { query: string }) => ({
           queryKey: ["sources", "search", query],
           queryFn: () => {
-            const q = query.toLowerCase()
+            const normalizedQuery = query.toLowerCase()
             const all = [
               { id: "src1", name: "Serious Eats", slug: "serious-eats", url: null },
               { id: "s-personal", name: "Personal", slug: "personal", url: null },
             ]
-            return all.filter((s) => s.name.toLowerCase().includes(q))
+            return all.filter((s) => s.name.toLowerCase().includes(normalizedQuery))
           },
         }),
       },
       create: {
-        mutationOptions: (options?: any) => ({
-          mutationFn: async (input: { name: string }) => {
+        mutationOptions: (options?: {
+          onSuccess?: (source: { id: string; name: string; slug: string; url: string | null }) => void
+        }) => ({
+          mutationFn: (input: { name: string }) => {
             const source = { id: "s-new", name: input.name, slug: "new-slug", url: null }
             if (options?.onSuccess) {
               options.onSuccess(source)
             }
-            return source
+            return Promise.resolve(source)
           },
         }),
       },
@@ -161,6 +163,8 @@ vi.mock("@/components/recipes/PostSubmitVerifyGate", () => ({
 
 import RecipeForm from "@/components/recipes/RecipeForm"
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -170,16 +174,22 @@ function renderWithProviders(ui: React.ReactElement) {
   )
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function renderBlocked() {
   mockBlocker.status = "blocked"
   renderWithProviders(<RecipeForm />)
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 async function renderBlockedWithPendingUpload() {
   renderBlocked()
   await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function expectPendingUploadDeleted() {
   expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
     method: "DELETE",
@@ -1054,6 +1064,8 @@ describe("RecipeForm", () => {
 })
 
 /** Factory to build a full Recipe object for testing. */
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
   return {
     id: "test-id",
