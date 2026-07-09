@@ -517,6 +517,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               <input
                 id="prepTime"
                 type="number"
+                min={0}
+                step={1}
                 placeholder="30"
                 disabled={watch("prepTimeNA")}
                 {...register("prepTime")}
@@ -547,6 +549,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               <input
                 id="cookTime"
                 type="number"
+                min={0}
+                step={1}
                 placeholder="45"
                 disabled={watch("cookTimeNA")}
                 {...register("cookTime")}
