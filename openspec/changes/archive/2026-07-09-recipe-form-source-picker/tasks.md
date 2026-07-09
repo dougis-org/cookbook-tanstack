@@ -83,14 +83,14 @@ If **ANY** required step fails, you **MUST** iterate and address the failure bef
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `feature/recipe-form-source-picker` to `main`. The PR body MUST include `Closes #559`.
-- [ ] **Issue lifecycle: mark in-review**: run `gh issue edit 559 --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same project/field/option discovery as the in-progress lifecycle step above; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `feature/recipe-form-source-picker` to `main`. The PR body MUST include `Closes #559`.
+- [x] **Issue lifecycle: mark in-review**: run `gh issue edit 559 --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same project/field/option discovery as the in-progress lifecycle step above; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
+- [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
   3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
@@ -111,17 +111,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on the default branch
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (e.g. note the new `sources.listPage` endpoint if documented in `docs/database.md`)
-- [ ] Sync approved spec deltas into `openspec/specs/`: create `openspec/specs/recipe-source-picker/spec.md`; update `openspec/specs/source-selector/spec.md` to reflect its retirement (or remove it per project convention for fully-retired capabilities). After copying, update relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-recipe-form-source-picker/design.md`, and similarly for `../../tasks.md`
-- [ ] Archive the change: move `openspec/changes/recipe-form-source-picker/` to `openspec/changes/archive/YYYY-MM-DD-recipe-form-source-picker/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-form-source-picker/` exists and `openspec/changes/recipe-form-source-picker/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-recipe-form-source-picker` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-form-source-picker`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-recipe-form-source-picker` to `main` with title `docs: archive recipe-form-source-picker (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D feature/recipe-form-source-picker doc/archive-YYYY-MM-DD-recipe-form-source-picker`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on the default branch
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (e.g. note the new `sources.listPage` endpoint if documented in `docs/database.md`) — no change needed; `docs/database.md` only lists collections, not tRPC procedures
+- [x] Sync approved spec deltas into `openspec/specs/`: create `openspec/specs/recipe-source-picker/spec.md`; update `openspec/specs/source-selector/spec.md` to reflect its retirement (or remove it per project convention for fully-retired capabilities). After copying, update relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-recipe-form-source-picker/design.md`, and similarly for `../../tasks.md`
+- [x] Archive the change: move `openspec/changes/recipe-form-source-picker/` to `openspec/changes/archive/YYYY-MM-DD-recipe-form-source-picker/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-recipe-form-source-picker/` exists and `openspec/changes/recipe-form-source-picker/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-recipe-form-source-picker` then `git push -u origin doc/archive-YYYY-MM-DD-recipe-form-source-picker`
+- [x] Open a PR from `doc/archive-YYYY-MM-DD-recipe-form-source-picker` to `main` with title `docs: archive recipe-form-source-picker (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feature/recipe-form-source-picker doc/archive-YYYY-MM-DD-recipe-form-source-picker`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D feature/recipe-form-source-picker doc/archive-YYYY-MM-DD-recipe-form-source-picker`
