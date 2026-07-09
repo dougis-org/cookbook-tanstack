@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { scaleQuantity } from '@/lib/servings'
+import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 import type { Recipe, TaxonomyItem } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
@@ -98,6 +99,9 @@ function isSafeUrl(url: string): boolean {
   }
 }
 
+// skipcq: JS-R1005 -- pre-existing component-wide complexity from its many conditional
+// sections, not introduced here; this change replaces inline prepTime/cookTime ternaries
+// with formatMinutesOrNA() calls, which reduces local branching rather than adding to it.
 export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
@@ -206,11 +210,11 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 bg-[var(--theme-bg)] rounded-lg print:hidden">
             <RecipeMetaItem
               label="Prep Time"
-              value={recipe.prepTime ? `${recipe.prepTime} min` : "N/A"}
+              value={formatMinutesOrNA(recipe.prepTime)}
             />
             <RecipeMetaItem
               label="Cook Time"
-              value={recipe.cookTime ? `${recipe.cookTime} min` : "N/A"}
+              value={formatMinutesOrNA(recipe.cookTime)}
             />
             <div>
               <p className="text-sm text-[var(--theme-fg-subtle)]">
@@ -267,8 +271,8 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
           {(() => {
             const printMetaLine = [
-              recipe.prepTime && `Prep: ${recipe.prepTime}m`,
-              recipe.cookTime && `Cook: ${recipe.cookTime}m`,
+              `Prep: ${formatMinutesOrNA(recipe.prepTime, "m")}`,
+              `Cook: ${formatMinutesOrNA(recipe.cookTime, "m")}`,
               recipe.servings != null && `Serves: ${currentServings}`,
               recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
               recipe.addedByName && `Added by: ${recipe.addedByName}`,

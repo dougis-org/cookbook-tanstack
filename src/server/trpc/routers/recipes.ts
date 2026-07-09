@@ -16,6 +16,10 @@ import { fetchAndNormalizeRecipe } from "@/lib/recipe-url-import";
 import { urlImportRateLimiter } from "@/lib/rate-limiter";
 import { createAnthropicExtractor } from "@/lib/ai-extractor";
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's global-scope
+// check misidentifies module-scoped functions.
+// skipcq: JS-R1005 -- flat field-by-field mapping, not branching control flow; each
+// `??` maps one independent field and cannot be meaningfully split.
 function buildImportedRecipeFields(fields: ImportedRecipeInput, userId: string, isPublic: boolean) {
   return {
     name: fields.name,
@@ -24,8 +28,10 @@ function buildImportedRecipeFields(fields: ImportedRecipeInput, userId: string, 
     instructions: fields.instructions ?? undefined,
     notes: fields.notes ?? undefined,
     servings: fields.servings ?? undefined,
-    prepTime: fields.prepTime ?? undefined,
-    cookTime: fields.cookTime ?? undefined,
+    // Preserve an explicit null (N/A) rather than collapsing it to undefined,
+    // matching how recipes.create/recipes.update represent prepTime/cookTime.
+    prepTime: fields.prepTime,
+    cookTime: fields.cookTime,
     difficulty: fields.difficulty ?? undefined,
     sourceId: fields.sourceId ?? undefined,
     personalSourceName: fields.personalSourceName ?? undefined,
@@ -51,8 +57,8 @@ const recipeFields = z.object({
   instructions: z.string().optional(),
   notes: z.string().optional(),
   servings: z.number().int().positive().optional(),
-  prepTime: z.number().int().positive().optional(),
-  cookTime: z.number().int().positive().optional(),
+  prepTime: z.number().int().nonnegative().nullable().optional(),
+  cookTime: z.number().int().nonnegative().nullable().optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   sourceId: objectId.optional(),
   personalSourceName: z.string().trim().max(80).nullable().optional(),

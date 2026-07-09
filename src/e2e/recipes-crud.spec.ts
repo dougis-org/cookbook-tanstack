@@ -113,6 +113,69 @@ test.describe("Recipe CRUD Operations", () => {
     await expect(servingsContainer.locator('[aria-live="polite"]')).toHaveText("6");
   });
 
+  test("should toggle Prep Time to N/A and persist it as N/A after reload", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    const recipeName = getUniqueRecipeName("NA Prep Time");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipeName,
+      prepTime: "15",
+      cookTime: "30",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    // Navigate to edit page
+    await page.getByRole("link", { name: "Edit Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
+    await page.getByLabel("Recipe Name").waitFor();
+
+    // Toggle Prep Time to N/A — the input should become disabled
+    const prepTimeInput = page.getByLabel("Prep Time (minutes)");
+    await page.getByRole("checkbox", { name: "Prep Time N/A" }).check();
+    await expect(prepTimeInput).toBeDisabled();
+
+    await page.getByRole("button", { name: "Update Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+
+    // Prep Time shows N/A; Cook Time still shows its original value. Scoped
+    // to the specific meta item's value paragraph (not just any "N/A" text
+    // on the page, e.g. Servings/Difficulty also render "N/A").
+    const prepTimeValue = page.getByText("Prep Time", { exact: true }).locator("xpath=following-sibling::p[1]");
+    await expect(prepTimeValue).toHaveText("N/A");
+    await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+
+    // Reload to confirm it was actually persisted, not just local UI state
+    await page.reload();
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+    await expect(prepTimeValue).toHaveText("N/A");
+    await expect(page.getByText("30 min", { exact: true })).toBeVisible();
+
+    // Reverse direction: un-toggle Prep Time N/A and give it a real value,
+    // and toggle Cook Time to N/A instead — both directions in one round trip.
+    await page.getByRole("link", { name: "Edit Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
+    await page.getByLabel("Recipe Name").waitFor();
+
+    const prepTimeNAToggle = page.getByRole("checkbox", { name: "Prep Time N/A" });
+    const cookTimeNAToggle = page.getByRole("checkbox", { name: "Cook Time N/A" });
+    await expect(prepTimeNAToggle).toBeChecked();
+    await prepTimeNAToggle.uncheck();
+    await expect(prepTimeInput).not.toBeDisabled();
+    await prepTimeInput.fill("20");
+    await cookTimeNAToggle.check();
+
+    await page.getByRole("button", { name: "Update Recipe" }).click();
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    await expect(page.getByRole("heading", { name: recipeName })).toBeVisible();
+    await expect(page.getByText("20 min", { exact: true })).toBeVisible();
+    const cookTimeValue = page.getByText("Cook Time", { exact: true }).locator("xpath=following-sibling::p[1]");
+    await expect(cookTimeValue).toHaveText("N/A");
+  });
+
   test("should delete a recipe via confirmation modal", async ({ page }) => {
     await registerAndLogin(page);
 

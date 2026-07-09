@@ -71,14 +71,35 @@ describe('StaticRecipeCard', () => {
     expect(screen.getByText('Prep 20m · Cook 35m · 4 servings')).toBeInTheDocument()
   })
 
-  it('omits absent metadata fields', () => {
+  it('shows N/A for absent prep/cook time and omits absent servings', () => {
     render(
       <StaticRecipeCard
         recipe={{ id: 'r-2', name: 'Simple Dish', prepTime: null, cookTime: null, servings: null }}
         index={0}
       />,
     )
-    expect(screen.queryByText(/Prep|Cook|servings/)).not.toBeInTheDocument()
+    expect(screen.getByText('Prep N/A · Cook N/A')).toBeInTheDocument()
+    expect(screen.queryByText(/servings/)).not.toBeInTheDocument()
+  })
+
+  it('shows N/A for zero-valued prep/cook time', () => {
+    render(
+      <StaticRecipeCard
+        recipe={{ id: 'r-3', name: 'Instant Dish', prepTime: 0, cookTime: 0, servings: null }}
+        index={0}
+      />,
+    )
+    expect(screen.getByText('Prep N/A · Cook N/A')).toBeInTheDocument()
+  })
+
+  it('shows N/A for undefined prep/cook time', () => {
+    render(
+      <StaticRecipeCard
+        recipe={{ id: 'r-4', name: 'Undefined Time Dish' }}
+        index={0}
+      />,
+    )
+    expect(screen.getByText('Prep N/A · Cook N/A')).toBeInTheDocument()
   })
 
   it('renders 1-based index number', () => {

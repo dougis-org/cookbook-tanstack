@@ -18,6 +18,7 @@ import TierWall from "@/components/ui/TierWall"
 import StatusIndicator from "./StatusIndicator"
 import { useAuth } from "@/hooks/useAuth"
 import PostSubmitVerifyGate from "./PostSubmitVerifyGate"
+import { isTimeNA } from "@/lib/recipeDisplay"
 
 function sortedEqual(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false
@@ -36,6 +37,8 @@ const recipeFormSchema = z.object({
   notes: z.string().optional(),
   prepTime: z.string().optional(),
   cookTime: z.string().optional(),
+  prepTimeNA: z.boolean(),
+  cookTimeNA: z.boolean(),
   servings: z.string().optional(),
   difficulty: z.string().optional(),
   isPublic: z.boolean(),
@@ -111,6 +114,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
   const { data: allPreparations } = useQuery(trpc.preparations.list.queryOptions())
 
   const originalDataRef = useRef(initialData)
+  // skipcq: JS-R1005 -- flat field-by-field default mapping, not branching control flow;
+  // each `??`/ternary maps one independent form field and cannot be meaningfully split.
   const formDefaults = useMemo(() => ({
     name: originalDataRef.current?.name ?? "",
     classificationId: originalDataRef.current?.classificationId ?? "",
@@ -119,8 +124,10 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     imageUrl: originalDataRef.current?.imageUrl ?? undefined,
     instructions: originalDataRef.current?.instructions ?? "",
     notes: originalDataRef.current?.notes ?? "",
-    prepTime: originalDataRef.current?.prepTime?.toString() ?? "",
-    cookTime: originalDataRef.current?.cookTime?.toString() ?? "",
+    prepTime: isTimeNA(originalDataRef.current?.prepTime) ? "" : originalDataRef.current?.prepTime?.toString() ?? "",
+    cookTime: isTimeNA(originalDataRef.current?.cookTime) ? "" : originalDataRef.current?.cookTime?.toString() ?? "",
+    prepTimeNA: Boolean(originalDataRef.current) && isTimeNA(originalDataRef.current?.prepTime),
+    cookTimeNA: Boolean(originalDataRef.current) && isTimeNA(originalDataRef.current?.cookTime),
     servings: originalDataRef.current?.servings?.toString() ?? "",
     difficulty: originalDataRef.current?.difficulty ?? "",
     isPublic: originalDataRef.current?.isPublic ?? true,
@@ -167,6 +174,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
     return Number.isFinite(n) ? n : undefined
   }
 
+  // skipcq: JS-R1005 -- flat field-by-field payload mapping, not branching control flow;
+  // each `||`/ternary maps one independent form field and cannot be meaningfully split.
   const toPayload = useCallback((values: RecipeFormValues) => {
     return {
       name: values.name,
@@ -177,8 +186,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
       notes: values.notes || undefined,
-      prepTime: toNum(values.prepTime),
-      cookTime: toNum(values.cookTime),
+      prepTime: values.prepTimeNA ? null : toNum(values.prepTime),
+      cookTime: values.cookTimeNA ? null : toNum(values.cookTime),
       servings: toNum(values.servings),
       difficulty: toDifficulty(values.difficulty),
       isPublic: values.isPublic,
@@ -228,7 +237,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
 
   const handleRestoreDraft = () => {
     if (draft) {
-      reset(draft)
+      // prepTimeNA/cookTimeNA are part of RHF's tracked form state (via
+      // defaultValues/watch/setValue), so a draft saved by this version of
+      // the form already captures them. Merge over formDefaults rather than
+      // resetting to the draft alone so a draft saved by an older version
+      // of the form (missing these keys) still gets valid boolean defaults
+      // instead of `undefined`, which would fail the required-boolean schema.
+      reset({ ...formDefaults, ...draft })
       setShowDraftPrompt(false)
     }
   }
@@ -479,27 +494,67 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
           {/* Timings & Servings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="prepTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
-                Prep Time (minutes)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="prepTime" className="block text-sm font-medium text-[var(--theme-fg-muted)]">
+                  Prep Time (minutes)
+                </label>
+                <label htmlFor="prepTimeNA" className="flex items-center gap-1 text-xs font-medium text-[var(--theme-fg-muted)]">
+                  <input
+                    id="prepTimeNA"
+                    type="checkbox"
+                    aria-label="Prep Time N/A"
+                    checked={watch("prepTimeNA")}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setValue("prepTimeNA", checked, { shouldDirty: true })
+                      if (checked) setValue("prepTime", "", { shouldDirty: true })
+                    }}
+                    className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+                  />
+                  N/A
+                </label>
+              </div>
               <input
                 id="prepTime"
                 type="number"
+                min={0}
+                step={1}
                 placeholder="30"
+                disabled={watch("prepTimeNA")}
                 {...register("prepTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
             </div>
             <div>
-              <label htmlFor="cookTime" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
-                Cook Time (minutes)
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="cookTime" className="block text-sm font-medium text-[var(--theme-fg-muted)]">
+                  Cook Time (minutes)
+                </label>
+                <label htmlFor="cookTimeNA" className="flex items-center gap-1 text-xs font-medium text-[var(--theme-fg-muted)]">
+                  <input
+                    id="cookTimeNA"
+                    type="checkbox"
+                    aria-label="Cook Time N/A"
+                    checked={watch("cookTimeNA")}
+                    onChange={(e) => {
+                      const checked = e.target.checked
+                      setValue("cookTimeNA", checked, { shouldDirty: true })
+                      if (checked) setValue("cookTime", "", { shouldDirty: true })
+                    }}
+                    className="w-4 h-4 text-[var(--theme-accent)] bg-[var(--theme-surface-hover)] border-[var(--theme-border)] rounded focus:ring-[var(--theme-accent)]"
+                  />
+                  N/A
+                </label>
+              </div>
               <input
                 id="cookTime"
                 type="number"
+                min={0}
+                step={1}
                 placeholder="45"
+                disabled={watch("cookTimeNA")}
                 {...register("cookTime")}
-                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
+                className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)] disabled:opacity-50"
               />
             </div>
             <div>

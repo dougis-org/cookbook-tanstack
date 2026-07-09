@@ -199,6 +199,28 @@ describe('RecipePageRow', () => {
     const { container } = render(<RecipePageRow recipe={recipe} index={0} pageNumber={1} />)
     expect(container.querySelector('.border-dotted')).toBeNull()
   })
+
+  it('shows N/A for prep/cook time when both are null', () => {
+    render(<RecipePageRow recipe={recipe} index={0} pageNumber={1} />)
+    expect(screen.getByText('N/A prep, N/A cook')).toBeInTheDocument()
+  })
+
+  it('shows N/A for a zero-valued prep/cook time', () => {
+    render(
+      <RecipePageRow
+        recipe={{ ...recipe, prepTime: 0, cookTime: 15 }}
+        index={0}
+        pageNumber={1}
+      />,
+    )
+    expect(screen.getByText('N/A prep, 15m cook')).toBeInTheDocument()
+  })
+
+  it('shows N/A for an undefined prep/cook time', () => {
+    const rest = { id: recipe.id, name: recipe.name, orderIndex: recipe.orderIndex }
+    render(<RecipePageRow recipe={rest} index={0} pageNumber={1} />)
+    expect(screen.getByText('N/A prep, N/A cook')).toBeInTheDocument()
+  })
 })
 
 // ─── CookbookPageHeader ───────────────────────────────────────────────────────

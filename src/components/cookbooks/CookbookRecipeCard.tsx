@@ -3,6 +3,7 @@ import { GripVertical, X } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import CardImage from '@/components/ui/CardImage'
+import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 
 export interface CookbookRecipe {
   id: string
@@ -15,8 +16,8 @@ export interface CookbookRecipe {
 
 function metaLine(recipe: CookbookRecipe): string {
   return [
-    recipe.prepTime && `Prep ${recipe.prepTime}m`,
-    recipe.cookTime && `Cook ${recipe.cookTime}m`,
+    `Prep ${formatMinutesOrNA(recipe.prepTime, 'm')}`,
+    `Cook ${formatMinutesOrNA(recipe.cookTime, 'm')}`,
     recipe.servings && `${recipe.servings} servings`,
   ]
     .filter(Boolean)

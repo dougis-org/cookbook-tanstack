@@ -101,23 +101,25 @@ vi.mock("@/lib/trpc", () => ({
         queryOptions: ({ query }: { query: string }) => ({
           queryKey: ["sources", "search", query],
           queryFn: () => {
-            const q = query.toLowerCase()
+            const normalizedQuery = query.toLowerCase()
             const all = [
               { id: "src1", name: "Serious Eats", slug: "serious-eats", url: null },
               { id: "s-personal", name: "Personal", slug: "personal", url: null },
             ]
-            return all.filter((s) => s.name.toLowerCase().includes(q))
+            return all.filter((s) => s.name.toLowerCase().includes(normalizedQuery))
           },
         }),
       },
       create: {
-        mutationOptions: (options?: any) => ({
-          mutationFn: async (input: { name: string }) => {
+        mutationOptions: (options?: {
+          onSuccess?: (source: { id: string; name: string; slug: string; url: string | null }) => void
+        }) => ({
+          mutationFn: (input: { name: string }) => {
             const source = { id: "s-new", name: input.name, slug: "new-slug", url: null }
             if (options?.onSuccess) {
               options.onSuccess(source)
             }
-            return source
+            return Promise.resolve(source)
           },
         }),
       },
@@ -161,6 +163,8 @@ vi.mock("@/components/recipes/PostSubmitVerifyGate", () => ({
 
 import RecipeForm from "@/components/recipes/RecipeForm"
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -170,16 +174,22 @@ function renderWithProviders(ui: React.ReactElement) {
   )
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function renderBlocked() {
   mockBlocker.status = "blocked"
   renderWithProviders(<RecipeForm />)
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 async function renderBlockedWithPendingUpload() {
   renderBlocked()
   await userEvent.click(screen.getByRole("button", { name: /mock upload image/i }))
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function expectPendingUploadDeleted() {
   expect(mockFetch).toHaveBeenCalledWith("/api/upload/file-1", {
     method: "DELETE",
@@ -227,8 +237,8 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/ingredients/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/instructions/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/notes/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/prep time/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/cook time/i)).toBeInTheDocument()
+      expect(screen.getByLabelText("Prep Time (minutes)")).toBeInTheDocument()
+      expect(screen.getByLabelText("Cook Time (minutes)")).toBeInTheDocument()
       expect(screen.getByLabelText(/servings/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/difficulty/i)).toBeInTheDocument()
     })
@@ -292,8 +302,8 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/notes/i)).toHaveValue("A classic dish")
       expect(screen.getByLabelText(/ingredients/i)).toHaveValue("Pasta\nSauce")
       expect(screen.getByLabelText(/instructions/i)).toHaveValue("Boil\nMix")
-      expect(screen.getByLabelText(/prep time/i)).toHaveValue(10)
-      expect(screen.getByLabelText(/cook time/i)).toHaveValue(20)
+      expect(screen.getByLabelText("Prep Time (minutes)")).toHaveValue(10)
+      expect(screen.getByLabelText("Cook Time (minutes)")).toHaveValue(20)
       expect(screen.getByLabelText(/servings/i)).toHaveValue(4)
       expect(screen.getByLabelText(/difficulty/i)).toHaveValue("easy")
     })
@@ -303,6 +313,33 @@ describe("RecipeForm", () => {
 
       expect(screen.getByTestId("image-upload-field")).toBeInTheDocument()
       expect(screen.getByText("Click to upload")).toBeInTheDocument()
+    })
+
+    it("does not default the N/A toggle on for a new recipe", () => {
+      renderWithProviders(<RecipeForm />)
+
+      expect(screen.getByLabelText("Prep Time (minutes)")).not.toBeDisabled()
+      expect(screen.getByLabelText("Cook Time (minutes)")).not.toBeDisabled()
+    })
+
+    it("defaults the N/A toggle on, disables, and blanks the input for a legacy null prepTime", () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ prepTime: null, cookTime: 20 })} />,
+      )
+
+      expect(screen.getByLabelText("Prep Time (minutes)")).toBeDisabled()
+      expect(screen.getByLabelText("Prep Time (minutes)")).toHaveValue(null)
+      expect(screen.getByLabelText("Cook Time (minutes)")).not.toBeDisabled()
+    })
+
+    it("defaults the N/A toggle on, disables, and blanks the input for a legacy zero cookTime", () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ prepTime: 10, cookTime: 0 })} />,
+      )
+
+      expect(screen.getByLabelText("Cook Time (minutes)")).toBeDisabled()
+      expect(screen.getByLabelText("Cook Time (minutes)")).toHaveValue(null)
+      expect(screen.getByLabelText("Prep Time (minutes)")).not.toBeDisabled()
     })
 
     it("passes initialData.imageUrl to ImageUploadField", () => {
@@ -453,6 +490,81 @@ describe("RecipeForm", () => {
       expect(screen.getByTestId("image-upload-field")).toHaveAttribute(
         "data-value",
         "https://ik.imagekit.io/demo/existing.jpg",
+      )
+    })
+  })
+
+  describe("N/A toggle for prep/cook time", () => {
+    it("sends prepTime: null when the N/A toggle is activated", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
+      )
+
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", prepTime: null }),
+      )
+    })
+
+    it("disables the Prep Time input once the N/A toggle is checked", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", prepTime: 30 })} />,
+      )
+
+      const prepInput = screen.getByLabelText("Prep Time (minutes)")
+      expect(prepInput).not.toBeDisabled()
+
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
+
+      expect(prepInput).toBeDisabled()
+    })
+
+    it("re-enables and clears the input when the N/A toggle is switched off", async () => {
+      renderWithProviders(
+        <RecipeForm initialData={makeRecipe({ name: "Original", cookTime: null })} />,
+      )
+
+      const cookInput = screen.getByLabelText("Cook Time (minutes)")
+      expect(cookInput).toBeDisabled()
+
+      await userEvent.click(screen.getByRole("checkbox", { name: "Cook Time N/A" }))
+
+      expect(cookInput).not.toBeDisabled()
+      expect(cookInput).toHaveValue(null)
+
+      await userEvent.type(cookInput, "25")
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", cookTime: 25 }),
+      )
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
+    it("sends both prepTime and cookTime as null when both toggles are activated independently", async () => {
+      renderWithProviders(
+        <RecipeForm
+          initialData={makeRecipe({ name: "Original", prepTime: 30, cookTime: 45 })}
+        />,
+      )
+
+      await userEvent.click(screen.getByRole("checkbox", { name: "Prep Time N/A" }))
+      await userEvent.click(screen.getByRole("checkbox", { name: "Cook Time N/A" }))
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ id: "test-id", prepTime: null, cookTime: null }),
       )
     })
   })
@@ -921,10 +1033,39 @@ describe("RecipeForm", () => {
       expect(screen.getByLabelText(/recipe name/i)).toHaveValue("Original")
       expect(localStorage.getItem(`recipe-draft-${initialData.id}`)).toBeNull()
     })
+
+    it("restores the persisted N/A toggle from a draft, so submit still sends null", async () => {
+      const initialData = makeRecipe({ name: "Original", prepTime: 30, cookTime: 45 })
+      localStorage.setItem(
+        `recipe-draft-${initialData.id}`,
+        JSON.stringify({ name: "Original", prepTime: "", prepTimeNA: true, cookTime: "45", cookTimeNA: false }),
+      )
+
+      renderWithProviders(<RecipeForm initialData={initialData} />)
+
+      const prepInput = screen.getByLabelText("Prep Time (minutes)")
+      expect(prepInput).not.toBeDisabled()
+
+      const restoreBtn = await screen.findByRole("button", { name: /restore/i })
+      fireEvent.click(restoreBtn)
+
+      expect(prepInput).toBeDisabled()
+
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => {
+        expect(mockUpdateMutationFn).toHaveBeenCalled()
+      })
+      expect(mockUpdateMutationFn.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ id: initialData.id, prepTime: null }),
+      )
+    })
   })
 })
 
 /** Factory to build a full Recipe object for testing. */
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped test helpers.
 function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
   return {
     id: "test-id",

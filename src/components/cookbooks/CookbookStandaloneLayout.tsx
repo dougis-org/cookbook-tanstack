@@ -5,6 +5,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb'
 import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
 import PrintButton from '@/components/ui/PrintButton'
 import { buildPageMap, getDisplayOrderedRecipes } from '@/lib/cookbookPages'
+import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 
 const TOC_LIST_CLASSES =
   'space-y-2 sm:space-y-0 sm:columns-2 sm:gap-8 print:space-y-0 print:columns-2 print:gap-8 [&>li]:break-inside-avoid'
@@ -168,6 +169,8 @@ export function CookbookStandalonePage({
   )
 }
 
+// skipcq: JS-0067 -- ES module scope function, not a global; DeepSource's
+// global-scope check misidentifies module-scoped exports.
 export function RecipeTimeSpan({
   prepTime,
   cookTime,
@@ -178,11 +181,9 @@ export function RecipeTimeSpan({
   className?: string
 }) {
   const label = [
-    prepTime && `${prepTime}m prep`,
-    cookTime && `${cookTime}m cook`,
-  ]
-    .filter(Boolean)
-    .join(', ')
+    `${formatMinutesOrNA(prepTime, 'm')} prep`,
+    `${formatMinutesOrNA(cookTime, 'm')} cook`,
+  ].join(', ')
   return (
     <span className={`text-[var(--theme-print-fg-subtle)] text-xs${className ? ` ${className}` : ''}`}>
       {label}
