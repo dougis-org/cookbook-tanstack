@@ -86,6 +86,51 @@ describe("sources.list", () => {
   });
 });
 
+// ─── sources.listPage ─────────────────────────────────────────────────────────
+
+describe("sources.listPage", () => {
+  it.each([
+    { total: 105, limit: undefined, expectedItems: 100, expectedNextCursor: 100 },
+    { total: 3, limit: 100, expectedItems: 3, expectedNextCursor: null },
+    { total: 5, limit: 5, expectedItems: 5, expectedNextCursor: null },
+  ])(
+    "with $total sources and limit $limit, returns $expectedItems items sorted by name with nextCursor $expectedNextCursor",
+    async ({ total, limit, expectedItems, expectedNextCursor }) => {
+      await withCleanDb(async () => {
+        const id = uid();
+        await Promise.all(
+          Array.from({ length: total }, (_, i) =>
+            new Source({
+              name: `Page-${id}-${String(i).padStart(3, "0")}`,
+              slug: `page-${id}-${i}`,
+            }).save(),
+          ),
+        );
+        const caller = await makeAnonCaller();
+        const result = await caller.sources.listPage(
+          limit === undefined ? { cursor: 0 } : { cursor: 0, limit },
+        );
+        expect(result.items).toHaveLength(expectedItems);
+        const names = result.items.map((s) => s.name);
+        expect(names).toEqual([...names].sort());
+        expect(result.nextCursor).toBe(expectedNextCursor);
+      });
+    },
+  );
+
+  it.each([
+    { cursor: -1, limit: undefined },
+    { cursor: 0, limit: 101 },
+  ])("rejects invalid pagination input (cursor=$cursor, limit=$limit)", async ({ cursor, limit }) => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(
+        caller.sources.listPage(limit === undefined ? { cursor } : { cursor, limit }),
+      ).rejects.toThrow();
+    });
+  });
+});
+
 // ─── sources.search ───────────────────────────────────────────────────────────
 
 describe("sources.search", () => {
@@ -110,7 +155,7 @@ describe("sources.search", () => {
     });
   });
 
-  it("limits results to at most 10", async () => {
+  it("returns up to the validated limit (default 100), sorted by name ascending", async () => {
     await withCleanDb(async () => {
       const id = uid();
       await Promise.all(
@@ -119,9 +164,42 @@ describe("sources.search", () => {
         ),
       );
       const caller = await makeAnonCaller();
-      expect(
-        (await caller.sources.search({ query: `SearchLimit-${id}` })).length,
-      ).toBeLessThanOrEqual(10);
+      const result = await caller.sources.search({ query: `SearchLimit-${id}` });
+      expect(result.length).toBe(15);
+      expect(result.length).toBeLessThanOrEqual(100);
+      const names = result.map((s) => s.name);
+      expect(names).toEqual([...names].sort());
+    });
+  });
+
+  it("respects an explicit limit lower than the total matches", async () => {
+    await withCleanDb(async () => {
+      const id = uid();
+      await Promise.all(
+        Array.from({ length: 15 }, (_, i) =>
+          new Source({ name: `SearchCap-${id}-${i}`, slug: `search-cap-${id}-${i}` }).save(),
+        ),
+      );
+      const caller = await makeAnonCaller();
+      const result = await caller.sources.search({
+        query: `SearchCap-${id}`,
+        limit: 5,
+      });
+      expect(result).toHaveLength(5);
+    });
+  });
+
+  it.each([
+    { query: "", limit: undefined },
+    { query: "x".repeat(256), limit: undefined },
+    { query: "a", limit: 0 },
+    { query: "a", limit: 101 },
+  ])("rejects invalid search input (query length=$query.length, limit=$limit)", async ({ query, limit }) => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+      await expect(
+        caller.sources.search(limit === undefined ? { query } : { query, limit }),
+      ).rejects.toThrow();
     });
   });
 });

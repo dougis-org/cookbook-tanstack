@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/lib/trpc"
 import { getTierWallReason } from "@/lib/trpc-error"
 import type { Recipe, TaxonomyItem } from "@/types/recipe"
-import SourceSelector from "@/components/ui/SourceSelector"
+import RecipeSourcePicker from "@/components/recipes/RecipeSourcePicker"
 import CategoryPickerDropdown from "@/components/ui/CategoryPickerDropdown"
 import { MultiSelectDropdown } from "@/components/ui/MultiSelectDropdown"
 import ConfirmDialog from "@/components/ui/ConfirmDialog"
@@ -451,7 +451,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
             <label htmlFor="sourceId" className="block text-sm font-medium text-[var(--theme-fg-muted)] mb-2">
               Source (cookbook, website, etc.)
             </label>
-            <SourceSelector
+            <RecipeSourcePicker
               id="sourceId"
               value={selectedSourceId}
               initialName={initialData?.sourceName ?? ""}

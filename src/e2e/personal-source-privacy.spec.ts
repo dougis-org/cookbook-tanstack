@@ -89,19 +89,14 @@ test.describe("Personal source privacy", () => {
   test("source switch clears", async ({ page }) => {
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}/edit`);
 
-    // Clear the Personal source and select a non-Personal one
-    await page.locator("#sourceId").getByRole("button").click();
+    // Clear the Personal source by creating and selecting a non-Personal one
+    // via the standalone "Add New Source" modal (the picker no longer offers
+    // inline create-on-type).
     const altSourceName = getUniqueRecipeName("Alt Source");
-    const altResponsePromise = page.waitForResponse(/\/api\/trpc\/sources\.search/);
-    await page.getByPlaceholder("Search for a source...").fill(altSourceName);
-    const altSearchResponse = await altResponsePromise;
-    if (!altSearchResponse.ok()) {
-      throw new Error(
-        `sources.search failed (${altSearchResponse.status()}) while searching for "${altSourceName}". Body: ${await altSearchResponse.text()}`,
-      );
-    }
-    await page.getByRole("button", { name: `Create "${altSourceName}"` }).click();
-    // Wait until the SourceSelector reflects the new source (create mutation + onSuccess complete)
+    await page.getByRole("button", { name: "Add New Source" }).click();
+    await page.getByLabel("Name", { exact: true }).fill(altSourceName);
+    await page.getByRole("button", { name: "Create Source" }).click();
+    // Wait until the picker reflects the new source (create mutation + onSuccess complete)
     // before saving — otherwise the form submits with sourceId: undefined and the server keeps
     // personalSourceName unchanged (because it falls back to the still-Personal stored sourceId).
     await expect(page.locator("#sourceId")).toContainText(altSourceName, { timeout: 5000 });
@@ -113,7 +108,6 @@ test.describe("Personal source privacy", () => {
     await assertPersonalNameNotInResponse(page, recipeId);
 
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}/edit`);
-    await page.locator("#sourceId").getByRole("button").click();
     await clickPersonalSourceOption(page);
 
     await expect(page.getByLabel("Personal Name")).toHaveValue("");
@@ -128,7 +122,7 @@ test.describe("Personal source privacy", () => {
 
     await expect(page.getByLabel("Personal Name")).toBeVisible();
 
-    await page.locator("#sourceId").getByRole("button").click();
+    await page.getByRole("button", { name: "Clear option" }).click();
 
     await expect(page.getByLabel("Personal Name")).not.toBeVisible();
   });
