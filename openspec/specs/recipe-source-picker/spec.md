@@ -139,7 +139,7 @@ The system SHALL provide a `sources.listPage` query that returns sources sorted 
 
 ### Requirement: Performance bound on initial load
 
-The Source dropdown SHALL never load more than one bounded page (≤100 sources) into memory at a time without an explicit further scroll action, regardless of total source count.
+The Source dropdown's initial load SHALL be bounded to a single page (≤100 sources), regardless of total source count. Additional pages are loaded only in response to an explicit scroll-to-bottom action (see "Scrolling to the bottom loads the next page"), and previously-loaded pages are retained rather than discarded.
 
 #### Scenario: Initial load is bounded to one page
 
@@ -163,4 +163,6 @@ The Source dropdown SHALL never load more than one bounded page (≤100 sources)
 - Server implementation: [sources.ts](../../../src/server/trpc/routers/sources.ts)
 - Unit and behavioral tests: [RecipeSourcePicker.test.tsx](../../../src/components/recipes/__tests__/RecipeSourcePicker.test.tsx), [PaginatedSingleSelectDropdown.test.tsx](../../../src/components/ui/__tests__/PaginatedSingleSelectDropdown.test.tsx), [AddSourceModal.test.tsx](../../../src/components/recipes/__tests__/AddSourceModal.test.tsx), [sources.test.ts](../../../src/server/trpc/routers/__tests__/sources.test.ts)
 - E2E coverage: [recipe-source-picker.spec.ts](../../../src/e2e/recipe-source-picker.spec.ts), [personal-source-privacy.spec.ts](../../../src/e2e/personal-source-privacy.spec.ts)
-- Originating change: [changes/archive/2026-07-09-recipe-form-source-picker](../../changes/archive/2026-07-09-recipe-form-source-picker/)
+- Originating change: [2026-07-09-recipe-form-source-picker](../../changes/archive/2026-07-09-recipe-form-source-picker/)
+- Design: [design.md](../../changes/archive/2026-07-09-recipe-form-source-picker/design.md)
+- Tasks: [tasks.md](../../changes/archive/2026-07-09-recipe-form-source-picker/tasks.md)
