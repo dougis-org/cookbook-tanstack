@@ -148,7 +148,7 @@ None
 
 ### Requirement: Security
 
-See functional scenarios: N/A (this change is about data integrity, not security/access control). The nullable `prepTime`/`cookTime` change likewise introduces no new access-control surface — see "Negative prepTime or cookTime is still rejected" above; existing ownership/tier checks in `recipes.update`/`recipes.create` are unmodified.
+See functional scenario "Negative prepTime or cookTime is still rejected" above — the nullable `prepTime`/`cookTime` change introduces no new access-control surface; existing ownership/tier checks in `recipes.update`/`recipes.create` are unmodified. The `personalSourceName` normalization behavior in this capability is a data-integrity concern, not access control.
 
 ### Requirement: Reliability
 

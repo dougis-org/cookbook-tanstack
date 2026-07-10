@@ -7,7 +7,7 @@
 
 ## Preflight
 
-- [x] **Verify `pr-review-toolkit:review-pr` is available** — `pr-reviewer` skill (the project's equivalent PR-ownership skill) was used directly to drive PR #578 to merge.
+- [x] **Verify `pr-review-toolkit:review-pr` is available** — checked the available skills list; `pr-review-toolkit:review-pr` was not present, but the equivalent `pr-reviewer` skill was available and used directly to drive PR #578 to merge (same build/test → comments → checks priority order and continuous-monitoring behavior).
 
 ## Execution
 
@@ -31,7 +31,7 @@
 
 ## Validation
 
-- [x] Run unit/integration tests: `npm run test` (1776/1776 passed)
+- [x] Run unit/integration tests: `npm run test` (1776/1776 passed at this point in Validation; the Pre-Commit Code Review pass above added 3 more tests, bringing the final re-run to 1809/1809 — not a discrepancy, just two snapshots in time)
 - [x] Run E2E tests: `npm run test:e2e` — added `should toggle Prep Time to N/A and persist it as N/A after reload` to `src/e2e/recipes-crud.spec.ts` and `TOC shows N/A for recipes with no prep/cook time set...` to `src/e2e/cookbooks-print.spec.ts`; full suite run clean (exit 0)
 - [x] Run type checks (project TypeScript strict mode): `npx tsc --noEmit` — no errors
 - [x] Run build: `npm run build` — succeeded (pre-existing unrelated CSS/chunk-size warnings only)
@@ -95,4 +95,4 @@ Blocking resolution flow:
 - [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
 - [ ] Prune merged local branches: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-2026-07-09-add-na-cook-prep-time`
 
-Required cleanup after archive: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-YYYY-MM-DD-add-na-cook-prep-time`
+Required cleanup after archive: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-2026-07-09-add-na-cook-prep-time`
