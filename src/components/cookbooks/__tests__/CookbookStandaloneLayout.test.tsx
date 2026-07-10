@@ -26,6 +26,13 @@ describe("CookbookStandalonePage", () => {
     const { container } = render(<CookbookStandalonePage maxWidth="4xl"><span /></CookbookStandalonePage>)
     expect(container.querySelector(".max-w-4xl")).toBeInTheDocument()
   })
+
+  it("renders the outer container with the always-light print background token, not the theme-driven background", () => {
+    const { container } = render(<CookbookStandalonePage><span /></CookbookStandalonePage>)
+    const outer = container.firstElementChild
+    expect(outer).toHaveClass("bg-[var(--theme-print-bg)]")
+    expect(outer).not.toHaveClass("bg-[var(--theme-bg)]")
+  })
 })
 
 // ─── CookbookTocList ──────────────────────────────────────────────────────────
