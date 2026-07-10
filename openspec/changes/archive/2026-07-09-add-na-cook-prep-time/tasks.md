@@ -89,10 +89,10 @@ Blocking resolution flow:
 - [x] Sync approved spec deltas into `openspec/specs/`: merged the `recipe-write` delta (new ADDED/MODIFIED requirements plus NFAC scenarios) into the existing `openspec/specs/recipe-write/spec.md`, and created `openspec/specs/recipe-time-display/spec.md` (new capability) from the change's delta. Relative links updated to `../../changes/archive/2026-07-09-add-na-cook-prep-time/design.md` and `.../tasks.md`.
 - [x] Archive the change: moved `openspec/changes/add-na-cook-prep-time/` to `openspec/changes/archive/2026-07-09-add-na-cook-prep-time/` via `git mv` (single rename, not copy+delete)
 - [x] Confirm `openspec/changes/archive/2026-07-09-add-na-cook-prep-time/` exists and `openspec/changes/add-na-cook-prep-time/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-add-na-cook-prep-time` then `git push -u origin doc/archive-YYYY-MM-DD-add-na-cook-prep-time`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-add-na-cook-prep-time` to `main` with title `docs: archive add-na-cook-prep-time (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-09-add-na-cook-prep-time` then `git push -u origin doc/archive-2026-07-09-add-na-cook-prep-time`
+- [x] Open a PR from `doc/archive-2026-07-09-add-na-cook-prep-time` to `main` with title `docs: archive add-na-cook-prep-time (2026-07-09)` — PR #584
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge 584 --auto --squash` — used `--squash` (repository's required merge method, same as PR #578) rather than `--merge`
 - [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-YYYY-MM-DD-add-na-cook-prep-time`
+- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-2026-07-09-add-na-cook-prep-time`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D add-na-cook-prep-time doc/archive-YYYY-MM-DD-add-na-cook-prep-time`
