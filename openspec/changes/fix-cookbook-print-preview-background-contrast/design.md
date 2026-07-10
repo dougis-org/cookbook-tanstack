@@ -2,7 +2,7 @@
 
 - Relevant architecture: `CookbookStandalonePage` (`src/components/cookbooks/CookbookStandaloneLayout.tsx`) is a shared layout wrapper used only by `src/routes/cookbooks.$cookbookId_.toc.tsx` and `src/routes/cookbooks.$cookbookId_.print.tsx`. Both routes render cookbook-print-style content (`CookbookPageHeader`, `CookbookTocList`, `CookbookAlphaIndex`, footers) that intentionally sources color from the `--theme-print-*` token family (defined once, always-light, in `src/styles/base.css` and mirrored in `design-system/tokens/colors-and-type.css`), independent of the active `--theme-*` (dark/dark-greens/light-cool/light-warm) selection.
 - Dependencies: No new dependencies. Uses existing CSS custom properties already defined in `src/styles/base.css`/`design-system/tokens/colors-and-type.css`.
-- Interfaces/contracts touched: `pageBaseClass` constant inside `CookbookStandaloneLayout.tsx`. No exported component prop/signature changes.
+- Interfaces/contracts touched: `CookbookStandalonePage`'s outer container `<div className="min-h-screen ...">` inside `CookbookStandaloneLayout.tsx` (the `pageBaseClass` constant, used by the loading/not-found stub states, is updated too for consistency). No exported component prop/signature changes.
 
 ## Goals / Non-Goals
 
@@ -21,16 +21,13 @@
 
 ## Decisions
 
-### Decision 1: Change `pageBaseClass` to use `--theme-print-bg`
+### Decision 1: Add `bg-[var(--theme-print-bg)]` to `CookbookStandalonePage`'s container
 
-- Chosen: In `src/components/cookbooks/CookbookStandaloneLayout.tsx`, change:
-  ```ts
-  const pageBaseClass = 'min-h-screen bg-[var(--theme-bg)]'
+- Chosen: In `src/components/cookbooks/CookbookStandaloneLayout.tsx`, add an explicit background class to `CookbookStandalonePage`'s outer container (previously had no background class at all):
+  ```tsx
+  <div className="min-h-screen bg-[var(--theme-print-bg)]">
   ```
-  to:
-  ```ts
-  const pageBaseClass = 'min-h-screen bg-[var(--theme-print-bg)]'
-  ```
+  The `pageBaseClass` constant (`'min-h-screen bg-[var(--theme-bg)]'`, used only by the loading/not-found stub states) is separately updated to `'min-h-screen bg-[var(--theme-print-bg)]'` so those states don't flash from a theme-driven background to the print background once content hydrates.
 - Alternatives considered:
   1. Add a new prop (e.g. `variant="print"`) to `CookbookStandalonePage` that switches background tokens conditionally. Rejected — `CookbookStandalonePage` has exactly two consumers today, both print-style pages; a variant prop adds an API surface with no current use case for a non-print variant.
   2. Override background only inside a wrapping `<div>` in each route file instead of the shared component. Rejected — duplicates the fix across two files and risks future drift (the same class of bug this change is fixing was already once caused by divergent implementations across `/toc` and `/print`, per the earlier `fix-cookbook-print-toc-layout-2026-03-27` change).
@@ -42,7 +39,7 @@
 
 - Proposal element: "The on-screen background of `CookbookStandalonePage` matches the same always-light token family already used by its text/border content" (Problem Space, Desired behavior)
   - Design decision: Decision 1
-  - Validation approach: Component test asserting `pageBaseClass`/rendered container includes `bg-[var(--theme-print-bg)]` and not `bg-[var(--theme-bg)]`; manual/E2E visual check across all four themes on both routes.
+  - Validation approach: Component test asserting `CookbookStandalonePage`'s rendered container includes `bg-[var(--theme-print-bg)]` and not `bg-[var(--theme-bg)]`; manual/E2E visual check across all four themes on both routes.
 - Proposal element: "Pairing the on-screen background... Verifying the fix across all four themes on both affected routes" (Scope, In Scope)
   - Design decision: Decision 1
   - Validation approach: E2E test (or manual pass) toggling each theme class on `<html>` and confirming header/TOC/footer text remains visible against the now-fixed white background.
@@ -65,7 +62,7 @@
 
 - Requirement category: reliability
   - Requirement: The fix must not alter behavior of any other route/component consuming `--theme-bg`.
-  - Design element: Change is scoped to a single local constant (`pageBaseClass`) inside `CookbookStandaloneLayout.tsx`, not a shared token definition.
+  - Design element: Change is scoped to `CookbookStandalonePage`'s container className (plus the local `pageBaseClass` constant) inside `CookbookStandaloneLayout.tsx`, not a shared token definition.
   - Acceptance criteria reference: N/A (no spec change needed elsewhere); verified by full unit/E2E suite passing unchanged for non-cookbook-print areas.
   - Testability notes: Run full `npm run test` and `npm run test:e2e` suites to confirm no unrelated regressions.
 
@@ -81,7 +78,7 @@
 ## Rollback / Mitigation
 
 - Rollback trigger: If the change is found to break the on-screen appearance of `/toc` or `/print` in any theme, or unexpectedly affects another consumer of `CookbookStandalonePage`.
-- Rollback steps: Revert the one-line change to `pageBaseClass` in `src/components/cookbooks/CookbookStandaloneLayout.tsx`. Fully reversible — no data migrations, no API changes, no deployment steps.
+- Rollback steps: Revert the `bg-[var(--theme-print-bg)]` class from `CookbookStandalonePage`'s outer container (and the `pageBaseClass` constant change) in `src/components/cookbooks/CookbookStandaloneLayout.tsx`. Fully reversible — no data migrations, no API changes, no deployment steps.
 - Data migration considerations: None — this is a CSS class-string change only.
 - Verification after rollback: Re-run the existing `CookbookStandaloneLayout` and `CookbookPrintPage`/`CookbookTocPage` test suites to confirm reversion restores prior (buggy but known) behavior.
 

@@ -151,8 +151,11 @@ export function CookbookTocList({
   )
 }
 
+// Paired with the always-light --theme-print-* family (not the active site
+// theme) so the loading/not-found stub states match CookbookStandalonePage's
+// own background and don't flash from dark to light once content hydrates.
 const pageBaseClass =
-  'min-h-screen bg-[var(--theme-bg)]'
+  'min-h-screen bg-[var(--theme-print-bg)]'
 
 export function CookbookStandalonePage({
   children,
@@ -219,8 +222,8 @@ export function CookbookPageLoading() {
 export function CookbookPageNotFound() {
   return (
     <div className={`${pageBaseClass} flex flex-col items-center justify-center gap-4`}>
-      <p className="text-[var(--theme-fg-muted)] text-lg">Cookbook not found.</p>
-      <Link to="/cookbooks" className="text-[var(--theme-accent)] hover:text-[var(--theme-accent-hover)]">
+      <p className="text-[var(--theme-print-fg-muted)] text-lg">Cookbook not found.</p>
+      <Link to="/cookbooks" className="text-[var(--theme-print-accent)] hover:underline">
         Back to Cookbooks
       </Link>
     </div>

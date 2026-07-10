@@ -34,7 +34,7 @@ regardless of the currently active site theme (`dark`, `dark-greens`,
 ## Traceability
 
 - Proposal element: "The on-screen background of `CookbookStandalonePage` matches the same always-light token family already used by its text/border content" -> Requirement: ADDED Standalone page background matches the print token family
-- Design decision: Decision 1 (change `pageBaseClass` to use `--theme-print-bg`) -> Requirement: ADDED Standalone page background matches the print token family
+- Design decision: Decision 1 (add `bg-[var(--theme-print-bg)]` to `CookbookStandalonePage`'s container) -> Requirement: ADDED Standalone page background matches the print token family
 - Requirement: ADDED Standalone page background matches the print token family -> Task(s): update `pageBaseClass`, update/add component and E2E tests covering all four themes
 
 ## Non-Functional Acceptance Criteria
@@ -45,4 +45,4 @@ regardless of the currently active site theme (`dark`, `dark-greens`,
 
 - **Given** the rest of the application relies on `--theme-bg` for theme-driven backgrounds outside of `CookbookStandalonePage`
 - **When** this change is applied
-- **Then** no other route or component's background changes, since the fix is scoped to the local `pageBaseClass` constant rather than the shared `--theme-bg` token definition
+- **Then** no other route or component's background changes, since the fix is scoped to `CookbookStandalonePage`'s container className (and the local `pageBaseClass` constant used only by its own loading/not-found stub states) rather than the shared `--theme-bg` token definition

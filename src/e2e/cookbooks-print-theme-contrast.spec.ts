@@ -62,7 +62,10 @@ test.describe("TOC/print preview background contrast across themes", () => {
   for (const theme of SUPPORTED_THEMES) {
     for (const routeSuffix of [
       "toc",
-      "print",
+      // Note: bare "print" (without displayonly=1) triggers window.print() in
+      // CookbookPrintPage, which is unreliable to assert against in headless
+      // Playwright runs. "print?displayonly=1" exercises the same
+      // CookbookStandalonePage background/layout path without that side effect.
       "print?displayonly=1",
     ] as const) {
       test(`${routeSuffix} renders a light background with visible text in the ${theme} theme`, async ({
@@ -73,7 +76,7 @@ test.describe("TOC/print preview background contrast across themes", () => {
         }, theme);
 
         await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/${routeSuffix}`);
-        await expect(page.locator("html")).toHaveClass(new RegExp(theme));
+        await expect(page.locator(`html.${theme}`)).toBeVisible();
 
         // Both routes render CookbookPageHeader (the cookbook title) via the shared
         // CookbookStandalonePage wrapper this fix targets. The /print route also

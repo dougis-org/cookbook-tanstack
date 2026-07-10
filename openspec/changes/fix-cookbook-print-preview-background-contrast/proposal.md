@@ -10,7 +10,7 @@
 
 ## Problem Space
 
-- Current behavior: `CookbookStandalonePage` (in `src/components/cookbooks/CookbookStandaloneLayout.tsx`) sets its page background with `pageBaseClass = 'min-h-screen bg-[var(--theme-bg)]'`, which resolves to whatever the user's active theme defines for `--theme-bg` (e.g. slate-900/navy in the default dark theme). Every piece of descendant text and border in the TOC/print page (`CookbookPageHeader`, `CookbookTocList`, `CookbookAlphaIndex`, footers) intentionally uses the separate `--theme-print-*` token family, which is hardcoded to always-light values (`--theme-print-fg: #111827` etc.) regardless of the active theme, per the existing convention documented in `src/styles/base.css` ("Print tokens — always explicit light values ... so dark-theme values never bleed into print"). The result: a theme-driven (often dark) background paired with a fixed-light (near-black) foreground, causing very low or inverted contrast on screen. The actual `@media print` output is unaffected because `src/styles/print.css` forces `body { background: #fff !important }` during real printing, so the bug is confined to on-screen rendering of these two routes.
+- Current behavior: `CookbookStandalonePage`'s outer container (in `src/components/cookbooks/CookbookStandaloneLayout.tsx`) had no explicit background class since commit `a4ee150c` — it was left as `<div className="min-h-screen">`, so the browser/OS painted whatever background it chose (transparent by default, but some browser dark-mode heuristics or forced-dark rendering paint that as dark). Every piece of descendant text and border in the TOC/print page (`CookbookPageHeader`, `CookbookTocList`, `CookbookAlphaIndex`, footers) intentionally uses the separate `--theme-print-*` token family, which is hardcoded to always-light values (`--theme-print-fg: #111827` etc.) regardless of the active theme, per the existing convention documented in `src/styles/base.css` ("Print tokens — always explicit light values ... so dark-theme values never bleed into print"). The result: an unpaired (often dark-rendered) background against a fixed-light (near-black) foreground, causing very low or inverted contrast on screen. The actual `@media print` output is unaffected because `src/styles/print.css` forces `body { background: #fff !important }` during real printing, so the bug is confined to on-screen rendering of these two routes.
 - Desired behavior: The on-screen background of `CookbookStandalonePage` matches the same always-light token family already used by its text/border content, so the preview always renders as light text-on-dark-border-on-white regardless of the active theme — consistent with what will actually be printed.
 - Constraints: No change to the actual `@media print` output (already correct). No change to any other route or component that uses `--theme-bg` normally. Must not regress the four supported themes (`dark`, `dark-greens`, `light-cool`, `light-warm`) elsewhere in the app.
 - Assumptions: `--theme-print-bg` (`#ffffff`, defined in both `src/styles/base.css` and `design-system/tokens/colors-and-type.css`) is the correct paired background token for `--theme-print-fg`/`--theme-print-border`/etc., since both are already defined as an always-light set intended to travel together.
@@ -32,7 +32,7 @@
 
 ## What Changes
 
-- `src/components/cookbooks/CookbookStandaloneLayout.tsx`: `pageBaseClass` changes from `'min-h-screen bg-[var(--theme-bg)]'` to `'min-h-screen bg-[var(--theme-print-bg)]'`.
+- `src/components/cookbooks/CookbookStandaloneLayout.tsx`: `CookbookStandalonePage`'s outer container `<div>` gains an explicit `bg-[var(--theme-print-bg)]` class (previously had no background class). The `pageBaseClass` constant used by the loading/not-found stub states is also updated from `'min-h-screen bg-[var(--theme-bg)]'` to `'min-h-screen bg-[var(--theme-print-bg)]'` for consistency, so those states don't flash from a theme-driven background to the print background once content hydrates.
 
 ## Risks
 
@@ -45,7 +45,7 @@
 
 ## Open Questions
 
-None. All decisions were resolved during the exploration phase (see linked explore-mode conversation): the background token pairs with the existing `--theme-print-fg` family, and the fix is confined to `pageBaseClass`.
+None. All decisions were resolved during the exploration phase (see linked explore-mode conversation): the background token pairs with the existing `--theme-print-fg` family. Implementation note: the fix is applied directly to `CookbookStandalonePage`'s container (not `pageBaseClass`, which is only used by the loading/not-found stub states and was updated separately for consistency) — see `tasks.md` for the plan-deviation note.
 
 ## Non-Goals
 
