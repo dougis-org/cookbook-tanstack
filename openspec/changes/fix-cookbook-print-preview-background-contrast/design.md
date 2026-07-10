@@ -50,7 +50,7 @@
 ## Functional Requirements Mapping
 
 - Requirement: TOC/print page background must render as light (`--theme-print-bg`) on screen regardless of active theme.
-  - Design element: Decision 1 (`pageBaseClass` change).
+  - Design element: Decision 1 (`bg-[var(--theme-print-bg)]` added to `CookbookStandalonePage`'s container).
   - Acceptance criteria reference: `specs/cookbook-print-view/spec.md` (new scenario to be added).
   - Testability notes: Assert via rendered class name / computed style in a component test; no visual-diffing tooling required since the token is deterministic.
 - Requirement: Actual `@media print` output must remain unchanged (white background, as already forced by `print.css`).
