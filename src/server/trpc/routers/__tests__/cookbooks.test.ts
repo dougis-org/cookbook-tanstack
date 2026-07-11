@@ -1063,6 +1063,43 @@ describe("cookbooks.buildChaptersByCategory", () => {
       );
     });
   });
+
+  it("a new chapter's display name is trimmed even when the source category has leading/trailing whitespace", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const cls = await seedClassification("  Dessert  ");
+      const recipe = await new Recipe({ name: "Cake", userId: cb.userId, isPublic: true, classificationId: cls.id }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+      expect(result.summary.created).toEqual([{ name: "Dessert", recipeCount: 1 }]);
+
+      const persisted = await caller.cookbooks.byId({ id: cb.id });
+      expect(persisted!.chapters[0].name).toBe("Dessert");
+    });
+  });
+
+  it("merges into the existing chapter with the lowest orderIndex when duplicate chapter names exist", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const laterChapterId = new Types.ObjectId();
+      const earlierChapterId = new Types.ObjectId();
+      // Deliberately push the lower-orderIndex duplicate second in array order, to prove the
+      // merge target is chosen by orderIndex rather than by array/iteration order.
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        chapters: [
+          { _id: laterChapterId, name: "Dessert", orderIndex: 5 },
+          { _id: earlierChapterId, name: "dessert", orderIndex: 1 },
+        ],
+      });
+      const cls = await seedClassification("Dessert");
+      const recipe = await new Recipe({ name: "Pie", userId: cb.userId, isPublic: true, classificationId: cls.id }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, { $set: { recipes: [{ recipeId: recipe.id, orderIndex: 0 }] } });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      expect(result!.recipes[0].chapterId).toBe(String(earlierChapterId));
+    });
+  });
 });
 
 // ─── cookbooks.addRecipe (chapter-aware) ─────────────────────────────────────

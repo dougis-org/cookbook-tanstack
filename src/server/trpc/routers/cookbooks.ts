@@ -110,8 +110,11 @@ function groupUnchapteredRecipesByCategory(
   const chaptered = stubs.filter((s) => s.chapterId != null);
   const unchaptered = stubs.filter((s) => s.chapterId == null);
 
-  const categoryFor = (recipeId: unknown) => categoryByRecipeId.get(String(recipeId)) ?? "Uncategorized";
   const normalize = (name: string) => name.trim().toLowerCase();
+  const categoryFor = (recipeId: unknown) => {
+    const raw = categoryByRecipeId.get(String(recipeId))?.trim();
+    return raw && raw.length > 0 ? raw : "Uncategorized";
+  };
 
   // Group by normalized name so categories differing only by case/whitespace (e.g. "BBQ" vs
   // "bbq") collapse into a single group instead of producing duplicate chapters. The first
@@ -127,9 +130,15 @@ function groupUnchapteredRecipesByCategory(
     if (!displayNameByNormalized.has(key)) displayNameByNormalized.set(key, category);
   }
 
+  // If multiple existing chapters normalize to the same name, prefer the one with the lowest
+  // orderIndex so the merge target is deterministic rather than depending on array order.
   const existingByNormalizedName = new Map<string, { _id: unknown; name: string; orderIndex: number }>();
   for (const ch of chapters) {
-    existingByNormalizedName.set(normalize(ch.name), ch);
+    const key = normalize(ch.name);
+    const current = existingByNormalizedName.get(key);
+    if (!current || ch.orderIndex < current.orderIndex) {
+      existingByNormalizedName.set(key, ch);
+    }
   }
   const maxExistingOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
 
