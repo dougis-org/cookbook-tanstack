@@ -104,22 +104,18 @@ regardless of the currently active site theme (`dark`, `dark-greens`,
 
 #### Scenario: TOC/print page background is light in the dark theme
 
-- **Given** a user has the "Dark (blues)" theme active (`html.dark`)
-- **When** the user views `/cookbooks/$id/toc` or `/cookbooks/$id/print` (including with `?displayonly=1`)
-- **Then** the page container background renders as the fixed light `--theme-print-bg` value, not the theme's dark `--theme-bg` value
-- **AND** recipe names, the cookbook title, and footer text remain visible against that background
+- **WHEN** a user with the "Dark (blues)" theme active (`html.dark`) views `/cookbooks/$id/toc` or `/cookbooks/$id/print` (including with `?displayonly=1`)
+- **THEN** the page container background renders as the fixed light `--theme-print-bg` value, not the theme's dark `--theme-bg` value, and recipe names, the cookbook title, and footer text remain visible against that background
 
 #### Scenario: TOC/print page background is light in every supported theme
 
-- **Given** a user has any of the four supported themes active (`dark`, `dark-greens`, `light-cool`, `light-warm`)
-- **When** the user views `/cookbooks/$id/toc` or `/cookbooks/$id/print`
-- **Then** the page container background renders identically as the fixed light `--theme-print-bg` value in all four cases
+- **WHEN** a user with any of the four supported themes active (`dark`, `dark-greens`, `light-cool`, `light-warm`) views `/cookbooks/$id/toc` or `/cookbooks/$id/print`
+- **THEN** the page container background renders identically as the fixed light `--theme-print-bg` value in all four cases
 
 #### Scenario: Actual print output is unaffected
 
-- **Given** a user triggers the browser print dialog from `/cookbooks/$id/print`
-- **When** the document is printed
-- **Then** the printed page background remains white, as already enforced by the existing `@media print` rule in `src/styles/print.css`, unchanged by this requirement
+- **WHEN** a user triggers the browser print dialog from `/cookbooks/$id/print`
+- **THEN** the printed page background remains white, as already enforced by the existing `@media print` rule in `src/styles/print.css`, unchanged by this requirement
 
 See [design.md](../../changes/archive/2026-07-10-fix-cookbook-print-preview-background-contrast/design.md) and [tasks.md](../../changes/archive/2026-07-10-fix-cookbook-print-preview-background-contrast/tasks.md) for the change that introduced this requirement.
 
