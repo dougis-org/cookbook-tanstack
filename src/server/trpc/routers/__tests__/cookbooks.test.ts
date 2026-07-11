@@ -1048,6 +1048,39 @@ describe("cookbooks.buildChaptersByCategory", () => {
     });
   });
 
+  it("skips (does not chapter or leak) a stub whose recipe is not visible to the calling editor collaborator", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const editor = await seedUser();
+      const otherUser = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: editor.id, role: "editor", addedBy: owner.id }).save();
+      const cls = await seedClassification("Dessert");
+      const visibleRecipe = await new Recipe({ name: "Cake", userId: owner.id, isPublic: true, classificationId: cls.id }).save();
+      const privateRecipe = await new Recipe({ name: "Secret Sauce", userId: otherUser.id, isPublic: false, classificationId: cls.id }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        $set: {
+          recipes: [
+            { recipeId: visibleRecipe.id, orderIndex: 0 },
+            { recipeId: privateRecipe.id, orderIndex: 1 },
+          ],
+        },
+      });
+
+      const caller = await makeAuthCaller(editor.id, { collabCookbookIds: [cb.id] });
+      const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+      expect(result.summary.created).toEqual([{ name: "Dessert", recipeCount: 1 }]);
+
+      // Query the raw persisted document (not the visibility-filtered byId projection) to prove
+      // the invisible recipe's stub was left untouched rather than silently chaptered.
+      const persisted = await Cookbook.findById(cb.id).lean();
+      const privateStub = persisted!.recipes.find(
+        (r: { recipeId: unknown }) => String(r.recipeId) === String(privateRecipe.id),
+      );
+      expect(privateStub.chapterId).toBeUndefined();
+    });
+  });
+
   it("a viewer collaborator (read-only role, not merely a non-collaborator) is rejected", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();

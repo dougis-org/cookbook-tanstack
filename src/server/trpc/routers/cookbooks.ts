@@ -100,7 +100,10 @@ interface BuildChaptersByCategoryResult {
  * matches case-insensitively/trimmed, or creating a new chapter. Already-chaptered stubs pass
  * through untouched. New chapters are ordered alphabetically after the current max orderIndex.
  * Unchaptered stubs keep their relative order and are assigned fresh sequential orderIndex
- * values continuing after the current max orderIndex across all stubs.
+ * values continuing after the current max orderIndex across all stubs. Stubs whose recipe has
+ * no `categoryByRecipeId` entry (not found, or filtered out by the caller's visibility) are
+ * left untouched rather than defaulted to "Uncategorized", to avoid reassigning or leaking
+ * information about recipes the caller can't see.
  */
 function groupUnchapteredRecipesByCategory(
   chapters: Array<{ _id: unknown; name: string; orderIndex: number }>,
@@ -108,7 +111,11 @@ function groupUnchapteredRecipesByCategory(
   categoryByRecipeId: Map<string, string>,
 ): BuildChaptersByCategoryResult {
   const chaptered = stubs.filter((s) => s.chapterId != null);
-  const unchaptered = stubs.filter((s) => s.chapterId == null);
+  // A stub with no `categoryByRecipeId` entry means the recipe doc wasn't resolvable (deleted,
+  // or invisible to the caller under visibilityFilter). Leave those stubs untouched rather than
+  // silently defaulting them to "Uncategorized" and reassigning/exposing them in the summary.
+  const unchaptered = stubs.filter((s) => s.chapterId == null && categoryByRecipeId.has(String(s.recipeId)));
+  const unresolved = stubs.filter((s) => s.chapterId == null && !categoryByRecipeId.has(String(s.recipeId)));
 
   const normalize = (name: string) => name.trim().toLowerCase();
   const categoryFor = (recipeId: unknown) => {
@@ -181,6 +188,7 @@ function groupUnchapteredRecipesByCategory(
     chapters: [...chapters, ...newChapters],
     recipes: [
       ...chaptered.map((s) => recipeStub(s, s.chapterId)),
+      ...unresolved.map((s) => recipeStub(s, s.chapterId)),
       ...updatedUnchaptered,
     ],
     summary: { created, merged },
@@ -1067,8 +1075,9 @@ export const cookbooksRouter = router({
 
       const categoryByRecipeId = new Map<string, string>();
       if (unchapteredRecipeIds.length > 0) {
+        const recipeVisFilter = visibilityFilter(ctx.user);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const recipeDocs = await Recipe.find({ _id: { $in: toObjectIds(unchapteredRecipeIds) } })
+        const recipeDocs = await Recipe.find({ _id: { $in: toObjectIds(unchapteredRecipeIds) }, ...recipeVisFilter })
           .select("classificationId")
           .populate("classificationId", "name")
           .lean<any[]>();
