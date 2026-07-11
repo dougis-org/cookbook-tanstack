@@ -107,33 +107,28 @@ chunk that falls outside the app's boot-loader stylesheet-readiness gate
 
 #### Scenario: TOC/print page background is light in the dark theme
 
-- **Given** a user with the "Dark (blues)" theme active (`html.dark`)
-- **When** they view `/cookbooks/$id/toc` or `/cookbooks/$id/print` (including with `?displayonly=1`)
-- **Then** the page container background renders as the fixed light `--theme-print-bg` value, not the theme's dark `--theme-bg` value, and recipe names, the cookbook title, and footer text remain visible against that background
+- **WHEN** a user with the "Dark (blues)" theme active (`html.dark`) views `/cookbooks/$id/toc` or `/cookbooks/$id/print` (including with `?displayonly=1`)
+- **THEN** the page container background renders as the fixed light `--theme-print-bg` value, not the theme's dark `--theme-bg` value, and recipe names, the cookbook title, and footer text remain visible against that background
 
 #### Scenario: Background renders correctly on every load, not just after a settling delay
 
-- **Given** a user navigates directly to `/cookbooks/$id/toc` or `/cookbooks/$id/print` with any of the four supported themes active
-- **When** the page's title heading becomes visible
-- **Then** the nearest ancestor with a non-transparent background already resolves to the fixed light `--theme-print-bg` value — not a transiently transparent background that would otherwise expose the inherited site-theme background color from `<body>`
+- **WHEN** a user navigates directly to `/cookbooks/$id/toc` or `/cookbooks/$id/print` with any of the four supported themes active and the page's title heading becomes visible
+- **THEN** the nearest ancestor with a non-transparent background already resolves to the fixed light `--theme-print-bg` value — not a transiently transparent background that would otherwise expose the inherited site-theme background color from `<body>`
 
 #### Scenario: TOC/print route components are not emitted as a separate lazy bundle chunk
 
-- **Given** a production build of the application
-- **When** the build output's chunk/asset manifest is inspected
-- **Then** there is no separate JS or CSS chunk containing `CookbookStandaloneLayout`'s exports that is excluded from the boot-loader's stylesheet-readiness gate — the toc and print routes' component code loads as part of the main application bundle
+- **WHEN** the build output's chunk/asset manifest is inspected for a production build of the application
+- **THEN** there is no separate JS or CSS chunk containing `CookbookStandalonePage`'s exports that is excluded from the boot-loader's stylesheet-readiness gate — the toc and print routes' component code loads as part of the main application bundle
 
 #### Scenario: TOC/print page background is light in every supported theme
 
-- **Given** a user with any of the four supported themes active (`dark`, `dark-greens`, `light-cool`, `light-warm`)
-- **When** they view `/cookbooks/$id/toc` or `/cookbooks/$id/print`
-- **Then** the page container background renders identically as the fixed light `--theme-print-bg` value in all four cases
+- **WHEN** a user with any of the four supported themes active (`dark`, `dark-greens`, `light-cool`, `light-warm`) views `/cookbooks/$id/toc` or `/cookbooks/$id/print`
+- **THEN** the page container background renders identically as the fixed light `--theme-print-bg` value in all four cases
 
 #### Scenario: Actual print output is unaffected
 
-- **Given** a user on `/cookbooks/$id/print`
-- **When** they trigger the browser print dialog
-- **Then** the printed page background remains white, as already enforced by the existing `@media print` rule in `src/styles/print.css`, unchanged by this requirement
+- **WHEN** a user on `/cookbooks/$id/print` triggers the browser print dialog
+- **THEN** the printed page background remains white, as already enforced by the existing `@media print` rule in `src/styles/print.css`, unchanged by this requirement
 
 See [design.md](../../changes/archive/2026-07-11-fix-cookbook-print-toc-code-splitting/design.md) and [tasks.md](../../changes/archive/2026-07-11-fix-cookbook-print-toc-code-splitting/tasks.md) for the change that introduced this requirement.
 
