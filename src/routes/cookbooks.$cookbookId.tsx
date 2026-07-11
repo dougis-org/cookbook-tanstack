@@ -231,6 +231,7 @@ function CookbookDetailPage() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   // Track active drag item for DragOverlay
   const [activeDragId, setActiveDragId] = useState<string | null>(null)
+  const [buildChaptersError, setBuildChaptersError] = useState<string | null>(null)
 
   const closeModal = () => setModal({ kind: 'none' })
   const invalidate = () => {
@@ -284,7 +285,6 @@ function CookbookDetailPage() {
 
   const reorderChaptersMutation = useMutation(trpc.cookbooks.reorderChapters.mutationOptions())
 
-  const [buildChaptersError, setBuildChaptersError] = useState<string | null>(null)
   const buildChaptersMutation = useMutation(trpc.cookbooks.buildChaptersByCategory.mutationOptions())
 
   function handleOpenBuildChaptersByCategory() {
@@ -705,7 +705,6 @@ function CookbookDetailPage() {
             </div>
           )}
         </div>
-
         {buildChaptersError && modal.kind !== 'buildChaptersByCategory' && (
           <p className="text-[var(--theme-error)] text-sm mt-2">{buildChaptersError}</p>
         )}
@@ -1000,7 +999,7 @@ function BuildChaptersByCategoryModal({
               ))}
             </ul>
           )}
-          {error && <p className="text-sm text-[var(--theme-error)]">{error}</p>}
+          {error && <p className="text-[var(--theme-error)] text-sm">{error}</p>}
           <div className="flex gap-3">
             <button
               type="button"

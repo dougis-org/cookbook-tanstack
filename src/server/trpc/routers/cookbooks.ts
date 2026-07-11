@@ -87,7 +87,7 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
 /** Result of grouping unchaptered recipe stubs by category and merging/creating chapters. */
 interface BuildChaptersByCategoryResult {
   chapters: Array<{ _id: unknown; name: string; orderIndex: number }>;
-  recipes: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }>;
+  recipes: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>;
   summary: {
     created: Array<{ name: string; recipeCount: number }>;
     merged: Array<{ chapterId: string; name: string; recipeCount: number }>;
@@ -161,7 +161,7 @@ function groupUnchapteredRecipesByCategory(
     created.push({ name, recipeCount: groups.get(normalizedCategory)!.length });
   });
 
-  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? 0), -1) + 1;
+  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? -1), -1) + 1;
   const updatedUnchaptered = unchaptered.map((stub) => ({
     recipeId: stub.recipeId,
     orderIndex: nextOrderIndex++,
@@ -171,7 +171,7 @@ function groupUnchapteredRecipesByCategory(
   return {
     chapters: [...chapters, ...newChapters],
     recipes: [
-      ...chaptered.map((s) => ({ recipeId: s.recipeId, orderIndex: s.orderIndex ?? 0, chapterId: s.chapterId })),
+      ...chaptered.map((s) => ({ recipeId: s.recipeId, orderIndex: s.orderIndex, chapterId: s.chapterId })),
       ...updatedUnchaptered,
     ],
     summary: { created, merged },
