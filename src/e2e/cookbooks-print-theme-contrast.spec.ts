@@ -1,4 +1,4 @@
-import { test, expect } from "@bgotink/playwright-coverage";
+import { test, expect, type Locator } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { createCookbookWithRecipe } from "./helpers/cookbooks";
@@ -34,9 +34,41 @@ const WCAG_AA_NORMAL_TEXT_MIN_CONTRAST = 4.5;
 
 const SUPPORTED_THEMES = ["dark", "dark-greens", "light-cool", "light-warm"] as const;
 
+// Asserts a locator's resolved background matches expectedBackgroundColor and
+// that its text meets WCAG AA contrast against that background.
+async function expectVisibleAgainstPrintBackground(
+  locator: Locator,
+  expectedBackgroundColor: string,
+) {
+  await expect(locator).toBeVisible();
+
+  const { backgroundColor, textColor } = await locator.evaluate((el) => {
+    let node: HTMLElement | null = el as HTMLElement;
+    let bg = "";
+    while (node) {
+      const computed = window.getComputedStyle(node).backgroundColor;
+      if (computed && computed !== "rgba(0, 0, 0, 0)" && computed !== "transparent") {
+        bg = computed;
+        break;
+      }
+      node = node.parentElement;
+    }
+    return {
+      backgroundColor: bg,
+      textColor: window.getComputedStyle(el).color,
+    };
+  });
+
+  expect(backgroundColor).toBe(expectedBackgroundColor);
+  expect(contrastRatio(backgroundColor, textColor)).toBeGreaterThanOrEqual(
+    WCAG_AA_NORMAL_TEXT_MIN_CONTRAST,
+  );
+}
+
 test.describe("TOC/print preview background contrast across themes", () => {
   let cookbookId: string;
   let cookbookName: string;
+  let recipeName: string;
   let expectedBackgroundColor: string;
 
   test.beforeAll(async ({ browser }) => {
@@ -45,6 +77,7 @@ test.describe("TOC/print preview background contrast across themes", () => {
     const created = await createCookbookWithRecipe(page, "ThemeContrast");
     cookbookId = created.cookbookId;
     cookbookName = created.cookbookName;
+    recipeName = created.recipeName;
 
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/toc`);
     expectedBackgroundColor = await page.evaluate(() => {
@@ -88,29 +121,22 @@ test.describe("TOC/print preview background contrast across themes", () => {
         // explicitly out of scope for this fix and uses its own (already-correct)
         // styling, so target the cookbook title heading specifically here.
         const titleLocator = page.getByRole("heading", { level: 1, name: cookbookName });
-        await expect(titleLocator).toBeVisible();
+        await expectVisibleAgainstPrintBackground(titleLocator, expectedBackgroundColor);
 
-        const { backgroundColor, textColor } = await titleLocator.evaluate((el) => {
-          let node: HTMLElement | null = el as HTMLElement;
-          let bg = "";
-          while (node) {
-            const computed = window.getComputedStyle(node).backgroundColor;
-            if (computed && computed !== "rgba(0, 0, 0, 0)" && computed !== "transparent") {
-              bg = computed;
-              break;
-            }
-            node = node.parentElement;
-          }
-          return {
-            backgroundColor: bg,
-            textColor: window.getComputedStyle(el).color,
-          };
-        });
-
-        expect(backgroundColor).toBe(expectedBackgroundColor);
-        expect(contrastRatio(backgroundColor, textColor)).toBeGreaterThanOrEqual(
-          WCAG_AA_NORMAL_TEXT_MIN_CONTRAST,
-        );
+        // Issue #564 specifically reported TOC recipe names as unreadable, so
+        // assert contrast on a recipe entry too, not just the page title. Only
+        // the "toc" route renders recipes as CookbookTocList links; the /print
+        // routes render each recipe via RecipeDetail instead (out of scope here).
+        // Target the <span> that carries the recipe name text and its
+        // --theme-print-fg color directly — the parent <a> has no color of its
+        // own (it inherits the browser/theme default link color), so checking
+        // the anchor itself would assert against the wrong element's color.
+        if (routeSuffix === "toc") {
+          const recipeLocator = page
+            .getByRole("link", { name: recipeName })
+            .locator("span", { hasText: recipeName });
+          await expectVisibleAgainstPrintBackground(recipeLocator, expectedBackgroundColor);
+        }
       });
     }
   }
