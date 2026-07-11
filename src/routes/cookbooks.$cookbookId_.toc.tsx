@@ -14,6 +14,7 @@ import { PrintLayout } from '@/components/cookbooks/PrintLayout'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/toc')({
   component: CookbookTocPage,
+  codeSplitGroupings: [],
 })
 
 function CookbookTocPage() {
