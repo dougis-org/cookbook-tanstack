@@ -87,7 +87,7 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
 /** Result of grouping unchaptered recipe stubs by category and merging/creating chapters. */
 interface BuildChaptersByCategoryResult {
   chapters: Array<{ _id: unknown; name: string; orderIndex: number }>;
-  recipes: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }>;
+  recipes: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>;
   summary: {
     created: Array<{ name: string; recipeCount: number }>;
     merged: Array<{ chapterId: string; name: string; recipeCount: number }>;
@@ -190,11 +190,9 @@ function groupUnchapteredRecipesByCategory(
 
   return {
     chapters: [...chapters, ...newChapters],
-    recipes: [
-      ...chaptered.map((s) => recipeStub(s, s.chapterId)),
-      ...unresolved.map((s) => recipeStub(s, s.chapterId)),
-      ...updatedUnchaptered,
-    ],
+    // Chaptered and unresolved stubs pass through as the exact same objects (not rebuilt via
+    // recipeStub), so a legacy stub with no orderIndex isn't mutated by this no-op.
+    recipes: [...chaptered, ...unresolved, ...updatedUnchaptered],
     summary: { created, merged },
   };
 }
