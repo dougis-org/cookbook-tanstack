@@ -168,8 +168,10 @@ export function CookbookStandalonePage({
   return (
     // Background is intentionally paired with the always-light --theme-print-*
     // family (not the active site theme) to match the descendant print text/border
-    // tokens — this page previews exactly what will be printed.
-    <div className="min-h-screen bg-[var(--theme-print-bg)]">
+    // tokens — this page previews exactly what will be printed. Reuses
+    // pageBaseClass so this container and the loading/not-found stub states
+    // below can't drift apart on the background token.
+    <div className={pageBaseClass}>
       <div className={`${widthClass} print:max-w-4xl mx-auto px-6 py-10`}>{children}</div>
     </div>
   )
