@@ -177,6 +177,11 @@ describe("ownership guard — non-owner is rejected", () => {
           chapterIds: ["000000000000000000000001"],
         }),
     },
+    {
+      label: "buildChaptersByCategory",
+      act: (caller: Caller, cb: CookbookDoc, _r: RecipeDoc) =>
+        caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id }),
+    },
   ])("$label", async ({ act }) => {
     await assertOwnershipGuard(act);
   });
@@ -843,6 +848,185 @@ describe("cookbooks.reorderChapters", () => {
       await caller.cookbooks.reorderChapters({ cookbookId: cb.id, chapterIds: [ch3Id, ch1Id, ch2Id] });
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.chapters.map((c) => c.id)).toEqual([ch3Id, ch1Id, ch2Id]);
+    });
+  });
+});
+
+// ─── cookbooks.buildChaptersByCategory ───────────────────────────────────────
+
+describe("cookbooks.buildChaptersByCategory", () => {
+  async function seedClassification(name: string) {
+    return new Classification({ name, slug: `${name.trim().toLowerCase().replace(/\s+/g, "-")}-${uid()}` }).save();
+  }
+
+  it("dry-run groups unchaptered recipes by category and returns a summary without writing", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const cls = await seedClassification("Dessert");
+      const recipe = await new Recipe({ name: "Cake", userId: cb.userId, isPublic: true, classificationId: cls.id }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const findByIdAndUpdateSpy = vi.spyOn(Cookbook, "findByIdAndUpdate");
+      try {
+        const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id, dryRun: true });
+        expect(result.summary.created).toEqual([{ name: "Dessert", recipeCount: 1 }]);
+        expect(result.summary.merged).toEqual([]);
+        expect(findByIdAndUpdateSpy).not.toHaveBeenCalled();
+        const persisted = await caller.cookbooks.byId({ id: cb.id });
+        expect(persisted!.chapters).toHaveLength(0);
+      } finally {
+        findByIdAndUpdateSpy.mockRestore();
+      }
+    });
+  });
+
+  it("recipe with classificationId: null is grouped into an Uncategorized chapter", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const recipe = await new Recipe({ name: "Mystery Dish", userId: cb.userId, isPublic: true }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      expect(result!.chapters).toHaveLength(1);
+      expect(result!.chapters[0].name).toBe("Uncategorized");
+      expect(result!.recipes[0].chapterId).toBe(result!.chapters[0].id);
+    });
+  });
+
+  it("category matching an existing chapter name (case-insensitive/trimmed) merges instead of duplicating", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const existingChapterId = new Types.ObjectId();
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        chapters: [{ _id: existingChapterId, name: "Dessert", orderIndex: 0 }],
+      });
+      const cls = await seedClassification("dessert ");
+      const recipe = await new Recipe({ name: "Pie", userId: cb.userId, isPublic: true, classificationId: cls.id }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, { $set: { recipes: [{ recipeId: recipe.id, orderIndex: 0 }] } });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      expect(result!.chapters).toHaveLength(1);
+      expect(result!.chapters[0].id).toBe(String(existingChapterId));
+      expect(result!.chapters[0].orderIndex).toBe(0);
+      expect(result!.recipes[0].chapterId).toBe(String(existingChapterId));
+    });
+  });
+
+  it("creates new chapters for non-matching categories, ordered alphabetically after the existing max orderIndex", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        chapters: [{ _id: new Types.ObjectId(), name: "Family Favorites", orderIndex: 0 }],
+      });
+      const breakfast = await seedClassification("Breakfast");
+      const appetizer = await seedClassification("Appetizer");
+      const r1 = await new Recipe({ name: "Pancakes", userId: cb.userId, isPublic: true, classificationId: breakfast.id }).save();
+      const r2 = await new Recipe({ name: "Bruschetta", userId: cb.userId, isPublic: true, classificationId: appetizer.id }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        $set: {
+          recipes: [
+            { recipeId: r1.id, orderIndex: 0 },
+            { recipeId: r2.id, orderIndex: 1 },
+          ],
+        },
+      });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      const chapters = result!.chapters.slice().sort((a, b) => a.orderIndex - b.orderIndex);
+      expect(chapters.map((c) => c.name)).toEqual(["Family Favorites", "Appetizer", "Breakfast"]);
+      expect(chapters[1].orderIndex).toBe(1);
+      expect(chapters[2].orderIndex).toBe(2);
+    });
+  });
+
+  it("on a chapter-free cookbook, new chapters start at orderIndex 0 and every recipe gets a chapterId (first-chapter parity)", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const breakfast = await seedClassification("Breakfast");
+      const dessert = await seedClassification("Dessert");
+      const r1 = await new Recipe({ name: "Waffles", userId: cb.userId, isPublic: true, classificationId: breakfast.id }).save();
+      const r2 = await new Recipe({ name: "Cake", userId: cb.userId, isPublic: true, classificationId: dessert.id }).save();
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id);
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const result = await caller.cookbooks.byId({ id: cb.id });
+      const chapters = result!.chapters.slice().sort((a, b) => a.orderIndex - b.orderIndex);
+      expect(chapters.map((c) => c.orderIndex)).toEqual([0, 1]);
+      expect(result!.recipes.every((r) => r.chapterId !== null)).toBe(true);
+    });
+  });
+
+  it("leaves already-chaptered recipes' chapterId and orderIndex byte-identical", async () => {
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
+      const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId });
+      const before = await caller.cookbooks.byId({ id: cb.id });
+      const beforeStub = before!.recipes.find((x) => x.id === r.id)!;
+
+      const unchapteredRecipe = await new Recipe({ name: "Extra", userId: cb.userId, isPublic: true }).save();
+      await Cookbook.findByIdAndUpdate(cb.id, { $push: { recipes: { recipeId: unchapteredRecipe.id, orderIndex: 5 } } });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const after = await caller.cookbooks.byId({ id: cb.id });
+      const afterStub = after!.recipes.find((x) => x.id === r.id)!;
+      expect(afterStub.chapterId).toBe(beforeStub.chapterId);
+      expect(afterStub.orderIndex).toBe(beforeStub.orderIndex);
+    });
+  });
+
+  it("is a no-op (zero created/merged, no write) when every recipe stub already has a chapterId", async () => {
+    await withCookbookAndRecipeTest(async ({ cb, r, caller }) => {
+      const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
+      await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId });
+
+      const findByIdAndUpdateSpy = vi.spyOn(Cookbook, "findByIdAndUpdate");
+      try {
+        const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+        expect(result.summary).toEqual({ created: [], merged: [] });
+        expect(findByIdAndUpdateSpy).not.toHaveBeenCalled();
+      } finally {
+        findByIdAndUpdateSpy.mockRestore();
+      }
+    });
+  });
+
+  it("commit performs exactly one Cookbook.findByIdAndUpdate call with $set covering both chapters and recipes", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const recipe = await new Recipe({ name: "Soup", userId: cb.userId, isPublic: true }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const findByIdAndUpdateSpy = vi.spyOn(Cookbook, "findByIdAndUpdate");
+      try {
+        await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+        expect(findByIdAndUpdateSpy).toHaveBeenCalledTimes(1);
+        const [, updateArg] = findByIdAndUpdateSpy.mock.calls[0];
+        expect(updateArg).toMatchObject({
+          $set: {
+            chapters: expect.any(Array),
+            recipes: expect.any(Array),
+          },
+        });
+      } finally {
+        findByIdAndUpdateSpy.mockRestore();
+      }
+    });
+  });
+
+  it("an editor collaborator can invoke the mutation successfully", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const editor = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: editor.id, role: "editor", addedBy: owner.id }).save();
+      const recipe = await new Recipe({ name: "Toast", userId: owner.id, isPublic: true }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const caller = await makeAuthCaller(editor.id, { collabCookbookIds: [cb.id] });
+      const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+      expect(result.summary.created).toHaveLength(1);
     });
   });
 });

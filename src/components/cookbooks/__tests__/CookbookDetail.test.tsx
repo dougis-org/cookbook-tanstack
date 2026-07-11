@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ChapterHeader, AddRecipeModal, CollaboratorsPanel, OnboardingModal, Route } from '@/routes/cookbooks.$cookbookId'
+import { ChapterHeader, AddRecipeModal, CollaboratorsPanel, OnboardingModal, BuildChaptersByCategoryModal, Route } from '@/routes/cookbooks.$cookbookId'
 
 const CookbookDetailPage = Route.options.component!
 
@@ -87,11 +87,15 @@ let mockQueryLoading = false
 let mockMutate = mockAddMutate
 let mockMutationPending = false
 let mockMutationError: any = null
+let mockMutationResult: any = undefined
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: () => ({ data: mockCookbookData, isLoading: mockQueryLoading }),
   useMutation: () => ({
-    mutate: (args: any) => mockMutate(args),
+    mutate: (args: any, opts?: { onSuccess?: (data: any) => void }) => {
+      mockMutate(args)
+      opts?.onSuccess?.(mockMutationResult)
+    },
     isPending: mockMutationPending,
     error: mockMutationError,
   }),
@@ -111,6 +115,7 @@ vi.mock('@/lib/trpc', () => ({
       renameChapter: { mutationOptions: (o: unknown) => o },
       deleteChapter: { mutationOptions: (o: unknown) => o },
       reorderChapters: { mutationOptions: (o: unknown) => o },
+      buildChaptersByCategory: { mutationOptions: (o: unknown) => o },
       addCollaborator: { mutationOptions: (o: unknown) => o },
       removeCollaborator: { mutationOptions: (o: unknown) => o },
       onboardCollaborator: { mutationOptions: (o: unknown) => o },
@@ -520,5 +525,163 @@ describe('CookbookDetailPage — onboarding integration', () => {
 
     // The onboarding modal should NOT be in the document
     expect(screen.queryByText(/Editor ✏️/)).not.toBeInTheDocument()
+  })
+})
+
+// ─── BuildChaptersByCategoryModal tests ───────────────────────────────────────
+
+describe('BuildChaptersByCategoryModal', () => {
+  it('renders one row per category to be created and one per merge, with recipe counts', () => {
+    render(
+      <BuildChaptersByCategoryModal
+        summary={{
+          created: [{ name: 'Breakfast', recipeCount: 2 }],
+          merged: [{ chapterId: 'ch-1', name: 'Dessert', recipeCount: 1 }],
+        }}
+        isPending={false}
+        onConfirm={vi.fn()}
+        onClose={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Breakfast')).toBeInTheDocument()
+    expect(screen.getByText('2 recipes')).toBeInTheDocument()
+    expect(screen.getByText('Dessert')).toBeInTheDocument()
+    expect(screen.getByText('1 recipe')).toBeInTheDocument()
+  })
+
+  it('shows a no-op message and disables confirm when there is nothing to do', () => {
+    render(
+      <BuildChaptersByCategoryModal
+        summary={{ created: [], merged: [] }}
+        isPending={false}
+        onConfirm={vi.fn()}
+        onClose={vi.fn()}
+      />
+    )
+    expect(screen.getByText(/No unchaptered recipes to organize/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled()
+  })
+
+  it('calls onConfirm when Confirm is clicked', () => {
+    const onConfirm = vi.fn()
+    render(
+      <BuildChaptersByCategoryModal
+        summary={{ created: [{ name: 'Breakfast', recipeCount: 1 }], merged: [] }}
+        isPending={false}
+        onConfirm={onConfirm}
+        onClose={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    expect(onConfirm).toHaveBeenCalledOnce()
+  })
+
+  it('calls onClose when Cancel is clicked', () => {
+    const onClose = vi.fn()
+    render(
+      <BuildChaptersByCategoryModal
+        summary={{ created: [{ name: 'Breakfast', recipeCount: 1 }], merged: [] }}
+        isPending={false}
+        onConfirm={vi.fn()}
+        onClose={onClose}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+})
+
+// ─── CookbookDetailPage — Build Chapters by Category button/flow ─────────────
+
+describe('CookbookDetailPage — Build Chapters by Category', () => {
+  const BUTTON_NAME = /Build Chapters by Category/i
+
+  beforeEach(() => {
+    mockUserId = 'owner-id'
+    mockMutationPending = false
+    mockMutationError = null
+    mockMutationResult = undefined
+    mockMutate = mockAddMutate
+    mockAddMutate.mockClear()
+    mockCookbookData = {
+      id: 'cb-1',
+      name: 'My Kitchen',
+      userId: 'owner-id',
+      collaborators: [],
+      recipes: [
+        { id: 'r-1', name: 'Pancakes', chapterId: null },
+        { id: 'r-2', name: 'Cake', chapterId: null },
+      ],
+      chapters: [],
+    }
+  })
+
+  it('renders for the owner', () => {
+    render(<CookbookDetailPage />)
+    expect(screen.getByRole('button', { name: BUTTON_NAME })).toBeInTheDocument()
+  })
+
+  it('renders for an editor collaborator', () => {
+    mockUserId = 'editor-id'
+    mockCookbookData.collaborators = [
+      { id: 'c-1', userId: 'editor-id', name: 'Editor', role: 'editor', onboarded: true, addedAt: new Date(), addedByName: 'Owner' },
+    ]
+    render(<CookbookDetailPage />)
+    expect(screen.getByRole('button', { name: BUTTON_NAME })).toBeInTheDocument()
+  })
+
+  it('does not render for a non-owner, non-editor viewer', () => {
+    mockUserId = 'viewer-id'
+    mockCookbookData.collaborators = [
+      { id: 'c-1', userId: 'viewer-id', name: 'Viewer', role: 'viewer', onboarded: true, addedAt: new Date(), addedByName: 'Owner' },
+    ]
+    render(<CookbookDetailPage />)
+    expect(screen.queryByRole('button', { name: BUTTON_NAME })).not.toBeInTheDocument()
+  })
+
+  it('is disabled when every recipe already has a chapterId', () => {
+    mockCookbookData.recipes = [{ id: 'r-1', name: 'Pancakes', chapterId: 'ch-1' }]
+    render(<CookbookDetailPage />)
+    expect(screen.getByRole('button', { name: BUTTON_NAME })).toBeDisabled()
+  })
+
+  it('is disabled when the cookbook has zero recipes', () => {
+    mockCookbookData.recipes = []
+    render(<CookbookDetailPage />)
+    expect(screen.getByRole('button', { name: BUTTON_NAME })).toBeDisabled()
+  })
+
+  it('clicking the enabled button triggers a dryRun call and opens the preview modal on success', () => {
+    mockMutationResult = { summary: { created: [{ name: 'Breakfast', recipeCount: 2 }], merged: [] } }
+    render(<CookbookDetailPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: BUTTON_NAME }))
+
+    expect(mockAddMutate).toHaveBeenCalledWith({ cookbookId: 'cb-1', dryRun: true })
+    expect(screen.getByText('Build Chapters by Category', { selector: 'h2' })).toBeInTheDocument()
+    expect(screen.getByText('Breakfast')).toBeInTheDocument()
+  })
+
+  it('confirming the modal calls the mutation without dryRun', () => {
+    mockMutationResult = { summary: { created: [{ name: 'Breakfast', recipeCount: 2 }], merged: [] } }
+    render(<CookbookDetailPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: BUTTON_NAME }))
+    mockAddMutate.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    expect(mockAddMutate).toHaveBeenCalledWith({ cookbookId: 'cb-1' })
+  })
+
+  it('cancelling the preview modal calls no mutation and closes it', () => {
+    mockMutationResult = { summary: { created: [{ name: 'Breakfast', recipeCount: 2 }], merged: [] } }
+    render(<CookbookDetailPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: BUTTON_NAME }))
+    mockAddMutate.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(mockAddMutate).not.toHaveBeenCalled()
+    expect(screen.queryByText('Build Chapters by Category', { selector: 'h2' })).not.toBeInTheDocument()
   })
 })

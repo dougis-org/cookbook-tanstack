@@ -16,6 +16,8 @@ export interface RecipeData {
   sodium?: string;
   protein?: string;
   isPublic?: boolean;
+  /** Category name to select via the classification picker (must match a seeded Classification). */
+  category?: string;
 }
 
 /** Generate a unique recipe name for test isolation. */
@@ -57,6 +59,11 @@ export async function submitRecipeForm(page: Page, data: RecipeData) {
 
   if (data.difficulty) {
     await page.getByLabel("Difficulty").selectOption(data.difficulty);
+  }
+
+  if (data.category) {
+    await page.locator("#classificationId").click();
+    await page.getByRole("option", { name: data.category, exact: true }).click();
   }
 
   // isPublic checkbox is checked by default; uncheck if explicitly false

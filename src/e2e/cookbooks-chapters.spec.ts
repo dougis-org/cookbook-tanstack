@@ -195,3 +195,82 @@ test.describe("Cookbook Chapters", () => {
     await expect(page.getByText(/Chapter 2/i)).toBeVisible();
   });
 });
+
+test.describe("Build Chapters by Category", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.context().clearCookies();
+  });
+
+  test("should preview and build chapters grouped by recipe category", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+
+    const appetizerRecipe = getUniqueRecipeName("Build Chapters Appetizer");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: appetizerRecipe, category: "Appetizers" });
+    await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+
+    const dessertRecipe = getUniqueRecipeName("Build Chapters Dessert");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, { name: dessertRecipe, category: "Desserts" });
+    await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+
+    const cookbookName = getUniqueCookbookName("Build Chapters");
+    const { cookbookUrl } = await createCookbook(page, cookbookName);
+    await addRecipeToCookbook(page, appetizerRecipe);
+    await addRecipeToCookbook(page, dessertRecipe);
+
+    const buildButton = page.getByRole("button", {
+      name: "Build Chapters by Category",
+    });
+    await expect(buildButton).toBeEnabled();
+    await buildButton.click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Appetizers")).toBeVisible();
+    await expect(dialog.getByText("Desserts")).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Confirm" }).click();
+    await expect(dialog).not.toBeVisible();
+
+    await expect(
+      page.getByRole("heading", { name: "Appetizers" }),
+    ).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole("heading", { name: "Desserts" })).toBeVisible();
+
+    const appetizersSection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "Appetizers" }) });
+    await expect(appetizersSection.getByText(appetizerRecipe)).toBeVisible();
+
+    const dessertsSection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "Desserts" }) });
+    await expect(dessertsSection.getByText(dessertRecipe)).toBeVisible();
+
+    // Every recipe is now chaptered, so the button is disabled again.
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await expect(buildButton).toBeDisabled();
+  });
+
+  test("should not show the button for a non-owner, non-editor viewer", async ({
+    page,
+  }) => {
+    await registerAndLogin(page);
+    const cookbookName = getUniqueCookbookName("Build Chapters Viewer");
+    const { cookbookUrl } = await createCookbook(page, cookbookName);
+
+    await expect(
+      page.getByRole("button", { name: "Build Chapters by Category" }),
+    ).toBeVisible();
+
+    await page.context().clearCookies();
+    await registerAndLogin(page);
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await expect(
+      page.getByRole("button", { name: "Build Chapters by Category" }),
+    ).not.toBeVisible();
+  });
+});

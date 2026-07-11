@@ -84,6 +84,90 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
   return Array.isArray(cookbook.chapters) ? cookbook.chapters : [];
 }
 
+/** Result of grouping unchaptered recipe stubs by category and merging/creating chapters. */
+interface BuildChaptersByCategoryResult {
+  chapters: Array<{ _id: unknown; name: string; orderIndex: number }>;
+  recipes: Array<{ recipeId: unknown; orderIndex: number; chapterId?: unknown }>;
+  summary: {
+    created: Array<{ name: string; recipeCount: number }>;
+    merged: Array<{ chapterId: string; name: string; recipeCount: number }>;
+  };
+}
+
+/**
+ * Groups recipe stubs with no `chapterId` by category (looked up via `categoryByRecipeId`,
+ * falling back to "Uncategorized"), merging each group into an existing chapter whose name
+ * matches case-insensitively/trimmed, or creating a new chapter. Already-chaptered stubs pass
+ * through untouched. New chapters are ordered alphabetically after the current max orderIndex.
+ * Unchaptered stubs keep their relative order and are assigned fresh sequential orderIndex
+ * values continuing after the current max orderIndex across all stubs.
+ */
+function groupUnchapteredRecipesByCategory(
+  chapters: Array<{ _id: unknown; name: string; orderIndex: number }>,
+  stubs: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>,
+  categoryByRecipeId: Map<string, string>,
+): BuildChaptersByCategoryResult {
+  const chaptered = stubs.filter((s) => s.chapterId != null);
+  const unchaptered = stubs.filter((s) => s.chapterId == null);
+
+  const categoryFor = (recipeId: unknown) => categoryByRecipeId.get(String(recipeId)) ?? "Uncategorized";
+
+  const groups = new Map<string, typeof unchaptered>();
+  for (const stub of unchaptered) {
+    const category = categoryFor(stub.recipeId);
+    const list = groups.get(category) ?? [];
+    list.push(stub);
+    groups.set(category, list);
+  }
+
+  const existingByNormalizedName = new Map<string, { _id: unknown; name: string; orderIndex: number }>();
+  for (const ch of chapters) {
+    existingByNormalizedName.set(ch.name.trim().toLowerCase(), ch);
+  }
+  const maxExistingOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
+
+  const created: Array<{ name: string; recipeCount: number }> = [];
+  const merged: Array<{ chapterId: string; name: string; recipeCount: number }> = [];
+  const newChapters: Array<{ _id: unknown; name: string; orderIndex: number }> = [];
+  const chapterIdByCategory = new Map<string, unknown>();
+  const categoriesNeedingNewChapter: string[] = [];
+
+  for (const [category, group] of groups) {
+    const existing = existingByNormalizedName.get(category.trim().toLowerCase());
+    if (existing) {
+      chapterIdByCategory.set(category, existing._id);
+      merged.push({ chapterId: String(existing._id), name: existing.name, recipeCount: group.length });
+    } else {
+      categoriesNeedingNewChapter.push(category);
+    }
+  }
+
+  categoriesNeedingNewChapter.sort((a, b) => a.localeCompare(b));
+  categoriesNeedingNewChapter.forEach((category, i) => {
+    const newChapterId = new Types.ObjectId();
+    const newChapter = { _id: newChapterId, name: category, orderIndex: maxExistingOrderIndex + 1 + i };
+    newChapters.push(newChapter);
+    chapterIdByCategory.set(category, newChapterId);
+    created.push({ name: category, recipeCount: groups.get(category)!.length });
+  });
+
+  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? 0), -1) + 1;
+  const updatedUnchaptered = unchaptered.map((stub) => ({
+    recipeId: stub.recipeId,
+    orderIndex: nextOrderIndex++,
+    chapterId: chapterIdByCategory.get(categoryFor(stub.recipeId)),
+  }));
+
+  return {
+    chapters: [...chapters, ...newChapters],
+    recipes: [
+      ...chaptered.map((s) => ({ recipeId: s.recipeId, orderIndex: s.orderIndex ?? 0, chapterId: s.chapterId })),
+      ...updatedUnchaptered,
+    ],
+    summary: { created, merged },
+  };
+}
+
 /** Transform embedded chapters to the public-facing shape, sorted by orderIndex. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformChapters(cookbook: any): { id: string; name: string; orderIndex: number }[] {
@@ -952,6 +1036,40 @@ export const cookbooksRouter = router({
       });
 
       return { success: true };
+    }),
+
+  buildChaptersByCategory: verifiedProcedure
+    .input(z.object({ cookbookId: objectId, dryRun: z.boolean().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
+      const chapters = getChapters(cookbook);
+      const stubs = getRecipeStubs(cookbook);
+      const unchapteredRecipeIds = stubs.filter((s) => s.chapterId == null).map((s) => s.recipeId);
+
+      const categoryByRecipeId = new Map<string, string>();
+      if (unchapteredRecipeIds.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const recipeDocs = await Recipe.find({ _id: { $in: toObjectIds(unchapteredRecipeIds) } })
+          .select("classificationId")
+          .populate("classificationId", "name")
+          .lean<any[]>();
+        for (const doc of recipeDocs) {
+          const cls = doc.classificationId as { name?: string } | null;
+          categoryByRecipeId.set(String(doc._id), cls?.name ?? "Uncategorized");
+        }
+      }
+
+      const result = groupUnchapteredRecipesByCategory(chapters, stubs, categoryByRecipeId);
+
+      if (input.dryRun || unchapteredRecipeIds.length === 0) {
+        return { summary: result.summary };
+      }
+
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $set: { chapters: result.chapters, recipes: result.recipes },
+      });
+
+      return { summary: result.summary };
     }),
 
   onboardCollaborator: protectedProcedure
