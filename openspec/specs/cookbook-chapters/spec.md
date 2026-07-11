@@ -209,54 +209,54 @@ The system SHALL allow the cookbook owner or an `editor` collaborator to bulk-cr
 
 #### Scenario: Only unchaptered recipes are examined
 
-- **Given** a cookbook has one existing chapter "Family Favorites" containing recipe A, and recipes B and C are not in any chapter
-- **When** the owner calls `buildChaptersByCategory`
-- **Then** recipe A's `chapterId` and `orderIndex` are unchanged, and only recipes B and C are grouped and assigned into chapters
+- **GIVEN** a cookbook has one existing chapter "Family Favorites" containing recipe A, and recipes B and C are not in any chapter
+- **WHEN** the owner calls `buildChaptersByCategory`
+- **THEN** recipe A's `chapterId` and `orderIndex` are unchanged, and only recipes B and C are grouped and assigned into chapters
 
 #### Scenario: Uncategorized recipes get their own chapter
 
-- **Given** an unchaptered recipe has `classificationId` set to `null`
-- **When** `buildChaptersByCategory` is called
-- **Then** a chapter named "Uncategorized" is created (or merged into, if one already exists by that name) and the recipe is assigned to it
+- **GIVEN** an unchaptered recipe has `classificationId` set to `null`
+- **WHEN** `buildChaptersByCategory` is called
+- **THEN** a chapter named "Uncategorized" is created (or merged into, if one already exists by that name) and the recipe is assigned to it
 
 #### Scenario: Category matching an existing chapter name merges instead of duplicating
 
-- **Given** a cookbook has an existing chapter named "Dessert" and an unchaptered recipe whose category is "dessert "
-- **When** `buildChaptersByCategory` is called
-- **Then** the recipe is assigned to the existing "Dessert" chapter, that chapter's `orderIndex` is unchanged, and no new "Dessert"-named chapter is created
+- **GIVEN** a cookbook has an existing chapter named "Dessert" and an unchaptered recipe whose category is "dessert "
+- **WHEN** `buildChaptersByCategory` is called
+- **THEN** the recipe is assigned to the existing "Dessert" chapter, that chapter's `orderIndex` is unchanged, and no new "Dessert"-named chapter is created
 
 #### Scenario: New chapters are ordered alphabetically after existing chapters
 
-- **Given** a cookbook has one existing chapter at `orderIndex: 0` and unchaptered recipes spanning categories "Breakfast" and "Appetizer", neither of which matches an existing chapter name
-- **When** `buildChaptersByCategory` is called
-- **Then** a new "Appetizer" chapter is created at `orderIndex: 1` and a new "Breakfast" chapter is created at `orderIndex: 2`
+- **GIVEN** a cookbook has one existing chapter at `orderIndex: 0` and unchaptered recipes spanning categories "Breakfast" and "Appetizer", neither of which matches an existing chapter name
+- **WHEN** `buildChaptersByCategory` is called
+- **THEN** a new "Appetizer" chapter is created at `orderIndex: 1` and a new "Breakfast" chapter is created at `orderIndex: 2`
 
 #### Scenario: First-chapter creation parity
 
-- **Given** a cookbook has no chapters and its recipes span two categories
-- **When** `buildChaptersByCategory` is called
-- **Then** two new chapters are created starting at `orderIndex: 0`, and every recipe stub receives a `chapterId` matching its category's chapter
+- **GIVEN** a cookbook has no chapters and its recipes span two categories
+- **WHEN** `buildChaptersByCategory` is called
+- **THEN** two new chapters are created starting at `orderIndex: 0`, and every recipe stub receives a `chapterId` matching its category's chapter
 
 #### Scenario: No unchaptered recipes is a no-op
 
-- **Given** every recipe stub in a cookbook already has a `chapterId`
-- **When** `buildChaptersByCategory` is called
-- **Then** no chapters are created, no recipe stubs are modified, and the returned summary reports zero created and zero merged groups
+- **GIVEN** every recipe stub in a cookbook already has a `chapterId`
+- **WHEN** `buildChaptersByCategory` is called
+- **THEN** no chapters are created, no recipe stubs are modified, and the returned summary reports zero created and zero merged groups
 
 #### Scenario: Full-state replace is atomic
 
-- **When** `buildChaptersByCategory` commits (i.e. `dryRun` is not set)
-- **Then** the entire `chapters` array and the entire `recipes` array are replaced in a single `$set` operation on the cookbook document
+- **WHEN** `buildChaptersByCategory` commits (i.e. `dryRun` is not set)
+- **THEN** the entire `chapters` array and the entire `recipes` array are replaced in a single `$set` operation on the cookbook document
 
 #### Scenario: Non-owner/non-editor cannot build chapters by category
 
-- **When** a user who is neither the cookbook owner nor an `editor` collaborator calls `buildChaptersByCategory`
-- **Then** the server returns a FORBIDDEN error and no data is modified
+- **WHEN** a user who is neither the cookbook owner nor an `editor` collaborator calls `buildChaptersByCategory`
+- **THEN** the server returns a FORBIDDEN error and no data is modified
 
 #### Scenario: Dry-run preview does not modify data
 
-- **When** `buildChaptersByCategory` is called with `dryRun: true`
-- **Then** the same grouping/merge computation runs and is returned in the summary, but no chapters are created and no recipe stubs are modified
+- **WHEN** `buildChaptersByCategory` is called with `dryRun: true`
+- **THEN** the same grouping/merge computation runs and is returned in the summary, but no chapters are created and no recipe stubs are modified
 
 ---
 
@@ -266,32 +266,32 @@ The cookbook detail page SHALL show a "Build Chapters by Category" button to the
 
 #### Scenario: Button visible to owner and editor collaborators
 
-- **When** an owner or `editor` collaborator views a cookbook detail page
-- **Then** the "Build Chapters by Category" button is rendered in the header alongside "+ New Chapter" and "+ Add Recipe"
+- **WHEN** an owner or `editor` collaborator views a cookbook detail page
+- **THEN** the "Build Chapters by Category" button is rendered in the header alongside "+ New Chapter" and "+ Add Recipe"
 
 #### Scenario: Button not rendered for non-owner, non-editor viewers
 
-- **When** a viewer who is not the owner or an `editor` collaborator views a cookbook detail page
-- **Then** the "Build Chapters by Category" button is not rendered
+- **WHEN** a viewer who is not the owner or an `editor` collaborator views a cookbook detail page
+- **THEN** the "Build Chapters by Category" button is not rendered
 
 #### Scenario: Button disabled when there are no unchaptered recipes
 
-- **Given** every recipe in the cookbook already has a `chapterId`, or the cookbook has no recipes
-- **When** the owner views the cookbook detail page
-- **Then** the "Build Chapters by Category" button is rendered but disabled
+- **GIVEN** every recipe in the cookbook already has a `chapterId`, or the cookbook has no recipes
+- **WHEN** the owner views the cookbook detail page
+- **THEN** the "Build Chapters by Category" button is rendered but disabled
 
 #### Scenario: Clicking the button shows a preview before committing
 
-- **Given** a cookbook has unchaptered recipes spanning two categories, one of which matches an existing chapter name
-- **When** the owner clicks "Build Chapters by Category"
-- **Then** a modal opens showing one chapter to be created and one chapter to be merged into, each with its recipe count, and no chapters are created until the owner confirms
+- **GIVEN** a cookbook has unchaptered recipes spanning two categories, one of which matches an existing chapter name
+- **WHEN** the owner clicks "Build Chapters by Category"
+- **THEN** a modal opens showing one chapter to be created and one chapter to be merged into, each with its recipe count, and no chapters are created until the owner confirms
 
 #### Scenario: Confirming the preview commits the operation
 
-- **When** the owner confirms the preview modal
-- **Then** `buildChaptersByCategory` is called without `dryRun`, the cookbook detail view reflects the newly created/merged chapters, and the modal closes
+- **WHEN** the owner confirms the preview modal
+- **THEN** `buildChaptersByCategory` is called without `dryRun`, the cookbook detail view reflects the newly created/merged chapters, and the modal closes
 
 #### Scenario: Cancelling the preview makes no changes
 
-- **When** the owner closes or cancels the preview modal instead of confirming
-- **Then** no mutation is called and the cookbook's chapters/recipes are unchanged
+- **WHEN** the owner closes or cancels the preview modal instead of confirming
+- **THEN** no mutation is called and the cookbook's chapters/recipes are unchanged
