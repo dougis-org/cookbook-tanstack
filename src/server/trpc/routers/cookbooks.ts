@@ -181,7 +181,10 @@ function groupUnchapteredRecipesByCategory(
     created.push({ name, recipeCount: groups.get(normalizedCategory)!.length });
   });
 
-  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? -1), -1) + 1;
+  // Missing orderIndex defaults to 0 here to match the sort/ordering convention used elsewhere
+  // in this file (fetchCookbookWithOrderedStubs), so a legacy stub with no orderIndex is treated
+  // consistently as sorting at 0 rather than being invisible to this max computation.
+  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? 0), -1) + 1;
   const updatedUnchaptered = unchaptered.map((stub) => ({
     recipeId: stub.recipeId,
     orderIndex: nextOrderIndex++,

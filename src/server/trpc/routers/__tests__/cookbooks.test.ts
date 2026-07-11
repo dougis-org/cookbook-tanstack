@@ -1033,6 +1033,36 @@ describe("cookbooks.buildChaptersByCategory", () => {
     });
   });
 
+  it("assigns new orderIndex values that don't collide with a legacy chaptered stub missing orderIndex", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const chapteredRecipe = await new Recipe({ name: "Legacy", userId: cb.userId, isPublic: true }).save();
+      const unchapteredRecipe = await new Recipe({ name: "New", userId: cb.userId, isPublic: true }).save();
+      const legacyChapterId = new Types.ObjectId();
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        $set: {
+          chapters: [{ _id: legacyChapterId, name: "Legacy Chapter", orderIndex: 0 }],
+          // Simulate legacy data: the chaptered stub has no orderIndex field at all, which the
+          // rest of the codebase (fetchCookbookWithOrderedStubs) sorts as if it were 0.
+          recipes: [
+            { recipeId: chapteredRecipe.id, chapterId: legacyChapterId },
+            { recipeId: unchapteredRecipe.id, orderIndex: 0 },
+          ],
+        },
+      });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const persisted = await Cookbook.findById(cb.id).lean();
+      const newlyChaptered = persisted!.recipes.find(
+        (r: { recipeId: unknown }) => String(r.recipeId) === String(unchapteredRecipe.id),
+      );
+      // The new stub must not be assigned orderIndex 0, since the legacy chaptered stub with no
+      // orderIndex field sorts as 0 elsewhere in the codebase -- a collision would make ordering
+      // ambiguous between the legacy stub and the newly-chaptered one.
+      expect(newlyChaptered.orderIndex).toBeGreaterThan(0);
+    });
+  });
+
   it("commit performs exactly one Cookbook.findByIdAndUpdate call with $set covering both chapters and recipes", async () => {
     await withCookbookTest(async ({ cb, caller }) => {
       const recipe = await new Recipe({ name: "Soup", userId: cb.userId, isPublic: true }).save();
