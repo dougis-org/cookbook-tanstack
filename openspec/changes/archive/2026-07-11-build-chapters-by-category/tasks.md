@@ -87,7 +87,7 @@ Blocking resolution flow:
 - [x] Confirm `openspec/changes/archive/2026-07-11-build-chapters-by-category/` exists and `openspec/changes/build-chapters-by-category/` is gone
 - [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-11-build-chapters-by-category` then `git push -u origin doc/archive-2026-07-11-build-chapters-by-category`
 - [x] Open a PR from `doc/archive-2026-07-11-build-chapters-by-category` to `main` with title `docs: archive build-chapters-by-category (2026-07-11)` — **do NOT push directly to `main`** (PR #591)
-- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge 591 --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
 - [x] Prune merged local branches: `git fetch --prune` and `git branch -D feature/build-chapters-by-category doc/archive-2026-07-11-build-chapters-by-category`
 
