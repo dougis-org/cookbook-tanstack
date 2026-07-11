@@ -118,7 +118,7 @@ chunk that falls outside the app's boot-loader stylesheet-readiness gate
 #### Scenario: TOC/print route components are not emitted as a separate lazy bundle chunk
 
 - **WHEN** the build output's chunk/asset manifest is inspected for a production build of the application
-- **THEN** there is no separate JS or CSS chunk containing `CookbookStandalonePage`'s exports that is excluded from the boot-loader's stylesheet-readiness gate — the toc and print routes' component code loads as part of the main application bundle
+- **THEN** there is no separate JS or CSS chunk containing `CookbookStandaloneLayout`'s exports that is excluded from the boot-loader's stylesheet-readiness gate — the toc and print routes' component code loads as part of the main application bundle
 
 #### Scenario: TOC/print page background is light in every supported theme
 
