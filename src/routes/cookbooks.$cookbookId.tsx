@@ -284,19 +284,28 @@ function CookbookDetailPage() {
 
   const reorderChaptersMutation = useMutation(trpc.cookbooks.reorderChapters.mutationOptions())
 
+  const [buildChaptersError, setBuildChaptersError] = useState<string | null>(null)
   const buildChaptersMutation = useMutation(trpc.cookbooks.buildChaptersByCategory.mutationOptions())
 
   function handleOpenBuildChaptersByCategory() {
+    setBuildChaptersError(null)
     buildChaptersMutation.mutate(
       { cookbookId, dryRun: true },
-      { onSuccess: (data) => setModal({ kind: 'buildChaptersByCategory', summary: data.summary }) },
+      {
+        onSuccess: (data) => setModal({ kind: 'buildChaptersByCategory', summary: data.summary }),
+        onError: (err) => setBuildChaptersError(err.message),
+      },
     )
   }
 
   function handleConfirmBuildChaptersByCategory() {
+    setBuildChaptersError(null)
     buildChaptersMutation.mutate(
       { cookbookId },
-      { onSuccess: () => { invalidate(); closeModal() } },
+      {
+        onSuccess: () => { invalidate(); closeModal() },
+        onError: (err) => setBuildChaptersError(err.message),
+      },
     )
   }
 
@@ -614,6 +623,7 @@ function CookbookDetailPage() {
         <BuildChaptersByCategoryModal
           summary={modal.summary}
           isPending={buildChaptersMutation.isPending}
+          error={buildChaptersError}
           onConfirm={handleConfirmBuildChaptersByCategory}
           onClose={closeModal}
         />
@@ -695,6 +705,10 @@ function CookbookDetailPage() {
             </div>
           )}
         </div>
+
+        {buildChaptersError && modal.kind !== 'buildChaptersByCategory' && (
+          <p className="text-[var(--theme-error)] text-sm mt-2">{buildChaptersError}</p>
+        )}
 
         {recipes.length === 0 ? (
           <div className="text-center py-16">
@@ -948,11 +962,13 @@ function RenameChapterModal({
 function BuildChaptersByCategoryModal({
   summary,
   isPending,
+  error,
   onConfirm,
   onClose,
 }: {
   summary: BuildChaptersSummary
   isPending: boolean
+  error?: string | null
   onConfirm: () => void
   onClose: () => void
 }) {
@@ -984,6 +1000,7 @@ function BuildChaptersByCategoryModal({
               ))}
             </ul>
           )}
+          {error && <p className="text-sm text-[var(--theme-error)]">{error}</p>}
           <div className="flex gap-3">
             <button
               type="button"

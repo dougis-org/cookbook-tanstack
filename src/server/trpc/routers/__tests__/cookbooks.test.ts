@@ -913,6 +913,24 @@ describe("cookbooks.buildChaptersByCategory", () => {
     });
   });
 
+  it("two new categories that differ only by case/whitespace collapse into a single new chapter, not duplicates", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const bbqUpper = await seedClassification("BBQ");
+      const bbqLower = await seedClassification("bbq ");
+      const r1 = await new Recipe({ name: "Ribs", userId: cb.userId, isPublic: true, classificationId: bbqUpper.id }).save();
+      const r2 = await new Recipe({ name: "Brisket", userId: cb.userId, isPublic: true, classificationId: bbqLower.id }).save();
+      await seedCookbookWithRecipes(cb.id, r1.id, r2.id);
+
+      const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+      expect(result.summary.created).toHaveLength(1);
+      expect(result.summary.created[0].recipeCount).toBe(2);
+
+      const persisted = await caller.cookbooks.byId({ id: cb.id });
+      expect(persisted!.chapters).toHaveLength(1);
+      expect(persisted!.recipes.every((r) => r.chapterId === persisted!.chapters[0].id)).toBe(true);
+    });
+  });
+
   it("creates new chapters for non-matching categories, ordered alphabetically after the existing max orderIndex", async () => {
     await withCookbookTest(async ({ cb, caller }) => {
       await Cookbook.findByIdAndUpdate(cb.id, {
@@ -1027,6 +1045,22 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const caller = await makeAuthCaller(editor.id, { collabCookbookIds: [cb.id] });
       const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
       expect(result.summary.created).toHaveLength(1);
+    });
+  });
+
+  it("a viewer collaborator (read-only role, not merely a non-collaborator) is rejected", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const viewer = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: viewer.id, role: "viewer", addedBy: owner.id }).save();
+      const recipe = await new Recipe({ name: "Toast", userId: owner.id, isPublic: true }).save();
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const caller = await makeAuthCaller(viewer.id, { collabCookbookIds: [cb.id] });
+      await expect(caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id })).rejects.toThrow(
+        "Not your cookbook",
+      );
     });
   });
 });

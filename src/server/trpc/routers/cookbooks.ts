@@ -111,51 +111,61 @@ function groupUnchapteredRecipesByCategory(
   const unchaptered = stubs.filter((s) => s.chapterId == null);
 
   const categoryFor = (recipeId: unknown) => categoryByRecipeId.get(String(recipeId)) ?? "Uncategorized";
+  const normalize = (name: string) => name.trim().toLowerCase();
 
+  // Group by normalized name so categories differing only by case/whitespace (e.g. "BBQ" vs
+  // "bbq") collapse into a single group instead of producing duplicate chapters. The first
+  // encountered raw category string is retained as the display name for newly-created chapters.
   const groups = new Map<string, typeof unchaptered>();
+  const displayNameByNormalized = new Map<string, string>();
   for (const stub of unchaptered) {
     const category = categoryFor(stub.recipeId);
-    const list = groups.get(category) ?? [];
+    const key = normalize(category);
+    const list = groups.get(key) ?? [];
     list.push(stub);
-    groups.set(category, list);
+    groups.set(key, list);
+    if (!displayNameByNormalized.has(key)) displayNameByNormalized.set(key, category);
   }
 
   const existingByNormalizedName = new Map<string, { _id: unknown; name: string; orderIndex: number }>();
   for (const ch of chapters) {
-    existingByNormalizedName.set(ch.name.trim().toLowerCase(), ch);
+    existingByNormalizedName.set(normalize(ch.name), ch);
   }
   const maxExistingOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
 
   const created: Array<{ name: string; recipeCount: number }> = [];
   const merged: Array<{ chapterId: string; name: string; recipeCount: number }> = [];
   const newChapters: Array<{ _id: unknown; name: string; orderIndex: number }> = [];
-  const chapterIdByCategory = new Map<string, unknown>();
-  const categoriesNeedingNewChapter: string[] = [];
+  const chapterIdByNormalizedCategory = new Map<string, unknown>();
+  const normalizedCategoriesNeedingNewChapter: string[] = [];
 
-  for (const [category, group] of groups) {
-    const existing = existingByNormalizedName.get(category.trim().toLowerCase());
+  for (const [normalizedCategory, group] of groups) {
+    const existing = existingByNormalizedName.get(normalizedCategory);
     if (existing) {
-      chapterIdByCategory.set(category, existing._id);
+      chapterIdByNormalizedCategory.set(normalizedCategory, existing._id);
       merged.push({ chapterId: String(existing._id), name: existing.name, recipeCount: group.length });
     } else {
-      categoriesNeedingNewChapter.push(category);
+      normalizedCategoriesNeedingNewChapter.push(normalizedCategory);
     }
   }
 
-  categoriesNeedingNewChapter.sort((a, b) => a.localeCompare(b));
-  categoriesNeedingNewChapter.forEach((category, i) => {
+  normalizedCategoriesNeedingNewChapter.sort((a, b) =>
+    displayNameByNormalized.get(a)!.localeCompare(displayNameByNormalized.get(b)!),
+  );
+  normalizedCategoriesNeedingNewChapter.forEach((normalizedCategory, i) => {
     const newChapterId = new Types.ObjectId();
-    const newChapter = { _id: newChapterId, name: category, orderIndex: maxExistingOrderIndex + 1 + i };
+    const name = displayNameByNormalized.get(normalizedCategory)!;
+    const newChapter = { _id: newChapterId, name, orderIndex: maxExistingOrderIndex + 1 + i };
     newChapters.push(newChapter);
-    chapterIdByCategory.set(category, newChapterId);
-    created.push({ name: category, recipeCount: groups.get(category)!.length });
+    chapterIdByNormalizedCategory.set(normalizedCategory, newChapterId);
+    created.push({ name, recipeCount: groups.get(normalizedCategory)!.length });
   });
 
   let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? 0), -1) + 1;
   const updatedUnchaptered = unchaptered.map((stub) => ({
     recipeId: stub.recipeId,
     orderIndex: nextOrderIndex++,
-    chapterId: chapterIdByCategory.get(categoryFor(stub.recipeId)),
+    chapterId: chapterIdByNormalizedCategory.get(normalize(categoryFor(stub.recipeId))),
   }));
 
   return {
