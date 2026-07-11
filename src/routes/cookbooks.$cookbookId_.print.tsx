@@ -18,6 +18,7 @@ import RecipeDetail, { type RecipeDetailProps } from '@/components/recipes/Recip
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
+  codeSplitGroupings: [],
   validateSearch: (search: Record<string, unknown>) => {
     const displayonly = search.displayonly
 
