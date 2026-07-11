@@ -84,6 +84,122 @@ function getChapters(cookbook: any): Array<{ _id: unknown; name: string; orderIn
   return Array.isArray(cookbook.chapters) ? cookbook.chapters : [];
 }
 
+/** Result of grouping unchaptered recipe stubs by category and merging/creating chapters. */
+interface BuildChaptersByCategoryResult {
+  chapters: Array<{ _id: unknown; name: string; orderIndex: number }>;
+  recipes: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>;
+  summary: {
+    created: Array<{ name: string; recipeCount: number }>;
+    merged: Array<{ chapterId: string; name: string; recipeCount: number }>;
+  };
+}
+
+/**
+ * Groups recipe stubs with no `chapterId` by category (looked up via `categoryByRecipeId`,
+ * falling back to "Uncategorized"), merging each group into an existing chapter whose name
+ * matches case-insensitively/trimmed, or creating a new chapter. Already-chaptered stubs pass
+ * through untouched. New chapters are ordered alphabetically after the current max orderIndex.
+ * Unchaptered stubs keep their relative order and are assigned fresh sequential orderIndex
+ * values continuing after the current max orderIndex across all stubs. Stubs whose recipe has
+ * no `categoryByRecipeId` entry (not found, or filtered out by the caller's visibility) are
+ * left untouched rather than defaulted to "Uncategorized", to avoid reassigning or leaking
+ * information about recipes the caller can't see.
+ */
+function groupUnchapteredRecipesByCategory(
+  chapters: Array<{ _id: unknown; name: string; orderIndex: number }>,
+  stubs: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>,
+  categoryByRecipeId: Map<string, string>,
+): BuildChaptersByCategoryResult {
+  // `cookbook.recipes` isn't guaranteed to be array-ordered (fetchEditableCookbook doesn't sort
+  // it), so sort by orderIndex first to make grouping/reassignment deterministic and consistent
+  // with the user-visible ordering, matching fetchCookbookWithOrderedStubs's approach elsewhere.
+  const orderedStubs = [...stubs].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+  const chaptered = orderedStubs.filter((s) => s.chapterId != null);
+  // A stub with no `categoryByRecipeId` entry means the recipe doc wasn't resolvable (deleted,
+  // or invisible to the caller under visibilityFilter). Leave those stubs untouched rather than
+  // silently defaulting them to "Uncategorized" and reassigning/exposing them in the summary.
+  const unchaptered = orderedStubs.filter((s) => s.chapterId == null && categoryByRecipeId.has(String(s.recipeId)));
+  const unresolved = orderedStubs.filter((s) => s.chapterId == null && !categoryByRecipeId.has(String(s.recipeId)));
+
+  const normalize = (name: string) => name.trim().toLowerCase();
+  const categoryFor = (recipeId: unknown) => {
+    const raw = categoryByRecipeId.get(String(recipeId))?.trim();
+    return raw && raw.length > 0 ? raw : "Uncategorized";
+  };
+
+  // Group by normalized name so categories differing only by case/whitespace (e.g. "BBQ" vs
+  // "bbq") collapse into a single group instead of producing duplicate chapters. The first
+  // encountered raw category string is retained as the display name for newly-created chapters.
+  const groups = new Map<string, typeof unchaptered>();
+  const displayNameByNormalized = new Map<string, string>();
+  for (const stub of unchaptered) {
+    const category = categoryFor(stub.recipeId);
+    const key = normalize(category);
+    const list = groups.get(key) ?? [];
+    list.push(stub);
+    groups.set(key, list);
+    if (!displayNameByNormalized.has(key)) displayNameByNormalized.set(key, category);
+  }
+
+  // If multiple existing chapters normalize to the same name, prefer the one with the lowest
+  // orderIndex so the merge target is deterministic rather than depending on array order.
+  const existingByNormalizedName = new Map<string, { _id: unknown; name: string; orderIndex: number }>();
+  for (const ch of chapters) {
+    const key = normalize(ch.name);
+    const current = existingByNormalizedName.get(key);
+    if (!current || ch.orderIndex < current.orderIndex) {
+      existingByNormalizedName.set(key, ch);
+    }
+  }
+  const maxExistingOrderIndex = chapters.reduce((max, ch) => Math.max(max, ch.orderIndex), -1);
+
+  const created: Array<{ name: string; recipeCount: number }> = [];
+  const merged: Array<{ chapterId: string; name: string; recipeCount: number }> = [];
+  const newChapters: Array<{ _id: unknown; name: string; orderIndex: number }> = [];
+  const chapterIdByNormalizedCategory = new Map<string, unknown>();
+  const normalizedCategoriesNeedingNewChapter: string[] = [];
+
+  for (const [normalizedCategory, group] of groups) {
+    const existing = existingByNormalizedName.get(normalizedCategory);
+    if (existing) {
+      chapterIdByNormalizedCategory.set(normalizedCategory, existing._id);
+      merged.push({ chapterId: String(existing._id), name: existing.name, recipeCount: group.length });
+    } else {
+      normalizedCategoriesNeedingNewChapter.push(normalizedCategory);
+    }
+  }
+
+  normalizedCategoriesNeedingNewChapter.sort((a, b) =>
+    displayNameByNormalized.get(a)!.localeCompare(displayNameByNormalized.get(b)!),
+  );
+  normalizedCategoriesNeedingNewChapter.forEach((normalizedCategory, i) => {
+    const newChapterId = new Types.ObjectId();
+    const name = displayNameByNormalized.get(normalizedCategory)!;
+    const newChapter = { _id: newChapterId, name, orderIndex: maxExistingOrderIndex + 1 + i };
+    newChapters.push(newChapter);
+    chapterIdByNormalizedCategory.set(normalizedCategory, newChapterId);
+    created.push({ name, recipeCount: groups.get(normalizedCategory)!.length });
+  });
+
+  // Missing orderIndex defaults to 0 here to match the sort/ordering convention used elsewhere
+  // in this file (fetchCookbookWithOrderedStubs), so a legacy stub with no orderIndex is treated
+  // consistently as sorting at 0 rather than being invisible to this max computation.
+  let nextOrderIndex = stubs.reduce((max, s) => Math.max(max, s.orderIndex ?? 0), -1) + 1;
+  const updatedUnchaptered = unchaptered.map((stub) => ({
+    recipeId: stub.recipeId,
+    orderIndex: nextOrderIndex++,
+    chapterId: chapterIdByNormalizedCategory.get(normalize(categoryFor(stub.recipeId))),
+  }));
+
+  return {
+    chapters: [...chapters, ...newChapters],
+    // Chaptered and unresolved stubs pass through as the exact same objects (not rebuilt via
+    // recipeStub), so a legacy stub with no orderIndex isn't mutated by this no-op.
+    recipes: [...chaptered, ...unresolved, ...updatedUnchaptered],
+    summary: { created, merged },
+  };
+}
+
 /** Transform embedded chapters to the public-facing shape, sorted by orderIndex. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function transformChapters(cookbook: any): { id: string; name: string; orderIndex: number }[] {
@@ -952,6 +1068,42 @@ export const cookbooksRouter = router({
       });
 
       return { success: true };
+    }),
+
+  buildChaptersByCategory: verifiedProcedure
+    .input(z.object({ cookbookId: objectId, dryRun: z.boolean().optional() }))
+    .mutation(async ({ ctx, input }) => {
+      const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
+      const chapters = getChapters(cookbook);
+      const stubs = getRecipeStubs(cookbook);
+      const unchapteredRecipeIds = stubs.filter((s) => s.chapterId == null).map((s) => s.recipeId);
+
+      const categoryByRecipeId = new Map<string, string>();
+      if (unchapteredRecipeIds.length > 0) {
+        const recipeVisFilter = visibilityFilter(ctx.user);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const recipeDocs = await Recipe.find({ _id: { $in: toObjectIds(unchapteredRecipeIds) }, ...recipeVisFilter })
+          .select("classificationId")
+          .populate("classificationId", "name")
+          .lean<any[]>();
+        for (const doc of recipeDocs) {
+          const cls = doc.classificationId as { name?: string } | null;
+          categoryByRecipeId.set(String(doc._id), cls?.name ?? "Uncategorized");
+        }
+      }
+
+      const result = groupUnchapteredRecipesByCategory(chapters, stubs, categoryByRecipeId);
+      const isNoOp = result.summary.created.length === 0 && result.summary.merged.length === 0;
+
+      if (input.dryRun || isNoOp) {
+        return { summary: result.summary };
+      }
+
+      await Cookbook.findByIdAndUpdate(input.cookbookId, {
+        $set: { chapters: result.chapters, recipes: result.recipes },
+      });
+
+      return { summary: result.summary };
     }),
 
   onboardCollaborator: protectedProcedure

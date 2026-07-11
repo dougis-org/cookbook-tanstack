@@ -31,7 +31,7 @@ import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
-import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp } from 'lucide-react'
+import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp, FolderTree } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
 import { useScrollSentinel } from '@/hooks/useScrollSentinel'
 
@@ -116,6 +116,11 @@ interface Collaborator {
   onboarded: boolean
 }
 
+interface BuildChaptersSummary {
+  created: Array<{ name: string; recipeCount: number }>
+  merged: Array<{ chapterId: string; name: string; recipeCount: number }>
+}
+
 /** Discriminated union replaces four separate boolean/nullable modal states. */
 type Modal =
   | { kind: 'none' }
@@ -127,6 +132,7 @@ type Modal =
   | { kind: 'deleteChapter'; chapter: Chapter }
   | { kind: 'inviteCollaborator' }
   | { kind: 'removeCollaborator'; collaborator: Collaborator }
+  | { kind: 'buildChaptersByCategory'; summary: BuildChaptersSummary }
 
 // ─── Shared modal overlay with a11y and keyboard handling ─────────────────────
 
@@ -225,6 +231,7 @@ function CookbookDetailPage() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   // Track active drag item for DragOverlay
   const [activeDragId, setActiveDragId] = useState<string | null>(null)
+  const [buildChaptersError, setBuildChaptersError] = useState<string | null>(null)
 
   const closeModal = () => setModal({ kind: 'none' })
   const invalidate = () => {
@@ -278,6 +285,30 @@ function CookbookDetailPage() {
 
   const reorderChaptersMutation = useMutation(trpc.cookbooks.reorderChapters.mutationOptions())
 
+  const buildChaptersMutation = useMutation(trpc.cookbooks.buildChaptersByCategory.mutationOptions())
+
+  function handleOpenBuildChaptersByCategory() {
+    setBuildChaptersError(null)
+    buildChaptersMutation.mutate(
+      { cookbookId, dryRun: true },
+      {
+        onSuccess: (data) => setModal({ kind: 'buildChaptersByCategory', summary: data.summary }),
+        onError: (err) => setBuildChaptersError(err.message),
+      },
+    )
+  }
+
+  function handleConfirmBuildChaptersByCategory() {
+    setBuildChaptersError(null)
+    buildChaptersMutation.mutate(
+      { cookbookId },
+      {
+        onSuccess: () => { invalidate(); closeModal(); setLocalOrder(null); setLocalChapterOrder(null) },
+        onError: (err) => setBuildChaptersError(err.message),
+      },
+    )
+  }
+
   const addCollaboratorMutation = useMutation(
     trpc.cookbooks.addCollaborator.mutationOptions({
       onSuccess: () => { invalidate(); closeModal() },
@@ -298,6 +329,7 @@ function CookbookDetailPage() {
   const recipes: CookbookRecipe[] = cookbook?.recipes ?? []
   const chapters: Chapter[] = (cookbook?.chapters ?? []).slice().sort((a, b) => a.orderIndex - b.orderIndex)
   const hasChapters = chapters.length > 0
+  const hasUnchapteredRecipes = recipes.some((r) => !r.chapterId)
 
   // Sorted chapter IDs (with optimistic local override)
   const sortedChapterIds = localChapterOrder ?? chapters.map((c) => c.id)
@@ -587,6 +619,16 @@ function CookbookDetailPage() {
         />
       )}
 
+      {modal.kind === 'buildChaptersByCategory' && (
+        <BuildChaptersByCategoryModal
+          summary={modal.summary}
+          isPending={buildChaptersMutation.isPending}
+          error={buildChaptersError}
+          onConfirm={handleConfirmBuildChaptersByCategory}
+          onClose={closeModal}
+        />
+      )}
+
       {modal.kind === 'removeCollaborator' && (
         <ConfirmModal
           title="Remove Collaborator"
@@ -651,9 +693,21 @@ function CookbookDetailPage() {
                 <Plus className="w-4 h-4" />
                 Add Recipe
               </button>
+              <button
+                onClick={handleOpenBuildChaptersByCategory}
+                disabled={!hasUnchapteredRecipes || buildChaptersMutation.isPending}
+                title={hasUnchapteredRecipes ? undefined : 'No unchaptered recipes to organize'}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm disabled:opacity-50"
+              >
+                <FolderTree className="w-4 h-4" />
+                Build Chapters by Category
+              </button>
             </div>
           )}
         </div>
+        {buildChaptersError && modal.kind !== 'buildChaptersByCategory' && (
+          <p className="text-[var(--theme-error)] text-sm mt-2">{buildChaptersError}</p>
+        )}
 
         {recipes.length === 0 ? (
           <div className="text-center py-16">
@@ -897,6 +951,69 @@ function RenameChapterModal({
             </button>
           </div>
         </form>
+      </div>
+    </DialogOverlay>
+  )
+}
+
+// ─── Build Chapters by Category Modal ─────────────────────────────────────────
+
+function BuildChaptersByCategoryModal({
+  summary,
+  isPending,
+  error,
+  onConfirm,
+  onClose,
+}: {
+  summary: BuildChaptersSummary
+  isPending: boolean
+  error?: string | null
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  const totalGroups = summary.created.length + summary.merged.length
+
+  return (
+    <DialogOverlay labelId="build-chapters-title" onClose={onClose} isPending={isPending}>
+      <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-md">
+        <ModalHeader title="Build Chapters by Category" titleId="build-chapters-title" onClose={onClose} />
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-[var(--theme-fg-muted)]">
+            This groups every recipe without a chapter by its category and creates or merges chapters accordingly.
+          </p>
+          {totalGroups === 0 ? (
+            <p className="text-sm text-[var(--theme-fg-muted)]">No unchaptered recipes to organize.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {summary.created.map((c) => (
+                <li key={`created-${c.name}`} className="flex justify-between items-center text-[var(--theme-fg)]">
+                  <span>Create <strong>{c.name}</strong></span>
+                  <span className="text-[var(--theme-fg-muted)]">{c.recipeCount} {c.recipeCount === 1 ? 'recipe' : 'recipes'}</span>
+                </li>
+              ))}
+              {summary.merged.map((m) => (
+                <li key={`merged-${m.chapterId}`} className="flex justify-between items-center text-[var(--theme-fg)]">
+                  <span>Merge into <strong>{m.name}</strong></span>
+                  <span className="text-[var(--theme-fg-muted)]">{m.recipeCount} {m.recipeCount === 1 ? 'recipe' : 'recipes'}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {error && <p className="text-[var(--theme-error)] text-sm">{error}</p>}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isPending || totalGroups === 0}
+              className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            >
+              {isPending ? 'Building…' : 'Confirm'}
+            </button>
+            <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
+              Cancel
+            </button>
+          </div>
+        </div>
       </div>
     </DialogOverlay>
   )
@@ -1379,4 +1496,4 @@ function OnboardingModal({
 }
 
 // Named exports for testing
-export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal, OnboardingModal }
+export { ChapterHeader, AddRecipeModal, CollaboratorsPanel, InviteCollaboratorModal, OnboardingModal, BuildChaptersByCategoryModal }
