@@ -1011,6 +1011,28 @@ describe("cookbooks.buildChaptersByCategory", () => {
     });
   });
 
+  it("is a no-op (no write) when every unchaptered stub is unresolvable (invisible or deleted)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const editor = await seedUser();
+      const otherUser = await seedUser();
+      const cb = await seedCookbook(owner.id);
+      await new Collaborator({ cookbookId: cb._id, userId: editor.id, role: "editor", addedBy: owner.id }).save();
+      const privateRecipe = await new Recipe({ name: "Secret Sauce", userId: otherUser.id, isPublic: false }).save();
+      await seedCookbookWithRecipes(cb.id, privateRecipe.id);
+
+      const findByIdAndUpdateSpy = vi.spyOn(Cookbook, "findByIdAndUpdate");
+      try {
+        const caller = await makeAuthCaller(editor.id, { collabCookbookIds: [cb.id] });
+        const result = await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+        expect(result.summary).toEqual({ created: [], merged: [] });
+        expect(findByIdAndUpdateSpy).not.toHaveBeenCalled();
+      } finally {
+        findByIdAndUpdateSpy.mockRestore();
+      }
+    });
+  });
+
   it("commit performs exactly one Cookbook.findByIdAndUpdate call with $set covering both chapters and recipes", async () => {
     await withCookbookTest(async ({ cb, caller }) => {
       const recipe = await new Recipe({ name: "Soup", userId: cb.userId, isPublic: true }).save();

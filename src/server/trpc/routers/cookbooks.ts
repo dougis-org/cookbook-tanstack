@@ -1092,8 +1092,9 @@ export const cookbooksRouter = router({
       }
 
       const result = groupUnchapteredRecipesByCategory(chapters, stubs, categoryByRecipeId);
+      const isNoOp = result.summary.created.length === 0 && result.summary.merged.length === 0;
 
-      if (input.dryRun || unchapteredRecipeIds.length === 0) {
+      if (input.dryRun || isNoOp) {
         return { summary: result.summary };
       }
 
