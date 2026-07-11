@@ -303,7 +303,7 @@ function CookbookDetailPage() {
     buildChaptersMutation.mutate(
       { cookbookId },
       {
-        onSuccess: () => { invalidate(); closeModal() },
+        onSuccess: () => { invalidate(); closeModal(); setLocalOrder(null); setLocalChapterOrder(null) },
         onError: (err) => setBuildChaptersError(err.message),
       },
     )
