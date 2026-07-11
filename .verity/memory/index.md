@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (13)
+## decisions/ (16)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -32,6 +32,12 @@
   *decision* · 90%
 - [[n030-whitelist-entitlement-tiers-in-route-search-valida]] — **Whitelist entitlement tiers in route search validation**
   *decision* · 78% · scope: `src/routes/**`
+- [[n032-pin-codacy-tool-runtime-versions-in-codacy-codacy]] — **Pin Codacy tool/runtime versions in .codacy/codacy.yaml**
+  *decision* · 80% · scope: `.codacy/codacy.yaml`
+- [[n033-sync-approved-spec-deltas-into-the-canonical-spec]] — **Sync approved spec deltas into the canonical spec after merge**
+  *decision* · 77% · scope: `openspec/specs/**/spec.md`, `openspec/changes/**/spec.md`
+- [[n034-filter-sources-on-the-server-and-page-initial-sour]] — **Filter sources on the server and page initial source loads**
+  *decision* · 91%
 
 ## patterns/ (1)
 
