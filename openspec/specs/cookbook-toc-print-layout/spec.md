@@ -92,20 +92,33 @@ The system SHALL display the cookbook creator and collaborator list on the print
 - **WHEN** the print page loads for an unauthenticated anonymous visitor on a public collaborative cookbook
 - **THEN** the Table of Contents print footer displays "Created by: [Owner Name]" but the collaborators list is completely hidden
 
-### Requirement: Standalone page background matches the print token family
+### Requirement: MODIFIED Standalone page background matches the print token family
 
 The shared `CookbookStandalonePage` wrapper (used by both `/cookbooks/$id/toc`
 and `/cookbooks/$id/print`) SHALL render its on-screen background using the
 same always-light `--theme-print-*` token family already used by its
-descendant text and border colors (`--theme-print-fg`,
-`--theme-print-fg-muted`, `--theme-print-fg-subtle`, `--theme-print-border`),
-regardless of the currently active site theme (`dark`, `dark-greens`,
-`light-cool`, `light-warm`).
+descendant text and border colors, regardless of the currently active site
+theme (`dark`, `dark-greens`, `light-cool`, `light-warm`) — **and this
+rendering SHALL be available at first paint, with no window in which the
+route's component or its styling is not yet loaded.** The `toc` and `print`
+route components SHALL NOT be split into a separate lazily-loaded bundle
+chunk that falls outside the app's boot-loader stylesheet-readiness gate
+(`#app-shell` visibility in `src/routes/__root.tsx`).
 
 #### Scenario: TOC/print page background is light in the dark theme
 
 - **WHEN** a user with the "Dark (blues)" theme active (`html.dark`) views `/cookbooks/$id/toc` or `/cookbooks/$id/print` (including with `?displayonly=1`)
 - **THEN** the page container background renders as the fixed light `--theme-print-bg` value, not the theme's dark `--theme-bg` value, and recipe names, the cookbook title, and footer text remain visible against that background
+
+#### Scenario: Background renders correctly on every load, not just after a settling delay
+
+- **WHEN** a user navigates directly to `/cookbooks/$id/toc` or `/cookbooks/$id/print` with any of the four supported themes active and the page's title heading becomes visible
+- **THEN** the nearest ancestor with a non-transparent background already resolves to the fixed light `--theme-print-bg` value — not a transiently transparent background that would otherwise expose the inherited site-theme background color from `<body>`
+
+#### Scenario: TOC/print route components are not emitted as a separate lazy bundle chunk
+
+- **WHEN** the build output's chunk/asset manifest is inspected for a production build of the application
+- **THEN** there is no separate JS or CSS chunk containing `CookbookStandaloneLayout`'s exports that is excluded from the boot-loader's stylesheet-readiness gate — the toc and print routes' component code loads as part of the main application bundle
 
 #### Scenario: TOC/print page background is light in every supported theme
 
@@ -114,8 +127,8 @@ regardless of the currently active site theme (`dark`, `dark-greens`,
 
 #### Scenario: Actual print output is unaffected
 
-- **WHEN** a user triggers the browser print dialog from `/cookbooks/$id/print`
+- **WHEN** a user on `/cookbooks/$id/print` triggers the browser print dialog
 - **THEN** the printed page background remains white, as already enforced by the existing `@media print` rule in `src/styles/print.css`, unchanged by this requirement
 
-See [design.md](../../changes/archive/2026-07-10-fix-cookbook-print-preview-background-contrast/design.md) and [tasks.md](../../changes/archive/2026-07-10-fix-cookbook-print-preview-background-contrast/tasks.md) for the change that introduced this requirement.
+See [design.md](../../changes/archive/2026-07-11-fix-cookbook-print-toc-code-splitting/design.md) and [tasks.md](../../changes/archive/2026-07-11-fix-cookbook-print-toc-code-splitting/tasks.md) for the change that introduced this requirement.
 
