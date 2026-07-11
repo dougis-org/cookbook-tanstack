@@ -110,12 +110,16 @@ function groupUnchapteredRecipesByCategory(
   stubs: Array<{ recipeId: unknown; orderIndex?: number; chapterId?: unknown }>,
   categoryByRecipeId: Map<string, string>,
 ): BuildChaptersByCategoryResult {
-  const chaptered = stubs.filter((s) => s.chapterId != null);
+  // `cookbook.recipes` isn't guaranteed to be array-ordered (fetchEditableCookbook doesn't sort
+  // it), so sort by orderIndex first to make grouping/reassignment deterministic and consistent
+  // with the user-visible ordering, matching fetchCookbookWithOrderedStubs's approach elsewhere.
+  const orderedStubs = [...stubs].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+  const chaptered = orderedStubs.filter((s) => s.chapterId != null);
   // A stub with no `categoryByRecipeId` entry means the recipe doc wasn't resolvable (deleted,
   // or invisible to the caller under visibilityFilter). Leave those stubs untouched rather than
   // silently defaulting them to "Uncategorized" and reassigning/exposing them in the summary.
-  const unchaptered = stubs.filter((s) => s.chapterId == null && categoryByRecipeId.has(String(s.recipeId)));
-  const unresolved = stubs.filter((s) => s.chapterId == null && !categoryByRecipeId.has(String(s.recipeId)));
+  const unchaptered = orderedStubs.filter((s) => s.chapterId == null && categoryByRecipeId.has(String(s.recipeId)));
+  const unresolved = orderedStubs.filter((s) => s.chapterId == null && !categoryByRecipeId.has(String(s.recipeId)));
 
   const normalize = (name: string) => name.trim().toLowerCase();
   const categoryFor = (recipeId: unknown) => {

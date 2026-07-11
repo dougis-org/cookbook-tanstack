@@ -1081,6 +1081,30 @@ describe("cookbooks.buildChaptersByCategory", () => {
     });
   });
 
+  it("orders grouped stubs by orderIndex, not by raw array position, since cookbook.recipes isn't guaranteed sorted", async () => {
+    await withCookbookTest(async ({ cb, caller }) => {
+      const recipeA = await new Recipe({ name: "A - orderIndex 1", userId: cb.userId, isPublic: true }).save();
+      const recipeB = await new Recipe({ name: "B - orderIndex 5", userId: cb.userId, isPublic: true }).save();
+      // Store the higher-orderIndex stub first in array order, to prove grouping/reassignment
+      // follows orderIndex rather than array position.
+      await Cookbook.findByIdAndUpdate(cb.id, {
+        $set: {
+          recipes: [
+            { recipeId: recipeB.id, orderIndex: 5 },
+            { recipeId: recipeA.id, orderIndex: 1 },
+          ],
+        },
+      });
+
+      await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
+
+      const persisted = await Cookbook.findById(cb.id).lean();
+      const stubFor = (id: string) =>
+        persisted!.recipes.find((r: { recipeId: unknown }) => String(r.recipeId) === id);
+      expect(stubFor(String(recipeA.id)).orderIndex).toBeLessThan(stubFor(String(recipeB.id)).orderIndex);
+    });
+  });
+
   it("a viewer collaborator (read-only role, not merely a non-collaborator) is rejected", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
