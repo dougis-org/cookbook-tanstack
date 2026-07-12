@@ -142,6 +142,22 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     return { chapters, recipes }
   }
 
+  function openConfirmModal(openButtonName: string | RegExp) {
+    fireEvent.click(screen.getByRole('button', { name: openButtonName }))
+  }
+
+  function confirmModal(confirmButtonName: string | RegExp) {
+    const buttons = screen.getAllByRole('button', { name: confirmButtonName })
+    fireEvent.click(buttons[0])
+  }
+
+  function expectReorderCalledWith(recipeIds: string[], extra: Record<string, unknown> = {}) {
+    expect(mockReorderMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ recipeIds, ...extra }),
+      expect.anything()
+    )
+  }
+
   describe('Cookbook-level "Resort All" action', () => {
     it('is rendered next to "Build Chapters by Category" when canEdit is true', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
@@ -159,10 +175,9 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('opens a confirmation prompt and does NOT call reorderRecipes yet', async () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      const resortBtn = screen.getByRole('button', { name: /Resort All/i })
-      fireEvent.click(resortBtn)
-      
+
+      openConfirmModal(/Resort All/i)
+
       expect(screen.getByText(/Sort every chapter's recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
@@ -170,11 +185,11 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('closes confirmation prompt on cancel without calling reorderRecipes', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
+
+      openConfirmModal(/Resort All/i)
       expect(screen.getByText(/Sort every chapter's recipes/i)).toBeInTheDocument()
-      
-      fireEvent.click(screen.getByRole('button', { name: /Cancel/i }))
+
+      confirmModal(/Cancel/i)
       expect(screen.queryByText(/Sort every chapter's recipes/i)).not.toBeInTheDocument()
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
@@ -182,29 +197,21 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('calls reorderRecipes with a flat recipeIds payload globally sorted when confirmed on a chaptered cookbook', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
-      const buttons = screen.getAllByRole('button', { name: /Resort All/i })
-      fireEvent.click(buttons[0]) // The confirm button inside modal
+
+      openConfirmModal(/Resort All/i)
+      confirmModal(/Resort All/i)
 
       // We expect the payload to be the global sort across all recipes:
       // Apple Pie (r2) -> Best Chili (The Best Chili, r3) -> Great Soup (A Great Soup, r4) -> Zebra Cake (r1)
-      expect(mockReorderMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          cookbookId: 'c1',
-          recipeIds: ['r2', 'r3', 'r4', 'r1']
-        }),
-        expect.anything()
-      )
+      expectReorderCalledWith(['r2', 'r3', 'r4', 'r1'], { cookbookId: 'c1' })
     })
 
     it('sorts unchaptered recipes as their own bucket correctly when confirmed', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: true })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
-      const buttons = screen.getAllByRole('button', { name: /Resort All/i })
-      fireEvent.click(buttons[0]) // Confirm
+
+      openConfirmModal(/Resort All/i)
+      confirmModal(/Resort All/i)
 
       // Global sort of [Zebra Cake, Apple Pie, The Best Chili, A Great Soup, Banana Bread, An Amazing Cake]
       // Normalized:
@@ -214,36 +221,25 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       // Best Chili (The Best Chili, r3)
       // Great Soup (A Great Soup, r4)
       // Zebra Cake (r1)
-      expect(mockReorderMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          recipeIds: ['r6', 'r2', 'r5', 'r3', 'r4', 'r1']
-        }),
-        expect.anything()
-      )
+      expectReorderCalledWith(['r6', 'r2', 'r5', 'r3', 'r4', 'r1'])
     })
 
     it('sorts flat cookbook when confirmed', () => {
       setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
-      const buttons = screen.getAllByRole('button', { name: /Resort All/i })
-      fireEvent.click(buttons[0]) // Confirm
+      openConfirmModal(/Resort All/i)
+      confirmModal(/Resort All/i)
 
       // Zebra Cake, Apple Pie -> Apple Pie, Zebra Cake
-      expect(mockReorderMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          recipeIds: ['r2', 'r1']
-        }),
-        expect.anything()
-      )
+      expectReorderCalledWith(['r2', 'r1'])
     })
 
     it('uses chapter-free confirmation copy for a flat cookbook', () => {
       setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
+      openConfirmModal(/Resort All/i)
       expect(screen.getByText(/Sort all recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(screen.queryByText(/Sort every chapter's recipes/i)).not.toBeInTheDocument()
     })
@@ -267,8 +263,8 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('opens confirmation prompt without calling reorderRecipes', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
+
+      openConfirmModal('Sort Chapter 1 recipes by title')
       expect(screen.getByText(/Sort this chapter's recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
@@ -276,66 +272,55 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('cancels without calling reorderRecipes', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
-      fireEvent.click(screen.getByRole('button', { name: /Cancel/i }))
+
+      openConfirmModal('Sort Chapter 1 recipes by title')
+      confirmModal(/Cancel/i)
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
 
     it('calls reorderRecipes with a payload scoped only to that chapter when confirmed', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' })) // The confirm button inside modal
 
-      expect(mockReorderMutate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          recipeIds: ['r2', 'r1']
-        }),
-        expect.anything()
-      )
+      openConfirmModal('Sort Chapter 1 recipes by title')
+      confirmModal('Sort Chapter')
+
+      expectReorderCalledWith(['r2', 'r1'])
     })
 
-    it('is a safe no-op for a chapter with 0 recipes', () => {
+    function setupSingleChapterMockData(chapters: Array<{ id: string, name: string, orderIndex: number }>, recipes: Array<{ id: string, name: string, chapterId: string, orderIndex: number }>) {
       mockUseAuth.mockReturnValue({ userId: 'owner_1' })
       mockUseQuery.mockReturnValue({
-        data: {
-          id: 'c1',
-          name: 'My Cookbook',
-          userId: 'owner_1',
-          chapters: [
-            { id: 'ch1', name: 'Empty Chapter', orderIndex: 0 },
-            { id: 'ch2', name: 'Other Chapter', orderIndex: 1 }
-          ],
-          recipes: [{ id: 'r1', name: 'Other Recipe', chapterId: 'ch2', orderIndex: 0 }],
-        },
+        data: { id: 'c1', name: 'My Cookbook', userId: 'owner_1', chapters, recipes },
         isLoading: false,
       })
+    }
+
+    it('is a safe no-op for a chapter with 0 recipes', () => {
+      setupSingleChapterMockData(
+        [
+          { id: 'ch1', name: 'Empty Chapter', orderIndex: 0 },
+          { id: 'ch2', name: 'Other Chapter', orderIndex: 1 },
+        ],
+        [{ id: 'r1', name: 'Other Recipe', chapterId: 'ch2', orderIndex: 0 }],
+      )
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Empty Chapter recipes by title' }))
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' }))
+
+      openConfirmModal('Sort Empty Chapter recipes by title')
+      confirmModal('Sort Chapter')
 
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
 
     it('is a safe no-op for a chapter with 1 recipe', () => {
-      mockUseAuth.mockReturnValue({ userId: 'owner_1' })
-      mockUseQuery.mockReturnValue({
-        data: {
-          id: 'c1',
-          name: 'My Cookbook',
-          userId: 'owner_1',
-          chapters: [{ id: 'ch1', name: 'One Recipe Chapter', orderIndex: 0 }],
-          recipes: [{ id: 'r1', name: 'A Cake', chapterId: 'ch1', orderIndex: 0 }],
-        },
-        isLoading: false,
-      })
+      setupSingleChapterMockData(
+        [{ id: 'ch1', name: 'One Recipe Chapter', orderIndex: 0 }],
+        [{ id: 'r1', name: 'A Cake', chapterId: 'ch1', orderIndex: 0 }],
+      )
       render(<CookbookDetailPage />)
-      
-      fireEvent.click(screen.getByRole('button', { name: 'Sort One Recipe Chapter recipes by title' }))
-      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' }))
+
+      openConfirmModal('Sort One Recipe Chapter recipes by title')
+      confirmModal('Sort Chapter')
 
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
