@@ -1,5 +1,5 @@
 import { test, expect } from "@bgotink/playwright-coverage";
-import type { Page } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import {
@@ -292,58 +292,115 @@ test.describe("Sorting Cookbook Recipes", () => {
     await expect(page.getByRole("dialog")).not.toBeVisible();
   });
 
-  test("should sort entire cookbook by title and single chapters", async ({ page }) => {
-    await registerAndLogin(page);
+  // Prefixes chosen so that naive `localeCompare` ordering ("A Banana", "Apple",
+  // "The Zebra", "Yellow") differs from the app's article-stripping order
+  // ("Apple", "A Banana", "Yellow", "The Zebra"). This ensures the assertions
+  // below actually exercise the custom normalization, not just plain string sort.
+  const ARTICLE_STRIPPED_ORDER = ["Apple", "A Banana", "Yellow", "The Zebra"];
 
-    // Create recipes in non-alphabetical order
-    const r1 = getUniqueRecipeName("Zebra");
-    const r2 = getUniqueRecipeName("Apple");
-    const r3 = getUniqueRecipeName("Yellow");
-    const r4 = getUniqueRecipeName("Banana");
+  async function recipeCardTitles(scope: Locator | Page) {
+    return scope.locator('[data-testid="recipe-card"] a').allTextContents();
+  }
 
-    for (const name of [r1, r2, r3, r4]) {
+  function expectPrefixOrder(titles: string[], expectedPrefixes: string[]) {
+    expect(titles).toHaveLength(expectedPrefixes.length);
+    titles.forEach((title, i) => {
+      expect(title.startsWith(expectedPrefixes[i])).toBe(true);
+    });
+  }
+
+  // Creates recipes one at a time (not in parallel) since they share a single `page`
+  // and concurrent navigations would abort each other.
+  async function createRecipes(page: Page, prefixes: string[]) {
+    const names: string[] = [];
+    for (const prefix of prefixes) {
+      const name = getUniqueRecipeName(prefix);
       await gotoAndWaitForHydration(page, "/recipes/new");
       await submitRecipeForm(page, { name });
       await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
+      names.push(name);
     }
+    return names;
+  }
+
+  test("should sort entire cookbook by title, stripping leading articles", async ({ page }) => {
+    await registerAndLogin(page);
+
+    // Create recipes in non-alphabetical order
+    const names = await createRecipes(page, ["The Zebra", "Apple", "Yellow", "A Banana"]);
 
     const { cookbookUrl } = await createCookbook(page, getUniqueCookbookName("Sort E2E"));
     await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Create chapters
+    for (const name of names) {
+      await addRecipeToCookbook(page, name);
+    }
+
+    await page.getByRole("button", { name: "Resort All" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Resort All" }).click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+
+    const titles = await recipeCardTitles(page);
+    expectPrefixOrder(titles, ARTICLE_STRIPPED_ORDER);
+  });
+
+  test("should sort a single chapter by title, leaving other chapters unchanged", async ({ page }) => {
+    test.slow(); // creates 2 chapters and 6 recipes across several navigations
+    await registerAndLogin(page);
+
+    const names = await createRecipes(page, ["The Zebra", "Apple", "Yellow", "A Banana"]);
+
+    const { cookbookUrl } = await createCookbook(page, getUniqueCookbookName("Sort Chapter E2E"));
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // The chapter section (and its heading) only renders once the cookbook has at
+    // least one recipe, so add one before any chapter exists (creating the first
+    // chapter migrates it in automatically) to get the heading to render immediately.
+    await addRecipeToCookbook(page, names[0]);
     await createChapter(page, 1);
     await hoverChapterAndClickAction(page, 1, "Rename");
     await page.getByRole("textbox", { name: "Chapter name" }).fill("First Chapter");
     await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("heading", { name: "First Chapter" })).toBeVisible({ timeout: 20000 });
+
+    for (const name of names.slice(1)) {
+      await addRecipeToCookbook(page, name, { chapterName: "First Chapter" });
+    }
 
     await createChapter(page, 2);
     await hoverChapterAndClickAction(page, 2, "Rename");
     await page.getByRole("textbox", { name: "Chapter name" }).fill("Second Chapter");
     await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("heading", { name: "Second Chapter" })).toBeVisible({ timeout: 20000 });
 
-    // Add recipes to chapters
-    await addRecipeToCookbook(page, r1); // Zebra
-    await addRecipeToCookbook(page, r2); // Apple
-    await addRecipeToCookbook(page, r3); // Yellow
-    await addRecipeToCookbook(page, r4); // Banana
+    const secondChapterNames = await createRecipes(page, ["Cherry", "Banana"]);
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    await expect(page.getByLabel(/Sort Second Chapter recipes by title/)).toBeVisible({ timeout: 20000 });
+    for (const name of secondChapterNames) {
+      await addRecipeToCookbook(page, name, { chapterName: "Second Chapter" });
+    }
 
-    // Move first two to First Chapter, next two to Second Chapter via some drag (this is hard in playwright)
-    // Actually, all are in Second Chapter right now because it's the last created? No, they go to unchaptered or first chapter.
-    // By default, newly added go to unchaptered if chapters exist.
-    // To simplify, let's just do Resort All on the whole cookbook without chapters first, or just use flat cookbook for Resort All.
+    const firstChapterSection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "First Chapter" }) });
+    const secondChapterSection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "Second Chapter" }) });
 
-    // Let's just click Resort All for the unchaptered recipes
-    await page.getByRole("button", { name: "Resort All" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Resort All" }).click();
+    const secondChapterTitlesBefore = await recipeCardTitles(secondChapterSection);
 
-    // Wait for the mutation to finish
+    await firstChapterSection.getByRole("heading", { name: "First Chapter" }).hover();
+    await page.getByLabel("Sort First Chapter recipes by title").click({ force: true });
+    await page.getByRole("dialog").getByRole("button", { name: "Sort Chapter" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
-    
-    // Apple should appear before Zebra in the DOM
-    const titles = await page.locator('[data-testid="recipe-card"] h3').allTextContents();
-    // They should be in alphabetical order: Apple, Banana, Yellow, Zebra
-    // Since names contain unique prefixes, we just check if they are sorted by title text
-    const sortedTitles = [...titles].sort((a, b) => a.localeCompare(b));
-    expect(titles).toEqual(sortedTitles);
+
+    // Creating the first chapter migrates any pre-existing unchaptered recipe
+    // (names[0]) into it, so First Chapter ends up with all four recipes.
+    const firstChapterTitlesAfter = await recipeCardTitles(firstChapterSection);
+    expectPrefixOrder(firstChapterTitlesAfter, ARTICLE_STRIPPED_ORDER);
+
+    // Second Chapter must be untouched by the First Chapter sort.
+    const secondChapterTitlesAfter = await recipeCardTitles(secondChapterSection);
+    expect(secondChapterTitlesAfter).toEqual(secondChapterTitlesBefore);
   });
 });

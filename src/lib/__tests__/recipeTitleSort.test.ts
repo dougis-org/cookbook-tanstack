@@ -40,6 +40,11 @@ describe("recipeTitleSort", () => {
     it("normalizes multiple internal spaces after an article", () => {
       expect(titleSortKey("The  Best Chili")).toBe("best chili");
     });
+
+    it("trims leading and trailing whitespace before normalizing", () => {
+      expect(titleSortKey("  The Best Chili  ")).toBe("best chili");
+      expect(titleSortKey("   Apple Pie")).toBe("apple pie");
+    });
   });
 
   describe("compareByTitle", () => {

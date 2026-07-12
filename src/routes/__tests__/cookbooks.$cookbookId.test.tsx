@@ -248,6 +248,13 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       expect(screen.getByRole('button', { name: 'Sort Chapter 2 recipes by title' })).toBeInTheDocument()
     })
 
+    it('is NOT rendered when canEdit is false', () => {
+      setupMockData({ canEdit: false, hasChapters: true, hasUnchaptered: false })
+      render(<CookbookDetailPage />)
+      expect(screen.queryByRole('button', { name: 'Sort Chapter 1 recipes by title' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Sort Chapter 2 recipes by title' })).not.toBeInTheDocument()
+    })
+
     it('opens confirmation prompt without calling reorderRecipes', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)

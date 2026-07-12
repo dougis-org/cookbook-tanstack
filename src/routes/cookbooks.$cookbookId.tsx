@@ -989,6 +989,7 @@ function RenameChapterModal({
   onSortChapter: () => void
 }) {
   const [name, setName] = useState(chapter.name)
+  const isDirty = name.trim() !== chapter.name
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -1028,7 +1029,9 @@ function RenameChapterModal({
             <button
               type="button"
               onClick={onSortChapter}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
+              disabled={isDirty}
+              title={isDirty ? 'Save or discard the chapter name change first' : undefined}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowDownAZ className="w-4 h-4" />
               Sort Chapter

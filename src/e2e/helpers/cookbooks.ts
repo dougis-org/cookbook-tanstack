@@ -54,10 +54,22 @@ export async function createCookbook(
   };
 }
 
-export async function addRecipeToCookbook(page: Page, recipeName: string) {
+export async function addRecipeToCookbook(
+  page: Page,
+  recipeName: string,
+  options: { chapterName?: string } = {},
+) {
   await page.getByRole("button", { name: "Add Recipe" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.waitFor({ state: "visible" });
+
+  if (options.chapterName) {
+    const chapterSelect = dialog.getByLabel("Chapter");
+    // The select's options come from the same query as the rest of the page; guard
+    // against a stale render where the target chapter hasn't appeared yet.
+    await chapterSelect.locator("option", { hasText: options.chapterName }).waitFor({ state: "attached" });
+    await chapterSelect.selectOption({ label: options.chapterName });
+  }
 
   const searchBox = dialog.getByPlaceholder("Search recipes…");
   if ((await searchBox.count()) > 0) {

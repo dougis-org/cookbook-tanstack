@@ -1,5 +1,5 @@
 export function titleSortKey(title: string): string {
-  const lower = title.toLowerCase();
+  const lower = title.trim().toLowerCase();
   const match = lower.match(/^(a|an|the)\s+/);
   if (match) {
     return lower.substring(match[0].length);
