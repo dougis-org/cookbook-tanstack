@@ -647,10 +647,10 @@ function CookbookDetailPage() {
 
       {modal.kind === 'resortAll' && (
         <ConfirmModal
-          title="Resort All"
+          title="Sort Chapters by Recipe Title"
           body={<>{hasChapters ? "Sort every chapter's recipes alphabetically by title?" : 'Sort all recipes alphabetically by title?'}</>}
-          confirmLabel="Resort All"
-          pendingLabel="Resorting…"
+          confirmLabel="Sort Chapters by Recipe Title"
+          pendingLabel="Sorting…"
           isPending={reorderMutation.isPending}
           onConfirm={() => {
             if (recipes.length <= 1) {
@@ -756,7 +756,7 @@ function CookbookDetailPage() {
                 className="flex items-center gap-1.5 px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
               >
                 <ArrowDownAZ className="w-4 h-4" />
-                Resort All
+                Sort Chapters by Recipe Title
               </button>
             </div>
           )}

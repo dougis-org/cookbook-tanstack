@@ -40,13 +40,13 @@
 
 ### Decision 1: Reuse `reorderRecipes`'s flat `recipeIds` form for both entry points
 
-- Chosen: Both "Resort All" and the per-chapter sort icon call the
+- Chosen: Both "Sort Chapters by Recipe Title" and the per-chapter sort icon call the
   existing `trpc.cookbooks.reorderRecipes` mutation using its flat
   `{ cookbookId, recipeIds: string[] }` input — the same form already used
   for flat (chapter-free) drag-and-drop reordering — rather than its
   chapter-aware `{ cookbookId, chapters: [...] }` form.
 - Alternatives considered:
-  1. Chapter-aware `chapters` form for "Resort All": rejected because its
+  1. Chapter-aware `chapters` form for "Sort Chapters by Recipe Title": rejected because its
      server-side validation requires the submitted `chapters[].recipeIds`
      to cover **every** recipe stub in the cookbook with no leftovers
      (`cookbooks.ts` around the `uniqueIncoming.size !== stubByRecipeId.size`
@@ -66,14 +66,14 @@
   `orderIndex`, only the *relative* order within a shared `chapterId` (or
   the unchaptered/`undefined` bucket) matters — absolute index collisions
   across different buckets are harmless. This lets:
-  - "Resort All" submit **all** recipe IDs in the cookbook (chaptered and
+  - "Sort Chapters by Recipe Title" submit **all** recipe IDs in the cookbook (chaptered and
     unchaptered), globally sorted by title — each bucket comes out
     alphabetized as a side effect, with zero risk of the "must cover every
     recipe" validation failure the chapter-aware form has.
   - The per-chapter sort submit **only that chapter's** recipe IDs, sorted
     — every other recipe (other chapters, unchaptered) keeps its existing
     `orderIndex` untouched, exactly as desired.
-- Trade-offs: "Resort All" sends a larger payload (every recipe ID in the
+- Trade-offs: "Sort Chapters by Recipe Title" sends a larger payload (every recipe ID in the
   cookbook) than a chapter-scoped call would need in isolation. Accepted:
   this is the same order of magnitude as the payload already sent by
   today's `chapters`-form drag-and-drop reorder, so it introduces no new
@@ -130,7 +130,7 @@
 
 ### Decision 4: Confirm-before-execute UX reuses existing `ConfirmModal`
 
-- Chosen: Both "Resort All" and the per-chapter sort icon open the
+- Chosen: Both "Sort Chapters by Recipe Title" and the per-chapter sort icon open the
   existing generic `ConfirmModal` component (already used for chapter
   delete) with action-specific title/body copy, rather than introducing a
   new modal component.
@@ -145,7 +145,7 @@
 
 ### Decision 5: Placement
 
-- Chosen: "Resort All" button placed next to the existing "Build Chapters
+- Chosen: "Sort Chapters by Recipe Title" button placed next to the existing "Build Chapters
   by Category" button in the cookbook edit page's toolbar (per requester
   direction during proposal review). The per-chapter sort icon is placed
   in `ChapterHeader`'s existing hover-revealed icon row, after `Pencil`
@@ -156,7 +156,7 @@
   the exact style conventions (`text-[var(--theme-fg-subtle)]
   hover:text-[var(--theme-accent)] transition-colors`, `w-3.5 h-3.5`) of
   the adjacent icons.
-- Alternatives considered: placing "Resort All" next to "Add Recipe" —
+- Alternatives considered: placing "Sort Chapters by Recipe Title" next to "Add Recipe" —
   rejected per requester direction (grouping with bulk-organization
   actions reads more clearly than grouping with the primary add action).
 - Rationale: Direct requester decision; consistent with existing icon
@@ -165,7 +165,7 @@
 
 ## Proposal to Design Mapping
 
-- Proposal element: Cookbook-level "Resort All" sorts every chapter plus
+- Proposal element: Cookbook-level "Sort Chapters by Recipe Title" sorts every chapter plus
   the unchaptered bucket, independently, without changing chapter
   membership.
   - Design decision: Decision 1 (flat `recipeIds` form, globally sorted
@@ -201,7 +201,7 @@
 
 ## Functional Requirements Mapping
 
-- Requirement: "Resort All" title-sorts every recipe in the cookbook,
+- Requirement: "Sort Chapters by Recipe Title" title-sorts every recipe in the cookbook,
   chapter memberships unchanged.
   - Design element: Decision 1, Decision 2.
   - Acceptance criteria reference: `specs/cookbook-chapters/spec.md`
@@ -227,7 +227,7 @@
   - Requirement: Sort must not corrupt or drop any recipe from the
     cookbook (all IDs preserved, only order changes).
   - Design element: Decision 1 (flat form's forgiving fallback to
-    existing `orderIndex` for anything not submitted; "Resort All"
+    existing `orderIndex` for anything not submitted; "Sort Chapters by Recipe Title"
     submits the full ID set precisely to avoid any drop).
   - Acceptance criteria reference: `specs/cookbook-chapters/spec.md`.
   - Testability notes: Integration test asserting recipe count and ID set
@@ -240,7 +240,7 @@
   - Testability notes: Component test (see Functional Requirements
     Mapping above).
 - Requirement category: performance
-  - Requirement: "Resort All" payload size stays within the same order of
+  - Requirement: "Sort Chapters by Recipe Title" payload size stays within the same order of
     magnitude as existing chapter-aware drag-and-drop reorder calls.
   - Design element: Decision 1 (Trade-offs).
   - Testability notes: Not independently tested — accepted qualitatively
@@ -250,7 +250,7 @@
 
 ## Risks / Trade-offs
 
-- Risk/trade-off: "Resort All" always submits every recipe ID in the
+- Risk/trade-off: "Sort Chapters by Recipe Title" always submits every recipe ID in the
   cookbook, even for cookbooks with many chapters/recipes.
   - Impact: Marginally larger request than a chapter-scoped call; no
     functional issue.
@@ -285,7 +285,7 @@
   existing `orderIndex` values via the pre-existing `reorderRecipes`
   mutation; it introduces no new fields, migrations, or irreversible
   writes.
-- Verification after rollback: Confirm the "Resort All" button and
+- Verification after rollback: Confirm the "Sort Chapters by Recipe Title" button and
   per-chapter sort icon no longer render, and that existing manual
   drag-and-drop reordering still functions (regression check on the
   unchanged `reorderRecipes` code paths).

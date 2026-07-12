@@ -41,7 +41,7 @@ display.
 ### Requirement: ADDED Sort entire cookbook by recipe title
 
 The system SHALL allow the cookbook owner (or a collaborator with edit
-access) to sort every recipe in the cookbook by title, via a "Resort All"
+access) to sort every recipe in the cookbook by title, via a "Sort Chapters by Recipe Title"
 action in the cookbook edit page toolbar, positioned next to the existing
 "Build Chapters by Category" action. Each chapter's recipes SHALL be
 sorted independently, and any unchaptered recipes SHALL be sorted
@@ -51,33 +51,33 @@ before executing.
 
 #### Scenario: Sorting a chaptered cookbook sorts each chapter independently
 
-- **WHEN** the owner confirms "Resort All" on a cookbook with two chapters, each containing recipes in non-alphabetical order
+- **WHEN** the owner confirms "Sort Chapters by Recipe Title" on a cookbook with two chapters, each containing recipes in non-alphabetical order
 - **THEN** each chapter's recipes are reordered to be alphabetical by title (using the normalization rules above) within that chapter, and each recipe's `chapterId` is unchanged
 
 #### Scenario: Unchaptered recipes are sorted as their own bucket
 
-- **WHEN** the owner confirms "Resort All" on a cookbook that has chapters and also has recipes with no `chapterId`
+- **WHEN** the owner confirms "Sort Chapters by Recipe Title" on a cookbook that has chapters and also has recipes with no `chapterId`
 - **THEN** the unchaptered recipes are reordered to be alphabetical among themselves, and remain unchaptered (no `chapterId` is assigned to them)
 
 #### Scenario: Sorting a chapter-free cookbook sorts the flat list
 
-- **WHEN** the owner confirms "Resort All" on a cookbook with zero chapters
+- **WHEN** the owner confirms "Sort Chapters by Recipe Title" on a cookbook with zero chapters
 - **THEN** all recipes in the cookbook are reordered to be alphabetical by title
 
 #### Scenario: Action requires confirmation
 
-- **WHEN** the owner clicks "Resort All"
+- **WHEN** the owner clicks "Sort Chapters by Recipe Title"
 - **THEN** a confirmation prompt is shown describing that this will reorder every chapter's recipes alphabetically, and no reorder mutation is sent until the owner confirms
 
 #### Scenario: Cancelling the confirmation makes no change
 
-- **WHEN** the owner clicks "Resort All" and then cancels the confirmation prompt
+- **WHEN** the owner clicks "Sort Chapters by Recipe Title" and then cancels the confirmation prompt
 - **THEN** no `reorderRecipes` mutation is sent and recipe order is unchanged
 
 #### Scenario: Non-editor cannot see or trigger the action
 
 - **WHEN** a user without edit access (e.g. a viewer-role collaborator, or a non-collaborator visitor) views the cookbook edit page
-- **THEN** the "Resort All" action is not rendered
+- **THEN** the "Sort Chapters by Recipe Title" action is not rendered
 
 ### Requirement: ADDED Sort single chapter by recipe title
 
@@ -115,7 +115,7 @@ before executing.
 
 ## Traceability
 
-- Proposal element: Cookbook-level "Resort All" sorts every chapter plus
+- Proposal element: Cookbook-level "Sort Chapters by Recipe Title" sorts every chapter plus
   the unchaptered bucket, independently, without changing chapter
   membership. -> Requirement: ADDED Sort entire cookbook by recipe title
 - Proposal element: Per-chapter sort icon sorts only that chapter's
@@ -136,7 +136,7 @@ before executing.
 - Requirement: ADDED Title sort normalization -> Task(s): implement
   `src/lib/recipeTitleSort.ts` + unit tests
 - Requirement: ADDED Sort entire cookbook by recipe title -> Task(s):
-  implement "Resort All" button + confirm modal + integration tests
+  implement "Sort Chapters by Recipe Title" button + confirm modal + integration tests
 - Requirement: ADDED Sort single chapter by recipe title -> Task(s):
   implement chapter-header sort icon + confirm modal + integration tests
 
@@ -146,7 +146,7 @@ before executing.
 
 #### Scenario: Latency budget
 
-- **WHEN** "Resort All" is confirmed on a cookbook of typical size (tens
+- **WHEN** "Sort Chapters by Recipe Title" is confirmed on a cookbook of typical size (tens
   of recipes across a handful of chapters)
 - **THEN** the reorder request completes with the same latency
   characteristics as the existing drag-and-drop chapter reorder, since

@@ -23,7 +23,7 @@
   drag-and-drop, persisted through `reorderRecipes`. There is no
   programmatic way to alphabetize.
 - Desired behavior:
-  - A cookbook-level "Resort All" action title-sorts every recipe in the
+  - A cookbook-level "Sort Chapters by Recipe Title" action title-sorts every recipe in the
     cookbook: each chapter's recipes are sorted independently, and any
     unchaptered recipes are sorted independently within their own bucket
     (chapter membership is never changed, only order within a bucket).
@@ -60,7 +60,7 @@
     for comparison — the whole title is used as the sort key in that case.
   - Titles where the article is not followed by a space before other text
     (e.g. "Apple Pie") must not have any characters stripped.
-  - Cookbooks with zero chapters (flat/unchaptered cookbook): "Resort All"
+  - Cookbooks with zero chapters (flat/unchaptered cookbook): "Sort Chapters by Recipe Title"
     still applies, sorting the single flat list.
   - Chapters with 0 or 1 recipes: sort action is a no-op but should still
     be available (or safely disabled) without erroring.
@@ -76,7 +76,7 @@
 
 - New shared, pure title-normalization/sort-comparator utility used by both
   entry points.
-- Cookbook-level "Resort All" button on the cookbook edit page.
+- Cookbook-level "Sort Chapters by Recipe Title" button on the cookbook edit page.
 - Per-chapter sort icon (ArrowDownAZ, Lucide) in `ChapterHeader`, next to
   Rename/Delete.
 - Confirm-before-execute UX for both actions (reusing the existing
@@ -108,7 +108,7 @@
   `titleSortKey(name: string): string` (or equivalent comparator) that
   strips a single leading "a "/"the " (case-insensitive) and normalizes
   case for comparison, plus a `sortByTitle<T>(items, getTitle)` helper.
-- Add a "Resort All" button to `src/routes/cookbooks.$cookbookId.tsx`,
+- Add a "Sort Chapters by Recipe Title" button to `src/routes/cookbooks.$cookbookId.tsx`,
   gated by `canEdit`, that opens a confirm modal and, on confirm, computes
   a title-sorted `recipeIds` array across all cookbook recipes (chaptered
   and unchaptered) and calls the existing `reorderMutation` with the flat
@@ -124,9 +124,9 @@
 ## Risks
 
 - Risk: Reusing the flat `recipeIds` form for a large cookbook submits
-  every recipe ID in the cookbook on every "Resort All" call, which is
+  every recipe ID in the cookbook on every "Sort Chapters by Recipe Title" call, which is
   more payload than a chapter-scoped call.
-  - Impact: Marginally larger request size on Resort All; no correctness
+  - Impact: Marginally larger request size on Sort Chapters by Recipe Title; no correctness
     issue given current cookbook sizes.
   - Mitigation: Accept as-is — this mirrors the size of a full
     `chapters`-form payload already sent by existing drag-and-drop
@@ -151,7 +151,7 @@ Resolved during proposal review (2026-07-11):
 
 - Article scope: "a ", "an ", and "the " (case-insensitive) are all
   ignorable leading articles.
-- Button placement: "Resort All" is placed next to the existing "Build
+- Button placement: "Sort Chapters by Recipe Title" is placed next to the existing "Build
   Chapters by Category" button in the cookbook edit toolbar, grouping it
   with the other bulk-organization action.
 

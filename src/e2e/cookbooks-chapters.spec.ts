@@ -285,8 +285,8 @@ test.describe("Sorting Cookbook Recipes", () => {
     const { cookbookUrl } = await createCookbook(page, getUniqueCookbookName("Sort Cancel"));
     await gotoAndWaitForHydration(page, cookbookUrl);
 
-    // Click Resort All and cancel
-    await page.getByRole("button", { name: "Resort All" }).click();
+    // Click Sort Chapters by Recipe Title and cancel
+    await page.getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("dialog").getByRole("button", { name: "Cancel" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
@@ -336,8 +336,8 @@ test.describe("Sorting Cookbook Recipes", () => {
       await addRecipeToCookbook(page, name);
     }
 
-    await page.getByRole("button", { name: "Resort All" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Resort All" }).click();
+    await page.getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
 
     const titles = await recipeCardTitles(page);

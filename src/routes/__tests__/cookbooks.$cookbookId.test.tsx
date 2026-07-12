@@ -2,20 +2,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { Route } from '@/routes/cookbooks.$cookbookId'
 
-const CookbookDetailPage = (Route as any).component!
+const CookbookDetailPage = (Route as any).options.component!
 
 vi.mock('@tanstack/react-router', async () => {
-  const actual = await vi.importActual('@tanstack/react-router') as any
-  return {
-    ...actual,
-    useNavigate: () => vi.fn(),
-    useParams: () => ({ cookbookId: 'c1' }),
-    createFileRoute: () => (componentObj: any) => ({
-      ...componentObj,
-      useParams: () => ({ cookbookId: 'c1' }),
-    }),
-    Link: ({ children, 'data-testid': testId, ...props }: any) => <a data-testid={testId} {...props}>{children}</a>,
-  }
+  const { createRouterMock } = await import('@/test-helpers/mocks')
+  return createRouterMock({ params: { cookbookId: 'c1' } })
 })
 
 const mockUseAuth = vi.fn()
@@ -157,25 +148,25 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     )
   }
 
-  describe('Cookbook-level "Resort All" action', () => {
+  describe('Cookbook-level "Sort Chapters by Recipe Title" action', () => {
     it('is rendered next to "Build Chapters by Category" when canEdit is true', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      expect(screen.getByRole('button', { name: /Resort All/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Sort Chapters by Recipe Title/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Build Chapters by Category/i })).toBeInTheDocument()
     })
 
     it('is NOT rendered when canEdit is false', () => {
       setupMockData({ canEdit: false, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      expect(screen.queryByRole('button', { name: /Resort All/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Sort Chapters by Recipe Title/i })).not.toBeInTheDocument()
     })
 
     it('opens a confirmation prompt and does NOT call reorderRecipes yet', async () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
 
       expect(screen.getByText(/Sort every chapter's recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(mockReorderMutate).not.toHaveBeenCalled()
@@ -185,7 +176,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
       expect(screen.getByText(/Sort every chapter's recipes/i)).toBeInTheDocument()
 
       confirmModal(/Cancel/i)
@@ -197,8 +188,8 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
-      confirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
+      confirmModal(/Sort Chapters by Recipe Title/i)
 
       // We expect the payload to be the global sort across all recipes:
       // Apple Pie (r2) -> Best Chili (The Best Chili, r3) -> Great Soup (A Great Soup, r4) -> Zebra Cake (r1)
@@ -209,8 +200,8 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: true })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
-      confirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
+      confirmModal(/Sort Chapters by Recipe Title/i)
 
       // Global sort of [Zebra Cake, Apple Pie, The Best Chili, A Great Soup, Banana Bread, An Amazing Cake]
       // Normalized:
@@ -227,8 +218,8 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
-      confirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
+      confirmModal(/Sort Chapters by Recipe Title/i)
 
       // Zebra Cake, Apple Pie -> Apple Pie, Zebra Cake
       expectReorderCalledWith(['r2', 'r1'])
@@ -238,7 +229,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
       render(<CookbookDetailPage />)
 
-      openConfirmModal(/Resort All/i)
+      openConfirmModal(/Sort Chapters by Recipe Title/i)
       expect(screen.getByText(/Sort all recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(screen.queryByText(/Sort every chapter's recipes/i)).not.toBeInTheDocument()
     })
@@ -285,6 +276,21 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       confirmModal('Sort Chapter')
 
       expectReorderCalledWith(['r2', 'r1'])
+    })
+
+    it('is also reachable from the Rename Chapter modal, disabled while the name is dirty', () => {
+      setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
+      render(<CookbookDetailPage />)
+
+      openConfirmModal('Rename Chapter 1')
+      const sortChapterButton = within(screen.getByRole('dialog')).getByRole('button', { name: 'Sort Chapter' })
+      expect(sortChapterButton).toBeEnabled()
+
+      fireEvent.change(screen.getByRole('textbox', { name: 'Chapter name' }), { target: { value: 'Renamed' } })
+      expect(sortChapterButton).toBeDisabled()
+
+      fireEvent.click(sortChapterButton)
+      expect(mockReorderMutate).not.toHaveBeenCalled()
     })
 
     function setupSingleChapterMockData(chapters: Array<{ id: string, name: string, orderIndex: number }>, recipes: Array<{ id: string, name: string, chapterId: string, orderIndex: number }>) {

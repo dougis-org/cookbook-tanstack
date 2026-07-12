@@ -38,14 +38,14 @@ Maps to spec: `specs/cookbook-chapters/spec.md` — Requirement: ADDED Title sor
 - [ ] `sortIdsByTitle` returns a stable order for two items with identical normalized titles (e.g. `"The Best Chili"` and `"the best chili"`) — original relative order preserved for ties
 - [ ] `sortIdsByTitle` returns ids in the same order as sorting the corresponding titles via `compareByTitle`
 
-### Cookbook-level "Resort All" (component/integration test, extend `src/routes/cookbooks.$cookbookId.test.tsx` or equivalent)
+### Cookbook-level "Sort Chapters by Recipe Title" (component/integration test, extend `src/routes/cookbooks.$cookbookId.test.tsx` or equivalent)
 
-Maps to tasks.md: "Implement 'Resort All' button".
+Maps to tasks.md: "Implement 'Sort Chapters by Recipe Title' button".
 Maps to spec: `specs/cookbook-chapters/spec.md` — Requirement: ADDED Sort entire cookbook by recipe title.
 
-- [ ] "Resort All" button is rendered next to "Build Chapters by Category" when `canEdit` is true
-- [ ] "Resort All" button is NOT rendered when the current user lacks edit access (spec: Scenario "Non-editor cannot see or trigger the action")
-- [ ] Clicking "Resort All" opens a confirmation prompt and does NOT call `reorderRecipes` yet (spec: Scenario "Action requires confirmation")
+- [ ] "Sort Chapters by Recipe Title" button is rendered next to "Build Chapters by Category" when `canEdit` is true
+- [ ] "Sort Chapters by Recipe Title" button is NOT rendered when the current user lacks edit access (spec: Scenario "Non-editor cannot see or trigger the action")
+- [ ] Clicking "Sort Chapters by Recipe Title" opens a confirmation prompt and does NOT call `reorderRecipes` yet (spec: Scenario "Action requires confirmation")
 - [ ] Cancelling the confirmation prompt closes it without calling `reorderRecipes` and without changing local/displayed order (spec: Scenario "Cancelling the confirmation makes no change")
 - [ ] Confirming, on a cookbook with two chapters each containing out-of-order recipes, calls `reorderRecipes` with a flat `recipeIds` payload such that, when grouped by each recipe's existing `chapterId`, each chapter's subset is in alphabetical (normalized) title order (spec: Scenario "Sorting a chaptered cookbook sorts each chapter independently")
 - [ ] Confirming on a cookbook with chapters AND unchaptered recipes results in the unchaptered recipes' relative order (filtered from the same `recipeIds` payload) also being alphabetical, and none of them gain a `chapterId` (spec: Scenario "Unchaptered recipes are sorted as their own bucket")
@@ -75,6 +75,6 @@ Maps to tasks.md: "Correct the stale comment ... on the flat-format branch of `r
 Maps to tasks.md: "Run E2E tests ... add/extend an E2E scenario".
 Maps to spec: both ADDED requirements in `specs/cookbook-chapters/spec.md`.
 
-- [ ] End-to-end: create a cookbook with two chapters containing recipes in non-alphabetical order, click "Resort All", confirm, and assert the displayed order in both chapters is alphabetical (by visible title) after the page reflects the mutation result
+- [ ] End-to-end: create a cookbook with two chapters containing recipes in non-alphabetical order, click "Sort Chapters by Recipe Title", confirm, and assert the displayed order in both chapters is alphabetical (by visible title) after the page reflects the mutation result
 - [ ] End-to-end: on a cookbook with two chapters, click the sort icon for one chapter only, confirm, and assert the other chapter's displayed recipe order is unchanged while the sorted chapter's order is alphabetical
-- [ ] End-to-end: assert clicking either "Resort All" or a chapter sort icon shows a confirmation dialog, and that dismissing/cancelling it leaves displayed order unchanged
+- [ ] End-to-end: assert clicking either "Sort Chapters by Recipe Title" or a chapter sort icon shows a confirmation dialog, and that dismissing/cancelling it leaves displayed order unchanged
