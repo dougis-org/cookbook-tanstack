@@ -344,6 +344,51 @@ test.describe("Sorting Cookbook Recipes", () => {
     expectPrefixOrder(titles, ARTICLE_STRIPPED_ORDER);
   });
 
+  test("should sort each chapter independently when confirmed on a multi-chapter cookbook", async ({ page }) => {
+    test.slow(); // creates 2 chapters and 4 recipes across several navigations
+    await registerAndLogin(page);
+
+    const chapterANames = await createRecipes(page, ["The Zebra", "Apple"]);
+
+    const { cookbookUrl } = await createCookbook(page, getUniqueCookbookName("Sort Multi Chapter E2E"));
+    await gotoAndWaitForHydration(page, cookbookUrl);
+
+    // Creating the first chapter migrates any pre-existing unchaptered recipe into it.
+    await addRecipeToCookbook(page, chapterANames[0]);
+    await createChapter(page, 1);
+    await hoverChapterAndClickAction(page, 1, "Rename");
+    await page.getByRole("textbox", { name: "Chapter name" }).fill("Chapter A");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter A" })).toBeVisible({ timeout: 20000 });
+    await addRecipeToCookbook(page, chapterANames[1], { chapterName: "Chapter A" });
+
+    await createChapter(page, 2);
+    await hoverChapterAndClickAction(page, 2, "Rename");
+    await page.getByRole("textbox", { name: "Chapter name" }).fill("Chapter B");
+    await page.getByRole("button", { name: "Save" }).click();
+    await expect(page.getByRole("heading", { name: "Chapter B" })).toBeVisible({ timeout: 20000 });
+
+    const chapterBNames = await createRecipes(page, ["Cherry", "Banana"]);
+    await gotoAndWaitForHydration(page, cookbookUrl);
+    for (const name of chapterBNames) {
+      await addRecipeToCookbook(page, name, { chapterName: "Chapter B" });
+    }
+
+    await page.getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
+    await expect(page.getByRole("dialog")).not.toBeVisible();
+
+    const chapterASection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "Chapter A" }) });
+    const chapterBSection = page
+      .locator('[data-testid^="chapter-section-"]')
+      .filter({ has: page.getByRole("heading", { name: "Chapter B" }) });
+
+    expectPrefixOrder(await recipeCardTitles(chapterASection), ["Apple", "The Zebra"]);
+    expectPrefixOrder(await recipeCardTitles(chapterBSection), ["Banana", "Cherry"]);
+  });
+
   test("should sort a single chapter by title, leaving other chapters unchanged", async ({ page }) => {
     test.slow(); // creates 2 chapters and 6 recipes across several navigations
     await registerAndLogin(page);
