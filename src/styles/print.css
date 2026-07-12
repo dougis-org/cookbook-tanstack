@@ -48,6 +48,22 @@
     page-break-inside: avoid;
   }
 
+  /* Shared print-only marker for recipe-ingredient-item and recipe-instruction-step.
+     Does not set `display` here — recipe-ingredient-item stays flex (its own class)
+     and recipe-instruction-step relies on its own print:block utility; overriding
+     display here would fight that utility since print.css loads after Tailwind. */
+  .print-list-item::before {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--theme-accent);
+    margin-right: 0.35rem;
+    transform: translateY(-0.1em);
+  }
+
   .cookbook-recipe-section {
     break-before: page;
     page-break-before: always;
