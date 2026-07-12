@@ -1,7 +1,21 @@
+import type { Locator } from "@playwright/test";
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
+
+/** Reads the computed style of an element's ::before pseudo-element. */
+async function getBeforeMarkerStyle(locator: Locator) {
+  return locator.evaluate((el) => {
+    const cs = window.getComputedStyle(el, "::before");
+    return {
+      display: cs.display,
+      width: cs.width,
+      height: cs.height,
+      borderRadius: cs.borderRadius,
+    };
+  });
+}
 
 // Covers the unify-print-list-item-styling change (#594, #595): shared
 // .print-list-item marker on both the ingredient <li> and instruction <li>
@@ -40,6 +54,11 @@ test.describe("Recipe detail print list item marker", () => {
     const stepText = step.locator("p");
     await expect(step).toHaveCSS("display", "flex");
 
+    const marker = await getBeforeMarkerStyle(step);
+    expect(marker.width).toBe("5px");
+    expect(marker.height).toBe("5px");
+    expect(marker.borderRadius).not.toBe("0px");
+
     const stepBox = await step.boundingBox();
     const textBox = await stepText.boundingBox();
     expect(stepBox).not.toBeNull();
@@ -59,6 +78,11 @@ test.describe("Recipe detail print list item marker", () => {
 
     const item = page.locator("li.recipe-ingredient-item").first();
     await expect(item).toHaveCSS("display", "flex");
+
+    const marker = await getBeforeMarkerStyle(item);
+    expect(marker.width).toBe("5px");
+    expect(marker.height).toBe("5px");
+    expect(marker.borderRadius).not.toBe("0px");
 
     await page.emulateMedia({ media: "screen" });
   });
