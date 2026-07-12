@@ -40,7 +40,7 @@ The system SHALL reduce the vertical spacing between instruction steps when prin
 
 ## MODIFIED Requirements
 
-This section documents a requirement changed by [`unify-print-list-item-styling`](../../changes/archive/2026-07-12-unify-print-list-item-styling/proposal.md), which superseded the original "flush left, no residual gap" wording below with the shared `.print-list-item` delimiter marker requested in #595.
+This section documents a requirement changed by [`unify-print-list-item-styling`](../../changes/archive/2026-07-12-unify-print-list-item-styling/proposal.md). The requirement below replaces this capability's prior "flush left, no residual gap" wording with the shared `.print-list-item` delimiter marker requested in #595.
 
 ### Requirement: MODIFIED Print output renders instruction step text left-aligned after a small delimiter marker
 
