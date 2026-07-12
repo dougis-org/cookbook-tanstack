@@ -591,6 +591,7 @@ function CookbookDetailPage() {
           isPending={renameChapterMutation.isPending}
           onSave={(name) => renameChapterMutation.mutate({ cookbookId, chapterId: modal.chapter.id, name })}
           onClose={closeModal}
+          onSortChapter={() => setModal({ kind: 'sortChapter', chapter: modal.chapter })}
         />
       )}
 
@@ -649,8 +650,13 @@ function CookbookDetailPage() {
           title="Resort All"
           body={<>Sort every chapter's recipes alphabetically by title?</>}
           confirmLabel="Resort All"
+          pendingLabel="Resorting…"
           isPending={reorderMutation.isPending}
           onConfirm={() => {
+            if (recipes.length <= 1) {
+              closeModal()
+              return
+            }
             const allRecipeIds = sortIdsByTitle(recipes, (r) => r.id, (r) => r.name)
             reorderMutation.mutate(
               { cookbookId, recipeIds: allRecipeIds },
@@ -666,9 +672,14 @@ function CookbookDetailPage() {
           title="Sort Chapter"
           body={<>Sort this chapter's recipes alphabetically by title?</>}
           confirmLabel="Sort Chapter"
+          pendingLabel="Sorting…"
           isPending={reorderMutation.isPending}
           onConfirm={() => {
             const chapterRecipes = getRecipesForChapter(modal.chapter.id)
+            if (chapterRecipes.length <= 1) {
+              closeModal()
+              return
+            }
             const sortedIds = sortIdsByTitle(chapterRecipes, (r) => r.id, (r) => r.name)
             reorderMutation.mutate(
               { cookbookId, recipeIds: sortedIds },
@@ -969,11 +980,13 @@ function RenameChapterModal({
   isPending,
   onSave,
   onClose,
+  onSortChapter,
 }: {
   chapter: Chapter
   isPending: boolean
   onSave: (name: string) => void
   onClose: () => void
+  onSortChapter: () => void
 }) {
   const [name, setName] = useState(chapter.name)
 
@@ -987,28 +1000,41 @@ function RenameChapterModal({
     <DialogOverlay labelId="rename-chapter-title" onClose={onClose} isPending={isPending}>
       <div className="bg-[var(--theme-surface-raised)] rounded-xl shadow-[var(--theme-shadow-md)] border border-[var(--theme-border)] w-full max-w-sm">
         <ModalHeader title="Rename Chapter" titleId="rename-chapter-title" onClose={onClose} />
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
-            autoFocus
-            aria-label="Chapter name"
-          />
-          <div className="flex gap-3">
+        <div className="p-5 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent"
+              autoFocus
+              aria-label="Chapter name"
+            />
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={!name.trim() || isPending}
+                className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+              >
+                {isPending ? 'Saving…' : 'Save'}
+              </button>
+              <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
+                Cancel
+              </button>
+            </div>
+          </form>
+          <div className="pt-4 border-t border-[var(--theme-border)] flex items-center justify-between">
+            <span className="text-sm text-[var(--theme-fg-muted)]">Organize</span>
             <button
-              type="submit"
-              disabled={!name.trim() || isPending}
-              className="px-5 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+              type="button"
+              onClick={onSortChapter}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors"
             >
-              {isPending ? 'Saving…' : 'Save'}
-            </button>
-            <button type="button" onClick={onClose} className="px-5 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors">
-              Cancel
+              <ArrowDownAZ className="w-4 h-4" />
+              Sort Chapter
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </DialogOverlay>
   )
@@ -1258,6 +1284,7 @@ function ConfirmModal({
   title,
   body,
   confirmLabel,
+  pendingLabel,
   danger,
   isPending,
   onConfirm,
@@ -1266,6 +1293,7 @@ function ConfirmModal({
   title: string
   body: React.ReactNode
   confirmLabel: string
+  pendingLabel?: string
   danger?: boolean
   isPending: boolean
   onConfirm: () => void
@@ -1285,7 +1313,7 @@ function ConfirmModal({
             disabled={isPending}
             className={`px-5 py-2 font-semibold rounded-lg transition-colors disabled:opacity-50 text-white ${btnClass}`}
           >
-            {isPending ? `${confirmLabel.replace(/e$/, '')}ing…` : confirmLabel}
+            {isPending ? (pendingLabel ?? `${confirmLabel.replace(/e$/, '')}ing…`) : confirmLabel}
           </button>
           <button
             type="button"

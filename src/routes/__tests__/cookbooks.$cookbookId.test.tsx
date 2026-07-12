@@ -53,6 +53,38 @@ vi.mock('@/lib/trpc', () => {
   }
 })
 
+vi.mock('@dnd-kit/core', () => ({
+  DndContext: ({ children }: any) => <>{children}</>,
+  closestCenter: vi.fn(),
+  pointerWithin: vi.fn(() => []),
+  KeyboardSensor: vi.fn(),
+  PointerSensor: vi.fn(),
+  useSensor: vi.fn(),
+  useSensors: vi.fn(() => []),
+  DragOverlay: ({ children }: any) => <>{children}</>,
+  useDroppable: vi.fn(() => ({ setNodeRef: vi.fn(), isOver: false })),
+}))
+
+vi.mock('@dnd-kit/sortable', () => ({
+  SortableContext: ({ children }: any) => <>{children}</>,
+  sortableKeyboardCoordinates: vi.fn(),
+  rectSortingStrategy: vi.fn(),
+  verticalListSortingStrategy: vi.fn(),
+  useSortable: vi.fn(() => ({
+    attributes: {},
+    listeners: {},
+    setNodeRef: vi.fn(),
+    transform: null,
+    transition: null,
+    isDragging: false,
+  })),
+  arrayMove: vi.fn((arr: any[]) => arr),
+}))
+
+vi.mock('@dnd-kit/utilities', () => ({
+  CSS: { Transform: { toString: vi.fn(() => '') } },
+}))
+
 describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
   let mockReorderMutate: any
 
@@ -209,19 +241,18 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
   })
 
   describe('Chapter-level sort', () => {
-    it('is rendered in the rename modal when canEdit is true', () => {
+    it('is rendered in the chapter header when canEdit is true', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      fireEvent.click(screen.getByLabelText('Rename Chapter 1'))
-      expect(screen.getByRole('button', { name: /Sort Chapter/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Sort Chapter 2 recipes by title' })).toBeInTheDocument()
     })
 
     it('opens confirmation prompt without calling reorderRecipes', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
       
-      fireEvent.click(screen.getByLabelText('Rename Chapter 1'))
-      fireEvent.click(screen.getByRole('button', { name: /Sort Chapter/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
       expect(screen.getByText(/Sort this chapter's recipes alphabetically by title\?/i)).toBeInTheDocument()
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
@@ -230,8 +261,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
       
-      fireEvent.click(screen.getByLabelText('Rename Chapter 1'))
-      fireEvent.click(screen.getByRole('button', { name: /Sort Chapter/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
       fireEvent.click(screen.getByRole('button', { name: /Cancel/i }))
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
@@ -240,8 +270,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       setupMockData({ canEdit: true, hasChapters: true, hasUnchaptered: false })
       render(<CookbookDetailPage />)
       
-      fireEvent.click(screen.getByLabelText('Rename Chapter 1'))
-      fireEvent.click(screen.getByRole('button', { name: /Sort Chapter/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter 1 recipes by title' }))
       fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' })) // The confirm button inside modal
 
       expect(mockReorderMutate).toHaveBeenCalledWith(
@@ -269,8 +298,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       })
       render(<CookbookDetailPage />)
       
-      fireEvent.click(screen.getByLabelText('Rename Empty Chapter'))
-      fireEvent.click(screen.getByRole('button', { name: /Sort Chapter/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'Sort Empty Chapter recipes by title' }))
       fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' }))
 
       expect(mockReorderMutate).not.toHaveBeenCalled()
@@ -290,8 +318,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       })
       render(<CookbookDetailPage />)
       
-      fireEvent.click(screen.getByLabelText('Rename One Recipe Chapter'))
-      fireEvent.click(screen.getByRole('button', { name: /Sort Chapter/i }))
+      fireEvent.click(screen.getByRole('button', { name: 'Sort One Recipe Chapter recipes by title' }))
       fireEvent.click(screen.getByRole('button', { name: 'Sort Chapter' }))
 
       expect(mockReorderMutate).not.toHaveBeenCalled()

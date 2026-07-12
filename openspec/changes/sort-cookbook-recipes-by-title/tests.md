@@ -21,7 +21,7 @@ For each task in `tasks.md`:
 
 ## Test Cases
 
-### `src/lib/recipeTitleSort.ts` (unit tests, `src/lib/recipeTitleSort.test.ts`)
+### `src/lib/recipeTitleSort.ts` (unit tests, `src/lib/__tests__/recipeTitleSort.test.ts`)
 
 Maps to tasks.md: "Implement `src/lib/recipeTitleSort.ts`".
 Maps to spec: `specs/cookbook-chapters/spec.md` — Requirement: ADDED Title sort normalization.
