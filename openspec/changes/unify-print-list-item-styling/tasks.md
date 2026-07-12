@@ -1,0 +1,110 @@
+# Tasks
+
+## Preparation
+
+- [x] **Step 1 — Sync default branch:** `git checkout main` and `git pull --ff-only`
+- [x] **Step 2 — Create and publish working branch:** `git checkout -b fix/unify-print-list-item-styling` then immediately `git push -u origin fix/unify-print-list-item-styling`
+
+## Preflight
+
+- [x] **Verify `pr-review-toolkit:review-pr` is available** — check the available skills list for `pr-review-toolkit:review-pr`. If the skill is not listed, halt immediately, inform the user that the plugin is required, provide installation guidance, and do not proceed until the user confirms it is installed.
+
+## Execution
+
+- [x] **Issue lifecycle: mark in-progress** — this change is issue-driven (`#594`, `#595`). For each issue number: run `gh issue edit #N --add-label "in-progress"`. Then discover the GitHub Project linked to `dougis-org/cookbook-tanstack` (`gh project list --owner dougis-org --format json`), resolve the status field option semantically matching "In Progress" (`gh project field-list <project-number> --owner dougis-org --format json`), and move each project item via `gh project item-edit`. If no project item is found, log a warning and continue. If the `gh` token lacks the `project` scope, surface a message instructing the user to run `gh auth refresh -s project` and skip the project-item update (issue label update still proceeds).
+- [x] **Write/update tests first (TDD)** for the shared print marker behavior before implementation:
+  - Component test(s) in `src/components/recipes/__tests__/RecipeDetail.test.tsx` asserting:
+    - Both the ingredient `<li>` (`.recipe-ingredient-item`) and the instruction `<li>` (`.recipe-instruction-step`) carry the `.print-list-item` class.
+    - Spacer `<li>` elements (`.recipe-ingredient-spacer`, `.recipe-instruction-spacer`) do NOT carry `.print-list-item`.
+    - The pre-existing ingredient dot `<span>` carries `print:hidden`.
+    - The instruction numbered-circle `<span>` still carries `print:hidden` (unchanged).
+    - On-screen (no print class assertions needed beyond existing coverage) rendering of both sections is otherwise unchanged.
+- [x] **Add `.print-list-item` rule to `src/styles/print.css`**, inside the existing single `@media print { ... }` block (do not add a second block or new file):
+  - `display: flex; align-items: baseline; gap: 0.35rem;`
+  - `::before` pseudo-element: small circular dot (~5px), `background: var(--theme-accent)`, `border-radius: 9999px`, `flex-shrink: 0`, with a small `translateY` nudge for baseline alignment.
+  - One-line comment above the rule (matching the file's existing comment style) noting it's shared by `.recipe-ingredient-item` and `.recipe-instruction-step`.
+- [x] **Update `src/components/recipes/RecipeDetail.tsx` ingredient markup** (around line 308-314):
+  - Add `print-list-item` to the `<li className="recipe-ingredient-item ...">` class list.
+  - Add `print:hidden` to the existing dot `<span>` so it doesn't double up with the new `::before` marker in print.
+- [x] **Update `src/components/recipes/RecipeDetail.tsx` instruction markup** (around line 343-351):
+  - Add `print-list-item` to the `<li className="recipe-instruction-step ...">` class list.
+  - Confirm the numbered-circle `<span>` keeps its existing `print:hidden` (no change needed there).
+  - Confirm `print:space-y-1` on the `<ol>` is unchanged (no added vertical space).
+- [x] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch — confirmed: reusing existing `.recipe-ingredient-item` / `.recipe-instruction-step` classes and the existing `print.css` `@media print` block rather than introducing new infrastructure.
+- [x] Confirm acceptance criteria are covered: cross-check each scenario in `specs/print-list-item-marker/spec.md` and `specs/print-instruction-numbering/spec.md` against the implemented markup/CSS.
+- [x] **Manual print-preview verification**: open the standalone recipe print view and a cookbook print view in Chrome print preview (or `page.emulateMedia({ media: 'print' })` in a scratch Playwright script) and visually confirm: shrunk ingredient marker, new instruction marker, unchanged column layout for both sections, unchanged vertical spacing for instructions.
+
+## Pre-Commit Code Review
+
+- [ ] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit.
+
+## Validation
+
+- [ ] Run unit/integration tests: `npm run test`
+- [ ] Run E2E tests: `npm run test:e2e` (in particular `src/e2e/cookbooks-print*.spec.ts` for pagination/column regressions)
+- [ ] Run type checks: `npx tsc --noEmit`
+- [ ] Run build: `npm run build`
+- [ ] Run security/code quality checks required by project standards (Codacy, if configured for this repo)
+- [ ] All completed tasks marked as complete
+- [ ] All steps in [Remote push validation]
+
+## Remote push validation
+
+Before running, determine whether the current change is **docs-only**: run `git diff --name-only HEAD` (or compare the working branch against the base branch) and check whether every changed file ends in `.md`. This change modifies `.tsx` and `.css` files, so it is **not** docs-only — apply the full path.
+
+**Full path:**
+
+- **Unit tests** — `npm run test`; all tests must pass
+- **Integration tests** — `npm run test:integration`; all tests must pass
+- **Regression / E2E tests** — `npm run test:e2e`; all tests must pass
+- **Build** — `npm run build`; build must succeed with no errors
+
+If **ANY** required step fails, you **MUST** iterate and address the failure before pushing.
+
+## PR and Merge
+
+- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [ ] Commit all changes to the working branch and push to remote
+- [ ] Open PR from `fix/unify-print-list-item-styling` to `main`. PR body **MUST include `Closes #594` and `Closes #595`** (unconditionally, not as an optional conditional).
+- [ ] **Issue lifecycle: mark in-review** — for each of `#594`, `#595`: run `gh issue edit #N --add-label "in-review" --remove-label "in-progress"`. Then move each project item to the status column semantically matching "In Review" via `gh project item-edit` (same project/field/option discovery as the in-progress lifecycle step above; warn and skip if not found).
+- [ ] Wait 60 seconds for CI to start
+- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
+- [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+  1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
+  2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
+  3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
+
+After every push, restart at step 1. Never skip the build/test gate before pushing any fix.
+
+Ownership metadata:
+
+- Implementer: dougis (assigned via #594/#595)
+- Reviewer(s): PR review gate via `pr-review-toolkit:review-pr` + standard GitHub review
+- Required approvals: per repo branch protection settings (standard project PR process, see `docs/standards/ci-cd.md`)
+
+Blocking resolution flow:
+
+- CI failure → fix → commit → validate locally → push → re-run checks
+- Security finding → remediate → commit → validate locally → push → re-scan
+- Review comment → address → commit → validate locally → push → confirm resolved
+
+## Post-Merge
+
+- [ ] `git checkout main` and `git pull --ff-only`
+- [ ] Verify the merged changes appear on the default branch
+- [ ] Mark all remaining tasks as complete (`- [x]`)
+- [ ] Update repository documentation impacted by the change (none expected beyond OpenSpec artifacts — this is a presentational fix with no user-facing docs to update)
+- [ ] Sync approved spec deltas into `openspec/specs/`:
+  - Create `openspec/specs/print-list-item-marker/spec.md` from this change's delta.
+  - Update `openspec/specs/print-instruction-numbering/spec.md` with the MODIFIED requirement from this change's delta.
+  - After copying, update all relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-unify-print-list-item-styling/design.md`, and similarly for `../../tasks.md`.
+- [ ] Archive the change: move `openspec/changes/unify-print-list-item-styling/` to `openspec/changes/archive/YYYY-MM-DD-unify-print-list-item-styling/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-unify-print-list-item-styling/` exists and `openspec/changes/unify-print-list-item-styling/` is gone
+- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-unify-print-list-item-styling` then `git push -u origin doc/archive-YYYY-MM-DD-unify-print-list-item-styling`
+- [ ] Open a PR from `doc/archive-YYYY-MM-DD-unify-print-list-item-styling` to `main` with title `docs: archive unify-print-list-item-styling (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D fix/unify-print-list-item-styling doc/archive-YYYY-MM-DD-unify-print-list-item-styling`
+
+Required cleanup after archive: `git fetch --prune` and `git branch -D fix/unify-print-list-item-styling doc/archive-YYYY-MM-DD-unify-print-list-item-styling`

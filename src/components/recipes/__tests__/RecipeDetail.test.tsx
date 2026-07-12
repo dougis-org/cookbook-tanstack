@@ -1042,3 +1042,120 @@ describe("RecipeDetail — print density (recipe-print-density-2026-04-09)", () 
     })
   })
 })
+
+describe("RecipeDetail — shared print list item marker (unify-print-list-item-styling)", () => {
+  it("ingredient <li> carries the print-list-item class", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />,
+    )
+    const li = container.querySelector("li.recipe-ingredient-item")
+    expect(li).not.toBeNull()
+    expect(li).toHaveClass("print-list-item")
+  })
+
+  it("instruction <li> carries the print-list-item class", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+    )
+    const li = container.querySelector("li.recipe-instruction-step")
+    expect(li).not.toBeNull()
+    expect(li).toHaveClass("print-list-item")
+  })
+
+  it("ingredient spacer <li> does not carry the print-list-item class", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\n\nSugar" })} />,
+    )
+    const spacer = container.querySelector("li.recipe-ingredient-spacer")
+    expect(spacer).not.toBeNull()
+    expect(spacer).not.toHaveClass("print-list-item")
+  })
+
+  it("instruction spacer <li> does not carry the print-list-item class", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\n\nCook pasta" })} />,
+    )
+    const spacer = container.querySelector("li.recipe-instruction-spacer")
+    expect(spacer).not.toBeNull()
+    expect(spacer).not.toHaveClass("print-list-item")
+  })
+
+  it("existing ingredient dot span carries print:hidden", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />,
+    )
+    const dot = container.querySelector("li.recipe-ingredient-item span")
+    expect(dot).not.toBeNull()
+    expect(dot).toHaveClass("print:hidden")
+  })
+
+  it("ingredient dot span retains its existing on-screen classes unchanged", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />,
+    )
+    const dot = container.querySelector("li.recipe-ingredient-item span")
+    expect(dot).not.toBeNull()
+    expect(dot).toHaveClass(
+      "w-2",
+      "h-2",
+      "bg-[var(--theme-accent)]",
+      "rounded-full",
+      "mr-3",
+      "shrink-0",
+    )
+  })
+
+  it("instruction numbered-circle span still carries print:hidden (unchanged)", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+    )
+    const badge = container.querySelector("li.recipe-instruction-step span")
+    expect(badge).not.toBeNull()
+    expect(badge).toHaveClass("print:hidden")
+  })
+
+  it("instruction <ol> still carries print:space-y-1 (vertical spacing unchanged)", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+    )
+    const ol = container.querySelector("ol")
+    expect(ol).not.toBeNull()
+    expect(ol).toHaveClass("print:space-y-1")
+  })
+
+  it("ingredient <ul> remains two-column in print (print:columns-2)", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />,
+    )
+    const ul = container.querySelector("ul")
+    expect(ul).not.toBeNull()
+    expect(ul).toHaveClass("print:columns-2")
+  })
+
+  it("instruction <ol> has no columns utility class (remains single-column)", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+    )
+    const ol = container.querySelector("ol")
+    expect(ol).not.toBeNull()
+    expect(Array.from(ol!.classList).some((c) => c.includes("columns"))).toBe(false)
+  })
+
+  it("ingredient <li> retains its existing non-print classes unchanged", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ ingredients: "Flour\nSugar" })} />,
+    )
+    const li = container.querySelector("li.recipe-ingredient-item")
+    expect(li).not.toBeNull()
+    expect(li).toHaveClass("flex", "items-center", "text-[var(--theme-fg-muted)]")
+  })
+
+  it("instruction <li> retains its existing non-print classes unchanged", () => {
+    const { container } = render(
+      <RecipeDetail recipe={makeRecipe({ instructions: "Boil water\nCook pasta" })} />,
+    )
+    const li = container.querySelector("li.recipe-instruction-step")
+    expect(li).not.toBeNull()
+    expect(li).toHaveClass("flex", "gap-4", "print:block", "text-[var(--theme-fg-muted)]")
+  })
+})
