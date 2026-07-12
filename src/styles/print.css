@@ -48,19 +48,24 @@
     page-break-inside: avoid;
   }
 
-  /* Shared print-only marker for recipe-ingredient-item and recipe-instruction-step.
-     Does not set `display` here — recipe-ingredient-item stays flex (its own class)
-     and recipe-instruction-step relies on its own print:block utility; overriding
-     display here would fight that utility since print.css loads after Tailwind. */
+  /* Shared print-only marker + left-alignment for recipe-ingredient-item and
+     recipe-instruction-step. Intentionally overrides recipe-instruction-step's
+     print:block utility (print.css loads after Tailwind) so the marker sits
+     inline with the step text rather than wrapping to its own line. */
+  .print-list-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
   .print-list-item::before {
     content: "";
-    display: inline-block;
+    display: block;
     width: 5px;
     height: 5px;
     flex-shrink: 0;
     border-radius: 9999px;
     background: var(--theme-accent);
-    margin-right: 0.35rem;
     transform: translateY(-0.1em);
   }
 
