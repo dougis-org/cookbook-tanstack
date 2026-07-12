@@ -56,7 +56,7 @@ Maps to spec: `specs/cookbook-chapters/spec.md` — Requirement: ADDED Sort enti
 Maps to tasks.md: "Implement chapter-level sort icon".
 Maps to spec: `specs/cookbook-chapters/spec.md` — Requirement: ADDED Sort single chapter by recipe title.
 
-- [ ] Chapter header renders an `ArrowDown` sort icon alongside rename (`Pencil`) and delete (`Trash2`) icons when `canEdit` is true, with `aria-label="Sort {chapter.name} recipes by title"`
+- [ ] Chapter header renders an `ArrowDownAZ` sort icon alongside rename (`Pencil`) and delete (`Trash2`) icons when `canEdit` is true, with `aria-label="Sort {chapter.name} recipes by title"`
 - [ ] Chapter-level sort icon is NOT rendered when `canEdit` is false (spec: Scenario "Non-editor cannot see or trigger the action")
 - [ ] Clicking the sort icon opens a confirmation prompt and does NOT call `reorderRecipes` yet (spec: Scenario "Sort icon requires confirmation")
 - [ ] Cancelling the confirmation prompt closes it without calling `reorderRecipes` (spec: Scenario "Cancelling the confirmation makes no change")

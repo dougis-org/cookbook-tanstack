@@ -9,7 +9,7 @@
   bucket, since all reads filter-by-`chapterId`-then-sort-by-`orderIndex`).
 - Dependencies: existing `trpc.cookbooks.reorderRecipes` mutation (no
   changes to its Zod input schema); existing `ConfirmModal` component used
-  today for chapter delete; `lucide-react` for the new icon (`ArrowDown`,
+  today for chapter delete; `lucide-react` for the new icon (`ArrowDownAZ`,
   per requester direction — placed alongside the existing `Pencil`
   (rename) and `Trash2` (delete) icons in `ChapterHeader`).
 - Interfaces/contracts touched: none at the tRPC/schema level. Only new
@@ -150,7 +150,7 @@
   direction during proposal review). The per-chapter sort icon is placed
   in `ChapterHeader`'s existing hover-revealed icon row, after `Pencil`
   (rename) and before/after `Trash2` (delete) — using Lucide's
-  `ArrowDown` icon (per requester direction), with
+  `ArrowDownAZ` icon (per requester direction), with
   `aria-label="Sort {chapter.name} recipes by title"` and a
   `title`/tooltip of "Will sort the chapter by recipe title", following
   the exact style conventions (`text-[var(--theme-fg-subtle)]

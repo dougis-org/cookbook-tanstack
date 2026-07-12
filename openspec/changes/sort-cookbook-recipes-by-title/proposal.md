@@ -77,7 +77,7 @@
 - New shared, pure title-normalization/sort-comparator utility used by both
   entry points.
 - Cookbook-level "Resort All" button on the cookbook edit page.
-- Per-chapter sort icon (ArrowDown, Lucide) in `ChapterHeader`, next to
+- Per-chapter sort icon (ArrowDownAZ, Lucide) in `ChapterHeader`, next to
   Rename/Delete.
 - Confirm-before-execute UX for both actions (reusing the existing
   `ConfirmModal` pattern already used for chapter delete).
@@ -113,7 +113,7 @@
   a title-sorted `recipeIds` array across all cookbook recipes (chaptered
   and unchaptered) and calls the existing `reorderMutation` with the flat
   `recipeIds` payload.
-- Add an ArrowDown sort icon button to `ChapterHeader` (same file), gated
+- Add an ArrowDownAZ sort icon button to `ChapterHeader` (same file), gated
   by `canEdit`, with `aria-label`/tooltip communicating it will sort that
   chapter's recipes by title. On confirm, computes a title-sorted
   `recipeIds` array scoped to that chapter's recipes only and calls the
