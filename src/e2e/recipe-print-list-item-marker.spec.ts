@@ -13,6 +13,8 @@ async function getBeforeMarkerStyle(locator: Locator) {
       width: cs.width,
       height: cs.height,
       borderRadius: cs.borderRadius,
+      printColorAdjust: cs.getPropertyValue("print-color-adjust"),
+      webkitPrintColorAdjust: cs.getPropertyValue("-webkit-print-color-adjust"),
     };
   });
 }
@@ -61,6 +63,16 @@ test.describe("Recipe detail print list item marker", () => {
     expect(marker.width).toBe("5px");
     expect(marker.height).toBe("5px");
     expect(marker.borderRadius).not.toBe("0px");
+    // The marker's only visible content is its background-color. Real browser
+    // print output suppresses background colors by default (Chrome's print
+    // dialog "Background graphics" checkbox is unchecked by default) — this
+    // isn't simulated by page.emulateMedia(), so without forcing exact color
+    // adjustment the marker is invisible in actual prints even though it
+    // passes every other assertion in this suite. Regression: reported by
+    // the user as "no delimiter at all" in real prints on multiple machines,
+    // after this suite (pre-fix) was green.
+    expect(marker.printColorAdjust).toBe("exact");
+    expect(marker.webkitPrintColorAdjust).toBe("exact");
 
     await page.emulateMedia({ media: "screen" });
   });
@@ -78,6 +90,8 @@ test.describe("Recipe detail print list item marker", () => {
     expect(marker.width).toBe("5px");
     expect(marker.height).toBe("5px");
     expect(marker.borderRadius).not.toBe("0px");
+    expect(marker.printColorAdjust).toBe("exact");
+    expect(marker.webkitPrintColorAdjust).toBe("exact");
 
     await page.emulateMedia({ media: "screen" });
   });
