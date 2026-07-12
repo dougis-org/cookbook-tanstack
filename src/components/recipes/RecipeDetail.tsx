@@ -307,9 +307,9 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   ) : (
                     <li
                       key={i}
-                      className="recipe-ingredient-item flex items-center text-[var(--theme-fg-muted)]"
+                      className="recipe-ingredient-item print-list-item flex items-center text-[var(--theme-fg-muted)]"
                     >
-                      <span className="w-2 h-2 bg-[var(--theme-accent)] rounded-full mr-3 shrink-0"></span>
+                      <span className="w-2 h-2 bg-[var(--theme-accent)] rounded-full mr-3 shrink-0 print:hidden"></span>
                       {line}
                     </li>
                   ),
@@ -342,7 +342,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
                   ) : (
                     <li
                       key={index}
-                      className="recipe-instruction-step flex gap-4 print:block text-[var(--theme-fg-muted)]"
+                      className="recipe-instruction-step print-list-item flex gap-4 print:block text-[var(--theme-fg-muted)]"
                     >
                       <span className="shrink-0 w-8 h-8 bg-[var(--theme-accent)] text-white rounded-full flex items-center justify-center font-semibold print:hidden">
                         {step.number}
