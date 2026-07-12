@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, within } from '@testing-library/react'
 import { Route } from '@/routes/cookbooks.$cookbookId'
 
 const CookbookDetailPage = (Route as any).component!
@@ -147,8 +147,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
   }
 
   function confirmModal(confirmButtonName: string | RegExp) {
-    const buttons = screen.getAllByRole('button', { name: confirmButtonName })
-    fireEvent.click(buttons[0])
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: confirmButtonName }))
   }
 
   function expectReorderCalledWith(recipeIds: string[], extra: Record<string, unknown> = {}) {
