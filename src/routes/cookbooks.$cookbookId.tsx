@@ -648,7 +648,7 @@ function CookbookDetailPage() {
       {modal.kind === 'resortAll' && (
         <ConfirmModal
           title="Resort All"
-          body={<>Sort every chapter's recipes alphabetically by title?</>}
+          body={<>{hasChapters ? "Sort every chapter's recipes alphabetically by title?" : 'Sort all recipes alphabetically by title?'}</>}
           confirmLabel="Resort All"
           pendingLabel="Resorting…"
           isPending={reorderMutation.isPending}
@@ -1029,7 +1029,7 @@ function RenameChapterModal({
             <button
               type="button"
               onClick={onSortChapter}
-              disabled={isDirty}
+              disabled={isDirty || isPending}
               title={isDirty ? 'Save or discard the chapter name change first' : undefined}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

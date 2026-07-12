@@ -225,7 +225,7 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
     it('sorts flat cookbook when confirmed', () => {
       setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
       render(<CookbookDetailPage />)
-      
+
       fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
       const buttons = screen.getAllByRole('button', { name: /Resort All/i })
       fireEvent.click(buttons[0]) // Confirm
@@ -237,6 +237,15 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
         }),
         expect.anything()
       )
+    })
+
+    it('uses chapter-free confirmation copy for a flat cookbook', () => {
+      setupMockData({ canEdit: true, hasChapters: false, hasUnchaptered: false })
+      render(<CookbookDetailPage />)
+
+      fireEvent.click(screen.getByRole('button', { name: /Resort All/i }))
+      expect(screen.getByText(/Sort all recipes alphabetically by title\?/i)).toBeInTheDocument()
+      expect(screen.queryByText(/Sort every chapter's recipes/i)).not.toBeInTheDocument()
     })
   })
 
