@@ -31,9 +31,10 @@ import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
 import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
-import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp, FolderTree } from 'lucide-react'
+import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp, FolderTree, ArrowDownAZ } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
 import { useScrollSentinel } from '@/hooks/useScrollSentinel'
+import { sortIdsByTitle } from '@/lib/recipeTitleSort'
 
 const EMPTY_CHAPTER_PREFIX = 'empty:'
 
@@ -133,6 +134,8 @@ type Modal =
   | { kind: 'inviteCollaborator' }
   | { kind: 'removeCollaborator'; collaborator: Collaborator }
   | { kind: 'buildChaptersByCategory'; summary: BuildChaptersSummary }
+  | { kind: 'resortAll' }
+  | { kind: 'sortChapter'; chapter: Chapter }
 
 // ─── Shared modal overlay with a11y and keyboard handling ─────────────────────
 
@@ -641,6 +644,41 @@ function CookbookDetailPage() {
         />
       )}
 
+      {modal.kind === 'resortAll' && (
+        <ConfirmModal
+          title="Resort All"
+          body={<>Sort every chapter's recipes alphabetically by title?</>}
+          confirmLabel="Resort All"
+          isPending={reorderMutation.isPending}
+          onConfirm={() => {
+            const allRecipeIds = sortIdsByTitle(recipes, (r) => r.id, (r) => r.name)
+            reorderMutation.mutate(
+              { cookbookId, recipeIds: allRecipeIds },
+              { onSuccess: () => { invalidate(); closeModal() } }
+            )
+          }}
+          onCancel={closeModal}
+        />
+      )}
+
+      {modal.kind === 'sortChapter' && (
+        <ConfirmModal
+          title="Sort Chapter"
+          body={<>Sort this chapter's recipes alphabetically by title?</>}
+          confirmLabel="Sort Chapter"
+          isPending={reorderMutation.isPending}
+          onConfirm={() => {
+            const chapterRecipes = getRecipesForChapter(modal.chapter.id)
+            const sortedIds = sortIdsByTitle(chapterRecipes, (r) => r.id, (r) => r.name)
+            reorderMutation.mutate(
+              { cookbookId, recipeIds: sortedIds },
+              { onSuccess: () => { invalidate(); closeModal() } }
+            )
+          }}
+          onCancel={closeModal}
+        />
+      )}
+
       {showOnboarding && myCollabRecord && (
         <OnboardingModal
           role={myCollabRecord.role}
@@ -702,6 +740,13 @@ function CookbookDetailPage() {
                 <FolderTree className="w-4 h-4" />
                 Build Chapters by Category
               </button>
+              <button
+                onClick={() => setModal({ kind: 'resortAll' })}
+                className="flex items-center gap-1.5 px-4 py-2 bg-[var(--theme-surface-hover)] hover:bg-[var(--theme-border)] text-[var(--theme-fg)] font-semibold rounded-lg transition-colors text-sm"
+              >
+                <ArrowDownAZ className="w-4 h-4" />
+                Resort All
+              </button>
             </div>
           )}
         </div>
@@ -752,6 +797,7 @@ function CookbookDetailPage() {
                     canEdit={canEdit}
                     onRename={() => setModal({ kind: 'renameChapter', chapter })}
                     onDelete={() => setModal({ kind: 'deleteChapter', chapter })}
+                    onSortChapter={() => setModal({ kind: 'sortChapter', chapter })}
                   />
                   {canEdit ? (
                     chapterRecipes.length > 0 ? (
@@ -845,11 +891,13 @@ function ChapterHeader({
   canEdit,
   onRename,
   onDelete,
+  onSortChapter,
 }: {
   chapter: Chapter
   canEdit: boolean
   onRename: () => void
   onDelete: () => void
+  onSortChapter?: () => void
 }) {
   return (
     <div className="flex items-center gap-2 mt-4 mb-1 group">
@@ -863,6 +911,16 @@ function ChapterHeader({
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
+          {onSortChapter && (
+            <button
+              onClick={onSortChapter}
+              className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-accent)] transition-colors"
+              aria-label={`Sort ${chapter.name} recipes by title`}
+              title="Will sort the chapter by recipe title"
+            >
+              <ArrowDownAZ className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             onClick={onDelete}
             className="text-[var(--theme-fg-subtle)] hover:text-[var(--theme-error)] transition-colors"
