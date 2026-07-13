@@ -13,8 +13,8 @@ async function getBeforeMarkerStyle(locator: Locator) {
       width: cs.width,
       height: cs.height,
       borderRadius: cs.borderRadius,
-      printColorAdjust: cs.getPropertyValue("print-color-adjust"),
-      webkitPrintColorAdjust: cs.getPropertyValue("-webkit-print-color-adjust"),
+      printColorAdjust: cs.getPropertyValue("print-color-adjust").trim(),
+      webkitPrintColorAdjust: cs.getPropertyValue("-webkit-print-color-adjust").trim(),
     };
   });
 }
