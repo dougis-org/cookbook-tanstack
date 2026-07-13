@@ -67,6 +67,16 @@
     border-radius: 9999px;
     background: var(--theme-accent);
     transform: translateY(-0.1em);
+    /* Background colors are suppressed by default in real browser print output
+       (Chrome's print dialog "Background graphics" checkbox defaults to off).
+       Playwright's page.emulateMedia({ media: 'print' }) does not simulate this
+       suppression, so the marker appeared in automated verification but was
+       invisible in actual prints. Force it to always print regardless of that
+       setting — this is the marker's only visual content, so it must not be
+       silently dropped. */
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .cookbook-recipe-section {
