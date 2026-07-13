@@ -75,8 +75,8 @@
        setting — this is the marker's only visual content, so it must not be
        silently dropped. */
     -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
     color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .cookbook-recipe-section {
