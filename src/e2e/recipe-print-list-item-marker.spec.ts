@@ -13,8 +13,22 @@ async function getBeforeMarkerStyle(locator: Locator) {
       width: cs.width,
       height: cs.height,
       borderRadius: cs.borderRadius,
+      printColorAdjust: cs.getPropertyValue("print-color-adjust").trim(),
+      webkitPrintColorAdjust: cs.getPropertyValue("-webkit-print-color-adjust").trim(),
     };
   });
+}
+
+/**
+ * Different browsers support only the standard or the -webkit- prefixed
+ * property, not necessarily both — assert at least one resolved to "exact"
+ * rather than requiring both, so this doesn't fail on engines that only
+ * implement one of the two.
+ */
+function expectExactColorAdjust(marker: { printColorAdjust: string; webkitPrintColorAdjust: string }) {
+  expect(
+    marker.printColorAdjust === "exact" || marker.webkitPrintColorAdjust === "exact",
+  ).toBe(true)
 }
 
 // Covers the unify-print-list-item-styling change (#594, #595): shared
@@ -61,6 +75,15 @@ test.describe("Recipe detail print list item marker", () => {
     expect(marker.width).toBe("5px");
     expect(marker.height).toBe("5px");
     expect(marker.borderRadius).not.toBe("0px");
+    // The marker's only visible content is its background-color. Real browser
+    // print output suppresses background colors by default (Chrome's print
+    // dialog "Background graphics" checkbox is unchecked by default) — this
+    // isn't simulated by page.emulateMedia(), so without forcing exact color
+    // adjustment the marker is invisible in actual prints even though it
+    // passes every other assertion in this suite. Regression: reported by
+    // the user as "no delimiter at all" in real prints on multiple machines,
+    // after this suite (pre-fix) was green.
+    expectExactColorAdjust(marker);
 
     await page.emulateMedia({ media: "screen" });
   });
@@ -78,6 +101,7 @@ test.describe("Recipe detail print list item marker", () => {
     expect(marker.width).toBe("5px");
     expect(marker.height).toBe("5px");
     expect(marker.borderRadius).not.toBe("0px");
+    expectExactColorAdjust(marker);
 
     await page.emulateMedia({ media: "screen" });
   });
