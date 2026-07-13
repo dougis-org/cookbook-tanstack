@@ -309,6 +309,15 @@ test.describe("Sorting Cookbook Recipes", () => {
     });
   }
 
+  // The confirm modal closes as soon as the mutation's onSuccess fires, which can
+  // race the subsequent query refetch/re-render. Retry the read+assert until the
+  // sorted order is actually visible instead of reading the DOM only once.
+  async function expectSortedTitles(scope: Locator | Page, expectedPrefixes: string[]) {
+    await expect(async () => {
+      expectPrefixOrder(await recipeCardTitles(scope), expectedPrefixes);
+    }).toPass({ timeout: 10000 });
+  }
+
   // Creates recipes one at a time (not in parallel) since they share a single `page`
   // and concurrent navigations would abort each other.
   async function createRecipes(page: Page, prefixes: string[]) {
@@ -340,8 +349,7 @@ test.describe("Sorting Cookbook Recipes", () => {
     await page.getByRole("dialog").getByRole("button", { name: "Sort Chapters by Recipe Title" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible();
 
-    const titles = await recipeCardTitles(page);
-    expectPrefixOrder(titles, ARTICLE_STRIPPED_ORDER);
+    await expectSortedTitles(page, ARTICLE_STRIPPED_ORDER);
   });
 
   test("should sort each chapter independently when confirmed on a multi-chapter cookbook", async ({ page }) => {
@@ -385,8 +393,8 @@ test.describe("Sorting Cookbook Recipes", () => {
       .locator('[data-testid^="chapter-section-"]')
       .filter({ has: page.getByRole("heading", { name: "Chapter B" }) });
 
-    expectPrefixOrder(await recipeCardTitles(chapterASection), ["Apple", "The Zebra"]);
-    expectPrefixOrder(await recipeCardTitles(chapterBSection), ["Banana", "Cherry"]);
+    await expectSortedTitles(chapterASection, ["Apple", "The Zebra"]);
+    await expectSortedTitles(chapterBSection, ["Banana", "Cherry"]);
   });
 
   test("should sort a single chapter by title, leaving other chapters unchanged", async ({ page }) => {
@@ -441,8 +449,7 @@ test.describe("Sorting Cookbook Recipes", () => {
 
     // Creating the first chapter migrates any pre-existing unchaptered recipe
     // (names[0]) into it, so First Chapter ends up with all four recipes.
-    const firstChapterTitlesAfter = await recipeCardTitles(firstChapterSection);
-    expectPrefixOrder(firstChapterTitlesAfter, ARTICLE_STRIPPED_ORDER);
+    await expectSortedTitles(firstChapterSection, ARTICLE_STRIPPED_ORDER);
 
     // Second Chapter must be untouched by the First Chapter sort.
     const secondChapterTitlesAfter = await recipeCardTitles(secondChapterSection);
