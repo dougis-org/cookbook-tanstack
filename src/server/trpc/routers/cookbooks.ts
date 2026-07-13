@@ -868,7 +868,7 @@ export const cookbooksRouter = router({
       z
         .object({
           cookbookId: objectId,
-          // New chapter-aware format: full state replacement per chapter
+          // Structured chapter-aware format: full state replacement per chapter
           chapters: z
             .array(
               z.object({
@@ -877,7 +877,7 @@ export const cookbooksRouter = router({
               }),
             )
             .optional(),
-          // Legacy flat format: kept for chapter-free cookbooks
+          // Flat format: handles global reordering, chapter-free cookbooks, and chapter-scoped relative reordering
           recipeIds: z
             .array(objectId)
             .min(1)
