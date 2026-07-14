@@ -375,18 +375,18 @@ describe("RecipeDetail", () => {
     })
   })
 
-  describe("footer prop", () => {
-    it("renders no extra content when footer is omitted", () => {
+  describe("printFooter prop", () => {
+    it("renders no extra content when printFooter is omitted", () => {
       const { container } = render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
       expect(screen.getByText("Pasta")).toBeInTheDocument()
       expect(container.querySelector('[data-testid="recipe-footer"]')).not.toBeInTheDocument()
     })
 
-    it("renders a passed footer node inside the recipe's content container", () => {
+    it("renders a passed printFooter node inside the recipe's content container", () => {
       render(
         <RecipeDetail
           recipe={makeRecipe({ name: "Pasta" })}
-          footer={<div data-testid="recipe-footer">#1</div>}
+          printFooter={<div data-testid="recipe-footer">#1</div>}
         />,
       )
       const footer = screen.getByTestId("recipe-footer")

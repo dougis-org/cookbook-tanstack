@@ -9,10 +9,10 @@ vi.mock('@tanstack/react-router', async () => {
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ recipe, footer }: { recipe: { name: string }; footer?: React.ReactNode }) => (
+  default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: React.ReactNode }) => (
     <div>
       {recipe.name}
-      {footer}
+      {printFooter}
     </div>
   ),
 }))

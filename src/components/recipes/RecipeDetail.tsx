@@ -19,7 +19,7 @@ export interface RecipeDetailProps {
   }
   actions?: ReactNode
   /** Print-only trailing content (e.g. a cookbook-print page number), rendered inside the content container. */
-  footer?: ReactNode
+  printFooter?: ReactNode
 }
 
 function RecipeMetaItem({
@@ -104,7 +104,7 @@ function isSafeUrl(url: string): boolean {
 // skipcq: JS-R1005 -- pre-existing component-wide complexity from its many conditional
 // sections, not introduced here; this change replaces inline prepTime/cookTime ternaries
 // with formatMinutesOrNA() calls, which reduces local branching rather than adding to it.
-export default function RecipeDetail({ recipe, actions, footer }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions, printFooter }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [currentServings, setCurrentServings] = useState(recipeServings)
@@ -415,7 +415,7 @@ export default function RecipeDetail({ recipe, actions, footer }: RecipeDetailPr
             </section>
           )}
 
-          {footer}
+          {printFooter}
         </div>
       </div>
     </div>
