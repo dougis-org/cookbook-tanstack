@@ -9,17 +9,28 @@ import {
 } from "./helpers/cookbooks";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
-/**
- * Tailwind's `shadow-none` resolves the shadow custom properties to
- * transparent (`rgba(0, 0, 0, 0) 0 0 0 0`, repeated per shadow layer) rather
- * than the literal keyword `none`, so assert every layer is fully
- * transparent instead of string-matching "none".
- */
-async function expectNoVisibleShadow(locator: Locator) {
+/** Extracts every alpha value from a computed `rgba(...)`/`rgb(...)` box-shadow or background-color string. */
+function shadowAlphaValues(value: string): number[] {
+  return [...value.matchAll(/rgba?\(([^)]+)\)/g)].map((match) => {
+    const parts = match[1].split(",").map((part) => part.trim());
+    return parts.length === 4 ? Number(parts[3]) : 1;
+  });
+}
+
+async function expectChromeSuppressed(card: Locator) {
   await expect(async () => {
-    const boxShadow = await locator.evaluate((el) => window.getComputedStyle(el).boxShadow);
-    expect(boxShadow === "none" || !/rgba\((?!0, 0, 0, 0\))/.test(boxShadow)).toBe(true);
+    const boxShadow = await card.evaluate((el) => window.getComputedStyle(el).boxShadow);
+    expect(boxShadow === "none" || shadowAlphaValues(boxShadow).every((alpha) => alpha === 0)).toBe(true);
   }).toPass();
+  await expect(card).toHaveCSS("border-radius", "0px");
+  const backgroundColor = await card.evaluate((el) => window.getComputedStyle(el).backgroundColor);
+  expect(shadowAlphaValues(backgroundColor).every((alpha) => alpha === 0)).toBe(true);
+}
+
+async function expectChromeVisible(card: Locator) {
+  await expect(card).not.toHaveCSS("border-radius", "0px");
+  const boxShadow = await card.evaluate((el) => window.getComputedStyle(el).boxShadow);
+  expect(shadowAlphaValues(boxShadow).some((alpha) => alpha > 0)).toBe(true);
 }
 
 // Covers the remove-print-parchment-wrapper change (#598): RecipeDetail's
@@ -27,13 +38,13 @@ async function expectNoVisibleShadow(locator: Locator) {
 // printed, on both the standalone recipe page and inside cookbook print.
 test.describe("Recipe detail print card chrome suppression", () => {
   let recipeId: string;
-  let recipeName: string;
+  let cookbookId: string;
 
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     await registerAndLogin(page);
 
-    recipeName = getUniqueRecipeName("PrintChromeRecipe");
+    const recipeName = getUniqueRecipeName("PrintChromeRecipe");
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, {
       name: recipeName,
@@ -43,6 +54,11 @@ test.describe("Recipe detail print card chrome suppression", () => {
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
     recipeId = page.url().split("/recipes/")[1];
 
+    const cookbookName = getUniqueCookbookName("PrintChromeCookbook");
+    const cookbook = await createCookbook(page, cookbookName);
+    cookbookId = cookbook.cookbookId;
+    await addRecipeToCookbook(page, recipeName);
+
     await page.close();
   });
 
@@ -50,9 +66,7 @@ test.describe("Recipe detail print card chrome suppression", () => {
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}`);
     await page.emulateMedia({ media: "print" });
 
-    const card = page.locator("div.shadow-lg");
-    await expectNoVisibleShadow(card);
-    await expect(card).toHaveCSS("border-radius", "0px");
+    await expectChromeSuppressed(page.locator("div.shadow-lg"));
 
     await page.emulateMedia({ media: "screen" });
   });
@@ -60,28 +74,18 @@ test.describe("Recipe detail print card chrome suppression", () => {
   test("card chrome visible on screen (regression guard)", async ({ page }) => {
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}`);
 
-    const card = page.locator("div.shadow-lg");
-    await expect(card).not.toHaveCSS("border-radius", "0px");
-    const boxShadow = await card.evaluate((el) => window.getComputedStyle(el).boxShadow);
-    expect(/rgba\((?!0, 0, 0, 0\))/.test(boxShadow)).toBe(true);
+    await expectChromeVisible(page.locator("div.shadow-lg"));
   });
 
   test("card chrome suppressed in cookbook print view", async ({ page }) => {
-    await registerAndLogin(page);
-    const cookbookName = getUniqueCookbookName("PrintChromeCookbook");
-    const cookbook = await createCookbook(page, cookbookName);
-    await addRecipeToCookbook(page, recipeName);
-
     await gotoAndWaitForHydration(
       page,
-      `/cookbooks/${cookbook.cookbookId}/print?displayonly=1`,
+      `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
     await page.emulateMedia({ media: "print" });
 
     const section = page.locator(".cookbook-recipe-section").first();
-    const card = section.locator("div.shadow-lg");
-    await expectNoVisibleShadow(card);
-    await expect(card).toHaveCSS("border-radius", "0px");
+    await expectChromeSuppressed(section.locator("div.shadow-lg"));
 
     await page.emulateMedia({ media: "screen" });
   });

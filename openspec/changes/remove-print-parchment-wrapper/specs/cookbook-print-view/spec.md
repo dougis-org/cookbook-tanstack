@@ -10,7 +10,7 @@ This document details *changes* to requirements and is additive to the [`design.
 
 The system SHALL render a `#N` cookbook position label for each printed
 recipe as trailing content inside that recipe's own print flow (rendered
-via `RecipeDetail`'s `footer` slot), rather than as a separate element
+via `RecipeDetail`'s `printFooter` slot), rather than as a separate element
 positioned outside and below the recipe's card, so no independent
 border/padding block is required solely to hold the label. The label
 SHALL use the same display-ordered page map as the TOC and alphabetical
@@ -22,7 +22,7 @@ reorder the cookbook display.
 - **Given** the print route loads for a cookbook with recipes
 - **When** a `.cookbook-recipe-section` is rendered
 - **Then** the `#N` position label for that recipe is a descendant of the
-  recipe's own content container (rendered via `RecipeDetail`'s `footer`
+  recipe's own content container (rendered via `RecipeDetail`'s `printFooter`
   prop), not a sibling element positioned after `RecipeDetail`
 
 #### Scenario: Recipe section labels match TOC and index references
@@ -51,12 +51,12 @@ place, not replaced.)
 - Proposal element "reposition per-recipe page number inside the recipe's
   print flow, removing the standalone bordered footer block" → Requirement:
   MODIFIED Print route renders recipe position labels
-- Design Decision 2 (`footer` prop on `RecipeDetail`) → Requirement:
+- Design Decision 2 (`printFooter` prop on `RecipeDetail`) → Requirement:
   MODIFIED Print route renders recipe position labels
-- Requirement MODIFIED → Task: Add `footer` prop to `RecipeDetailProps`
+- Requirement MODIFIED → Task: Add `printFooter` prop to `RecipeDetailProps`
   and render it inside the content container
 - Requirement MODIFIED → Task: Update `cookbooks.$cookbookId_.print.tsx`
-  to pass the position-label markup via `footer` instead of rendering it
+  to pass the position-label markup via `printFooter` instead of rendering it
   as a sibling
 - Requirement MODIFIED → Task: Update
   `cookbooks.$cookbookId_.print.test.tsx` DOM-position assertions

@@ -60,10 +60,10 @@
 - Trade-offs: Slightly longer className string on one element; acceptable
   given the existing file's established style.
 
-### Decision 2: Move the page number in via a new `footer` prop on RecipeDetail
+### Decision 2: Move the page number in via a new `printFooter` prop on RecipeDetail
 
-- Chosen: Add an optional `footer?: ReactNode` prop to `RecipeDetailProps`.
-  Render `{footer}` as the last child inside the existing `p-8` content
+- Chosen: Add an optional `printFooter?: ReactNode` prop to `RecipeDetailProps`.
+  Render `{printFooter}` as the last child inside the existing `p-8` content
   div (immediately after the Nutrition section, before its two closing
   `</div>` tags — `src/components/recipes/RecipeDetail.tsx:414-417`).
   `cookbooks.$cookbookId_.print.tsx` passes the existing
@@ -122,7 +122,7 @@
   print flow, removing the standalone bordered footer block.
   - Design decision: Decision 2.
   - Validation approach: Unit/component test asserting `RecipeDetail`
-    renders a passed `footer` node inside its content container; update
+    renders a passed `printFooter` node inside its content container; update
     `cookbooks.$cookbookId_.print.test.tsx` to assert
     `cookbook-recipe-position-label` is now a descendant of the recipe
     content rather than a sibling after it, and still renders once per
@@ -145,14 +145,14 @@
     Playwright test, or via snapshot of rendered class list.
 - Requirement: The per-recipe page number in cookbook print renders inside
   the recipe's own print flow, not as a separately chrome'd block below it.
-  - Design element: Decision 2 (`footer` prop).
+  - Design element: Decision 2 (`printFooter` prop).
   - Acceptance criteria reference: specs — cookbook-print-view capability,
     updated/new scenario for recipe page number placement.
   - Testability notes: DOM structure assertion (parent/child relationship)
     in `cookbooks.$cookbookId_.print.test.tsx`.
 - Requirement: On-screen recipe detail rendering is unchanged.
   - Design element: All changes are `print:`-scoped or purely additive
-    (`footer` defaults to nothing when omitted).
+    (`printFooter` defaults to nothing when omitted).
   - Acceptance criteria reference: specs — no new requirement; existing
     recipe-detail-page specs must continue to pass unmodified.
   - Testability notes: No new screen-mode assertions needed; regression
@@ -170,7 +170,7 @@
 
 ## Risks / Trade-offs
 
-- Risk/trade-off: `footer` prop widens `RecipeDetail`'s public interface
+- Risk/trade-off: `printFooter` prop widens `RecipeDetail`'s public interface
   for a single, cookbook-print-specific caller.
   - Impact: Minor API surface growth on a shared component.
   - Mitigation: Prop is optional, undocumented-as-generic (JSDoc will note

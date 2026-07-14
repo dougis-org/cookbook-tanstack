@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 
 vi.mock('@tanstack/react-router', async () => {
   const { createRouterMock } = await import('@/test-helpers/mocks')
@@ -9,7 +10,7 @@ vi.mock('@tanstack/react-router', async () => {
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: React.ReactNode }) => (
+  default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: ReactNode }) => (
     <div>
       {recipe.name}
       {printFooter}

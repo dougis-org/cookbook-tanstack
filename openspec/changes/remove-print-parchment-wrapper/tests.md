@@ -21,10 +21,10 @@ For each task in `tasks.md`:
 
 ## Test Cases
 
-### `footer` prop on `RecipeDetail` (task: "Add `footer` prop to `RecipeDetailProps`" / "Render `{footer}` inside RecipeDetail's content flow")
+### `printFooter` prop on `RecipeDetail` (task: "Add `printFooter` prop to `RecipeDetailProps`" / "Render `{printFooter}` inside RecipeDetail's content flow")
 
-- [ ] Unit test: `RecipeDetail` renders no extra content when `footer` is omitted (existing consumers — `/recipes/$recipeId` — unaffected). Maps to spec `cookbook-print-view` MODIFIED requirement (regression guard) and design Decision 2.
-- [ ] Unit test: `RecipeDetail` renders a passed `footer` node, and the rendered footer node is a descendant of the recipe's content container (not the outer card wrapper's sibling). Maps to spec `cookbook-print-view` → Scenario: "Each recipe section shows a `#N` label inside its own content flow".
+- [ ] Unit test: `RecipeDetail` renders no extra content when `printFooter` is omitted (existing consumers — `/recipes/$recipeId` — unaffected). Maps to spec `cookbook-print-view` MODIFIED requirement (regression guard) and design Decision 2.
+- [ ] Unit test: `RecipeDetail` renders a passed `printFooter` node, and the rendered footer node is a descendant of the recipe's content container (not the outer card wrapper's sibling). Maps to spec `cookbook-print-view` → Scenario: "Each recipe section shows a `#N` label inside its own content flow".
 
 ### Print-scoped card chrome suppression (task: "Suppress card chrome for print")
 
@@ -44,4 +44,4 @@ For each task in `tasks.md`:
 
 - [ ] `npm run test` passes with all of the above new/updated cases included.
 - [ ] `npm run test:e2e` passes, including print-emulation coverage for both print surfaces.
-- [ ] `npm run build` succeeds with no type errors introduced by the new `footer` prop or JSX changes.
+- [ ] `npm run build` succeeds with no type errors introduced by the new `printFooter` prop or JSX changes.
