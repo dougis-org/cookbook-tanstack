@@ -18,6 +18,8 @@ export interface RecipeDetailProps {
     addedByName?: string | null
   }
   actions?: ReactNode
+  /** Print-only trailing content (e.g. a cookbook-print page number), rendered inside the content container. */
+  footer?: ReactNode
 }
 
 function RecipeMetaItem({
@@ -102,7 +104,7 @@ function isSafeUrl(url: string): boolean {
 // skipcq: JS-R1005 -- pre-existing component-wide complexity from its many conditional
 // sections, not introduced here; this change replaces inline prepTime/cookTime ternaries
 // with formatMinutesOrNA() calls, which reduces local branching rather than adding to it.
-export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
+export default function RecipeDetail({ recipe, actions, footer }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [currentServings, setCurrentServings] = useState(recipeServings)
@@ -135,7 +137,7 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg overflow-hidden">
+      <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg overflow-hidden print:bg-transparent print:rounded-none print:shadow-none">
         {/* Header Image */}
         <CardImage
           src={recipe.imageUrl}
@@ -412,6 +414,8 @@ export default function RecipeDetail({ recipe, actions }: RecipeDetailProps) {
               </div>
             </section>
           )}
+
+          {footer}
         </div>
       </div>
     </div>
