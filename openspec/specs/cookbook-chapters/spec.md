@@ -340,7 +340,7 @@ display.
 
 The system SHALL allow the cookbook owner (or a collaborator with edit
 access) to sort every recipe in the cookbook by title, via a "Sort Chapters by Recipe Title"
-action in the cookbook edit page toolbar, positioned next to the existing
+action in the cookbook detail page header, positioned next to the existing
 "Build Chapters by Category" action. Each chapter's recipes SHALL be
 sorted independently, and any unchaptered recipes SHALL be sorted
 independently within their own bucket. No recipe's `chapterId` SHALL be
@@ -374,7 +374,7 @@ before executing.
 
 #### Scenario: Non-editor cannot see or trigger the action
 
-- **WHEN** a user without edit access (e.g. a viewer-role collaborator, or a non-collaborator visitor) views the cookbook edit page
+- **WHEN** a user without edit access (e.g. a viewer-role collaborator, or a non-collaborator visitor) views the cookbook detail page
 - **THEN** the "Sort Chapters by Recipe Title" action is not rendered
 
 ---

@@ -86,13 +86,13 @@ Blocking resolution flow:
 - [x] Verify the merged changes appear on the default branch
 - [x] Mark all remaining tasks as complete (`- [x]`)
 - [x] Update repository documentation impacted by the change (none expected beyond OpenSpec artifacts — this feature has no dedicated user-facing docs page today)
-- [x] Sync approved spec deltas into `openspec/specs/`: copy `specs/cookbook-chapters/spec.md`'s ADDED requirements into `openspec/specs/cookbook-chapters/spec.md`. After copying, update any relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-sort-cookbook-recipes-by-title/design.md`, and similarly for `../../tasks.md`.
-- [x] Archive the change: move `openspec/changes/sort-cookbook-recipes-by-title/` to `openspec/changes/archive/YYYY-MM-DD-sort-cookbook-recipes-by-title/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-sort-cookbook-recipes-by-title/` exists and `openspec/changes/sort-cookbook-recipes-by-title/` is gone
-- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-sort-cookbook-recipes-by-title` then `git push -u origin doc/archive-YYYY-MM-DD-sort-cookbook-recipes-by-title`
-- [x] Open a PR from `doc/archive-YYYY-MM-DD-sort-cookbook-recipes-by-title` to `main` with title `docs: archive sort-cookbook-recipes-by-title (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] Sync approved spec deltas into `openspec/specs/`: copy `specs/cookbook-chapters/spec.md`'s ADDED requirements into `openspec/specs/cookbook-chapters/spec.md`. After copying, update any relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/2026-07-13-sort-cookbook-recipes-by-title/design.md`, and similarly for `../../tasks.md`.
+- [x] Archive the change: move `openspec/changes/sort-cookbook-recipes-by-title/` to `openspec/changes/archive/2026-07-13-sort-cookbook-recipes-by-title/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/2026-07-13-sort-cookbook-recipes-by-title/` exists and `openspec/changes/sort-cookbook-recipes-by-title/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-13-sort-cookbook-recipes-by-title` then `git push -u origin doc/archive-2026-07-13-sort-cookbook-recipes-by-title`
+- [x] Open a PR from `doc/archive-2026-07-13-sort-cookbook-recipes-by-title` to `main` with title `docs: archive sort-cookbook-recipes-by-title (2026-07-13)` — **do NOT push directly to `main`**
 - [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D 563-sort-cookbook-recipes-by-title doc/archive-YYYY-MM-DD-sort-cookbook-recipes-by-title`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D 563-sort-cookbook-recipes-by-title doc/archive-2026-07-13-sort-cookbook-recipes-by-title`
 
-Required cleanup after archive: `git fetch --prune` and `git branch -D 563-sort-cookbook-recipes-by-title doc/archive-YYYY-MM-DD-sort-cookbook-recipes-by-title`
+Required cleanup after archive: `git fetch --prune` and `git branch -D 563-sort-cookbook-recipes-by-title doc/archive-2026-07-13-sort-cookbook-recipes-by-title`
