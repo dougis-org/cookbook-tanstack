@@ -11,7 +11,7 @@ vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
 vi.mock('@/components/recipes/RecipeDetail', () => ({
   default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: ReactNode }) => (
-    <div>
+    <div data-testid="recipe-detail">
       {recipe.name}
       {printFooter}
     </div>
@@ -126,6 +126,21 @@ describe('CookbookPrintPage — #N position labels', () => {
     expect(sections[0]).toHaveTextContent('#1')
     expect(sections[1]).toHaveTextContent('#2')
     expect(sections[2]).toHaveTextContent('#3')
+  })
+
+  it('renders the #N label inside RecipeDetail (via printFooter), not as a sibling', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: { ...baseData, recipes: threeRecipes },
+    })
+    const { container } = render(<CookbookPrintPage />)
+    const recipeDetails = Array.from(container.querySelectorAll<HTMLElement>('[data-testid="recipe-detail"]'))
+    expect(recipeDetails).toHaveLength(3)
+    recipeDetails.forEach((wrapper, i) => {
+      const label = wrapper.querySelector('.cookbook-recipe-position-label')
+      expect(label).not.toBeNull()
+      expect(label).toHaveTextContent(`#${i + 1}`)
+    })
   })
 
   it('uses chapter display order for recipe sections and labels', () => {
