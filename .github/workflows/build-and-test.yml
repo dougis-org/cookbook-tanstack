@@ -254,11 +254,15 @@ jobs:
 
   notify-status:
     needs: [build-and-unit, integration, e2e]
-    # Only run when the dependency chain actually resolved to success or
-    # failure. On draft PRs, build-and-unit (and its dependents) are
-    # intentionally skipped, and `always()` would otherwise mistake that
-    # skip for a failure and post a spurious "build failed" comment.
-    if: (success() || failure()) && github.event_name == 'pull_request'
+    # Only run when build-and-unit actually resolved to success or failure.
+    # On draft PRs, build-and-unit (and its dependents, which have no if of
+    # their own and inherit its skip) are intentionally skipped via
+    # build-and-unit's own `if:`. We check `needs.build-and-unit.result !=
+    # 'skipped'` explicitly rather than the success()/failure() status-check
+    # functions: those can evaluate true even when a needed job was skipped
+    # (skipped is not "failed"), which would let this job run - and post a
+    # spurious "build failed" comment - on a draft PR.
+    if: github.event_name == 'pull_request' && needs.build-and-unit.result != 'skipped'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -269,63 +273,92 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            // MARKER anchors the single bot-managed status comment so it can
+            // be found, updated in place, or deleted, instead of posting a
+            // new comment on every run. MAX_ENTRIES caps how much failure
+            // history that comment keeps so it can't grow unbounded across
+            // repeat failures.
             const MARKER = '<!-- build-and-test-status -->';
             const MAX_ENTRIES = 5;
 
-            const success = '${{ success() }}' === 'true';
+            // Read the needed jobs' results directly. success()/failure()
+            // reflect this *job's own* previous steps (there are none here -
+            // this is the first step), not the outcome of `needs`, so they
+            // cannot be used to detect the build/test result from inside the
+            // script.
+            const success =
+              '${{ needs.build-and-unit.result }}' === 'success' &&
+              '${{ needs.integration.result }}' === 'success' &&
+              '${{ needs.e2e.result }}' === 'success';
 
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
 
-            const comments = await github.paginate(github.rest.issues.listComments, {
-              owner,
-              repo,
-              issue_number,
-            });
-            const existing = comments.find((c) => c.body?.startsWith(MARKER));
+            try {
+              // Stop paginating as soon as the marker comment is found
+              // instead of always fetching every comment page.
+              let existing;
+              for await (const { data: page } of github.paginate.iterator(
+                github.rest.issues.listComments,
+                { owner, repo, issue_number, per_page: 100 },
+              )) {
+                existing = page.find((c) => c.body?.startsWith(MARKER));
+                if (existing) break;
+              }
 
-            if (success) {
+              if (success) {
+                if (existing) {
+                  await github.rest.issues.deleteComment({
+                    owner,
+                    repo,
+                    comment_id: existing.id,
+                  });
+                }
+                return;
+              }
+
+              const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+              const timestamp = new Date().toISOString();
+              // Each entry is wrapped in a paired `<!-- entry:RUN_ID -->` tag
+              // (RUN_ID = context.runId, stable across re-runs of the same
+              // workflow run) so the regex below can locate and remove it as
+              // a whole block.
+              const newEntry = `<!-- entry:${context.runId} -->\n**${timestamp}** — [run #${context.runNumber}](${runUrl}) failed\n<!-- entry:${context.runId} -->`;
+
+              let entries = [];
               if (existing) {
-                await github.rest.issues.deleteComment({
+                const entryBlockPattern = /<!-- entry:[^>]*-->[\s\S]*?<!-- entry:[^>]*-->/g;
+                entries = existing.body.match(entryBlockPattern) ?? [];
+              }
+              // Drop any prior entry for this same run (e.g. a re-run of a
+              // previously failed attempt) so retries update in place instead
+              // of consuming multiple slots in the MAX_ENTRIES history.
+              const currentRunMarker = `<!-- entry:${context.runId} -->`;
+              entries = entries.filter((entry) => !entry.startsWith(currentRunMarker));
+              entries.unshift(newEntry);
+              entries = entries.slice(0, MAX_ENTRIES);
+
+              const body = `${MARKER}\nBuild and test workflow failed (most recent first)\n\n${entries.join('\n\n')}`;
+
+              if (existing) {
+                await github.rest.issues.updateComment({
                   owner,
                   repo,
                   comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
                 });
               }
-              return;
-            }
-
-            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
-            const timestamp = new Date().toISOString();
-            const newEntry = `<!-- entry:${context.runId} -->\n**${timestamp}** — [run #${context.runNumber}](${runUrl}) failed\n<!-- entry:${context.runId} -->`;
-
-            let entries = [];
-            if (existing) {
-              const entryBlockPattern = /<!-- entry:[^>]*-->[\s\S]*?<!-- entry:[^>]*-->/g;
-              entries = existing.body.match(entryBlockPattern) ?? [];
-            }
-            // Drop any prior entry for this same run (e.g. a re-run of a
-            // previously failed attempt) so retries update in place instead
-            // of consuming multiple slots in the MAX_ENTRIES history.
-            const currentRunMarker = `<!-- entry:${context.runId} -->`;
-            entries = entries.filter((entry) => !entry.startsWith(currentRunMarker));
-            entries.unshift(newEntry);
-            entries = entries.slice(0, MAX_ENTRIES);
-
-            const body = `${MARKER}\n❌ Build and test workflow failed (most recent first)\n\n${entries.join('\n\n')}`;
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number,
-                body,
-              });
+            } catch (error) {
+              // continue-on-error keeps bookkeeping failures from affecting
+              // the required build/test check, but that also hides the
+              // failure from the check status entirely - log it so it's
+              // still visible in this job's annotations.
+              core.warning(`notify-status: failed to manage PR comment: ${error.message}`);
             }
