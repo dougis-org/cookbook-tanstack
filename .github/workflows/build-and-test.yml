@@ -265,7 +265,8 @@ jobs:
     if: github.event_name == 'pull_request' && needs.build-and-unit.result != 'skipped'
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write
+      # PR comments live under the Issues API (listComments/createComment/
+      # updateComment/deleteComment); pull-requests: write isn't needed.
       issues: write
     steps:
       - name: Manage build-status PR comment
