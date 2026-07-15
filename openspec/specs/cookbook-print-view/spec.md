@@ -97,23 +97,31 @@ or preview purposes without triggering the browser print dialog.
 
 ### Requirement: Print route renders recipe position labels
 
-The system SHALL render a `#N` cookbook position label at the bottom of each
-printed recipe section. The label SHALL use the same display-ordered page map
-as the TOC and alphabetical index so the cross-references remain consistent,
-including when chapters reorder the cookbook display.
+The system SHALL render a `#N` cookbook position label for each printed
+recipe as trailing content inside that recipe's own print flow (rendered
+via `RecipeDetail`'s `printFooter` slot), rather than as a separate element
+positioned outside and below the recipe's card, so no independent
+border/padding block is required solely to hold the label. The label
+SHALL use the same display-ordered page map as the TOC and alphabetical
+index so the cross-references remain consistent, including when chapters
+reorder the cookbook display.
 
-#### Scenario: Each recipe section shows a `#N` label
+#### Scenario: Each recipe section shows a `#N` label inside its own content flow
 
 - **WHEN** the print route loads for a cookbook with recipes
-- **THEN** each `.cookbook-recipe-section` contains a bottom-aligned `#N` position label for that recipe
+- **THEN** the `#N` position label for that recipe is a descendant of the
+  recipe's own content container (rendered via `RecipeDetail`'s `printFooter`
+  prop), not a sibling element positioned after `RecipeDetail`
 
 #### Scenario: Recipe section labels match TOC and index references
 
 - **WHEN** the print route is rendered for a chaptered or unchaptered cookbook
-- **THEN** a recipe's `#N` label at the bottom of its section matches the same
+- **THEN** a recipe's `#N` label inside its content flow matches the same
   recipe's reference in the TOC and alphabetical index
 
 #### Scenario: Recipe section label is visible in displayonly mode
 
 - **WHEN** a user opens `/cookbooks/:cookbookId/print?displayonly=1`
-- **THEN** the `#N` recipe section labels are visible on screen in muted gray without triggering the browser print dialog
+- **THEN** the `#N` recipe section labels are visible on screen in muted
+  gray, inside each recipe's content flow, without triggering the browser
+  print dialog
