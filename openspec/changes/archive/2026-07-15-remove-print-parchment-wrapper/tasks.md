@@ -80,11 +80,11 @@ Blocking resolution flow:
 - [x] Verify the merged changes appear on `main` (commit 15b922d)
 - [x] Mark all remaining tasks as complete (`- [x]`)
 - [x] Update repository documentation impacted by the change (none expected — this is a self-contained print-styling fix; confirmed no `docs/` references to the old wrapper/footer layout need updating)
-- [x] Sync approved spec deltas into `openspec/specs/`: merged `specs/print-suppression/spec.md`'s ADDED/MODIFIED requirements into `openspec/specs/print-suppression/spec.md`, and merged `specs/cookbook-print-view/spec.md`'s MODIFIED requirement into `openspec/specs/cookbook-print-view/spec.md`. Note: the instruction to rewrite `../../design.md` links for the archive location was not applied — archiving moves the whole change directory intact (specs/*/spec.md and design.md move together), so the existing `../../design.md` relative links remain correct after the move (verified via `realpath`, same reasoning as the PR review reply to the false-positive Copilot link comments on this same PR).
+- [x] Sync approved spec deltas into `openspec/specs/`: merged `specs/print-suppression/spec.md`'s ADDED/MODIFIED requirements into `openspec/specs/print-suppression/spec.md`, and merged `specs/cookbook-print-view/spec.md`'s MODIFIED requirement into `openspec/specs/cookbook-print-view/spec.md`.
 - [x] Archive the change: moved `openspec/changes/remove-print-parchment-wrapper/` to `openspec/changes/archive/2026-07-15-remove-print-parchment-wrapper/` via `openspec archive --skip-specs -y` (spec deltas already synced manually in the prior step)
 - [x] Confirm `openspec/changes/archive/2026-07-15-remove-print-parchment-wrapper/` exists and `openspec/changes/remove-print-parchment-wrapper/` is gone
 - [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-15-remove-print-parchment-wrapper`
-- [ ] Open a PR from `doc/archive-2026-07-15-remove-print-parchment-wrapper` to `main` with title `docs: archive remove-print-parchment-wrapper (2026-07-15)` — do NOT push directly to `main`
+- [x] Open a PR from `doc/archive-2026-07-15-remove-print-parchment-wrapper` to `main` with title `docs: archive remove-print-parchment-wrapper (2026-07-15)` — do NOT push directly to `main`
 - [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
 - [ ] Prune merged local branches: `git fetch --prune` and `git branch -D fix/598-remove-print-parchment-wrapper doc/archive-2026-07-15-remove-print-parchment-wrapper`

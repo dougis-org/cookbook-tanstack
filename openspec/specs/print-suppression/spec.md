@@ -99,12 +99,12 @@ and keeps the stylesheet clean.
 - Requirement REMOVED → Task: Delete `.classification-badge` block from `print.css`
 - Requirement MODIFIED → Task: Verify existing `RecipeDetail` screen tests pass
 - Proposal element "print-only suppression of RecipeDetail's card
-  background/rounding/shadow" (`remove-print-parchment-wrapper`) →
+  background/rounding/shadow" ([`remove-print-parchment-wrapper`](../../changes/archive/2026-07-15-remove-print-parchment-wrapper/design.md)) →
   Requirement: ADDED Recipe card chrome hidden in print media
-- Requirement ADDED (`remove-print-parchment-wrapper`) → Task: Add
+- Requirement ADDED ([`remove-print-parchment-wrapper`](../../changes/archive/2026-07-15-remove-print-parchment-wrapper/design.md)) → Task: Add
   print-scoped chrome-suppression classes to `RecipeDetail.tsx`'s outer
   wrapper
-- Requirement MODIFIED (`remove-print-parchment-wrapper`) → Task: Verify
+- Requirement MODIFIED ([`remove-print-parchment-wrapper`](../../changes/archive/2026-07-15-remove-print-parchment-wrapper/design.md)) → Task: Verify
   existing `RecipeDetail` screen-mode tests pass unmodified
 
 ## Non-Functional Acceptance Criteria
