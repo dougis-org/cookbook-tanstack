@@ -18,7 +18,7 @@ export interface RecipeDetailProps {
     addedByName?: string | null
   }
   actions?: ReactNode
-  /** Print-only trailing content (e.g. a cookbook-print page number), rendered inside the content container. */
+  /** Trailing content for print surfaces (e.g. a cookbook-print page number), rendered inside the content container. Rendered unconditionally — visibility for screen media is the caller's responsibility. */
   printFooter?: ReactNode
 }
 
