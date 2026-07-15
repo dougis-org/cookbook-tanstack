@@ -101,15 +101,19 @@ export function CookbookPrintPage() {
 
           return (
             <div key={recipe.id} className="cookbook-recipe-section">
-              <RecipeDetail recipe={recipeForDetail} />
-              {pageNumber !== undefined && (
-                <div
-                  className="cookbook-recipe-position-label mt-4 pt-2 border-t border-[color:var(--theme-print-border)] text-right text-xs text-[var(--theme-print-fg-subtle)] tabular-nums"
-                  data-testid="cookbook-recipe-position-label"
-                >
-                  #{pageNumber}
-                </div>
-              )}
+              <RecipeDetail
+                recipe={recipeForDetail}
+                printFooter={
+                  pageNumber !== undefined && (
+                    <div
+                      className="cookbook-recipe-position-label mt-4 pt-2 border-t border-[color:var(--theme-print-border)] text-right text-xs text-[var(--theme-print-fg-subtle)] tabular-nums"
+                      data-testid="cookbook-recipe-position-label"
+                    >
+                      #{pageNumber}
+                    </div>
+                  )
+                }
+              />
             </div>
           )
         })}

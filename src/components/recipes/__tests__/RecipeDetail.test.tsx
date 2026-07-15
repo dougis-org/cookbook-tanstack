@@ -375,6 +375,48 @@ describe("RecipeDetail", () => {
     })
   })
 
+  describe("printFooter prop", () => {
+    it("renders no extra content when printFooter is omitted", () => {
+      const { container } = render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
+      expect(screen.getByText("Pasta")).toBeInTheDocument()
+      expect(container.querySelector('[data-testid="recipe-footer"]')).not.toBeInTheDocument()
+    })
+
+    it("renders a passed printFooter node inside the recipe's content container", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ name: "Pasta" })}
+          printFooter={<div data-testid="recipe-footer">#1</div>}
+        />,
+      )
+      const footer = screen.getByTestId("recipe-footer")
+      const contentContainer = screen.getByText("Pasta").closest("div.p-8")
+      expect(contentContainer).toContainElement(footer)
+    })
+  })
+
+  describe("card chrome print suppression", () => {
+    it("outer card wrapper has print-scoped overrides removing background, rounding, and shadow", () => {
+      const { container } = render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
+      const card = container.querySelector("div.p-8")?.parentElement
+      expect(card).toHaveClass(
+        "print:bg-transparent",
+        "print:rounded-none",
+        "print:shadow-none",
+      )
+    })
+
+    it("outer card wrapper retains screen-mode chrome classes", () => {
+      const { container } = render(<RecipeDetail recipe={makeRecipe({ name: "Pasta" })} />)
+      const card = container.querySelector("div.p-8")?.parentElement
+      expect(card).toHaveClass(
+        "bg-[var(--theme-surface)]",
+        "rounded-lg",
+        "shadow-lg",
+      )
+    })
+  })
+
   describe("serving controls", () => {
     it("renders controls adjacent to the Servings label in the meta grid, not in Ingredients", () => {
       render(

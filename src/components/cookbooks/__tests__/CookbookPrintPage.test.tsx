@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 
 vi.mock('@tanstack/react-router', async () => {
   const { createRouterMock } = await import('@/test-helpers/mocks')
@@ -9,7 +10,12 @@ vi.mock('@tanstack/react-router', async () => {
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ recipe }: { recipe: { name: string } }) => <div>{recipe.name}</div>,
+  default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: ReactNode }) => (
+    <div data-testid="recipe-detail">
+      {recipe.name}
+      {printFooter}
+    </div>
+  ),
 }))
 
 const mockUseQuery = vi.fn()
@@ -120,6 +126,21 @@ describe('CookbookPrintPage — #N position labels', () => {
     expect(sections[0]).toHaveTextContent('#1')
     expect(sections[1]).toHaveTextContent('#2')
     expect(sections[2]).toHaveTextContent('#3')
+  })
+
+  it('renders the #N label inside RecipeDetail (via printFooter), not as a sibling', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: { ...baseData, recipes: threeRecipes },
+    })
+    const { container } = render(<CookbookPrintPage />)
+    const recipeDetails = Array.from(container.querySelectorAll<HTMLElement>('[data-testid="recipe-detail"]'))
+    expect(recipeDetails).toHaveLength(3)
+    recipeDetails.forEach((wrapper, i) => {
+      const label = wrapper.querySelector('.cookbook-recipe-position-label')
+      expect(label).not.toBeNull()
+      expect(label).toHaveTextContent(`#${i + 1}`)
+    })
   })
 
   it('uses chapter display order for recipe sections and labels', () => {
