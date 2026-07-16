@@ -255,14 +255,21 @@ jobs:
   notify-status:
     needs: [build-and-unit, integration, e2e]
     # Only run when build-and-unit actually resolved to success or failure.
-    # On draft PRs, build-and-unit (and its dependents, which have no if of
-    # their own and inherit its skip) are intentionally skipped via
-    # build-and-unit's own `if:`. We check `needs.build-and-unit.result !=
-    # 'skipped'` explicitly rather than the success()/failure() status-check
-    # functions: those can evaluate true even when a needed job was skipped
-    # (skipped is not "failed"), which would let this job run - and post a
-    # spurious "build failed" comment - on a draft PR.
-    if: github.event_name == 'pull_request' && needs.build-and-unit.result != 'skipped'
+    # `always()` is required here: without a status-check function, GitHub
+    # Actions implicitly prepends success() to a job's `if:`, which would
+    # prevent this job from ever running when a needed job fails - the exact
+    # case this job exists to report. On draft PRs, build-and-unit (and its
+    # dependents, which have no if of their own and inherit its skip) are
+    # intentionally skipped via build-and-unit's own `if:`; on a cancelled
+    # run (e.g. concurrency cancel-in-progress) reporting "failed" would be
+    # misleading. Excluding both `skipped` and `cancelled` avoids posting a
+    # spurious/misleading comment in either case.
+    if: >-
+      always() && github.event_name == 'pull_request' &&
+      needs.build-and-unit.result != 'skipped' &&
+      needs.build-and-unit.result != 'cancelled' &&
+      needs.integration.result != 'cancelled' &&
+      needs.e2e.result != 'cancelled'
     runs-on: ubuntu-latest
     permissions:
       # PR comments live under the Issues API (listComments/createComment/
@@ -303,7 +310,9 @@ jobs:
                 github.rest.issues.listComments,
                 { owner, repo, issue_number, per_page: 100 },
               )) {
-                existing = page.find((c) => c.body?.startsWith(MARKER));
+                existing = page.find(
+                  (c) => c.user?.login === 'github-actions[bot]' && c.body?.startsWith(MARKER),
+                );
                 if (existing) break;
               }
 
@@ -324,7 +333,7 @@ jobs:
               // (RUN_ID = context.runId, stable across re-runs of the same
               // workflow run) so the regex below can locate and remove it as
               // a whole block.
-              const newEntry = `<!-- entry:${context.runId} -->\n**${timestamp}** — [run #${context.runNumber}](${runUrl}) failed\n<!-- entry:${context.runId} -->`;
+              const newEntry = `<!-- entry:${context.runId} -->\n**${timestamp}** — [run #${context.runNumber} (attempt ${context.runAttempt})](${runUrl}) failed\n<!-- entry:${context.runId} -->`;
 
               let entries = [];
               if (existing) {
@@ -361,5 +370,5 @@ jobs:
               // the required build/test check, but that also hides the
               // failure from the check status entirely - log it so it's
               // still visible in this job's annotations.
-              core.warning(`notify-status: failed to manage PR comment: ${error.message}`);
+              core.warning(`notify-status: failed to manage PR comment: ${error?.message ?? String(error)}`);
             }
