@@ -69,5 +69,5 @@ The system SHALL let a user browse the chapters/contents of a cookbook they have
 The system SHALL expose Alexa-facing data through a dedicated, versionable, read-only adapter rather than granting the skill direct access to internal tRPC mutation procedures.
 
 #### Scenario: Skill attempts an operation outside the adapter's exposed surface
-- **WHEN** the Lambda skill handler sends any request for an operation not explicitly exposed by the Alexa read adapter (e.g., an attempt to create or delete a recipe)
+- **WHEN** the skill route's handler sends any request for an operation not explicitly exposed by the Alexa read adapter (e.g., an attempt to create or delete a recipe)
 - **THEN** the request SHALL be rejected, since no such procedure is exposed on the adapter surface

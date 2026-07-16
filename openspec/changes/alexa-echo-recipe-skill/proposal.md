@@ -4,8 +4,8 @@ Issue #603 asks for an investigation and design (not an implementation) for brin
 
 ## What Changes
 
-- Define a new **Alexa Skill** (custom skill, not a Flash Briefing/Smart Home skill) built on the Alexa Skills Kit (ASK), backed by an AWS Lambda handler that calls the existing My CookBooks tRPC API over HTTPS.
-- Define **Account Linking** via OAuth2 Authorization Code grant so Alexa can associate an Echo user with a My CookBooks account, gated behind a new lightweight OAuth2 authorization-server capability added to the app (Better-Auth does not ship this today).
+- Define a new **Alexa Skill** (custom skill, not a Flash Briefing/Smart Home skill) built on the Alexa Skills Kit (ASK), hosted as a self-hosted HTTPS route within this app (not a separate AWS Lambda deployment) that calls the existing My CookBooks recipe/cookbook logic in-process.
+- Define **Account Linking** via OAuth2 Authorization Code grant (PKCE) so Alexa can associate an Echo user with a My CookBooks account, using Better-Auth's official `@better-auth/oauth-provider` plugin rather than a bespoke authorization server.
 - Define a new **read-only external API surface** (`alexa` tRPC router or a dedicated `/api/alexa/*` route group) that intentionally re-shapes existing recipe/cookbook queries for voice+screen consumption (search, get-by-id, list-cookbook), rather than exposing internal routers directly to a third-party runtime.
 - Define **APL (Alexa Presentation Language) documents** for the Echo Show recipe card, recipe detail (ingredients/steps), and cookbook browse views, matching the existing dark-first design system content hierarchy (not necessarily its exact tokens, since APL has its own styling model).
 - Define the **voice interaction model**: intents for searching recipes (by name, meal, course, ingredient), reading out a recipe, stepping through instructions ("Alexa, next step"), and browsing a cookbook.
@@ -24,7 +24,7 @@ None — no existing spec's requirements change. The skill consumes existing rec
 
 ## Impact
 
-- **New code (future implementation, not this change):** Lambda skill handler (Node.js, `ask-sdk-core`), a new `src/server/trpc/routers/alexa.ts` (or `src/routes/api/alexa/*`) read-only adapter, a new OAuth2 authorization-server module alongside `src/lib/auth.ts`, APL document templates, ASK interaction model JSON, infra-as-code for the Lambda + skill manifest.
-- **Existing systems touched conceptually:** `recipes` and `cookbooks` tRPC routers (as data sources, called internally, not modified), Better-Auth (extended, not replaced, for account linking), tier/entitlement policy in `src/server/trpc/routers/_helpers.ts` (reused as-is per "Keep tier entitlement checks centralized in shared policy code").
-- **Dependencies:** AWS account + Lambda + IAM role, Amazon Developer Console skill registration, `ask-sdk-core`/`ask-sdk-model`, an APL-capable interaction model.
+- **New code (future implementation, not this change):** a self-hosted skill route (Node.js, `ask-sdk-core` + `ask-sdk-express-adapter`) within `src/routes/api/alexa/*`, a new read-only Alexa adapter, `@better-auth/oauth-provider` + `jwt()` configuration alongside `src/lib/auth.ts` plus a consent-page UI, APL document templates, ASK interaction model JSON.
+- **Existing systems touched conceptually:** `recipes` and `cookbooks` tRPC routers (as data sources, called internally, not modified), Better-Auth (extended via an official plugin, not replaced, for account linking), tier/entitlement policy in `src/server/trpc/routers/_helpers.ts` (reused as-is per "Keep tier entitlement checks centralized in shared policy code").
+- **Dependencies:** Amazon Developer Console skill registration, `ask-sdk-core`/`ask-sdk-model`/`ask-sdk-express-adapter`, `@better-auth/oauth-provider`, an APL-capable interaction model. No new AWS account/Lambda/IAM required.
 - **Out of scope for this change:** writing/mutating recipes by voice, publishing the skill to the Alexa Skill Store (certification), and any actual code — this change produces `design.md`, `specs/alexa-skill-integration/spec.md`, `tasks.md`, and `tests.md` only.
