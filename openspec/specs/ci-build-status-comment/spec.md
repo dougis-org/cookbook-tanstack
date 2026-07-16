@@ -10,7 +10,7 @@ The system SHALL delete any existing bot-authored build-status comment on a pull
 
 - **Given** a pull request has an existing bot comment starting with the marker `<!-- build-and-test-status -->`
 - **When** a new workflow run completes with `build-and-unit`, `integration`, and `e2e` all reporting `success`
-- **Then** the `notify-status` job deletes the existing marker comment via the Issues API, and no bot comment remains on the pull request
+- **Then** the `notify-status` job deletes the existing marker comment via the Issues API, and no build-status marker comment remains on the pull request
 
 #### Scenario: All jobs succeed with no prior comment present
 
