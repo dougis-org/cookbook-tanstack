@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Heart, User } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
@@ -23,12 +24,20 @@ export function RecipeDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { isLoggedIn, userId } = useAuth()
+  const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const [showDelete, setShowDelete] = useState(false)
   const [deleteError, setDeleteError] = useState<string | undefined>()
 
   const { data: recipe, isLoading } = useQuery(
     trpc.recipes.byId.queryOptions({ id: recipeId }),
   )
+
+  const { data: privateNoteData } = useQuery({
+    ...trpc.privateRecipeNotes.get.queryOptions({ recipeId }),
+    enabled: isLoggedIn,
+  })
+  const personalNoteBody =
+    (isLoggedIn && canUsePrivateRecipeNotes && privateNoteData?.note?.body?.trim()) || null
 
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
@@ -112,6 +121,7 @@ export function RecipeDetailPage() {
 
       <RecipeDetail
         recipe={recipe}
+        personalNote={personalNoteBody}
         actions={
           <div className="flex items-center gap-2 print:hidden">
             <ShareButton />

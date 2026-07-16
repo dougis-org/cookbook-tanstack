@@ -122,6 +122,67 @@ describe("RecipeDetail", () => {
     })
   })
 
+  describe("Personal Notes section (print-only)", () => {
+    it("renders a Personal Notes heading and note text when personalNote is a non-empty string", () => {
+      render(
+        <RecipeDetail recipe={makeRecipe({})} personalNote="Double the garlic next time" />,
+      )
+      expect(screen.getByRole("heading", { name: "Personal Notes" })).toBeInTheDocument()
+      expect(screen.getByText("Double the garlic next time")).toBeInTheDocument()
+    })
+
+    it("applies whitespace-pre-wrap to the Personal Notes paragraph", () => {
+      render(
+        <RecipeDetail recipe={makeRecipe({})} personalNote="Line one\nLine two" />,
+      )
+      const heading = screen.getByRole("heading", { name: "Personal Notes" })
+      expect(heading.nextElementSibling).toHaveClass("whitespace-pre-wrap")
+    })
+
+    it("does not render the Personal Notes section when personalNote is null", () => {
+      render(<RecipeDetail recipe={makeRecipe({})} personalNote={null} />)
+      expect(screen.queryByRole("heading", { name: "Personal Notes" })).not.toBeInTheDocument()
+    })
+
+    it("does not render the Personal Notes section when personalNote is undefined (prop omitted)", () => {
+      render(<RecipeDetail recipe={makeRecipe({})} />)
+      expect(screen.queryByRole("heading", { name: "Personal Notes" })).not.toBeInTheDocument()
+    })
+
+    it("carries hidden and print:block classes rather than being unconditionally visible", () => {
+      render(<RecipeDetail recipe={makeRecipe({})} personalNote="Secret note" />)
+      const heading = screen.getByRole("heading", { name: "Personal Notes" })
+      const section = heading.closest("section")
+      expect(section).toHaveClass("hidden", "print:block")
+    })
+
+    it("appears immediately after Notes when both trimmedNotes and personalNote are present", () => {
+      render(
+        <RecipeDetail
+          recipe={makeRecipe({ notes: "Public note" })}
+          personalNote="Private note"
+        />,
+      )
+      const headings = screen.getAllByRole("heading", { level: 2 })
+      const notesIdx = headings.findIndex((h) => h.textContent?.trim() === "Notes")
+      const personalIdx = headings.findIndex((h) => h.textContent?.trim() === "Personal Notes")
+      expect(notesIdx).toBeGreaterThanOrEqual(0)
+      expect(personalIdx).toBe(notesIdx + 1)
+    })
+
+    it("renders standalone when public notes is absent but personalNote is present", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: null })} personalNote="Private note" />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: "Personal Notes" })).toBeInTheDocument()
+    })
+
+    it("renders neither Notes nor Personal Notes when both are absent", () => {
+      render(<RecipeDetail recipe={makeRecipe({ notes: null })} personalNote={null} />)
+      expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+      expect(screen.queryByRole("heading", { name: "Personal Notes" })).not.toBeInTheDocument()
+    })
+  })
+
   it("renders ingredients from text lines", () => {
     render(
       <RecipeDetail

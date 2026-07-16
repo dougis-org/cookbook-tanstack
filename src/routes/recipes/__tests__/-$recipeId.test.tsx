@@ -11,7 +11,12 @@ vi.mock('@/components/layout/PageLayout', () => ({
 }))
 
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ actions }: { actions: React.ReactNode }) => <div>{actions}</div>,
+  default: ({ actions, personalNote }: RecipeDetailProps) => (
+    <div>
+      {actions}
+      <div data-testid="personal-note">{personalNote ?? 'null'}</div>
+    </div>
+  ),
 }))
 vi.mock('@/components/recipes/RelatedRecipesSection', () => ({ default: () => null }))
 vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null }))
@@ -22,6 +27,11 @@ vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 const mockUseAuth = vi.fn()
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
+}))
+
+const mockUseTierEntitlements = vi.fn()
+vi.mock('@/hooks/useTierEntitlements', () => ({
+  useTierEntitlements: () => mockUseTierEntitlements(),
 }))
 
 const mockUseQuery = vi.fn()
@@ -40,10 +50,14 @@ vi.mock('@/lib/trpc', () => ({
       toggleMarked: { mutationOptions: (opts: unknown) => opts },
       delete: { mutationOptions: (opts: unknown) => opts },
     },
+    privateRecipeNotes: {
+      get: { queryOptions: ({ recipeId }: { recipeId: string }) => ({ queryKey: ['privateRecipeNotes', 'get', recipeId] }) },
+    },
   },
 }))
 
 import { RecipeDetailPage } from '@/routes/recipes/$recipeId'
+import type { RecipeDetailProps } from '@/components/recipes/RecipeDetail'
 
 const baseRecipe = {
   id: 'r1',
@@ -67,6 +81,7 @@ describe('RecipeDetailPage', () => {
   beforeEach(() => {
     mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
     mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
   })
 
   it('derives Save/Saved button state from recipe.marked, not a separate isMarked query', () => {
@@ -96,5 +111,72 @@ describe('RecipeDetailPage', () => {
     expect(shareButton).toBeInTheDocument()
     expect(printButton).toBeInTheDocument()
     expect(shareButton.nextElementSibling).toBe(printButton)
+  })
+})
+
+describe('RecipeDetailPage personalNoteBody gating', () => {
+  const queryMock = (noteBody: string | null | undefined) =>
+    ({ queryKey }: { queryKey: unknown[] }) => {
+      if (Array.isArray(queryKey) && queryKey[0] === 'privateRecipeNotes') {
+        return {
+          data: noteBody == null ? { hasNote: false, note: null } : { hasNote: true, note: { body: noteBody, updatedAt: new Date() } },
+          isLoading: false,
+        }
+      }
+      return { data: baseRecipe, isLoading: false }
+    }
+
+  beforeEach(() => {
+    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+  })
+
+  it('passes null to RecipeDetail for an anonymous viewer', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: false, userId: undefined, isPending: false, session: undefined })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(queryMock('My saved note'))
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
+
+  it('passes null for a logged-in user below the required tier, regardless of a stored note', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: false })
+    mockUseQuery.mockImplementation(queryMock('My saved note'))
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
+
+  it('passes null for an entitled user with no saved note', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(queryMock(null))
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
+
+  it('passes null for an entitled user whose saved note is whitespace-only', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(queryMock('   \n  '))
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
+
+  it('passes the trimmed note body for a logged-in, entitled user with a non-empty note', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(queryMock('  My saved note  '))
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('My saved note')
   })
 })
