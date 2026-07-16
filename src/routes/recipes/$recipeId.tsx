@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Heart, User } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
+import { useTierEntitlements } from '@/hooks/useTierEntitlements'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
@@ -23,12 +24,27 @@ export function RecipeDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { isLoggedIn, userId } = useAuth()
+  const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const [showDelete, setShowDelete] = useState(false)
   const [deleteError, setDeleteError] = useState<string | undefined>()
 
   const { data: recipe, isLoading } = useQuery(
     trpc.recipes.byId.queryOptions({ id: recipeId }),
   )
+
+  const { data: privateNoteData, isError: isPrivateNoteError } = useQuery({
+    ...trpc.privateRecipeNotes.get.queryOptions({ recipeId }),
+    // Gated on !isLoading so this observer mounts in the same render pass as
+    // <PrivateRecipeNotes>'s own useQuery for the same key (both only ever
+    // render once the recipe has loaded) — otherwise, if recipes.byId
+    // resolves slower than this query, the cached note data would already be
+    // stale by the time PrivateRecipeNotes mounts, triggering a genuine
+    // second network request instead of the two observers sharing one
+    // in-flight fetch.
+    enabled: isLoggedIn && canUsePrivateRecipeNotes && !isLoading,
+  })
+  const personalNoteBody =
+    (isLoggedIn && canUsePrivateRecipeNotes && !isPrivateNoteError && privateNoteData?.note?.body?.trim()) || null
 
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
@@ -112,6 +128,7 @@ export function RecipeDetailPage() {
 
       <RecipeDetail
         recipe={recipe}
+        personalNote={personalNoteBody}
         actions={
           <div className="flex items-center gap-2 print:hidden">
             <ShareButton />

@@ -20,6 +20,8 @@ export interface RecipeDetailProps {
   actions?: ReactNode
   /** Trailing content for print surfaces (e.g. a cookbook-print page number), rendered inside the content container. Rendered unconditionally — visibility for screen media is the caller's responsibility. */
   printFooter?: ReactNode
+  /** Current user's own saved private recipe note, resolved and tier-gated by the caller. Renders a print-only "Personal Notes" section when non-empty. */
+  personalNote?: string | null
 }
 
 function RecipeMetaItem({
@@ -102,9 +104,10 @@ function isSafeUrl(url: string): boolean {
 }
 
 // skipcq: JS-R1005 -- pre-existing component-wide complexity from its many conditional
-// sections, not introduced here; this change replaces inline prepTime/cookTime ternaries
-// with formatMinutesOrNA() calls, which reduces local branching rather than adding to it.
-export default function RecipeDetail({ recipe, actions, printFooter }: RecipeDetailProps) {
+// sections. The personalNote print section adds one more conditional branch;
+// prior changes replaced inline prepTime/cookTime ternaries with formatMinutesOrNA()
+// calls, which reduced local branching elsewhere in the same function.
+export default function RecipeDetail({ recipe, actions, printFooter, personalNote }: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [currentServings, setCurrentServings] = useState(recipeServings)
@@ -371,6 +374,20 @@ export default function RecipeDetail({ recipe, actions, printFooter }: RecipeDet
               </h2>
               <p className="whitespace-pre-wrap text-[var(--theme-fg-muted)]">
                 {trimmedNotes}
+              </p>
+            </section>
+          )}
+
+          {/* Personal Notes Section (print-only) */}
+          {personalNote && (
+            <section className="hidden print:block mb-8 print:mb-4">
+              <h2
+                className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
+              >
+                Personal Notes
+              </h2>
+              <p className="whitespace-pre-wrap text-[var(--theme-fg-muted)]">
+                {personalNote}
               </p>
             </section>
           )}
