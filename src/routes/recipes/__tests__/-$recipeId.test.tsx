@@ -194,4 +194,38 @@ describe('RecipeDetailPage personalNoteBody gating', () => {
 
     expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
   })
+
+  it('passes null when the private note query errors even if stale cached note data is still present', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+      if (Array.isArray(queryKey) && queryKey[0] === 'privateRecipeNotes') {
+        return {
+          data: { hasNote: true, note: { body: 'Stale note from a previous successful fetch', updatedAt: new Date() } },
+          isError: true,
+          isLoading: false,
+        }
+      }
+      return { data: baseRecipe, isLoading: false }
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
+
+  it('does not enable the private note query for a logged-in user below the required tier', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: false })
+    mockUseQuery.mockImplementation(queryMock('My saved note'))
+
+    render(<RecipeDetailPage />)
+
+    const privateNoteCalls = mockUseQuery.mock.calls.filter((args: unknown[]) => {
+      const opts = args[0] as { queryKey?: unknown[] } | undefined
+      return Array.isArray(opts?.queryKey) && opts.queryKey[0] === 'privateRecipeNotes'
+    })
+    const lastCall = privateNoteCalls[privateNoteCalls.length - 1] as [{ enabled?: boolean }] | undefined
+    expect(lastCall?.[0].enabled).toBe(false)
+  })
 })

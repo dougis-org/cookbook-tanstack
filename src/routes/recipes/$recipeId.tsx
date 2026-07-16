@@ -32,12 +32,12 @@ export function RecipeDetailPage() {
     trpc.recipes.byId.queryOptions({ id: recipeId }),
   )
 
-  const { data: privateNoteData } = useQuery({
+  const { data: privateNoteData, isError: isPrivateNoteError } = useQuery({
     ...trpc.privateRecipeNotes.get.queryOptions({ recipeId }),
-    enabled: isLoggedIn,
+    enabled: isLoggedIn && canUsePrivateRecipeNotes,
   })
   const personalNoteBody =
-    (isLoggedIn && canUsePrivateRecipeNotes && privateNoteData?.note?.body?.trim()) || null
+    (isLoggedIn && canUsePrivateRecipeNotes && !isPrivateNoteError && privateNoteData?.note?.body?.trim()) || null
 
   const toggleMarkedMutation = useMutation(
     trpc.recipes.toggleMarked.mutationOptions({
