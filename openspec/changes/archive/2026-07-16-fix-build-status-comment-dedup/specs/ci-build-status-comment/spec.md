@@ -55,7 +55,7 @@ The system SHALL retain at most the 5 most recent failure entries in a marker-ta
 - Proposal element: Cap history at 5 entries, newest first -> Requirement: "PR build-status comment failure history is capped at 5 entries"
 - Design decision: Decision 3 (marker-based identification) -> Requirement: all four requirements above key off the `<!-- build-and-test-status -->` marker for lookup
 - Design decision: Decision 6 (`continue-on-error: true`) -> Requirement: see Non-Functional Acceptance Criteria, Reliability section
-- Requirement -> Task(s): see tasks.md for the implementation breakdown of the `notify-status` job
+- Requirement -> Task(s): see [`tasks.md`](../../tasks.md) for the implementation breakdown of the `notify-status` job
 
 ## Non-Functional Acceptance Criteria
 

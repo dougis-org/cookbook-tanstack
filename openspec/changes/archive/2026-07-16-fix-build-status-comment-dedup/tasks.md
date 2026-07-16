@@ -44,9 +44,9 @@
   - Push a commit that fails again, then 4 more failing commits (5 total); confirm the comment shows exactly 5 entries, newest first, on the 5th failure
   - Push a 6th failing commit; confirm the comment still shows exactly 5 entries and the oldest (1st) entry is now gone
 - [x] All completed tasks marked as complete
-- [x] All steps in [Remote push validation]
+- [x] All steps in [Remote push validation](#remote-push-validation)
 
-## Remote push validation
+## Remote push validation {#remote-push-validation}
 
 Before running, determine whether the current change is **docs-only**: run `git diff --name-only HEAD` (or compare the working branch against `main`) and check whether every changed file ends in `.md`. This change modifies `.github/workflows/build-and-test.yml` (not `.md`), so the **full path** applies.
 
@@ -69,9 +69,9 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 - [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
 - [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
-  1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
-  2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
-  3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
+  1. **Build and tests** — run all steps in [Remote push validation](#remote-push-validation); fix any failures, commit, and push before doing anything else in this iteration
+  2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation](#remote-push-validation), push, wait 180 seconds; continue until all threads are resolved
+  3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation](#remote-push-validation), push, wait 180 seconds; then restart this loop from step 1
 
 After every push, restart at step 1. Never skip the build/test gate before pushing any fix.
 
@@ -101,5 +101,3 @@ Blocking resolution flow:
 - [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
 - [x] Prune merged local branches: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-2026-07-16-fix-build-status-comment-dedup`
-
-Required cleanup after archive: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-2026-07-16-fix-build-status-comment-dedup`
