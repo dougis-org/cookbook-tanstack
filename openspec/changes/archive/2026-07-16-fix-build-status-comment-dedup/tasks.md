@@ -93,13 +93,13 @@ Blocking resolution flow:
 - [x] Verify the merged changes appear on `main` (confirm `notify-status` job present in `.github/workflows/build-and-test.yml`, `notify-failure` job absent)
 - [x] Mark all remaining tasks as complete (`- [x]`)
 - [x] Update repository documentation impacted by the change — none identified beyond this OpenSpec change directory itself (no README/CLAUDE.md sections describe the removed `notify-failure` job by name)
-- [x] Sync approved spec deltas into `openspec/specs/`. After copying `specs/ci-build-status-comment/spec.md` to `openspec/specs/ci-build-status-comment/spec.md`, update the relative link `[`design.md`](../../design.md)` to `../../changes/archive/YYYY-MM-DD-fix-build-status-comment-dedup/design.md`
-- [x] Archive the change: move `openspec/changes/fix-build-status-comment-dedup/` to `openspec/changes/archive/YYYY-MM-DD-fix-build-status-comment-dedup/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-fix-build-status-comment-dedup/` exists and `openspec/changes/fix-build-status-comment-dedup/` is gone
-- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-fix-build-status-comment-dedup` then `git push -u origin doc/archive-YYYY-MM-DD-fix-build-status-comment-dedup`
-- [x] Open a PR from `doc/archive-YYYY-MM-DD-fix-build-status-comment-dedup` to `main` with title `docs: archive fix-build-status-comment-dedup (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] Sync approved spec deltas into `openspec/specs/`. After copying `specs/ci-build-status-comment/spec.md` to `openspec/specs/ci-build-status-comment/spec.md`, update the relative link `[`design.md`](../../design.md)` to `../../changes/archive/2026-07-16-fix-build-status-comment-dedup/design.md`
+- [x] Archive the change: move `openspec/changes/fix-build-status-comment-dedup/` to `openspec/changes/archive/2026-07-16-fix-build-status-comment-dedup/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/2026-07-16-fix-build-status-comment-dedup/` exists and `openspec/changes/fix-build-status-comment-dedup/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-2026-07-16-fix-build-status-comment-dedup` then `git push -u origin doc/archive-2026-07-16-fix-build-status-comment-dedup`
+- [x] Open a PR from `doc/archive-2026-07-16-fix-build-status-comment-dedup` to `main` with title `docs: archive fix-build-status-comment-dedup (2026-07-16)` — **do NOT push directly to `main`**
 - [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-YYYY-MM-DD-fix-build-status-comment-dedup`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-2026-07-16-fix-build-status-comment-dedup`
 
-Required cleanup after archive: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-YYYY-MM-DD-fix-build-status-comment-dedup`
+Required cleanup after archive: `git fetch --prune` and `git branch -D fix-build-status-comment-dedup doc/archive-2026-07-16-fix-build-status-comment-dedup`
