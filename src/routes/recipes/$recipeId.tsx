@@ -34,7 +34,14 @@ export function RecipeDetailPage() {
 
   const { data: privateNoteData, isError: isPrivateNoteError } = useQuery({
     ...trpc.privateRecipeNotes.get.queryOptions({ recipeId }),
-    enabled: isLoggedIn && canUsePrivateRecipeNotes,
+    // Gated on !isLoading so this observer mounts in the same render pass as
+    // <PrivateRecipeNotes>'s own useQuery for the same key (both only ever
+    // render once the recipe has loaded) — otherwise, if recipes.byId
+    // resolves slower than this query, the cached note data would already be
+    // stale by the time PrivateRecipeNotes mounts, triggering a genuine
+    // second network request instead of the two observers sharing one
+    // in-flight fetch.
+    enabled: isLoggedIn && canUsePrivateRecipeNotes && !isLoading,
   })
   const personalNoteBody =
     (isLoggedIn && canUsePrivateRecipeNotes && !isPrivateNoteError && privateNoteData?.note?.body?.trim()) || null

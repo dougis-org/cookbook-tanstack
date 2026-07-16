@@ -88,5 +88,11 @@ describe('RecipeDetailPage private note query dedup', () => {
     render(<RecipeDetailPage />, { wrapper })
 
     await waitFor(() => expect(mockGetNote).toHaveBeenCalledTimes(1))
+    // Let any queued microtasks/observers settle, then re-assert the count is
+    // still exactly one — guards against a delayed second fetch (e.g. a
+    // second query observer mounting slightly later) that a single
+    // first-call-only assertion above wouldn't catch.
+    await waitFor(() => expect(queryClient.isFetching()).toBe(0))
+    expect(mockGetNote).toHaveBeenCalledTimes(1)
   })
 })
