@@ -1,5 +1,7 @@
 ## ADDED Requirements
 
+This document details *changes* to requirements and is additive to the [`design.md`](../../design.md) document, not a replacement.
+
 ### Requirement: Public voice recipe search
 The system SHALL allow an unauthenticated (not account-linked) Alexa user to search public recipes by name, meal, course, or ingredient via the `SearchRecipesIntent` and receive spoken results plus, on APL-capable devices, a visual results list.
 
@@ -46,7 +48,7 @@ The system SHALL let a user retrieve a specific recipe's ingredients and instruc
 
 #### Scenario: User asks for the next step
 - **WHEN** a user says "next step" during an active recipe session
-- **THEN** the skill advances the session's step index and speaks/display the next instruction, or indicates the recipe is complete if on the last step
+- **THEN** the skill advances the session's step index and speaks/displays the next instruction, or indicates the recipe is complete if on the last step
 
 #### Scenario: User asks for the next step with no active recipe
 - **WHEN** `NextStepIntent` is invoked with no recipe currently active in the session

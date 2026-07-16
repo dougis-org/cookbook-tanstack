@@ -1,3 +1,5 @@
+# Tasks
+
 ## 1. Pre-work / discovery spike (no production code)
 
 - [ ] 1.1 Register a development Amazon Developer account and create a private (unpublished) custom skill to confirm interaction-model, account-linking, and APL constraints match this design

@@ -25,6 +25,6 @@ None — no existing spec's requirements change. The skill consumes existing rec
 ## Impact
 
 - **New code (future implementation, not this change):** Lambda skill handler (Node.js, `ask-sdk-core`), a new `src/server/trpc/routers/alexa.ts` (or `src/routes/api/alexa/*`) read-only adapter, a new OAuth2 authorization-server module alongside `src/lib/auth.ts`, APL document templates, ASK interaction model JSON, infra-as-code for the Lambda + skill manifest.
-- **Existing systems touched conceptually:** `recipes` and `cookbooks` tRPC routers (as data sources, called internally, not modified), Better-Auth (extended, not replaced, for account linking), tier/entitlement policy in `src/server/trpc/routers/_helpers.ts` (reused as-is per [[Keep tier entitlement checks centralized in shared policy code]]).
+- **Existing systems touched conceptually:** `recipes` and `cookbooks` tRPC routers (as data sources, called internally, not modified), Better-Auth (extended, not replaced, for account linking), tier/entitlement policy in `src/server/trpc/routers/_helpers.ts` (reused as-is per "Keep tier entitlement checks centralized in shared policy code").
 - **Dependencies:** AWS account + Lambda + IAM role, Amazon Developer Console skill registration, `ask-sdk-core`/`ask-sdk-model`, an APL-capable interaction model.
 - **Out of scope for this change:** writing/mutating recipes by voice, publishing the skill to the Alexa Skill Store (certification), and any actual code — this change produces `design.md`, `specs/alexa-skill-integration/spec.md`, `tasks.md`, and `tests.md` only.
