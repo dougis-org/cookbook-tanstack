@@ -1,7 +1,7 @@
 ## Context
 
 - Relevant architecture: `.github/workflows/build-and-test.yml` is a single GitHub Actions workflow with four jobs (`build-and-unit`, `integration`, `e2e`, `finalize-coverage`) plus the notification job being replaced. It runs on `pull_request` (opened/synchronize/reopened/ready_for_review), `push` to `main`, and `workflow_dispatch`. A `concurrency` group keyed on PR number/ref already cancels in-progress runs when a new one starts for the same PR, so only one run per PR is ever actively writing comments at a time.
-- Dependencies: `actions/github-script@v7` (new dependency for this workflow file; not currently used anywhere in `.github/workflows/`). Uses the built-in `github` (Octokit) client and `context` objects it provides — no new secrets or external services.
+- Dependencies: `actions/github-script@v7` (introduced by this change; not previously used anywhere else in `.github/workflows/`). Uses the built-in `github` (Octokit) client and `context` objects it provides — no new secrets or external services.
 - Interfaces/contracts touched: GitHub Issues/PR Comments REST API (`GET/POST/PATCH/DELETE /repos/{owner}/{repo}/issues/{issue_number}/comments`), scoped by the job's own `pull-requests: write, issues: write` permissions (no change to token scope needed — PR comments live under the Issues API).
 
 ## Goals / Non-Goals

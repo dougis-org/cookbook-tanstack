@@ -7,7 +7,7 @@ description: Tests for the fix-build-status-comment-dedup change
 
 ## Overview
 
-This document outlines the tests for the `fix-build-status-comment-dedup` change. There is no existing automated harness in this repository for GitHub Actions workflow behavior (Vitest/Playwright cover application code, not workflow YAML or `actions/github-script` bodies — see `design.md`, Functional Requirements Mapping). Verification is therefore performed as a scripted manual TDD-style process against a real throwaway PR: write down the expected outcome first (red), implement, then observe the actual outcome (green), matching the spirit of TDD even without an automated runner.
+This document outlines the tests for the `fix-build-status-comment-dedup` change. The repo has Vitest coverage (`src/lib/__tests__/cicd-workflows.test.ts`) that asserts static invariants of the workflow YAML, but there is no harness for actually *executing* a workflow run or testing `actions/github-script` step behavior (Vitest/Playwright cover application code, not live GitHub Actions execution — see `design.md`, Functional Requirements Mapping). Verification of this change's runtime behavior is therefore performed as a scripted manual TDD-style process against a real throwaway PR: write down the expected outcome first (red), implement, then observe the actual outcome (green), matching the spirit of TDD even without an automated runner.
 
 ## Testing Steps
 
