@@ -33,7 +33,7 @@ For each task in `tasks.md`:
 - [ ] **TC3 — Create comment on first failure** (task: "Implement the `github-script` body" failure-branch-no-existing-comment; spec: "PR build-status comment is created on first failure")
   - Setup: PR with no marker comment
   - Action: push a commit that fails `e2e` (or any required job)
-  - Expected: a new comment is created starting with `<!-- build-and-test-status -->`, containing exactly one `<!-- entry: -->` block with a timestamp and a link to the triggering run
+  - Expected: a new comment is created starting with `<!-- build-and-test-status -->`, containing exactly one `<!-- entry:{run_id} -->` block with a timestamp and a link to the triggering run
 
 - [ ] **TC4 — Update comment in place on second failure** (task: "Implement the `github-script` body" failure-branch-existing-comment; spec: "PR build-status comment is updated in place on repeat failure")
   - Setup: PR with an existing marker comment containing 1 entry (from TC3)

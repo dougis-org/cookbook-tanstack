@@ -26,7 +26,7 @@ The system SHALL create a new marker-tagged comment on the pull request when at 
 
 - **Given** a pull request has no existing comment starting with the marker `<!-- build-and-test-status -->`
 - **When** a workflow run completes where `build-and-unit.result`, `integration.result`, or `e2e.result` is not `success`
-- **Then** the `notify-status` job creates a new comment beginning with the marker, containing exactly one `<!-- entry: -->` block with a timestamp and a link to the current run
+- **Then** the `notify-status` job creates a new comment beginning with the marker, containing exactly one `<!-- entry:{run_id} -->` block with a timestamp and a link to the current run
 
 ### Requirement: ADDED PR build-status comment is updated in place on repeat failure
 
