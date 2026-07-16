@@ -179,4 +179,19 @@ describe('RecipeDetailPage personalNoteBody gating', () => {
 
     expect(screen.getByTestId('personal-note')).toHaveTextContent('My saved note')
   })
+
+  it('passes null when the private note query errors, rather than leaking stale data', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+      if (Array.isArray(queryKey) && queryKey[0] === 'privateRecipeNotes') {
+        return { data: undefined, isError: true, isLoading: false }
+      }
+      return { data: baseRecipe, isLoading: false }
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByTestId('personal-note')).toHaveTextContent('null')
+  })
 })
