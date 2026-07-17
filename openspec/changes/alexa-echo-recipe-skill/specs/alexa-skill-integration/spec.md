@@ -39,8 +39,8 @@ The system SHALL apply the same tier-based content limits and entitlement rules 
 - **WHEN** a recipe returned to the skill has an associated private note
 - **THEN** the note body SHALL NOT be included in the spoken response or APL payload for any tier
 
-### Requirement: Read-only recipe detail with step navigation
-The system SHALL let a user retrieve a specific recipe's ingredients and instructions by voice and navigate forward/backward through steps using session-scoped state.
+### Requirement: Read-only recipe detail with persisted step navigation
+The system SHALL let a user retrieve a specific recipe's ingredients and instructions by voice and navigate forward/backward through steps, with progress persisted per Alexa user so it survives an Alexa session timeout.
 
 #### Scenario: User requests recipe details
 - **WHEN** a user selects or names a recipe via `GetRecipeDetailsIntent`
@@ -48,10 +48,14 @@ The system SHALL let a user retrieve a specific recipe's ingredients and instruc
 
 #### Scenario: User asks for the next step
 - **WHEN** a user says "next step" during an active recipe session
-- **THEN** the skill advances the session's step index and speaks/displays the next instruction, or indicates the recipe is complete if on the last step
+- **THEN** the skill advances the persisted step index and speaks/displays the next instruction, or indicates the recipe is complete if on the last step
 
-#### Scenario: User asks for the next step with no active recipe
-- **WHEN** `NextStepIntent` is invoked with no recipe currently active in the session
+#### Scenario: User resumes after the Alexa session has timed out
+- **WHEN** a user says "next step" (or opens the skill again) after their Alexa session has ended mid-recipe
+- **THEN** the skill loads the persisted recipe id and step index for that Alexa user and resumes from where they left off, rather than treating it as no recipe in progress
+
+#### Scenario: User asks for the next step with no recipe in progress
+- **WHEN** `NextStepIntent` is invoked and there is no active session state and no persisted progress for that Alexa user
 - **THEN** the skill SHALL respond that no recipe is in progress and suggest searching for one first
 
 ### Requirement: Cookbook browsing by voice
@@ -65,8 +69,8 @@ The system SHALL let a user browse the chapters/contents of a cookbook they have
 - **WHEN** a user requests a cookbook name that does not resolve to a cookbook they own or have access to
 - **THEN** the skill SHALL respond that it could not find that cookbook, without revealing whether a cookbook with that name exists for another user
 
-### Requirement: Read-only external API boundary
-The system SHALL expose Alexa-facing data through a dedicated, versionable, read-only adapter rather than granting the skill direct access to internal tRPC mutation procedures.
+### Requirement: Read-only external API boundary for recipe/cookbook content
+The system SHALL expose Alexa-facing recipe and cookbook data through a dedicated, versionable, read-only adapter rather than granting the skill direct access to internal tRPC mutation procedures. This boundary covers recipe/cookbook content specifically; it does not apply to the skill's own step-navigation progress bookkeeping (a separate, single-purpose store unrelated to recipe/cookbook business data).
 
 #### Scenario: Skill attempts an operation outside the adapter's exposed surface
 - **WHEN** the skill route's handler sends any request for an operation not explicitly exposed by the Alexa read adapter (e.g., an attempt to create or delete a recipe)

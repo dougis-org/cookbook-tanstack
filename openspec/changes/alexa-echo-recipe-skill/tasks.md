@@ -28,13 +28,14 @@
 
 ## 4. Interaction model and self-hosted skill route
 
-- [ ] 4.1 Write failing unit tests (using `ask-sdk` test utilities / mocked request envelopes) for `SearchRecipesIntent`, `GetRecipeDetailsIntent`, `NextStepIntent`/`PreviousStepIntent` session-state handling, and `BrowseCookbookIntent`, including the "no active recipe" and "cookbook not found" edge cases from the spec
+- [ ] 4.1 Write failing unit tests (using `ask-sdk` test utilities / mocked request envelopes) for `SearchRecipesIntent`, `GetRecipeDetailsIntent`, `NextStepIntent`/`PreviousStepIntent` step handling, and `BrowseCookbookIntent`, including the "no recipe in progress" and "cookbook not found" edge cases from the spec
 - [ ] 4.2 Write failing tests for the account-linking prompt path (unlinked user requesting private content)
-- [ ] 4.3 Write failing tests confirming the route rejects requests with a missing/invalid/stale Alexa request signature or timestamp
-- [ ] 4.4 Implement the ASK interaction model JSON (intents, slots, sample utterances) satisfying 4.1's expected utterance coverage
-- [ ] 4.5 Add `ask-sdk-core` and `ask-sdk-express-adapter` as dependencies; implement the skill route (e.g. `src/routes/api/alexa/skill.ts`) using the adapter for signature verification, wired into Nitro/h3 via `fromNodeMiddleware` (or the closest equivalent), to make 4.1–4.3 pass
-- [ ] 4.6 Wire the route's intent handlers to call the read-only Alexa adapter from Section 3 in-process (no network hop)
-- [ ] 4.7 Implement session-attribute-based step navigation state (current recipe id + step index)
+- [ ] 4.3 Write failing tests confirming the route rejects requests with a missing/invalid/stale Alexa request signature or timestamp, verified against the raw request body (not a re-serialized parsed body)
+- [ ] 4.4 Write failing tests for persisted step-navigation progress: `NextStepIntent`/`PreviousStepIntent` read and update a persisted `{ recipeId, stepIndex }` record keyed by Alexa `userId`; a `NextStepIntent` after simulated session loss resumes from the persisted record instead of reporting no recipe in progress
+- [ ] 4.5 Implement the ASK interaction model JSON (intents, slots, sample utterances) satisfying 4.1's expected utterance coverage
+- [ ] 4.6 Add `ask-sdk-core` and `ask-sdk-express-adapter` as dependencies; implement the skill route (e.g. `src/routes/api/alexa/skill.ts`), reading the raw request body (via h3's `readRawBody` or by disabling automatic body parsing for this route) and passing it to the adapter for signature verification, wired into Nitro/h3 via `fromNodeMiddleware` (or the closest equivalent confirmed by the discovery spike), to make 4.1–4.3 pass
+- [ ] 4.7 Wire the route's intent handlers to call the read-only Alexa adapter from Section 3 in-process (no network hop)
+- [ ] 4.8 Implement the persisted step-navigation store (e.g. a new `alexa_skill_progress` Mongoose model keyed by Alexa `userId`, holding `{ recipeId, stepIndex, updatedAt }`) and wire `NextStepIntent`/`PreviousStepIntent` to read/write it, to make 4.4 pass
 
 ## 5. APL visual presentation
 
