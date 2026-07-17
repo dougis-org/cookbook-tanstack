@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
-import { ThemeProvider, useTheme, THEMES } from '../ThemeContext'
 
 const mockUseSession = vi.fn<() => { data: { user: { theme: string } } | null }>(() => ({ data: null }))
 
 vi.mock('@/lib/auth-client', () => ({
   useSession: () => mockUseSession(),
 }))
+
+import { ThemeProvider, useTheme, THEMES } from '../ThemeContext'
 
 function TestConsumer() {
   const { theme, setTheme } = useTheme()
