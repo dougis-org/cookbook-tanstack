@@ -1,5 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
+
+const mockUseSession = vi.fn<() => { data: { user: { theme: string } } | null; isPending?: boolean }>(() => ({ data: null }))
+const mockUseRouteContext = vi.hoisted(() => vi.fn<() => { session: { user: { theme: string } } | null }>(() => ({ session: null })))
+
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMockForHooks } = await import('@/test-helpers/mocks')
+  return createRouterMockForHooks(() => mockUseRouteContext())
+})
+
+vi.mock('@/lib/auth-client', () => ({
+  useSession: () => mockUseSession(),
+}))
+
 import { ThemeProvider, useTheme, THEMES } from '../ThemeContext'
 
 function TestConsumer() {
@@ -16,6 +29,10 @@ function TestConsumer() {
   )
 }
 
+function renderWithTheme(children: React.ReactNode) {
+  return render(<ThemeProvider>{children}</ThemeProvider>)
+}
+
 function LightLegacySetter() {
   const { theme, setTheme } = useTheme()
   return (
@@ -30,18 +47,125 @@ describe('ThemeContext', () => {
   beforeEach(() => {
     localStorage.clear()
     document.documentElement.className = ''
+    mockUseSession.mockReturnValue({ data: null })
+    mockUseRouteContext.mockReturnValue({ session: null })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
+  describe('session reconciliation', () => {
+    it('reconciles to session theme when it differs from localStorage on a new device', async () => {
+      // Note: RTL's render() flushes effects synchronously in this test environment, so
+      // the pre-hydration/first-paint window (asserted via the inline-script mutation
+      // order) is only observable in the real browser — see 'no flash' cases in
+      // src/e2e/theme.spec.ts. This test verifies the post-reconciliation end state.
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark-greens')
+      expect(document.documentElement.className).toBe('dark-greens')
+      expect(localStorage.getItem('cookbook-theme')).toBe('dark-greens')
+    })
+
+    it('does not change theme when session matches localStorage', async () => {
+      localStorage.setItem('cookbook-theme', 'light-cool')
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'light-cool' } } })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('light-cool')
+      expect(document.documentElement.className).toBe('light-cool')
+    })
+
+    it('does not overwrite a manual theme pick with a stale session value on session refetch', async () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
+      const { rerender } = renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+
+      act(() => {
+        screen.getByText('Dark (greens)').click()
+      })
+      expect(document.documentElement.className).toBe('dark-greens')
+
+      // Session revalidates with a new object reference but the same (now-stale) theme value —
+      // must not clobber the user's just-made manual pick.
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
+      await act(async () => {})
+
+      expect(document.documentElement.className).toBe('dark-greens')
+      expect(screen.getByTestId('theme').textContent).toBe('dark-greens')
+    })
+
+    it('is unaffected when there is no session (anonymous)', async () => {
+      mockUseSession.mockReturnValue({ data: null })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark')
+      expect(document.documentElement.className).toBe('dark')
+    })
+
+    it('reconciles again after logout and re-login with the same server theme', async () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      const { rerender } = renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(document.documentElement.className).toBe('dark-greens')
+
+      // Log out — reconciliation must not misfire, and must forget the last-seen value.
+      mockUseSession.mockReturnValue({ data: null })
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
+      await act(async () => {})
+
+      // A different device set the local theme to 'dark' while logged out.
+      act(() => {
+        screen.getByText('Dark (blues)').click()
+      })
+      expect(document.documentElement.className).toBe('dark')
+
+      // Log back in with the SAME server theme as before ('dark-greens'). Without the
+      // logout reset, lastSeenServerThemeRef would still hold 'dark-greens' and this
+      // reconciliation would be incorrectly skipped, leaving the stale 'dark' applied.
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
+      await act(async () => {})
+
+      expect(document.documentElement.className).toBe('dark-greens')
+    })
+
+    it('falls back to the root-route server session while the client session is pending', async () => {
+      mockUseRouteContext.mockReturnValue({ session: { user: { theme: 'light-warm' } } })
+      mockUseSession.mockReturnValue({ data: null, isPending: true })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('light-warm')
+      expect(document.documentElement.className).toBe('light-warm')
+    })
+
+    it('prefers the resolved client null session over the server session fallback', async () => {
+      mockUseRouteContext.mockReturnValue({ session: { user: { theme: 'light-warm' } } })
+      mockUseSession.mockReturnValue({ data: null, isPending: false })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark')
+      expect(document.documentElement.className).toBe('dark')
+    })
+
+    it('does not require awaiting the session promise before rendering', () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      // render() must complete synchronously and successfully — reconciliation must not
+      // introduce a synchronous wait on the session promise before the component's first
+      // render pass finishes. (The flash-free first-paint guarantee itself, driven by the
+      // pre-hydration inline script and localStorage, is verified against a real browser
+      // in src/e2e/theme.spec.ts's 'no flash' tests — this RTL harness flushes effects
+      // synchronously within render(), so that timing window isn't independently
+      // observable at the unit level; a wall-clock assertion here would be non-deterministic.)
+      expect(() => renderWithTheme(<TestConsumer />)).not.toThrow()
+    })
+  })
+
   it('returns dark as default theme when localStorage is empty', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
@@ -74,11 +198,7 @@ describe('ThemeContext', () => {
 
   it('restores stored theme from localStorage on mount', async () => {
     localStorage.setItem('cookbook-theme', 'light-cool')
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     // useEffect fires after render; wait for state update
     await act(async () => {})
     expect(screen.getByTestId('theme').textContent).toBe('light-cool')
@@ -86,11 +206,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("dark-greens") sets className and localStorage', async () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     await act(async () => {})
     act(() => {
       screen.getByText('Dark (greens)').click()
@@ -100,11 +216,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light-cool") writes to localStorage', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     act(() => {
       screen.getByText('Light (cool)').click()
     })
@@ -112,11 +224,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light-cool") sets document.documentElement.className', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     act(() => {
       screen.getByText('Light (cool)').click()
     })
@@ -124,11 +232,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light") is rejected — no class or localStorage change occurs', async () => {
-    render(
-      <ThemeProvider>
-        <LightLegacySetter />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<LightLegacySetter />)
     // Wait for mount effect to set className to 'dark'
     await act(async () => {})
     act(() => {
@@ -145,11 +249,7 @@ describe('ThemeContext', () => {
       throw new Error('storage unavailable')
     })
     expect(() =>
-      render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      ),
+      renderWithTheme(<TestConsumer />),
     ).not.toThrow()
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
@@ -164,11 +264,7 @@ describe('ThemeContext', () => {
         </div>
       )
     }
-    render(
-      <ThemeProvider>
-        <BadSetter />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<BadSetter />)
     act(() => {
       screen.getByText('bad').click()
     })
