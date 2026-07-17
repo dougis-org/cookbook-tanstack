@@ -486,4 +486,28 @@ test.describe('Theme system', () => {
 
     expect(printBg).toBe('white')
   })
+
+  test('logged-in user saves theme in /account/settings and it persists across reload', async ({
+    page,
+  }) => {
+    await registerAndLogin(page)
+    await page.addInitScript(() => {
+      localStorage.removeItem('cookbook-theme')
+    })
+
+    await gotoAndWaitForHydration(page, '/account/settings')
+
+    await page.getByRole('radio', { name: 'Dark (greens)' }).click()
+    await page.getByRole('button', { name: /save/i }).click()
+    await expect(page.getByTestId('settings-success')).toBeVisible()
+
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByRole('radio', { name: 'Dark (greens)' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    await expect(page.locator('html')).toHaveClass(/dark-greens/)
+  })
 })

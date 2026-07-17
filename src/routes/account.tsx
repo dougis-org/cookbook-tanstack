@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { User } from "lucide-react"
+import { Settings, User } from "lucide-react"
 import type { RedirectReason } from "@/lib/auth-guard"
 import { REDIRECT_REASON_MESSAGES, requireAuth } from "@/lib/auth-guard"
 import PageLayout from "@/components/layout/PageLayout"
@@ -66,9 +66,18 @@ export function AccountPage() {
   return (
     <PageLayout>
       <div className="max-w-2xl mx-auto py-12 px-6">
-        <div className="flex items-center gap-4 mb-8">
-          <User className="w-12 h-12 text-[var(--theme-accent)]" />
-          <h1 className="text-3xl font-bold text-[var(--theme-fg)]">Account</h1>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-4">
+            <User className="w-12 h-12 text-[var(--theme-accent)]" />
+            <h1 className="text-3xl font-bold text-[var(--theme-fg)]">Account</h1>
+          </div>
+          <Link
+            to="/account/settings"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--theme-accent)] hover:underline"
+          >
+            <Settings className="w-4 h-4" />
+            Settings
+          </Link>
         </div>
 
         {reason && (

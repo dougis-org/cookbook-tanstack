@@ -156,6 +156,14 @@ describe('/account — tier section', () => {
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
+  it('renders a link to /account/settings', () => {
+    mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    render(<AccountPage />)
+    const settingsLink = screen.getByRole('link', { name: /settings/i })
+    expect(settingsLink).toBeInTheDocument()
+    expect(settingsLink.getAttribute('href')).toBe('/account/settings')
+  })
+
   it('does not render "coming soon" stub text', () => {
     mockUseAuth.mockReturnValue(tierSession('home-cook'))
     render(<AccountPage />)

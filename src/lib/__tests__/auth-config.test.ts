@@ -94,6 +94,18 @@ describe("auth configuration", () => {
     })
   })
 
+  it("includes user.additionalFields.theme with type string, default dark, and required false", async () => {
+    await import("@/lib/auth")
+
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+
+    expect(config.user?.additionalFields?.theme).toMatchObject({
+      type: "string",
+      defaultValue: "dark",
+      required: false,
+    })
+  })
+
   it("preserves existing config keys (emailAndPassword, session, plugins)", async () => {
     await import("@/lib/auth")
 

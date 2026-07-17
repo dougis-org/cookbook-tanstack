@@ -61,6 +61,11 @@ export const auth = betterAuth({
         defaultValue: false,
         required: false,
       },
+      theme: {
+        type: "string" as const,
+        defaultValue: "dark",
+        required: false,
+      },
     },
   },
   session: {

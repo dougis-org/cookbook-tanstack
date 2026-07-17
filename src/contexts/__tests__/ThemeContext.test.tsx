@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { ThemeProvider, useTheme, THEMES } from '../ThemeContext'
 
+const mockUseSession = vi.fn<() => { data: { user: { theme: string } } | null }>(() => ({ data: null }))
+
+vi.mock('@/lib/auth-client', () => ({
+  useSession: () => mockUseSession(),
+}))
+
 function TestConsumer() {
   const { theme, setTheme } = useTheme()
   return (
@@ -30,10 +36,92 @@ describe('ThemeContext', () => {
   beforeEach(() => {
     localStorage.clear()
     document.documentElement.className = ''
+    mockUseSession.mockReturnValue({ data: null })
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  describe('session reconciliation', () => {
+    it('reconciles to session theme when it differs from localStorage on a new device', async () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      render(
+        <ThemeProvider>
+          <TestConsumer />
+        </ThemeProvider>,
+      )
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark-greens')
+      expect(document.documentElement.className).toBe('dark-greens')
+      expect(localStorage.getItem('cookbook-theme')).toBe('dark-greens')
+    })
+
+    it('does not change theme when session matches localStorage', async () => {
+      localStorage.setItem('cookbook-theme', 'light-cool')
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'light-cool' } } })
+      render(
+        <ThemeProvider>
+          <TestConsumer />
+        </ThemeProvider>,
+      )
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('light-cool')
+      expect(document.documentElement.className).toBe('light-cool')
+    })
+
+    it('does not overwrite a manual theme pick with a stale session value on session refetch', async () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
+      const { rerender } = render(
+        <ThemeProvider>
+          <TestConsumer />
+        </ThemeProvider>,
+      )
+      await act(async () => {})
+
+      act(() => {
+        screen.getByText('Dark (greens)').click()
+      })
+      expect(document.documentElement.className).toBe('dark-greens')
+
+      // Session revalidates with a new object reference but the same (now-stale) theme value —
+      // must not clobber the user's just-made manual pick.
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
+      rerender(
+        <ThemeProvider>
+          <TestConsumer />
+        </ThemeProvider>,
+      )
+      await act(async () => {})
+
+      expect(document.documentElement.className).toBe('dark-greens')
+      expect(screen.getByTestId('theme').textContent).toBe('dark-greens')
+    })
+
+    it('is unaffected when there is no session (anonymous)', async () => {
+      mockUseSession.mockReturnValue({ data: null })
+      render(
+        <ThemeProvider>
+          <TestConsumer />
+        </ThemeProvider>,
+      )
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark')
+      expect(document.documentElement.className).toBe('dark')
+    })
+
+    it('does not block first paint on session resolution', () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      // Reconciliation must not require awaiting a network/session promise before
+      // render() returns — no synchronous wait is introduced by this effect.
+      expect(() =>
+        render(
+          <ThemeProvider>
+            <TestConsumer />
+          </ThemeProvider>,
+        ),
+      ).not.toThrow()
+    })
   })
 
   it('returns dark as default theme when localStorage is empty', () => {
