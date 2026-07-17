@@ -1,5 +1,7 @@
 # Tasks
 
+**Note on structure:** sections below no longer map to a single strict serial chain. Section 3 is split into 3 (public, no blockers) and 3B (authenticated, needs 2 and 3). Section 5 depends on 3, not 4, and can build in parallel with 4. Task 5.4 (voice-only fallback verification) moved into Section 7, since it needs real intent handlers from Section 4 to exist. See issue #603/#615–#623 on GitHub for the corresponding issue-level dependency graph.
+
 ## 1. Pre-work / discovery spike (no production code)
 
 - [ ] 1.1 Register a development Amazon Developer account and create a private (unpublished) custom skill to confirm interaction-model, account-linking, and APL constraints match this design
@@ -17,14 +19,18 @@
 - [ ] 2.7 Implement the consent page UI to make 2.1 pass
 - [ ] 2.8 Implement a thin token-validation helper (wrapping the plugin's session/token verification) for downstream use by the Alexa adapter
 
-## 3. Read-only Alexa adapter (external API surface)
+## 3. Read-only Alexa adapter — public paths (no dependency on Section 2)
 
 - [ ] 3.1 Write failing tests for public recipe search via the adapter (unauthenticated request returns only public recipes, respects existing search/filter semantics from `recipes.list`)
 - [ ] 3.2 Write failing tests for recipe detail lookup via the adapter, including the voice/APL-shaped response (flattened ingredients, numbered steps, no note content included per any tier)
-- [ ] 3.3 Write failing tests for authenticated ("my recipes"/"my cookbooks") requests: valid access token returns only the caller's own/visible content; missing, expired, or revoked token is rejected; tier/content-limit enforcement matches `enforceContentLimit` behavior used elsewhere
-- [ ] 3.4 Write failing tests confirming no mutation capability is reachable through the adapter (only read paths are wired up)
-- [ ] 3.5 Implement `src/server/trpc/routers/alexa.ts` (or equivalent read-only route group) to make 3.1–3.4 pass, delegating to existing `recipes` and `cookbooks` read logic — no duplicated query logic
-- [ ] 3.6 Wire the adapter's auth check to the OAuth token validation helper from 2.8
+- [ ] 3.3 Write failing tests confirming no mutation capability is reachable through the adapter (only read paths are wired up)
+- [ ] 3.4 Implement `src/server/trpc/routers/alexa.ts` (or equivalent read-only route group) to make 3.1–3.3 pass, delegating to existing `recipes` and `cookbooks` read logic — no duplicated query logic
+
+## 3B. Read-only Alexa adapter — authenticated paths (needs Section 2 and Section 3)
+
+- [ ] 3B.1 Write failing tests for authenticated ("my recipes"/"my cookbooks") requests: valid access token returns only the caller's own/visible content; missing, expired, or revoked token is rejected; tier/content-limit enforcement matches `enforceContentLimit` behavior used elsewhere
+- [ ] 3B.2 Implement the authenticated adapter paths in the same module from Section 3, to make 3B.1 pass
+- [ ] 3B.3 Wire the adapter's auth check to the OAuth token validation helper from 2.8
 
 ## 4. Interaction model and self-hosted skill route
 
@@ -34,15 +40,14 @@
 - [ ] 4.4 Write failing tests for persisted step-navigation progress: `NextStepIntent`/`PreviousStepIntent` read and update a persisted `{ recipeId, stepIndex }` record keyed by Alexa `userId`; a `NextStepIntent` after simulated session loss resumes from the persisted record instead of reporting no recipe in progress
 - [ ] 4.5 Implement the ASK interaction model JSON (intents, slots, sample utterances) satisfying 4.1's expected utterance coverage
 - [ ] 4.6 Add `ask-sdk-core` and `ask-sdk-express-adapter` as dependencies; implement the skill route (e.g. `src/routes/api/alexa/skill.ts`), reading the raw request body (via h3's `readRawBody` or by disabling automatic body parsing for this route) and passing it to the adapter for signature verification, wired into Nitro/h3 via `fromNodeMiddleware` (or the closest equivalent confirmed by the discovery spike), to make 4.1–4.3 pass
-- [ ] 4.7 Wire the route's intent handlers to call the read-only Alexa adapter from Section 3 in-process (no network hop)
+- [ ] 4.7 Wire the route's intent handlers to call the read-only Alexa adapter from Sections 3 and 3B in-process (no network hop)
 - [ ] 4.8 Implement the persisted step-navigation store (e.g. a new `alexa_skill_progress` Mongoose model keyed by Alexa `userId`, holding `{ recipeId, stepIndex, updatedAt }`) and wire `NextStepIntent`/`PreviousStepIntent` to read/write it, to make 4.4 pass
 
-## 5. APL visual presentation
+## 5. APL visual presentation (needs Section 3 only, can build in parallel with Section 4)
 
 - [ ] 5.1 Build the APL document for search results (title, thumbnail, meal/course badges) matching the taxonomy badge color convention
 - [ ] 5.2 Build the APL document for recipe detail (image, ingredients, numbered steps, next/previous affordance)
 - [ ] 5.3 Build the APL document for cookbook browse (chapter list)
-- [ ] 5.4 Verify voice-only fallback (no APL support) still produces a coherent spoken-only experience for each intent
 
 ## 6. Deployment and rollout plan
 
@@ -53,6 +58,6 @@
 ## 7. Verification and completion
 
 - [ ] 7.1 Run the full existing test suite (`npm run test`) to confirm no regressions to existing recipe/cookbook/auth behavior
-- [ ] 7.2 Manually exercise the private skill against a local/staging deployment for each scenario in `specs/alexa-skill-integration/spec.md`
+- [ ] 7.2 Manually exercise the private skill against a local/staging deployment for each scenario in `specs/alexa-skill-integration/spec.md`, including voice-only fallback (no APL support) producing a coherent spoken-only experience for each intent (moved here from Section 5 — needs Section 4's real intent handlers to exist)
 - [ ] 7.3 Spawn a sub-agent to run the `openspec-review-code` skill and apply all resulting fixes before committing (required pre-commit review step)
 - [ ] 7.4 Commit, push, and open a PR with auto-merge enabled; monitor CI and review threads to completion

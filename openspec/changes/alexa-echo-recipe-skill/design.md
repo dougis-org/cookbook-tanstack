@@ -111,6 +111,18 @@ The only real incremental cost of designing for multiple clients now vs. later:
 
 Conclusion: no premature generalization needed. Single client_id, single scope, as originally planned.
 
+### Issue graph restructured for parallel work, not a single serial chain
+The original GitHub issue chain (#615 → #616 → #617 → #618 → #619 → #620) was written in implementation order, not minimal-dependency order, and over-serialized work that doesn't actually depend on it. Restructured as:
+
+- #617 (adapter, public paths) has no blocker and can start immediately, in parallel with #615 and #616.
+- #616 (OAuth) is only blocked by #615 for one task (registering the client with the confirmed redirect URI); the rest can start immediately.
+- #623 (new: adapter, authenticated paths, split out of the original #617) is blocked by both #616 and #617.
+- #618 (skill route) is blocked by #617 and #623 — most of its interaction-model/test work can start once #617 lands.
+- #619 (APL documents) now depends on #617 directly instead of #618, so it can build in parallel with #618/#623. Its voice-only-fallback-verification task moved to #620, since that needs #618's real handlers to exist.
+- #620 (deployment) converges on both #618 and #619.
+
+`tasks.md` reflects the same split (Section 3 / 3B, Section 5's dropped task 5.4 moved to Section 7). Native GitHub `blockedBy`/`blocking` relationships are set on all of #615, #616, #617, #618, #619, #620, #621, #623 to match.
+
 ## Open Questions
 
 - Does `ask-sdk-express-adapter`'s signature-verification behavior work cleanly on top of Nitro/h3's request handling — specifically, can the skill route obtain the raw, unparsed request body it needs (via h3's `readRawBody` or by disabling automatic body parsing for that route) when run through `fromNodeMiddleware`? Or does the skill route need a thinner, hand-adapted verification step directly against `ask-sdk-core`'s primitives instead of the Express adapter? To be confirmed during the discovery spike (#615).
