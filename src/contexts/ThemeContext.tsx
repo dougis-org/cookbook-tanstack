@@ -44,7 +44,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Tracks the current theme outside React state so the session-reconciliation effect
   // (below) can compare against the latest value without racing the async setThemeState
   // update or re-running every time `theme` changes. Every path that changes the theme
-  // (mount, setTheme, reconciliation) must keep this ref in sync.
+  // through this provider (mount, setTheme, reconciliation) must keep this ref in sync.
+  // Code outside the provider that mutates document.documentElement.className directly
+  // (e.g. Header's theme preview) does not update this ref and is intentionally excluded.
   const currentThemeRef = useRef<ThemeId>(DEFAULT_THEME)
   // Tracks the last server theme value the reconciliation effect has processed, so a
   // session refetch that returns the same (already-applied-or-superseded) value doesn't
