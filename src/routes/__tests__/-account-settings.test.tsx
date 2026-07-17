@@ -49,6 +49,23 @@ function mockUpdateUserError(message = 'Something went wrong') {
   })
 }
 
+function renderSettingsWithTheme(theme: string | undefined, isPending = false) {
+  mockUseAuth.mockReturnValue(authState(theme, isPending))
+  return render(<SettingsPage />)
+}
+
+function clickThemeRadio(name: RegExp) {
+  act(() => {
+    screen.getByRole('radio', { name }).click()
+  })
+}
+
+async function clickSave() {
+  await act(async () => {
+    screen.getByRole('button', { name: /save/i }).click()
+  })
+}
+
 describe('/account/settings — beforeLoad', () => {
   it('redirects unauthenticated visitors to /auth/login', () => {
     const beforeLoad = Route.options.beforeLoad
@@ -79,14 +96,12 @@ describe('/account/settings — form', () => {
   })
 
   it('shows a loading state while the session is pending', () => {
-    mockUseAuth.mockReturnValue(authState(undefined, true))
-    render(<SettingsPage />)
+    renderSettingsWithTheme(undefined, true)
     expect(screen.getByTestId('settings-loading')).toBeInTheDocument()
   })
 
   it('renders the current theme as selected', () => {
-    mockUseAuth.mockReturnValue(authState('dark-greens'))
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark-greens')
     expect(screen.getByRole('radio', { name: /dark \(greens\)/i })).toHaveAttribute('aria-checked', 'true')
   })
 
@@ -102,12 +117,9 @@ describe('/account/settings — form', () => {
   })
 
   it('does not clobber an in-progress manual pick when the session value changes', () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
-    const { rerender } = render(<SettingsPage />)
+    const { rerender } = renderSettingsWithTheme('dark')
 
-    act(() => {
-      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
-    })
+    clickThemeRadio(/light \(warm\)/i)
     expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
 
     mockUseAuth.mockReturnValue(authState('dark-greens'))
@@ -117,22 +129,16 @@ describe('/account/settings — form', () => {
   })
 
   it('ignores an invalid session theme value and falls back to the default', () => {
-    mockUseAuth.mockReturnValue(authState('not-a-real-theme'))
-    render(<SettingsPage />)
+    renderSettingsWithTheme('not-a-real-theme')
     expect(screen.getByRole('radio', { name: /dark \(blues\)/i })).toHaveAttribute('aria-checked', 'true')
   })
 
   it('calls authClient.updateUser with the newly selected theme on save', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUserSuccess()
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    act(() => {
-      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
-    })
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    clickThemeRadio(/light \(warm\)/i)
+    await clickSave()
 
     expect(mockUpdateUser).toHaveBeenCalledTimes(1)
     expect(mockUpdateUser).toHaveBeenCalledWith(
@@ -142,45 +148,32 @@ describe('/account/settings — form', () => {
   })
 
   it('shows a success state after a successful save', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUserSuccess()
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    await clickSave()
 
     expect(screen.getByTestId('settings-success')).toBeInTheDocument()
   })
 
   it('resets a stale success/error message when a new theme is picked', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUserSuccess()
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    await clickSave()
     expect(screen.getByTestId('settings-success')).toBeInTheDocument()
 
-    act(() => {
-      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
-    })
+    clickThemeRadio(/light \(warm\)/i)
 
     expect(screen.queryByTestId('settings-success')).not.toBeInTheDocument()
   })
 
   it('shows an inline error and keeps the selection when the API rejects the update (no thrown exception)', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUserError('Your session has expired')
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    act(() => {
-      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
-    })
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    clickThemeRadio(/light \(warm\)/i)
+    await clickSave()
 
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
     expect(screen.getByTestId('settings-error').textContent).toBe('Your session has expired')
@@ -188,34 +181,26 @@ describe('/account/settings — form', () => {
   })
 
   it('falls back to a generic error message when the API error has none', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUser.mockImplementation((_body: unknown, opts: UpdateUserOpts) => {
       opts.onError?.({ error: {} })
       return Promise.resolve({ error: {} })
     })
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    await clickSave()
 
     expect(screen.getByTestId('settings-error').textContent).toBe('Unable to save. Try again.')
   })
 
   it('replaces the error state with success on a successful retry, without reloading', async () => {
-    mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUserError()
-    render(<SettingsPage />)
+    renderSettingsWithTheme('dark')
 
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    await clickSave()
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
 
     mockUpdateUserSuccess()
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    await clickSave()
 
     expect(screen.queryByTestId('settings-error')).not.toBeInTheDocument()
     expect(screen.getByTestId('settings-success')).toBeInTheDocument()
@@ -246,12 +231,8 @@ describe('/account/settings — form', () => {
       return Promise.resolve({ data: {} })
     })
 
-    act(() => {
-      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
-    })
-    await act(async () => {
-      screen.getByRole('button', { name: /save/i }).click()
-    })
+    clickThemeRadio(/light \(warm\)/i)
+    await clickSave()
     rerender(
       <>
         <SettingsPage />

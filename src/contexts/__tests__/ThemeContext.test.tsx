@@ -22,6 +22,10 @@ function TestConsumer() {
   )
 }
 
+function renderWithTheme(children: React.ReactNode) {
+  return render(<ThemeProvider>{children}</ThemeProvider>)
+}
+
 function LightLegacySetter() {
   const { theme, setTheme } = useTheme()
   return (
@@ -46,11 +50,7 @@ describe('ThemeContext', () => {
   describe('session reconciliation', () => {
     it('reconciles to session theme when it differs from localStorage on a new device', async () => {
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
-      render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      )
+      renderWithTheme(<TestConsumer />)
       await act(async () => {})
       expect(screen.getByTestId('theme').textContent).toBe('dark-greens')
       expect(document.documentElement.className).toBe('dark-greens')
@@ -60,11 +60,7 @@ describe('ThemeContext', () => {
     it('does not change theme when session matches localStorage', async () => {
       localStorage.setItem('cookbook-theme', 'light-cool')
       mockUseSession.mockReturnValue({ data: { user: { theme: 'light-cool' } } })
-      render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      )
+      renderWithTheme(<TestConsumer />)
       await act(async () => {})
       expect(screen.getByTestId('theme').textContent).toBe('light-cool')
       expect(document.documentElement.className).toBe('light-cool')
@@ -72,11 +68,7 @@ describe('ThemeContext', () => {
 
     it('does not overwrite a manual theme pick with a stale session value on session refetch', async () => {
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
-      const { rerender } = render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      )
+      const { rerender } = renderWithTheme(<TestConsumer />)
       await act(async () => {})
 
       act(() => {
@@ -87,11 +79,7 @@ describe('ThemeContext', () => {
       // Session revalidates with a new object reference but the same (now-stale) theme value —
       // must not clobber the user's just-made manual pick.
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark' } } })
-      rerender(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      )
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
       await act(async () => {})
 
       expect(document.documentElement.className).toBe('dark-greens')
@@ -100,11 +88,7 @@ describe('ThemeContext', () => {
 
     it('is unaffected when there is no session (anonymous)', async () => {
       mockUseSession.mockReturnValue({ data: null })
-      render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      )
+      renderWithTheme(<TestConsumer />)
       await act(async () => {})
       expect(screen.getByTestId('theme').textContent).toBe('dark')
       expect(document.documentElement.className).toBe('dark')
@@ -115,21 +99,13 @@ describe('ThemeContext', () => {
       // Reconciliation must not require awaiting a network/session promise before
       // render() returns — no synchronous wait is introduced by this effect.
       expect(() =>
-        render(
-          <ThemeProvider>
-            <TestConsumer />
-          </ThemeProvider>,
-        ),
+        renderWithTheme(<TestConsumer />),
       ).not.toThrow()
     })
   })
 
   it('returns dark as default theme when localStorage is empty', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
 
@@ -162,11 +138,7 @@ describe('ThemeContext', () => {
 
   it('restores stored theme from localStorage on mount', async () => {
     localStorage.setItem('cookbook-theme', 'light-cool')
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     // useEffect fires after render; wait for state update
     await act(async () => {})
     expect(screen.getByTestId('theme').textContent).toBe('light-cool')
@@ -174,11 +146,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("dark-greens") sets className and localStorage', async () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     await act(async () => {})
     act(() => {
       screen.getByText('Dark (greens)').click()
@@ -188,11 +156,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light-cool") writes to localStorage', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     act(() => {
       screen.getByText('Light (cool)').click()
     })
@@ -200,11 +164,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light-cool") sets document.documentElement.className', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<TestConsumer />)
     act(() => {
       screen.getByText('Light (cool)').click()
     })
@@ -212,11 +172,7 @@ describe('ThemeContext', () => {
   })
 
   it('setTheme("light") is rejected — no class or localStorage change occurs', async () => {
-    render(
-      <ThemeProvider>
-        <LightLegacySetter />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<LightLegacySetter />)
     // Wait for mount effect to set className to 'dark'
     await act(async () => {})
     act(() => {
@@ -233,11 +189,7 @@ describe('ThemeContext', () => {
       throw new Error('storage unavailable')
     })
     expect(() =>
-      render(
-        <ThemeProvider>
-          <TestConsumer />
-        </ThemeProvider>,
-      ),
+      renderWithTheme(<TestConsumer />),
     ).not.toThrow()
     expect(screen.getByTestId('theme').textContent).toBe('dark')
   })
@@ -252,11 +204,7 @@ describe('ThemeContext', () => {
         </div>
       )
     }
-    render(
-      <ThemeProvider>
-        <BadSetter />
-      </ThemeProvider>,
-    )
+    renderWithTheme(<BadSetter />)
     act(() => {
       screen.getByText('bad').click()
     })
