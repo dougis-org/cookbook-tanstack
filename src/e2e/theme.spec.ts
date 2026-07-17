@@ -490,10 +490,11 @@ test.describe('Theme system', () => {
   test('logged-in user saves theme in /account/settings and it persists across reload', async ({
     page,
   }) => {
+    // beforeEach's addInitScript already cleared localStorage before registerAndLogin's
+    // initial navigation. Registering another one here would also re-fire on the
+    // page.reload() below, wiping the just-saved value before this test can verify it
+    // persisted — defeating the point of this test.
     await registerAndLogin(page)
-    await page.addInitScript(() => {
-      localStorage.removeItem('cookbook-theme')
-    })
 
     await gotoAndWaitForHydration(page, '/account/settings')
 

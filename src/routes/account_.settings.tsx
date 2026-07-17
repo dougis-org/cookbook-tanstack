@@ -54,17 +54,27 @@ export function SettingsPage() {
   async function handleSave() {
     const themeToSave = isValidThemeId(selectedTheme) ? selectedTheme : DEFAULT_THEME
     setStatus("saving")
-    await authClient.updateUser(
-      { theme: themeToSave },
-      {
-        onSuccess: () => setStatus("success"),
-        onError: (ctx: AuthErrorContext) => {
-          console.error("Failed to save theme preference:", ctx.error)
-          setErrorMessage(ctx.error.message || DEFAULT_ERROR_MESSAGE)
-          setStatus("error")
+    try {
+      await authClient.updateUser(
+        { theme: themeToSave },
+        {
+          onSuccess: () => setStatus("success"),
+          onError: (ctx: AuthErrorContext) => {
+            console.error("Failed to save theme preference:", ctx.error)
+            setErrorMessage(ctx.error.message || DEFAULT_ERROR_MESSAGE)
+            setStatus("error")
+          },
         },
-      },
-    )
+      )
+    } catch (error) {
+      // Defense-in-depth: onError above handles the documented Better-Auth
+      // resolve-with-error contract. This catches the unexpected case where the
+      // call itself rejects (e.g. a network-level exception), so the UI never
+      // gets stuck on "saving" with no feedback.
+      console.error("Unexpected error saving theme preference:", error)
+      setErrorMessage(DEFAULT_ERROR_MESSAGE)
+      setStatus("error")
+    }
   }
 
   return (

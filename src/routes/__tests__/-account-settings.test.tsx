@@ -180,6 +180,16 @@ describe('/account/settings — form', () => {
     expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
   })
 
+  it('shows an inline error when authClient.updateUser rejects outright (not just via onError)', async () => {
+    mockUpdateUser.mockRejectedValue(new Error('network exception'))
+    renderSettingsWithTheme('dark')
+
+    await clickSave()
+
+    expect(screen.getByTestId('settings-error')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-error').textContent).toBe('Unable to save. Try again.')
+  })
+
   it('falls back to a generic error message when the API error has none', async () => {
     mockUpdateUser.mockImplementation((_body: unknown, opts: UpdateUserOpts) => {
       opts.onError?.({ error: {} })
