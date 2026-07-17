@@ -50,6 +50,10 @@ describe('ThemeContext', () => {
 
   describe('session reconciliation', () => {
     it('reconciles to session theme when it differs from localStorage on a new device', async () => {
+      // Note: RTL's render() flushes effects synchronously in this test environment, so
+      // the pre-hydration/first-paint window (asserted via the inline-script mutation
+      // order) is only observable in the real browser — see 'no flash' cases in
+      // src/e2e/theme.spec.ts. This test verifies the post-reconciliation end state.
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
       renderWithTheme(<TestConsumer />)
       await act(async () => {})
@@ -124,11 +128,15 @@ describe('ThemeContext', () => {
 
     it('does not block first paint on session resolution', () => {
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
-      // Reconciliation must not require awaiting a network/session promise before
-      // render() returns — no synchronous wait is introduced by this effect.
-      expect(() =>
-        renderWithTheme(<TestConsumer />),
-      ).not.toThrow()
+      // render() must complete synchronously — reconciliation must not require awaiting
+      // a network/session promise before the component finishes its first render pass.
+      // (The actual flash-free first-paint guarantee, driven by the pre-hydration
+      // inline script and localStorage, is verified against a real browser in
+      // src/e2e/theme.spec.ts's 'no flash' tests — this test harness flushes effects
+      // synchronously, so that timing window isn't independently observable here.)
+      const start = performance.now()
+      expect(() => renderWithTheme(<TestConsumer />)).not.toThrow()
+      expect(performance.now() - start).toBeLessThan(1000)
     })
   })
 
