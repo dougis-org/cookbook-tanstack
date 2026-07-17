@@ -1,5 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { getRouteApi } from '@tanstack/react-router'
 import { useSession } from '@/lib/auth-client'
+
+const rootRoute = getRouteApi('__root__')
 
 export const THEMES = [
   { id: 'dark', label: 'Dark (blues)' },
@@ -40,7 +43,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // no mismatch. The effects below correct both the DOM class and React state
   // from localStorage after mounting on the client.
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME)
-  const { data: session } = useSession()
+  // Mirrors useAuth's resolution: while the client session is still pending, fall back to
+  // the root route's SSR session so reconciliation doesn't briefly treat a logged-in user
+  // as logged out (and later clobber a manual pick once the client session resolves).
+  const { session: serverSession } = rootRoute.useRouteContext()
+  const { data: clientSession, isPending } = useSession()
+  const session = isPending ? clientSession ?? serverSession ?? null : clientSession ?? null
   // Tracks the current theme outside React state so the session-reconciliation effect
   // (below) can compare against the latest value without racing the async setThemeState
   // update or re-running every time `theme` changes. Every path that changes the theme

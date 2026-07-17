@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 
-const mockUseSession = vi.fn<() => { data: { user: { theme: string } } | null }>(() => ({ data: null }))
+const mockUseSession = vi.fn<() => { data: { user: { theme: string } } | null; isPending?: boolean }>(() => ({ data: null }))
+const mockUseRouteContext = vi.hoisted(() => vi.fn<() => { session: { user: { theme: string } } | null }>(() => ({ session: null })))
+
+vi.mock('@tanstack/react-router', async () => {
+  const { createRouterMockForHooks } = await import('@/test-helpers/mocks')
+  return createRouterMockForHooks(() => mockUseRouteContext())
+})
 
 vi.mock('@/lib/auth-client', () => ({
   useSession: () => mockUseSession(),
@@ -42,6 +48,7 @@ describe('ThemeContext', () => {
     localStorage.clear()
     document.documentElement.className = ''
     mockUseSession.mockReturnValue({ data: null })
+    mockUseRouteContext.mockReturnValue({ session: null })
   })
 
   afterEach(() => {
@@ -124,6 +131,24 @@ describe('ThemeContext', () => {
       await act(async () => {})
 
       expect(document.documentElement.className).toBe('dark-greens')
+    })
+
+    it('falls back to the root-route server session while the client session is pending', async () => {
+      mockUseRouteContext.mockReturnValue({ session: { user: { theme: 'light-warm' } } })
+      mockUseSession.mockReturnValue({ data: null, isPending: true })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('light-warm')
+      expect(document.documentElement.className).toBe('light-warm')
+    })
+
+    it('prefers the resolved client null session over the server session fallback', async () => {
+      mockUseRouteContext.mockReturnValue({ session: { user: { theme: 'light-warm' } } })
+      mockUseSession.mockReturnValue({ data: null, isPending: false })
+      renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(screen.getByTestId('theme').textContent).toBe('dark')
+      expect(document.documentElement.className).toBe('dark')
     })
 
     it('does not require awaiting the session promise before rendering', () => {
