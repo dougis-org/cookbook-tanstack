@@ -96,8 +96,22 @@ This change ships no code, so there is no runtime migration. The plan for the *f
 
 Rollback at every stage is simply "don't deploy/enable the skill" — none of the new surfaces are on the critical path for existing web/app functionality.
 
+## Resolved Decisions
+
+### Single OAuth client now, not designed for multiple third parties upfront
+Resolved during discovery: keep a single registered OAuth client (the Alexa skill) rather than generalizing the account-linking design for future third-party integrations (Google Assistant, etc.) up front.
+
+Rationale: `@better-auth/oauth-provider` is already a spec-compliant OAuth 2.1 authorization server, not something built for exactly one client — most of what "multi-client support" would require is already free:
+- Client registration (`createOAuthClient({redirect_uris})`), redirect URI validation, PKCE, token issuance/replay protection, and consent-page rendering (Decision 3 already reads `client_id`/`scope` from params rather than hardcoding Alexa) are all plugin-owned and client-agnostic.
+
+The only real incremental cost of designing for multiple clients now vs. later:
+- **Scope taxonomy** — `read:own-content` is generic enough that it wouldn't need renaming for a second integration, so no trap here even staying single-client.
+- **Client display metadata** (name/logo on consent screen) — small cost, likely already covered by the plugin's client metadata support.
+- **Test matrix** — the one place real cost appears: multi-client needs "client isolation" tests (client A's token can't be used against client B's registration). Deferred until a second consumer is real.
+
+Conclusion: no premature generalization needed. Single client_id, single scope, as originally planned.
+
 ## Open Questions
 
 - Does `ask-sdk-express-adapter`'s signature-verification behavior work cleanly on top of Nitro/h3's request handling — specifically, can the skill route obtain the raw, unparsed request body it needs (via h3's `readRawBody` or by disabling automatic body parsing for that route) when run through `fromNodeMiddleware`? Or does the skill route need a thinner, hand-adapted verification step directly against `ask-sdk-core`'s primitives instead of the Express adapter? To be confirmed during the discovery spike (#615).
-- Do we want a single shared OAuth `client_id` for the skill, or design for future third-party integrations (Google Assistant, etc.) reusing the same `@better-auth/oauth-provider` instance? Leaning toward single-client now, generalize only when a second consumer is real.
-- What's the minimum viable privacy policy / data-handling disclosure Amazon's certification will require, given the skill touches user-owned recipe data?
+- What's the minimum viable privacy policy / data-handling disclosure Amazon's certification will require, given the skill touches user-owned recipe data? **Discovery finding: the app has no privacy policy at all today** — this isn't just a gap-analysis task, it's a net-new prerequisite. Tracked in [#621](https://github.com/dougis-org/cookbook-tanstack/issues/621), which blocks both #615 (task 1.3) and #616 (consent page needs a policy link).
