@@ -87,6 +87,19 @@ export function SettingsPage() {
             role="radiogroup"
             aria-label="Theme"
             className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowRight" && e.key !== "ArrowDown" && e.key !== "ArrowLeft" && e.key !== "ArrowUp") {
+                return
+              }
+              e.preventDefault()
+              const currentIndex = THEMES.findIndex((t) => t.id === selectedTheme)
+              const delta = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1
+              const nextIndex = (currentIndex + delta + THEMES.length) % THEMES.length
+              const nextTheme = THEMES[nextIndex]
+              selectTheme(nextTheme.id)
+              const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
+              buttons[nextIndex]?.focus()
+            }}
           >
             {THEMES.map((t) => (
               <button
@@ -94,8 +107,9 @@ export function SettingsPage() {
                 type="button"
                 role="radio"
                 aria-checked={selectedTheme === t.id}
+                tabIndex={selectedTheme === t.id ? 0 : -1}
                 onClick={() => selectTheme(t.id)}
-                className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
+                className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)] ${
                   selectedTheme === t.id
                     ? "border-[var(--theme-accent)] bg-[var(--theme-surface-hover)] text-[var(--theme-fg)]"
                     : "border-[var(--theme-border)] text-[var(--theme-fg-muted)]"

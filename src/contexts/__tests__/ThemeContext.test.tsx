@@ -94,6 +94,33 @@ describe('ThemeContext', () => {
       expect(document.documentElement.className).toBe('dark')
     })
 
+    it('reconciles again after logout and re-login with the same server theme', async () => {
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      const { rerender } = renderWithTheme(<TestConsumer />)
+      await act(async () => {})
+      expect(document.documentElement.className).toBe('dark-greens')
+
+      // Log out — reconciliation must not misfire, and must forget the last-seen value.
+      mockUseSession.mockReturnValue({ data: null })
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
+      await act(async () => {})
+
+      // A different device set the local theme to 'dark' while logged out.
+      act(() => {
+        screen.getByText('Dark (blues)').click()
+      })
+      expect(document.documentElement.className).toBe('dark')
+
+      // Log back in with the SAME server theme as before ('dark-greens'). Without the
+      // logout reset, lastSeenServerThemeRef would still hold 'dark-greens' and this
+      // reconciliation would be incorrectly skipped, leaving the stale 'dark' applied.
+      mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
+      rerender(<ThemeProvider><TestConsumer /></ThemeProvider>)
+      await act(async () => {})
+
+      expect(document.documentElement.className).toBe('dark-greens')
+    })
+
     it('does not block first paint on session resolution', () => {
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
       // Reconciliation must not require awaiting a network/session promise before

@@ -24,7 +24,7 @@ For each task in `tasks.md`:
 - [ ] Config test: `src/lib/auth.ts`'s `user.additionalFields.theme` has `type: "string"`, `defaultValue: "dark"`, `required: false`.
 - [ ] Integration test: submitting `theme` through `authClient.updateUser` round-trips and is readable back from `session.user.theme` (maps to `specs/user-settings/spec.md` → "Selecting a new theme and saving persists it via updateUser").
 
-### T2/T3 — Settings route (`src/routes/account.settings.tsx`)
+### T2/T3 — Settings route (`src/routes/account_.settings.tsx`)
 
 - [ ] Route test: logged-in user with `session.user.theme = 'dark-greens'` navigating to `/account/settings` sees `'dark-greens'` pre-selected in the form (maps to `specs/user-settings/spec.md` → "Logged-in user views their current theme preference").
 - [ ] Route test: logged-out request to `/account/settings` is redirected by `requireAuth()`, mirroring existing `/account` guard test coverage (maps to `specs/user-settings/spec.md` → "Logged-out user is redirected away from settings").

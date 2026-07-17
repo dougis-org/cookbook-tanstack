@@ -79,6 +79,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // pre-hydration, flash-avoidance first paint. A mismatch here is expected to cause a
     // brief visible correction on a new/second device (accepted trade-off, see design.md).
     const serverTheme = session?.user?.theme
+    if (!session) {
+      // Logged out: clear the last-seen server value so a subsequent login (even with
+      // the same theme as a prior session) is treated as fresh and reconciles correctly,
+      // rather than being skipped as an already-processed duplicate.
+      lastSeenServerThemeRef.current = undefined
+      return
+    }
     if (!isValidThemeId(serverTheme)) return
     if (serverTheme === lastSeenServerThemeRef.current) return
     lastSeenServerThemeRef.current = serverTheme

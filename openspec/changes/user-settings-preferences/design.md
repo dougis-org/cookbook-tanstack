@@ -5,13 +5,13 @@
   - `src/lib/auth-client.ts` — Better-Auth client; already wires `inferAdditionalFields<Auth>()`, which types `authClient.updateUser` and `session.user` against whatever is in `Auth`'s `user.additionalFields` automatically. Adding `theme` server-side requires no client-plugin change.
   - `src/hooks/useAuth.ts` — thin wrapper over `AuthContext` exposing `{ session, isPending, isLoggedIn, userId }`; `session` already carries `user.tier`/`user.isAdmin` today with no extra `me` query, confirming the same will hold for `user.theme`.
   - `src/contexts/ThemeContext.tsx` — client-only theme state today: `localStorage` + inline pre-hydration `<script>` in `src/routes/__root.tsx` sets `document.documentElement.className` before first paint.
-  - `src/routes/account.tsx` — existing read-only tier/usage route; file-based routing convention for a nested route is flat dot-notation (`account.settings.tsx`, matching existing patterns like `cookbooks.$cookbookId_.print.tsx`).
+  - `src/routes/account.tsx` — existing read-only tier/usage route; file-based routing convention for a nested route is flat dot-notation (`account_.settings.tsx`, matching existing patterns like `cookbooks.$cookbookId_.print.tsx`).
 - Dependencies: Better-Auth `^1.6.2` (confirmed via `package.json`). Context7 docs for this version confirm:
   - `authClient.updateUser(body)` posts to a generic `/update-user` endpoint (`updateUserBodySchema = z.record(z.string(), z.any())`), typed as `Partial<AdditionalUserFieldsInput<O>>` — **not** hardcoded to `name`/`image`. Any `user.additionalFields` entry, including `theme`, is writable through it.
   - `updateUser` triggers Better-Auth's internal session-refresh signal by default (the `disableSignal: true` opt-out only exists because the default is signal-on), so `useSession()`/`useAuth()` reflects the new value immediately after a successful call — no reliance on the 5-minute `cookieCache.maxAge` expiring.
 - Interfaces/contracts touched:
   - `src/lib/auth.ts` (`user.additionalFields`) — add `theme`.
-  - New route `src/routes/account.settings.tsx`.
+  - New route `src/routes/account_.settings.tsx`.
   - `src/contexts/ThemeContext.tsx` — add post-hydration reconciliation against `session.user.theme`.
   - No tRPC router changes — this change intentionally does not touch `usersRouter` (see #613 for that consolidation).
 
@@ -60,7 +60,7 @@
 - Rationale: Matches the proposal's accepted scope — this change proves the storage/write pattern, not a flash-free multi-device experience. SSR-aware sync touches `__root.tsx`'s inline script and the route loader chain, materially larger surface area, and is explicitly deferred.
 - Trade-offs: A user who last set their theme on device A, then opens the app on device B for the first time, will see device B's default/localStorage theme flash briefly before correcting to the server value post-hydration. Documented and accepted in the proposal.
 
-### Decision 4: New route `src/routes/account.settings.tsx`, linked from `/account`
+### Decision 4: New route `src/routes/account_.settings.tsx`, linked from `/account`
 
 - Chosen: New file-based route at `/account/settings`, guarded by `beforeLoad: requireAuth()` (same as `/account`). Add a "Settings" link from `AccountPage` into the new route so it's discoverable via normal navigation, not only direct URL entry.
 - Alternatives considered: Extending `account.tsx` in place with an editable section.
@@ -80,7 +80,7 @@
   - Validation approach: Component test on `ThemeProvider` mounting with a mocked session whose `user.theme` differs from `localStorage`, asserting the DOM class and `localStorage` are updated post-mount to match the session value.
 - Proposal element: New `/account/settings` route, `account.tsx` unchanged (aside from a nav link).
   - Design decision: Decision 4.
-  - Validation approach: Route/component test for `account.settings.tsx` (loading state, save, error handling, per proposal's testing scope) and an assertion that `AccountPage` renders a link to it.
+  - Validation approach: Route/component test for `account_.settings.tsx` (loading state, save, error handling, per proposal's testing scope) and an assertion that `AccountPage` renders a link to it.
 - Proposal element: `usersRouter.updateProfile` untouched; consolidation deferred to #613.
   - Design decision: Implicit in Decision 1 (no changes to `src/server/trpc/routers/users.ts` in this change).
   - Validation approach: Existing `users.test.ts` suite continues to pass unmodified — regression signal that this change didn't touch that file.
@@ -125,7 +125,7 @@
 ## Rollback / Mitigation
 
 - Rollback trigger: Settings form causes session-refresh regressions elsewhere (e.g. unexpected re-renders on unrelated pages), or `theme` field corruption is observed in the `user` collection.
-- Rollback steps: Revert the `account.settings.tsx` route and its nav link; revert `theme` addition to `user.additionalFields` in `src/lib/auth.ts`; revert `ThemeProvider` reconciliation effect. No other routers/collections touched, so rollback is a straightforward revert of this change's commits.
+- Rollback steps: Revert the `account_.settings.tsx` route and its nav link; revert `theme` addition to `user.additionalFields` in `src/lib/auth.ts`; revert `ThemeProvider` reconciliation effect. No other routers/collections touched, so rollback is a straightforward revert of this change's commits.
 - Data migration considerations: `theme` is `required: false` with a `defaultValue`, so existing user documents need no migration — the field is simply absent until a user saves a preference, and Better-Auth's own default-value handling covers reads. No destructive migration in either direction.
 - Verification after rollback: Confirm `/account/settings` 404s (route removed), `AccountPage` renders without the settings link, and no lingering `theme` field is written by any remaining code path.
 
