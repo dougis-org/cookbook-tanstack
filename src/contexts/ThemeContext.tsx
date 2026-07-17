@@ -19,7 +19,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function isValidThemeId(id: unknown): id is ThemeId {
+export function isValidThemeId(id: unknown): id is ThemeId {
   return typeof id === 'string' && THEMES.some((t) => t.id === id)
 }
 

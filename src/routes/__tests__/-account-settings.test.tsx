@@ -73,6 +73,38 @@ describe('/account/settings — form', () => {
     expect(screen.getByRole('radio', { name: /dark \(greens\)/i })).toHaveAttribute('aria-checked', 'true')
   })
 
+  it('syncs the selection once a late-arriving session resolves', () => {
+    mockUseAuth.mockReturnValue(authState(undefined, true))
+    const { rerender } = render(<SettingsPage />)
+    expect(screen.getByTestId('settings-loading')).toBeInTheDocument()
+
+    mockUseAuth.mockReturnValue(authState('light-warm', false))
+    rerender(<SettingsPage />)
+
+    expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('does not clobber an in-progress manual pick when the session value changes', () => {
+    mockUseAuth.mockReturnValue(authState('dark'))
+    const { rerender } = render(<SettingsPage />)
+
+    act(() => {
+      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
+    })
+    expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
+
+    mockUseAuth.mockReturnValue(authState('dark-greens'))
+    rerender(<SettingsPage />)
+
+    expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('ignores an invalid session theme value and falls back to the default', () => {
+    mockUseAuth.mockReturnValue(authState('not-a-real-theme'))
+    render(<SettingsPage />)
+    expect(screen.getByRole('radio', { name: /dark \(blues\)/i })).toHaveAttribute('aria-checked', 'true')
+  })
+
   it('calls authClient.updateUser with the newly selected theme on save', async () => {
     mockUseAuth.mockReturnValue(authState('dark'))
     mockUpdateUser.mockResolvedValue({ data: {} })

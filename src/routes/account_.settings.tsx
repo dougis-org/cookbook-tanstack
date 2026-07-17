@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Settings } from "lucide-react"
 import { requireAuth } from "@/lib/auth-guard"
 import PageLayout from "@/components/layout/PageLayout"
 import { useAuth } from "@/hooks/useAuth"
 import { authClient } from "@/lib/auth-client"
-import { DEFAULT_THEME, THEMES } from "@/contexts/ThemeContext"
+import { DEFAULT_THEME, isValidThemeId, THEMES } from "@/contexts/ThemeContext"
 
 export const Route = createFileRoute("/account_/settings")({
   beforeLoad: requireAuth(),
@@ -16,9 +16,22 @@ type SaveStatus = "idle" | "saving" | "success" | "error"
 
 export function SettingsPage() {
   const { session, isPending } = useAuth()
-  const sessionTheme = (session?.user?.theme as string | undefined) ?? DEFAULT_THEME
-  const [selectedTheme, setSelectedTheme] = useState(sessionTheme)
+  const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME)
+  const [hasEdited, setHasEdited] = useState(false)
   const [status, setStatus] = useState<SaveStatus>("idle")
+
+  useEffect(() => {
+    if (hasEdited) return
+    const sessionTheme = session?.user?.theme
+    if (isValidThemeId(sessionTheme)) {
+      setSelectedTheme(sessionTheme)
+    }
+  }, [session, hasEdited])
+
+  function selectTheme(id: (typeof THEMES)[number]["id"]) {
+    setHasEdited(true)
+    setSelectedTheme(id)
+  }
 
   if (isPending) {
     return (
@@ -34,9 +47,10 @@ export function SettingsPage() {
   }
 
   async function handleSave() {
+    const themeToSave = isValidThemeId(selectedTheme) ? selectedTheme : DEFAULT_THEME
     setStatus("saving")
     try {
-      await authClient.updateUser({ theme: selectedTheme })
+      await authClient.updateUser({ theme: themeToSave })
       setStatus("success")
     } catch {
       setStatus("error")
@@ -70,7 +84,7 @@ export function SettingsPage() {
                 type="button"
                 role="radio"
                 aria-checked={selectedTheme === t.id}
-                onClick={() => setSelectedTheme(t.id)}
+                onClick={() => selectTheme(t.id)}
                 className={`rounded-lg border px-4 py-3 text-left text-sm font-medium transition-colors ${
                   selectedTheme === t.id
                     ? "border-[var(--theme-accent)] bg-[var(--theme-surface-hover)] text-[var(--theme-fg)]"
@@ -97,7 +111,7 @@ export function SettingsPage() {
               </p>
             )}
             {status === "error" && (
-              <p data-testid="settings-error" role="alert" className="text-sm text-red-500">
+              <p data-testid="settings-error" role="alert" className="text-sm text-[var(--theme-error)]">
                 Unable to save. Try again.
               </p>
             )}
