@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { useSession } from '@/lib/auth-client'
 
 export const THEMES = [
@@ -52,7 +52,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // server theme value triggers reconciliation.
   const lastSeenServerThemeRef = useRef<ThemeId | undefined>(undefined)
 
-  function applyTheme(id: ThemeId) {
+  const applyTheme = useCallback((id: ThemeId) => {
     currentThemeRef.current = id
     document.documentElement.className = id
     try {
@@ -61,7 +61,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       console.error('localStorage unavailable, theme will not persist locally:', error)
     }
     setThemeState(id)
-  }
+  }, [])
 
   useEffect(() => {
     // The inline <script> in __root.tsx sets the DOM class before first paint (no flash).
@@ -92,7 +92,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (serverTheme === currentThemeRef.current) return
 
     applyTheme(serverTheme)
-  }, [session])
+  }, [session, applyTheme])
 
   function setTheme(id: string) {
     if (!isValidThemeId(id)) return

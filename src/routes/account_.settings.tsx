@@ -79,7 +79,7 @@ export function SettingsPage() {
           <div>
             <h2 className="text-xl font-bold text-[var(--theme-fg)] mb-1">Theme</h2>
             <p className="text-sm text-[var(--theme-fg-muted)]">
-              Choose how My CookBooks looks on this device.
+              Choose how My CookBooks looks. Your selection is saved to your account.
             </p>
           </div>
 
