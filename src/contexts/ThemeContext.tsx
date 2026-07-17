@@ -29,8 +29,8 @@ function readStoredTheme(): ThemeId {
     if (isValidThemeId(stored)) {
       return stored
     }
-  } catch {
-    // localStorage unavailable — fall through to default
+  } catch (error) {
+    console.error('localStorage unavailable, falling back to default theme:', error)
   }
   return DEFAULT_THEME
 }
@@ -57,8 +57,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.className = id
     try {
       localStorage.setItem('cookbook-theme', id)
-    } catch {
-      // localStorage unavailable — ignore
+    } catch (error) {
+      console.error('localStorage unavailable, theme will not persist locally:', error)
     }
     setThemeState(id)
   }

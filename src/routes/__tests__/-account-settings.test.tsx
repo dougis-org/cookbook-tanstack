@@ -22,6 +22,7 @@ vi.mock('@/lib/auth-client', () => ({
   },
 }))
 
+import { useAuth } from '@/hooks/useAuth'
 import { SettingsPage, Route } from '@/routes/account_.settings'
 
 function authState(theme: string | undefined, isPending = false) {
@@ -30,6 +31,22 @@ function authState(theme: string | undefined, isPending = false) {
     isPending,
     isLoggedIn: true,
   }
+}
+
+type UpdateUserOpts = { onSuccess?: () => void; onError?: (ctx: { error: { message?: string } }) => void }
+
+function mockUpdateUserSuccess() {
+  mockUpdateUser.mockImplementation((_body: unknown, opts: UpdateUserOpts) => {
+    opts.onSuccess?.()
+    return Promise.resolve({ data: {} })
+  })
+}
+
+function mockUpdateUserError(message = 'Something went wrong') {
+  mockUpdateUser.mockImplementation((_body: unknown, opts: UpdateUserOpts) => {
+    opts.onError?.({ error: { message } })
+    return Promise.resolve({ error: { message } })
+  })
 }
 
 describe('/account/settings — beforeLoad', () => {
@@ -107,7 +124,7 @@ describe('/account/settings — form', () => {
 
   it('calls authClient.updateUser with the newly selected theme on save', async () => {
     mockUseAuth.mockReturnValue(authState('dark'))
-    mockUpdateUser.mockResolvedValue({ data: {} })
+    mockUpdateUserSuccess()
     render(<SettingsPage />)
 
     act(() => {
@@ -118,12 +135,15 @@ describe('/account/settings — form', () => {
     })
 
     expect(mockUpdateUser).toHaveBeenCalledTimes(1)
-    expect(mockUpdateUser).toHaveBeenCalledWith({ theme: 'light-warm' })
+    expect(mockUpdateUser).toHaveBeenCalledWith(
+      { theme: 'light-warm' },
+      expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
+    )
   })
 
   it('shows a success state after a successful save', async () => {
     mockUseAuth.mockReturnValue(authState('dark'))
-    mockUpdateUser.mockResolvedValue({ data: {} })
+    mockUpdateUserSuccess()
     render(<SettingsPage />)
 
     await act(async () => {
@@ -133,9 +153,26 @@ describe('/account/settings — form', () => {
     expect(screen.getByTestId('settings-success')).toBeInTheDocument()
   })
 
-  it('shows an inline error and keeps the selection when save fails', async () => {
+  it('resets a stale success/error message when a new theme is picked', async () => {
     mockUseAuth.mockReturnValue(authState('dark'))
-    mockUpdateUser.mockRejectedValue(new Error('network error'))
+    mockUpdateUserSuccess()
+    render(<SettingsPage />)
+
+    await act(async () => {
+      screen.getByRole('button', { name: /save/i }).click()
+    })
+    expect(screen.getByTestId('settings-success')).toBeInTheDocument()
+
+    act(() => {
+      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
+    })
+
+    expect(screen.queryByTestId('settings-success')).not.toBeInTheDocument()
+  })
+
+  it('shows an inline error and keeps the selection when the API rejects the update (no thrown exception)', async () => {
+    mockUseAuth.mockReturnValue(authState('dark'))
+    mockUpdateUserError('Your session has expired')
     render(<SettingsPage />)
 
     act(() => {
@@ -146,13 +183,28 @@ describe('/account/settings — form', () => {
     })
 
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-error').textContent).toBe('Your session has expired')
     expect(screen.getByRole('radio', { name: /light \(warm\)/i })).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('falls back to a generic error message when the API error has none', async () => {
+    mockUseAuth.mockReturnValue(authState('dark'))
+    mockUpdateUser.mockImplementation((_body: unknown, opts: UpdateUserOpts) => {
+      opts.onError?.({ error: {} })
+      return Promise.resolve({ error: {} })
+    })
+    render(<SettingsPage />)
+
+    await act(async () => {
+      screen.getByRole('button', { name: /save/i }).click()
+    })
+
+    expect(screen.getByTestId('settings-error').textContent).toBe('Unable to save. Try again.')
   })
 
   it('replaces the error state with success on a successful retry, without reloading', async () => {
     mockUseAuth.mockReturnValue(authState('dark'))
-    mockUpdateUser.mockRejectedValueOnce(new Error('network error'))
-    mockUpdateUser.mockResolvedValueOnce({ data: {} })
+    mockUpdateUserError()
     render(<SettingsPage />)
 
     await act(async () => {
@@ -160,11 +212,53 @@ describe('/account/settings — form', () => {
     })
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
 
+    mockUpdateUserSuccess()
     await act(async () => {
       screen.getByRole('button', { name: /save/i }).click()
     })
 
     expect(screen.queryByTestId('settings-error')).not.toBeInTheDocument()
     expect(screen.getByTestId('settings-success')).toBeInTheDocument()
+  })
+
+  it('reflects the new theme in a sibling useAuth()/useSession() consumer right after save, without a manual refetch', async () => {
+    mockUseAuth.mockReturnValue(authState('dark'))
+
+    function SiblingThemeConsumer() {
+      const { session } = useAuth()
+      return <span data-testid="sibling-theme">{session?.user?.theme}</span>
+    }
+
+    const { rerender } = render(
+      <>
+        <SettingsPage />
+        <SiblingThemeConsumer />
+      </>,
+    )
+    expect(screen.getByTestId('sibling-theme').textContent).toBe('dark')
+
+    // Simulates Better-Auth's default signal-based session refresh: a successful
+    // updateUser call updates what useAuth()/useSession() returns immediately,
+    // without the caller needing to invoke refetch() itself.
+    mockUpdateUser.mockImplementation((body: { theme: string }, opts: UpdateUserOpts) => {
+      mockUseAuth.mockReturnValue(authState(body.theme))
+      opts.onSuccess?.()
+      return Promise.resolve({ data: {} })
+    })
+
+    act(() => {
+      screen.getByRole('radio', { name: /light \(warm\)/i }).click()
+    })
+    await act(async () => {
+      screen.getByRole('button', { name: /save/i }).click()
+    })
+    rerender(
+      <>
+        <SettingsPage />
+        <SiblingThemeConsumer />
+      </>,
+    )
+
+    expect(screen.getByTestId('sibling-theme').textContent).toBe('light-warm')
   })
 })

@@ -6,6 +6,9 @@ import PageLayout from "@/components/layout/PageLayout"
 import { useAuth } from "@/hooks/useAuth"
 import { authClient } from "@/lib/auth-client"
 import { DEFAULT_THEME, isValidThemeId, THEMES } from "@/contexts/ThemeContext"
+import type { AuthErrorContext } from "@/components/auth/types"
+
+const DEFAULT_ERROR_MESSAGE = "Unable to save. Try again."
 
 export const Route = createFileRoute("/account_/settings")({
   beforeLoad: requireAuth(),
@@ -19,6 +22,7 @@ export function SettingsPage() {
   const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME)
   const [hasEdited, setHasEdited] = useState(false)
   const [status, setStatus] = useState<SaveStatus>("idle")
+  const [errorMessage, setErrorMessage] = useState(DEFAULT_ERROR_MESSAGE)
 
   useEffect(() => {
     if (hasEdited) return
@@ -31,6 +35,7 @@ export function SettingsPage() {
   function selectTheme(id: (typeof THEMES)[number]["id"]) {
     setHasEdited(true)
     setSelectedTheme(id)
+    setStatus("idle")
   }
 
   if (isPending) {
@@ -49,12 +54,17 @@ export function SettingsPage() {
   async function handleSave() {
     const themeToSave = isValidThemeId(selectedTheme) ? selectedTheme : DEFAULT_THEME
     setStatus("saving")
-    try {
-      await authClient.updateUser({ theme: themeToSave })
-      setStatus("success")
-    } catch {
-      setStatus("error")
-    }
+    await authClient.updateUser(
+      { theme: themeToSave },
+      {
+        onSuccess: () => setStatus("success"),
+        onError: (ctx: AuthErrorContext) => {
+          console.error("Failed to save theme preference:", ctx.error)
+          setErrorMessage(ctx.error.message || DEFAULT_ERROR_MESSAGE)
+          setStatus("error")
+        },
+      },
+    )
   }
 
   return (
@@ -112,7 +122,7 @@ export function SettingsPage() {
             )}
             {status === "error" && (
               <p data-testid="settings-error" role="alert" className="text-sm text-[var(--theme-error)]">
-                Unable to save. Try again.
+                {errorMessage}
               </p>
             )}
           </div>
