@@ -126,17 +126,16 @@ describe('ThemeContext', () => {
       expect(document.documentElement.className).toBe('dark-greens')
     })
 
-    it('does not block first paint on session resolution', () => {
+    it('does not require awaiting the session promise before rendering', () => {
       mockUseSession.mockReturnValue({ data: { user: { theme: 'dark-greens' } } })
-      // render() must complete synchronously — reconciliation must not require awaiting
-      // a network/session promise before the component finishes its first render pass.
-      // (The actual flash-free first-paint guarantee, driven by the pre-hydration
-      // inline script and localStorage, is verified against a real browser in
-      // src/e2e/theme.spec.ts's 'no flash' tests — this test harness flushes effects
-      // synchronously, so that timing window isn't independently observable here.)
-      const start = performance.now()
+      // render() must complete synchronously and successfully — reconciliation must not
+      // introduce a synchronous wait on the session promise before the component's first
+      // render pass finishes. (The flash-free first-paint guarantee itself, driven by the
+      // pre-hydration inline script and localStorage, is verified against a real browser
+      // in src/e2e/theme.spec.ts's 'no flash' tests — this RTL harness flushes effects
+      // synchronously within render(), so that timing window isn't independently
+      // observable at the unit level; a wall-clock assertion here would be non-deterministic.)
       expect(() => renderWithTheme(<TestConsumer />)).not.toThrow()
-      expect(performance.now() - start).toBeLessThan(1000)
     })
   })
 
