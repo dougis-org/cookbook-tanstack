@@ -97,7 +97,7 @@ export function createRouterMock(opts?: RouterMockOptions) {
           href = href + (href.includes('?') ? '&' : '?') + searchStr
         }
       }
-      return React.createElement('a', { href, 'data-router-link': 'true', ...props }, children)
+      return React.createElement('a', { href, ...props, 'data-router-link': 'true' }, children)
     },
     redirect: (redirectOpts: Record<string, unknown>) => ({
       type: 'redirect',
