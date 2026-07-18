@@ -55,14 +55,27 @@ describe("Accordion", () => {
     // jsdom doesn't emulate the browser's built-in keydown-to-click activation for
     // <summary> (that's UA default-action behavior, not part of the DOM spec), so
     // Enter/Space toggling can't be simulated here. Instead we assert the component
-    // hasn't added its own key handling that would shadow the native behavior —
-    // real Enter/Space toggling is verified manually per task 1.3.
+    // hasn't overridden native focusability (no explicit tabindex) — a DOM attribute
+    // check, not a React-listener check, since React attaches onKeyDown via
+    // addEventListener rather than an inline attribute. Real Enter/Space toggling is
+    // verified manually per task 1.3.
     const { container } = render(<Accordion items={items} />)
     const summaries = container.querySelectorAll<HTMLElement>("summary")
     summaries.forEach((summary) => {
-      expect(summary.getAttribute("onkeydown")).toBeNull()
       expect(summary.getAttribute("tabindex")).toBeNull()
     })
+  })
+
+  it("keeps a section open after an unrelated re-render (regression: controlled `open` must not snap shut)", async () => {
+    const user = userEvent.setup()
+    const { container, rerender } = render(<Accordion items={items} />)
+    const summaries = container.querySelectorAll("summary")
+
+    await user.click(summaries[0])
+    rerender(<Accordion items={items} />)
+
+    const details = screen.getAllByRole("group") as HTMLDetailsElement[]
+    expect(details[0]).toHaveAttribute("open")
   })
 
   it("uses native <details>/<summary> elements", () => {
