@@ -79,10 +79,10 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main` (`Dockerfile` and `.github/workflows/deploy.yml` reflect the new ARG/ENV/build-arg/validation logic)
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (confirm `.env.example` comment landed; note in deploy docs if any exist)
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main` (`Dockerfile` and `.github/workflows/deploy.yml` reflect the new ARG/ENV/build-arg/validation logic)
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (confirm `.env.example` comment landed; note in deploy docs if any exist)
 - [ ] **Manual repository configuration (not part of the code PR):** create the 5 GitHub Actions repository Variables (`VITE_ADSENSE_ENABLED=true`, `VITE_GOOGLE_ADSENSE_TOP_SLOT_ID`, `VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID`, `VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID`, `VITE_GOOGLE_ANALYTICS_ID`) with real values from the AdSense/Analytics dashboards
 - [ ] **Live verification:** trigger the next production deploy (PR merge or `workflow_dispatch`) and confirm: (a) the validation step passes, (b) view-source on `recipe.dougis.com` shows the `adsbygoogle` script tag and `data-ad-slot` attributes for top/bottom/right-rail, (c) the GA `gtag`/`dataLayer` script loads
 - [ ] Sync approved spec deltas into `openspec/specs/`. After copying `specs/fly-deployment/spec.md` to `openspec/specs/fly-deployment/spec.md`, update all relative links that pointed into the change directory so they resolve from the archive location — replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-fix-adsense-buildarg-plumbing/design.md`, and similarly for `../../tasks.md`
