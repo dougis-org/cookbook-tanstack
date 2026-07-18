@@ -58,7 +58,7 @@ If **ANY** required step fails, you **MUST** iterate and address the failure bef
 - [x] Wait 60 seconds for CI to start
 - [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
 - [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
   3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
@@ -79,17 +79,17 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only`
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (e.g. `docs/database.md` if the `user` collection's documented fields need `theme` noted)
-- [ ] Sync approved spec deltas into `openspec/specs/`: create `openspec/specs/user-settings/spec.md` (new capability) and update `openspec/specs/theme-system/theme-persistence.md` (or add a new file in that capability directory) with the MODIFIED requirement from `specs/theme-system/spec.md`. Update relative links (`../../design.md` → `../../changes/archive/YYYY-MM-DD-user-settings-preferences/design.md`, similarly for `tasks.md`).
-- [ ] Archive the change: move `openspec/changes/user-settings-preferences/` to `openspec/changes/archive/YYYY-MM-DD-user-settings-preferences/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-user-settings-preferences/` exists and `openspec/changes/user-settings-preferences/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-user-settings-preferences` then `git push -u origin doc/archive-YYYY-MM-DD-user-settings-preferences`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-user-settings-preferences` to `main` with title `docs: archive user-settings-preferences (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D feature/user-settings-preferences doc/archive-YYYY-MM-DD-user-settings-preferences`
+- [x] `git checkout main` and `git pull --ff-only`
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (e.g. `docs/database.md` if the `user` collection's documented fields need `theme` noted) — n/a: `tier`/`isAdmin` additionalFields aren't documented there either, so no established pattern to extend
+- [x] Sync approved spec deltas into `openspec/specs/`: create `openspec/specs/user-settings/spec.md` (new capability) and update `openspec/specs/theme-system/theme-persistence.md` (or add a new file in that capability directory) with the MODIFIED requirement from `specs/theme-system/spec.md`. Update relative links (`../../design.md` → `../../changes/archive/YYYY-MM-DD-user-settings-preferences/design.md`, similarly for `tasks.md`).
+- [x] Archive the change: move `openspec/changes/user-settings-preferences/` to `openspec/changes/archive/YYYY-MM-DD-user-settings-preferences/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-user-settings-preferences/` exists and `openspec/changes/user-settings-preferences/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-user-settings-preferences` then `git push -u origin doc/archive-YYYY-MM-DD-user-settings-preferences`
+- [x] Open a PR from `doc/archive-YYYY-MM-DD-user-settings-preferences` to `main` with title `docs: archive user-settings-preferences (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D feature/user-settings-preferences doc/archive-YYYY-MM-DD-user-settings-preferences`
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D feature/user-settings-preferences doc/archive-YYYY-MM-DD-user-settings-preferences`
