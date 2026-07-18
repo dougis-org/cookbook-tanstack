@@ -22,7 +22,39 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@63da3ecc5e2793b98a3f2519b3d75d4f4c11cec2 # master (2024-08-02)
 
+      - name: Validate required build-time Variables
+        run: |
+          missing=()
+          [ -z "$VITE_ADSENSE_ENABLED" ]                  && missing+=("VITE_ADSENSE_ENABLED")
+          [ -z "$VITE_GOOGLE_ADSENSE_TOP_SLOT_ID" ]       && missing+=("VITE_GOOGLE_ADSENSE_TOP_SLOT_ID")
+          [ -z "$VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID" ]    && missing+=("VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID")
+          [ -z "$VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID" ] && missing+=("VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID")
+          [ -z "$VITE_GOOGLE_ANALYTICS_ID" ]              && missing+=("VITE_GOOGLE_ANALYTICS_ID")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "ERROR: The following required GitHub Actions repository Variables are unset or empty:"
+            for var in "${missing[@]}"; do echo "  - $var"; done
+            echo ""
+            echo "Set them under Settings → Secrets and variables → Actions → Variables."
+            echo "These values are NOT Fly secrets — they must be GitHub Actions repo Variables"
+            echo "because Fly secrets are only available at container runtime, not during the"
+            echo "Docker build where Vite inlines import.meta.env.VITE_* values."
+            exit 1
+          fi
+        env:
+          VITE_ADSENSE_ENABLED: ${{ vars.VITE_ADSENSE_ENABLED }}
+          VITE_GOOGLE_ADSENSE_TOP_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID }}
+          VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID }}
+          VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID }}
+          VITE_GOOGLE_ANALYTICS_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_ID }}
+
       - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only
+        run: |
+          flyctl deploy --remote-only \
+            --build-arg "VITE_ADSENSE_ENABLED=${{ vars.VITE_ADSENSE_ENABLED }}" \
+            --build-arg "VITE_GOOGLE_ADSENSE_TOP_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID }}" \
+            --build-arg "VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID }}" \
+            --build-arg "VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID }}" \
+            --build-arg "VITE_GOOGLE_ANALYTICS_ID=${{ vars.VITE_GOOGLE_ANALYTICS_ID }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
