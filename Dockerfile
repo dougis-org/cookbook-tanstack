@@ -19,8 +19,9 @@ ARG VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID
 ARG VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID
 ARG VITE_GOOGLE_ANALYTICS_ID
 
-# Re-export each ARG as an ENV so the RUN step's process environment sees them.
-# Without the ENV declaration, bare ARG values are not visible to `npm run build`.
+# Re-export each ARG as an ENV for explicitness and consistency.
+# ARG values are already visible to subsequent RUN steps; ENV makes the values
+# explicit in the layer metadata and keeps the pattern consistent.
 ENV VITE_ADSENSE_ENABLED=$VITE_ADSENSE_ENABLED \
     VITE_GOOGLE_ADSENSE_TOP_SLOT_ID=$VITE_GOOGLE_ADSENSE_TOP_SLOT_ID \
     VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID=$VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID \

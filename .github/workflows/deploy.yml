@@ -23,6 +23,7 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@63da3ecc5e2793b98a3f2519b3d75d4f4c11cec2 # master (2024-08-02)
 
       - name: Validate required build-time Variables
+        shell: bash
         run: |
           missing=()
           [ -z "$VITE_ADSENSE_ENABLED" ]                  && missing+=("VITE_ADSENSE_ENABLED")
@@ -50,11 +51,15 @@ jobs:
       - name: Deploy to Fly.io
         run: |
           flyctl deploy --remote-only \
-            --build-arg "VITE_ADSENSE_ENABLED=${{ vars.VITE_ADSENSE_ENABLED }}" \
-            --build-arg "VITE_GOOGLE_ADSENSE_TOP_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID }}" \
-            --build-arg "VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID }}" \
-            --build-arg "VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID=${{ vars.VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID }}" \
-            --build-arg "VITE_GOOGLE_ANALYTICS_ID=${{ vars.VITE_GOOGLE_ANALYTICS_ID }}"
+            --build-arg "VITE_ADSENSE_ENABLED=$VITE_ADSENSE_ENABLED" \
+            --build-arg "VITE_GOOGLE_ADSENSE_TOP_SLOT_ID=$VITE_GOOGLE_ADSENSE_TOP_SLOT_ID" \
+            --build-arg "VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID=$VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID" \
+            --build-arg "VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID=$VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID" \
+            --build-arg "VITE_GOOGLE_ANALYTICS_ID=$VITE_GOOGLE_ANALYTICS_ID"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
+          VITE_ADSENSE_ENABLED: ${{ vars.VITE_ADSENSE_ENABLED }}
+          VITE_GOOGLE_ADSENSE_TOP_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID }}
+          VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_BOTTOM_SLOT_ID }}
+          VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID: ${{ vars.VITE_GOOGLE_ADSENSE_RIGHT_RAIL_SLOT_ID }}
+          VITE_GOOGLE_ANALYTICS_ID: ${{ vars.VITE_GOOGLE_ANALYTICS_ID }}
