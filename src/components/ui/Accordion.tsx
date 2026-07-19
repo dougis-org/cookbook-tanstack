@@ -38,7 +38,7 @@ export default function Accordion({ items, defaultOpenId }: AccordionProps) {
           onToggle={(e) => handleToggle(item.id, e.currentTarget.open)}
           className="group border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface)] overflow-hidden"
         >
-          <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-semibold text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)]">
+          <summary className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer list-none [&::-webkit-details-marker]:hidden font-semibold text-[var(--theme-fg)] hover:bg-[var(--theme-surface-hover)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--theme-accent)]">
             <span>{item.title}</span>
             <ChevronDown
               className="h-5 w-5 flex-shrink-0 text-[var(--theme-fg-muted)] transition-transform duration-200 group-open:rotate-180"
