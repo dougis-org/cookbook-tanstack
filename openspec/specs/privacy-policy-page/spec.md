@@ -23,7 +23,9 @@ The privacy policy SHALL truthfully describe: Better-Auth account data, user-gen
 
 #### Scenario: Third-party sharing section names the OAuth scope and its limits
 - **WHEN** a reader expands the "Third-Party Sharing" section
-- **THEN** the content states that a connected client (e.g. Alexa) receives only a read-only `read:own-content` scope, and explicitly states that password, email, and payment data are never shared
+- **THEN** the content states that a connected client (e.g. Alexa) receives only a read-only `read:own-content` scope
+- **AND** the content explicitly states that password, email, and payment data are never shared with a connected client
+- **AND** this connected-client exception is distinct from the transactional email address shared separately with the app's own email service provider — the two are not conflated in the UI copy
 
 #### Scenario: Revocability is stated and traceable
 - **WHEN** a reader expands the "Third-Party Sharing" section
