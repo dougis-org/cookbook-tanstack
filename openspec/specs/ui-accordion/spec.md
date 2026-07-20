@@ -4,7 +4,7 @@
 The system SHALL provide a reusable `Accordion` component at `src/components/ui/Accordion.tsx` that renders a list of independently-collapsible sections from a generic `items` prop, suitable for reuse outside the privacy policy page (e.g. a future pricing FAQ).
 
 #### Scenario: Renders items independently toggleable
-- **WHEN** `Accordion` is given `items: { id, title, content }[]`
+- **WHEN** `Accordion` is given `items: { id, title, content: ReactNode }[]`
 - **THEN** each item renders as its own disclosure that can be expanded or collapsed without affecting other items' open/closed state
 
 #### Scenario: Optional default-open item
