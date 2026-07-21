@@ -15,6 +15,6 @@ The project SHALL contain a `fly.toml` at the repository root that configures th
 - **WHEN** Fly.io evaluates the deployed VM
 - **THEN** it performs an HTTP GET to `/api/health` on port 3000 and expects a 2xx or 3xx response
 
-#### Scenario: health check passes through without an explicit Host header
+#### Scenario: health check passes using IP-addressed Host header
 - **WHEN** the Fly.io health check executes
-- **THEN** it is not required to send an explicit `Host` header — `getDomainRedirectUrl` recognizes IP-addressed `Host` headers (see `domain-redirect` spec) and passes them through without redirecting, so the health check succeeds regardless of which domain is currently configured as primary
+- **THEN** `getDomainRedirectUrl` recognizes the IP-addressed `Host` header it sends (see `domain-redirect` spec) and passes it through without redirecting, so the health check succeeds regardless of which domain is currently configured as primary
