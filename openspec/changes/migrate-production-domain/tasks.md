@@ -15,7 +15,8 @@
 - [x] 3.1 Confirm `recipe.dougis.com` now 301-redirects to `https://www.mycookbooks.us` (path/query preserved)
 - [x] 3.2 Confirm login/session flow works end-to-end on `www.mycookbooks.us`
 - [x] 3.3 Confirm the Fly health check (`/api/health`) still passes post-flip
-- [x] 3.4 Confirm cookbook share links and transactional emails now render `www.mycookbooks.us` URLs — share links confirmed; transactional emails still need separate debugging (pre-existing `mycookbooks.app` fallback in `src/emails/Layout.tsx`, already flagged out-of-scope in this change's proposal)
+- [x] 3.4a Confirm cookbook share links now render `www.mycookbooks.us` URLs
+- [ ] 3.4b Confirm transactional emails now render `www.mycookbooks.us` URLs — still broken (pre-existing `mycookbooks.app` fallback in `src/emails/Layout.tsx`), tracked separately in #637, not blocking this change per proposal's stated out-of-scope items
 
 ## 4. Repo documentation updates
 

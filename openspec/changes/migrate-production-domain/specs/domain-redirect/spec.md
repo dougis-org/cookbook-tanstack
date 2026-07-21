@@ -30,7 +30,7 @@ The system SHALL redirect requests whose `Host` header contains a named hostname
 
 ### Requirement: IP-addressed Host headers pass through without redirect
 
-The system SHALL return `null` from `getDomainRedirectUrl` when the request `Host` header resolves to an IPv4 or IPv6 address, regardless of the configured `APP_PRIMARY_URL`. IP-addressed Host headers indicate system/internal traffic (health checks, load balancer pings).
+The system SHALL return `null` from `getDomainRedirectUrl` when the request `Host` header is itself an IPv4 or bracketed IPv6 literal (checked via pattern match, not DNS resolution), regardless of the configured `APP_PRIMARY_URL`. IP-addressed Host headers indicate system/internal traffic (health checks, load balancer pings).
 
 #### Scenario: IPv4 host passes through
 

@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: fly.toml exists and configures the app for Fly.io
-The project SHALL contain a `fly.toml` at the repository root that configures the Fly.io app. It MUST specify an `app` name, a `primary_region` of `sjc`, an HTTP service on internal port 3000, a `release_command` that runs the database seed script, and a health check on `/`.
+The project SHALL contain a `fly.toml` at the repository root that configures the Fly.io app. It MUST specify an `app` name, a `primary_region` of `sjc`, an HTTP service on internal port 3000, a `release_command` that runs the database seed script, and a health check on `/api/health`.
 
 #### Scenario: fly.toml is present and valid
 - **WHEN** the repository root is inspected
@@ -13,7 +13,7 @@ The project SHALL contain a `fly.toml` at the repository root that configures th
 
 #### Scenario: health check is configured
 - **WHEN** Fly.io evaluates the deployed VM
-- **THEN** it performs an HTTP GET to `/` on port 3000 and expects a 2xx or 3xx response
+- **THEN** it performs an HTTP GET to `/api/health` on port 3000 and expects a 2xx or 3xx response
 
 #### Scenario: health check passes through without an explicit Host header
 - **WHEN** the Fly.io health check executes
