@@ -48,6 +48,16 @@ The system SHALL document, in the new section, that `mycookbooks.app` (hardcoded
 - **When** a reader is planning a future `APP_PRIMARY_URL` rotation
 - **Then** they can find an explicit note that `mycookbooks.app` and `mycookbooks.com` are separate hardcoded values requiring their own code changes
 
+### Requirement: VITE_STRIPE_PUBLISHABLE_KEY documents intended location, not a settled fix
+
+The system SHALL document `VITE_STRIPE_PUBLISHABLE_KEY`'s intended storage location (a GitHub Actions Variable passed via `--build-arg`, per the existing `VITE_GOOGLE_*`/`VITE_ADSENSE_*` pattern in `deploy.yml`) and explicitly link #635 as an open, unresolved gap, without waiting for #635 to be fixed before this documentation ships.
+
+#### Scenario: Row states intended location, not confirmed-working status
+
+- **Given** the "Production Secrets & Environment Variables" table
+- **When** the `VITE_STRIPE_PUBLISHABLE_KEY` row is read
+- **Then** it states the intended storage location (GitHub Actions Variable, `--build-arg`) and references #635 as an open issue tracking the current gap — it does not claim the variable is confirmed working in production today
+
 ### Requirement: .env.example production domain comment is current
 
 The system SHALL update the `APP_PRIMARY_URL` comment in `.env.example` to reflect the canonical production domain as of the most recently merged domain migration, replacing any stale prior domain reference.
@@ -93,8 +103,14 @@ The system SHALL NOT include actual secret values (tokens, keys, URIs with crede
 
 ### Requirement: Reliability
 
-#### Scenario: Doc reflects merged state, not in-flight state
+#### Scenario: Doc reflects merged state for settled values
 
-- **Given** #632 (domain migration) and #635 (Stripe publishable key) are both still open
+- **Given** #632 (domain migration) has merged via PR #638
 - **When** this change's tasks reach the doc-writing step
-- **Then** the doc-writing step is blocked from proceeding until both referenced issues are confirmed merged/resolved, per the gating task in `tasks.md`
+- **Then** `APP_PRIMARY_URL`, `BETTER_AUTH_URL`, and `BETTER_AUTH_TRUSTED_ORIGINS` rows reflect #638's merged values, not any prior in-progress value
+
+#### Scenario: Doc does not wait on unresolved implementation gaps
+
+- **Given** #635 (`VITE_STRIPE_PUBLISHABLE_KEY` build-arg gap) is still open and expected to remain open for some time
+- **When** this change's tasks reach the doc-writing step
+- **Then** the doc-writing step proceeds without waiting for #635 to close, documenting the intended value and the open gap per the "VITE_STRIPE_PUBLISHABLE_KEY documents intended location" requirement above

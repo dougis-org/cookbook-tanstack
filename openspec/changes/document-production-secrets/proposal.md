@@ -14,12 +14,12 @@
 - Desired behavior: A single documented section (in `docs/standards/ci-cd.md`, per explicit user direction — avoids doc sprawl by not creating a new `docs/deployment.md`) listing every production secret/env var with: what it is, where it's set, what depends on it, when it needs to change, and — for the higher-risk vars — a "What Breaks If Wrong" explanation of the concrete failure mode.
 - Constraints:
   - Must land as a `docs/standards/ci-cd.md` section, not a new file (explicit user instruction, to avoid doc sprawl).
-  - Must not document stale values. This change is **blocked** on two in-flight items:
-    - #632 (domain migration to `www.mycookbooks.us`) — currently being pushed with a PR about to be cut. `APP_PRIMARY_URL`, `BETTER_AUTH_URL`, and `BETTER_AUTH_TRUSTED_ORIGINS` values documented here must reflect its final merged state, not the in-progress one.
-    - #635 (`VITE_STRIPE_PUBLISHABLE_KEY` may not reach the production client bundle) — filed as a follow-up bug during exploration of this issue. Whether that var is a Fly secret, a GitHub Actions Variable passed via `--build-arg`, or currently broken must be resolved before this doc can state its storage location correctly.
+  - Must not document stale values for things that are actually settled. This change is **blocked** on:
+    - #632 (domain migration to `www.mycookbooks.us`) — merged via #638. `APP_PRIMARY_URL`, `BETTER_AUTH_URL`, and `BETTER_AUTH_TRUSTED_ORIGINS` values documented here reflect that merged state.
+  - This change is explicitly **not blocked** on #635 (`VITE_STRIPE_PUBLISHABLE_KEY` may not reach the production client bundle). Stripe billing is not fully set up yet and #635 will not be fixed for a while. The doc's job is to state the *correct/intended* storage location for this var (a GitHub Actions Variable passed via `--build-arg`, per the same pattern as the AdSense/GA vars) and flag the current known gap as an open caveat — not to wait for the gap to close. Documenting "here's what should be true and here's the known discrepancy" is in scope; fixing the discrepancy is not.
 - Assumptions:
-  - #632 will merge with `www.mycookbooks.us` as `APP_PRIMARY_URL`/`BETTER_AUTH_URL`, and will keep `recipe.dougis.com` + the `.fly.dev` fallback in `BETTER_AUTH_TRUSTED_ORIGINS` during the transition period (confirmed via the `flyctl secrets set` command already run against production).
-  - #635 will be resolved (either confirming the current setup is correct, or fixing `deploy.yml` to pass `VITE_STRIPE_PUBLISHABLE_KEY` as a build-arg) before this change is applied.
+  - #632 merged with `www.mycookbooks.us` as `APP_PRIMARY_URL`/`BETTER_AUTH_URL`, keeping `recipe.dougis.com` + the `.fly.dev` fallback in `BETTER_AUTH_TRUSTED_ORIGINS` during the transition period (confirmed via the `flyctl secrets set` command already run against production, and via merged PR #638).
+  - `VITE_STRIPE_PUBLISHABLE_KEY`'s intended/correct storage location can be documented from the established `VITE_*` build-arg pattern (`deploy.yml`) without needing #635 to be fixed first — the doc states the intended value and separately notes the known gap.
   - The full var inventory is derivable from `.env.example`, `fly.toml`, `.github/workflows/deploy.yml`, and `.github/workflows/build-and-test.yml` — no vars are configured purely through the Fly dashboard/CLI with no trace in these files (other than the runtime-only Fly secrets, which by definition have no file trace and are inventoried from `.env.example`'s server-side var list).
 - Edge cases considered:
   - Vars that fail loudly (e.g. `FLY_API_TOKEN`, `PORT`) vs. vars that fail silently/ambiguously (e.g. `STRIPE_WEBHOOK_SECRET`, `MAILTRAP_API_TOKEN`) need different documentation weight — the "What Breaks If Wrong" subsection is scoped to the latter category plus the highest-blast-radius vars (auth), not every var uniformly.
@@ -37,7 +37,7 @@
 
 ### Out of Scope
 
-- Fixing #635 itself (tracked separately; this change only documents its resolution once merged).
+- Fixing #635 itself (tracked separately; this change documents the intended value and flags the known gap, it does not wait for or perform the fix).
 - Fixing the `mycookbooks.app`/`mycookbooks.com` hardcoded strings (flagged in the doc, not remediated here — no issue currently tracks that cleanup; may warrant its own follow-up issue but is not this change's job).
 - Any change to `.github/workflows/deploy.yml` or `.github/workflows/build-and-test.yml` behavior (documentation only, no CI logic changes).
 - A rotation runbook / step-by-step "how to rotate secret X" procedure — this change documents *what* and *why*, not a rotation playbook. Could be a natural follow-up.
@@ -50,9 +50,9 @@
 
 ## Risks
 
-- Risk: This change is blocked on two external, in-flight items (#632, #635) landing first.
-  - Impact: If applied before either lands, the doc will contain incorrect values on day one, defeating its purpose.
-  - Mitigation: Tasks/apply for this change should not proceed until both #632 is merged and #635 is resolved (either fixed or explicitly confirmed as working-as-documented). This is called out as a blocking dependency, not a soft suggestion.
+- Risk: Documenting `VITE_STRIPE_PUBLISHABLE_KEY`'s intended storage location while #635 remains unresolved could be misread as claiming the current setup is correct.
+  - Impact: A reader could assume production Stripe checkout works today when #635 says it may not.
+  - Mitigation: The doc's table row and "What Breaks If Wrong" entry for this var explicitly state it as the *intended* location and link #635 as an open, unresolved gap — not as settled fact.
 - Risk: The var inventory may be incomplete — some production secrets could be set directly via `fly secrets set` / GitHub Actions UI with zero trace in any repo file.
   - Impact: The doc ships "complete" but silently omits a var, recreating the exact problem it's meant to solve.
   - Mitigation: Cross-check the documented list against `fly secrets list` output and the GitHub repo's Settings → Secrets/Variables pages before finalizing, not just static file grep. Flagged as an open question below.
@@ -62,9 +62,6 @@
 
 ## Open Questions
 
-- Question: Should apply for this change wait on a hard confirmation that #632 has merged and #635 is closed, or is it acceptable to draft the doc now with placeholder/TBD values and do a final pass once both land?
-  - Needed from: dougis
-  - Blocker for apply: yes — design.md and tasks.md will assume "wait for both to close" unless told otherwise.
 - Question: Should the doc's var table be cross-checked against live `fly secrets list` / GitHub repo Settings output (not just static file grep) to catch anything with zero trace in the repo, and if so, who has access to run that check?
   - Needed from: dougis
   - Blocker for apply: no — can proceed with the file-grep-derived inventory and flag it as best-effort in the doc if live verification isn't feasible.
@@ -76,7 +73,7 @@
 
 - Not building a secrets rotation runbook or automation.
 - Not migrating secret storage to a different system.
-- Not fixing the underlying `VITE_STRIPE_PUBLISHABLE_KEY` build-arg gap (#635) or the hardcoded domain strings — both are documented/flagged, not remediated, here.
+- Not fixing the underlying `VITE_STRIPE_PUBLISHABLE_KEY` build-arg gap (#635) or the hardcoded domain strings — both are documented/flagged, not remediated, here. #635 is explicitly expected to remain open for a while (Stripe billing is not fully set up yet); this doc documents the intended state, not a fait accompli.
 
 ## Change Control
 

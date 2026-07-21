@@ -1,8 +1,8 @@
 ## 1. Gate: confirm blocking dependencies are resolved
 
-- [ ] 1.1 Confirm #632 (domain migration to `www.mycookbooks.us`) is merged to `main`; capture the final `APP_PRIMARY_URL` / `BETTER_AUTH_URL` / `BETTER_AUTH_TRUSTED_ORIGINS` values it landed with
-- [ ] 1.2 Confirm #635 (`VITE_STRIPE_PUBLISHABLE_KEY` build-arg gap) is resolved; capture whether it ended up as a GitHub Actions Variable passed via `--build-arg` (matching the AdSense/GA pattern) or some other fix
-- [ ] 1.3 If either #632 or #635 is still open, stop here and do not proceed to section 2 — re-run this gate before continuing
+- [x] 1.1 Confirm #632 (domain migration to `www.mycookbooks.us`) is merged to `main` — merged via PR #638; final values: `APP_PRIMARY_URL`/`BETTER_AUTH_URL` = `https://www.mycookbooks.us`, `BETTER_AUTH_TRUSTED_ORIGINS` includes both `www.mycookbooks.us` and `recipe.dougis.com` during transition
+- [ ] 1.2 (Non-blocking housekeeping) Manually close GitHub issue #632 — PR #638 merged its scope but didn't use a closing keyword, so the issue is still open on GitHub despite being done
+- [x] 1.3 #635 (`VITE_STRIPE_PUBLISHABLE_KEY` build-arg gap) does NOT gate this change — document its intended storage location (GitHub Actions Variable via `--build-arg`, matching the AdSense/GA pattern) and link #635 as an open caveat instead of waiting for it to close
 
 ## 2. Audit and verify the var inventory
 
@@ -14,7 +14,7 @@
 
 - [ ] 3.1 Insert `## Production Secrets & Environment Variables` into `docs/standards/ci-cd.md` after "What CI/CD Checks" and before "Deployment & Release"
 - [ ] 3.2 Write the storage-location category definitions (Fly secret, Fly `[env]`, GitHub Actions secret, GitHub Actions Variable) at the top of the section
-- [ ] 3.3 Write the table with one row per var from the confirmed inventory (section 2), filling in where-set / depends-on / changes-when using the confirmed #632/#635 values
+- [ ] 3.3 Write the table with one row per var from the confirmed inventory (section 2), filling in where-set / depends-on / changes-when using the confirmed post-#638 domain values; for `VITE_STRIPE_PUBLISHABLE_KEY`, state the intended location (GitHub Actions Variable / `--build-arg`) and link #635 as an open gap, not a confirmed-working fact
 - [ ] 3.4 Write the `### What Breaks If Wrong` subsection covering the vars listed in `specs/docs-update/spec.md`'s second requirement, including the introductory sentence explaining why coverage is selective
 - [ ] 3.5 Add the explicit callout that `mycookbooks.app` (`src/emails/Layout.tsx`) and `mycookbooks.com` (`src/routes/privacy-policy.tsx`) are hardcoded and not driven by `APP_PRIMARY_URL`
 - [ ] 3.6 Proofread the full section for any accidental inclusion of real secret values — none should appear, only names/locations/behavior
