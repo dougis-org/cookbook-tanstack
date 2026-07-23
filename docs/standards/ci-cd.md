@@ -163,10 +163,10 @@ page if you suspect drift.
 | `MONGODB_URI` | Fly secret | All database access | New environment, Atlas credential rotation, cluster migration |
 | `MAILTRAP_API_TOKEN` | Fly secret | Outgoing email (verification, notifications) | Mailtrap credential rotation |
 | `MAIL_FROM` | Fly secret | From-address on outgoing email | Sending domain change |
-| `IMAGE_KIT_API_KEY` | Fly secret | Recipe image upload/delete | ImageKit credential rotation |
-| `STRIPE_SECRET_KEY` | Fly secret | Server-side Stripe API calls | Stripe key rotation, test→live switch |
-| `STRIPE_WEBHOOK_SECRET` | Fly secret | Stripe webhook signature verification | Webhook endpoint re-registration |
-| `STRIPE_PRICE_*` (6 vars: `PREP_COOK`/`SOUS_CHEF`/`EXEC_CHEF` × `MONTHLY`/`ANNUAL`) | Fly secret | Checkout session price lookup per tier/cadence | Stripe product/price changes |
+| `IMAGE_KIT_API_KEY` (alt. name: `IMAGEKIT_PRIVATE_KEY`) | Fly secret | Recipe image upload/delete — `src/lib/imagekit.ts` reads `IMAGE_KIT_API_KEY ?? IMAGEKIT_PRIVATE_KEY`, so either name works | ImageKit credential rotation |
+| `STRIPE_SECRET_KEY` | Fly secret | Server-side Stripe API calls (`src/lib/stripe.ts`) | Stripe key rotation, test→live switch |
+| `STRIPE_WEBHOOK_SECRET` | Fly secret (reserved, not yet consumed) | Declared in `.env.example` for future webhook signature verification — no code under `src/` reads this var yet; webhook handling isn't implemented | N/A until webhook handling ships |
+| `STRIPE_PRICE_*` (6 vars: `PREP_COOK`/`SOUS_CHEF`/`EXEC_CHEF` × `MONTHLY`/`ANNUAL`) | Fly secret (reserved, not yet consumed) | Declared in `.env.example` for future checkout price lookup — no code under `src/` reads these vars yet; checkout/subscription logic isn't implemented | N/A until checkout flow ships |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | **Intended:** GitHub Actions Variable, passed via `--build-arg` (same pattern as the `VITE_GOOGLE_*` vars below) — **not yet wired into `deploy.yml`**. See [#635](https://github.com/dougis-org/cookbook-tanstack/issues/635); Stripe billing isn't fully set up yet so this is expected to remain open for a while | Stripe.js client-side init | Stripe key rotation, and separately whenever #635 is resolved |
 | `VITE_GOOGLE_ANALYTICS_ID` | GitHub Actions Variable | GA4 tracking | Analytics property change |
 | `VITE_GOOGLE_ADSENSE_TOP_SLOT_ID` / `_BOTTOM_SLOT_ID` / `_RIGHT_RAIL_SLOT_ID` | GitHub Actions Variable | AdSense unit rendering | Ad unit changes |
@@ -219,16 +219,22 @@ but points at a different cluster/db name — reads and writes go to the
 wrong place with no error. Verify the db name in the URI, not just
 reachability, when rotating.
 
-**`STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_*`**
-Wrong `STRIPE_SECRET_KEY` → checkout session creation fails server-side
-(loud — the checkout button errors). Wrong `STRIPE_WEBHOOK_SECRET` →
-webhook signature verification fails silently from Stripe's perspective —
-Stripe's dashboard reports its own 200s as usual while the app rejects
-every event, so subscription state (upgrades, cancellations, renewals)
-silently stops syncing until someone notices tier state is stale. This is
-the quietest failure mode in the whole table — no user-facing error, just
-drift. Wrong `STRIPE_PRICE_*` → checkout succeeds but charges/provisions
-the wrong tier.
+**`STRIPE_SECRET_KEY`**
+Wrong value → any code path that calls `getStripe()` (`src/lib/stripe.ts`)
+fails loudly at the point of use. This is the only Stripe var actually
+consumed by application code today.
+
+**`STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_*` (not yet implemented)**
+These are declared in `.env.example` and provisioned as Fly secrets ahead
+of need, but no code under `src/` reads them yet — webhook handling and
+the checkout/subscription flow haven't shipped. Once they do: expect wrong
+`STRIPE_WEBHOOK_SECRET` to fail webhook signature verification silently
+from Stripe's perspective (Stripe's dashboard reports its own 200s as
+usual while the app rejects every event, so subscription state would
+silently stop syncing — the quietest failure mode in this table), and
+wrong `STRIPE_PRICE_*` to make checkout succeed while charging/provisioning
+the wrong tier. Revisit this entry once that code lands so it describes
+actual behavior instead of anticipated behavior.
 
 **`VITE_STRIPE_PUBLISHABLE_KEY`**
 Intended location is a GitHub Actions Variable passed via `--build-arg`
