@@ -27,6 +27,6 @@
 ## 5. Validate and ship through normal gates
 
 - [x] 5.1 Run any configured markdown lint/fix tooling on the edited files (per project convention: `fix_markdown` then `lint_markdown` if available) — no markdown lint tooling configured in this repo; no-op
-- [ ] 5.2 Open a PR through the normal flow — full CI/CD gates apply (build, tests, TypeScript check, security scans, Codacy) even though the diff is docs-only, per explicit instruction to treat this like any other code change
-- [ ] 5.3 Enable auto-merge on the PR per `docs/standards/ci-cd.md`'s existing auto-merge workflow
-- [ ] 5.4 Link the PR to #633 so it closes automatically on merge
+- [x] 5.2 Open a PR through the normal flow — full CI/CD gates apply (build, tests, TypeScript check, security scans, Codacy) even though the diff is docs-only, per explicit instruction to treat this like any other code change — PR #641
+- [x] 5.3 Enable auto-merge on the PR per `docs/standards/ci-cd.md`'s existing auto-merge workflow — squash auto-merge enabled
+- [x] 5.4 Link the PR to #633 so it closes automatically on merge — "Closes #633" in PR body
