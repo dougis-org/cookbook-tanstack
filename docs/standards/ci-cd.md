@@ -156,7 +156,7 @@ page if you suspect drift.
 
 | Variable | Where it's set | What depends on it | Changes when |
 |---|---|---|---|
-| `APP_PRIMARY_URL` | Fly secret | `getDomainRedirectUrl` (`src/lib/domain-redirect.ts`, wired in `src/start.ts`) — 301-redirects non-primary hosts here; `src/emails/Layout.tsx` email link base URL; `src/server/trpc/routers/cookbooks.ts` share-link base URL | Domain migration |
+| `APP_PRIMARY_URL` | Fly secret | `getDomainRedirectUrl` (`src/lib/domain-redirect.ts`, wired in `src/start.ts`) — redirects non-primary hosts here (301 for GET/HEAD, 308 for other methods, so request bodies aren't dropped on retry); `src/emails/Layout.tsx` email link base URL; `src/server/trpc/routers/cookbooks.ts` share-link base URL | Domain migration |
 | `BETTER_AUTH_URL` | Fly secret | Better-Auth session/cookie issuance base URL | Domain migration |
 | `BETTER_AUTH_TRUSTED_ORIGINS` | Fly secret | Better-Auth CORS/origin allowlist | Domain migration — must include the outgoing domain and the `.fly.dev` fallback alongside the new primary during a transition period |
 | `BETTER_AUTH_SECRET` | Fly secret | Session token signing | Credential rotation only |
@@ -188,10 +188,12 @@ where "wrong" produces something worse than an obvious, loud failure.
 Wrong or missing → `getDomainRedirectUrl` either redirects to a dead/wrong
 host (locking out traffic hitting the real domain) or silently disables the
 redirect middleware entirely (stale domains stay reachable instead of
-canonicalizing). Also corrupts email links (`Layout.tsx`) and cookbook
-share links (`cookbooks.ts`), both of which fall back to `BETTER_AUTH_URL`
-or a hardcoded `mycookbooks.app` — a wrong value here can silently send
-users recipe/cookbook links that 404 or point at an inactive domain.
+canonicalizing). Also corrupts email links (`Layout.tsx`, which falls back
+to `BETTER_AUTH_URL` or a hardcoded `mycookbooks.app`) and cookbook share
+links (`cookbooks.ts`, which falls back to `BETTER_AUTH_URL` or, failing
+that, `http://localhost:3000` — not `mycookbooks.app`) — a wrong value here
+can silently send users recipe/cookbook links that 404 or point at an
+inactive or local-only domain.
 
 **`BETTER_AUTH_URL`**
 Wrong value → every session cookie is issued against the wrong origin.
@@ -213,11 +215,13 @@ user is force-logged-out. Treat as a "requires a maintenance
 window/communication" rotation, never a silent hot-swap.
 
 **`MONGODB_URI`**
-Wrong value → the app fails to boot (`src/db/index.ts` throws on connect)
-or, worse, silently connects to the *wrong* database if the URI is valid
-but points at a different cluster/db name — reads and writes go to the
-wrong place with no error. Verify the db name in the URI, not just
-reachability, when rotating.
+Wrong value → the app fails to boot: `src/db/index.ts` logs the connection
+error and calls `process.exit(1)`, so the process dies rather than serving
+traffic against a broken connection — loud, but check Fly's boot logs, not
+an HTTP error page, to see it. Or, worse, it silently connects to the
+*wrong* database if the URI is valid but points at a different cluster/db
+name — reads and writes go to the wrong place with no error. Verify the db
+name in the URI, not just reachability, when rotating.
 
 **`STRIPE_SECRET_KEY`**
 Wrong value → any code path that calls `getStripe()` (`src/lib/stripe.ts`)
@@ -247,11 +251,15 @@ checkout is unusable app-wide, and the failure is invisible in local dev
 in a real production build).
 
 **`MAILTRAP_API_TOKEN` / `MAIL_FROM`**
-Wrong token → outgoing email (verification, notifications) fails. Depending
-on how the mail client handles errors, this can silently swallow send
-failures — new signups may complete but never receive a verification email,
-with no obvious signal in app logs unless mail-send failures are explicitly
-logged.
+Wrong token → outgoing email (verification, notifications) fails.
+`sendEmail` (`src/lib/mail.ts`) rejects/throws on configuration and
+delivery errors rather than swallowing them, and every caller
+(`src/lib/auth.ts`, `src/server/trpc/routers/*.ts`) attaches a `.catch`
+that logs the failure — so this is "rejected and logged," not silent. The
+practical risk is softer: it's fire-and-forget (`void sendEmail(...)`), so
+the signup/action that triggered the email still succeeds even though the
+email never sent, and noticing requires someone to actually check the
+logs — nothing surfaces to the user or fails the request.
 
 **`IMAGE_KIT_API_KEY`**
 Wrong value → recipe image upload/delete calls fail. Existing images
