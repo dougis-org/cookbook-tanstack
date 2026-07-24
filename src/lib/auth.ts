@@ -1,7 +1,8 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { username } from "better-auth/plugins";
+import { username, jwt } from "better-auth/plugins";
+import { oauthProvider } from "@better-auth/oauth-provider";
 import { getMongoClient } from "@/db";
 import { sendEmail } from "@/lib/mail";
 import { publishPendingRecipes } from "@/server/recipes/pendingRecipes";
@@ -78,6 +79,12 @@ export const auth = betterAuth({
   },
   plugins: [
     username(),
+    jwt(),
+    oauthProvider({
+      loginPage: "/auth/login",
+      consentPage: "/oauth/consent",
+      scopes: ["openid", "profile", "email", "offline_access", "read:own-content"],
+    }),
     tanstackStartCookies(), // must be last
   ],
 });

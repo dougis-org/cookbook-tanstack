@@ -1,0 +1,87 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "my cook books",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "SearchRecipesIntent",
+          "slots": [
+            { "name": "query", "type": "AMAZON.SearchQuery" }
+          ],
+          "samples": [
+            "find a recipe for {query}",
+            "search for {query}",
+            "look up {query}",
+            "find me a {query} recipe"
+          ]
+        },
+        {
+          "name": "GetRecipeDetailsIntent",
+          "slots": [
+            { "name": "recipeId", "type": "AMAZON.SearchQuery" }
+          ],
+          "samples": [
+            "tell me about {recipeId}",
+            "read me the recipe for {recipeId}",
+            "how do I make {recipeId}"
+          ]
+        },
+        {
+          "name": "NextStepIntent",
+          "slots": [],
+          "samples": [
+            "next step",
+            "what's next",
+            "continue"
+          ]
+        },
+        {
+          "name": "PreviousStepIntent",
+          "slots": [],
+          "samples": [
+            "previous step",
+            "go back",
+            "repeat the last step"
+          ]
+        },
+        {
+          "name": "MyRecipesIntent",
+          "slots": [],
+          "samples": [
+            "what are my recipes",
+            "read me my recipes",
+            "show me my own recipes"
+          ]
+        },
+        {
+          "name": "BrowseCookbookIntent",
+          "slots": [
+            { "name": "cookbookName", "type": "AMAZON.SearchQuery" }
+          ],
+          "samples": [
+            "open my {cookbookName} cookbook",
+            "browse my {cookbookName} cookbook",
+            "show me my cookbooks"
+          ]
+        }
+      ],
+      "types": []
+    }
+  }
+}
