@@ -8,7 +8,7 @@ Amazon's Alexa platform requires:
 - Optional **Account Linking** (OAuth2 Authorization Code grant) if the skill needs to know which My CookBooks user is speaking.
 - Optional **APL (Alexa Presentation Language)** documents to render visuals on Echo Show / Echo Hub devices; without APL the skill is voice-only.
 
-This design covers only what's needed to plan the integration; nothing here ships code.
+This design covers the integration end to end; the implementation described below ships as code in this change (excluding manual Amazon Developer Console registration and store certification, which stay external/manual).
 
 ## Goals / Non-Goals
 
@@ -87,7 +87,7 @@ Alternative considered: **require linking for all requests, including public sea
 
 ## Migration Plan
 
-This change ships no code, so there is no runtime migration. The plan for the *future* implementation change(s), sequenced to de-risk the OAuth/certification unknowns first:
+This change ships purely additive code (new routes, a new model, a new adapter) with no changes to existing runtime behavior, so there is no migration of existing data or requests. The implementation is sequenced to de-risk the OAuth/certification unknowns first:
 1. Spike/validate Amazon account-linking + certification requirements against this design (no production code).
 2. Configure `@better-auth/oauth-provider` (+ `jwt()`), register the Alexa client, and build the consent page, with tests.
 3. Implement the `alexa` read adapter and its tests.

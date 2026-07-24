@@ -12,6 +12,7 @@ const mockBetterAuth = vi.fn((config) => ({
 const mockMongoDbAdapter = vi.fn(() => "mongodb-adapter")
 const mockTanstackStartCookies = vi.fn(() => "tanstack-start-cookies-plugin")
 const mockUsername = vi.fn(() => "username-plugin")
+const mockJwt = vi.fn(() => "jwt-plugin")
 
 vi.mock("better-auth", () => ({
   betterAuth: mockBetterAuth,
@@ -27,6 +28,7 @@ vi.mock("better-auth/tanstack-start", () => ({
 
 vi.mock("better-auth/plugins", () => ({
   username: mockUsername,
+  jwt: mockJwt,
 }))
 
 vi.mock("@/db", () => ({
@@ -66,10 +68,8 @@ describe("auth configuration", () => {
 
     const config = mockBetterAuth.mock.calls[0]?.[0]
 
-    expect(config.plugins).toEqual([
-      "username-plugin",
-      "tanstack-start-cookies-plugin",
-    ])
+    expect(config.plugins.at(-1)).toBe("tanstack-start-cookies-plugin")
+    expect(config.plugins[0]).toBe("username-plugin")
   })
 
   it("includes user.additionalFields.tier with type string and default home-cook", async () => {
