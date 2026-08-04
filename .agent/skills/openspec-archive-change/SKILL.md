@@ -27,6 +27,10 @@ Archive a completed change in the experimental workflow.
 2. **Check artifact completion status**
 
    Run `openspec status --change "<name>" --json` to check artifact completion.
+   If a worktree exists at `.worktrees/<name>/`, run this from inside it:
+   ```bash
+   cd .worktrees/<name> && openspec status --change "<name>" --json
+   ```
 
    Parse the JSON to understand:
    - `schemaName`: The workflow being used
@@ -39,7 +43,7 @@ Archive a completed change in the experimental workflow.
 
 3. **Check task completion status**
 
-   Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+   Read the tasks file inside the worktree at `.worktrees/<name>/openspec/changes/<name>/tasks.md` to check for incomplete tasks.
 
    Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
 
@@ -52,10 +56,11 @@ Archive a completed change in the experimental workflow.
 
 4. **Assess delta spec sync state**
 
-   Check for delta specs at `openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
+   Check for delta specs at `.worktrees/<name>/openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
 
    **If delta specs exist:**
-   - Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
+   - Compare each delta spec at `.worktrees/<name>/openspec/changes/<name>/specs/<capability>/spec.md`
+     with its corresponding main spec at `.worktrees/<name>/openspec/specs/<capability>/spec.md`
    - Determine what changes would be applied (adds, modifications, removals, renames)
    - Show a combined summary before prompting
 
@@ -65,11 +70,11 @@ Archive a completed change in the experimental workflow.
 
    If user chooses sync, use Task tool (subagent_type: "general-purpose", prompt: "Use Skill tool to invoke openspec-sync-specs for change '<name>'. Delta spec analysis: <include the analyzed delta spec summary>"). Proceed to archive regardless of choice.
 
-5. **Perform the archive**
+5. **Perform the archive** (run from `.worktrees/<name>/`)
 
    Create the archive directory if it doesn't exist:
    ```bash
-   mkdir -p openspec/changes/archive
+   mkdir -p .worktrees/<name>/openspec/changes/archive
    ```
 
    Generate target name using current date: `YYYY-MM-DD-<change-name>`
@@ -79,16 +84,29 @@ Archive a completed change in the experimental workflow.
    - If no: Move the change directory to archive
 
    ```bash
-   mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
+   cd .worktrees/<name> && mv openspec/changes/<name> openspec/changes/archive/YYYY-MM-DD-<name>
    ```
 
-6. **Display summary**
+6. **Push branch and clean up worktree**
+
+   After the archive move succeeds, commit any uncommitted changes, push the branch, and remove the worktree:
+
+   ```bash
+   cd .worktrees/<name> && git add -A && git commit -m "chore(opsx): archive change <name>"
+   git push origin opsx/<name>
+   git worktree remove .worktrees/<name>
+   ```
+
+   Announce: "Branch `opsx/<name>` pushed to origin. Worktree `.worktrees/<name>` removed."
+
+7. **Display summary**
 
    Show archive completion summary including:
    - Change name
    - Schema that was used
-   - Archive location
+   - Archive location (inside `opsx/<name>` branch)
    - Whether specs were synced (if applicable)
+   - Branch pushed to origin and worktree removed
    - Note about any warnings (incomplete artifacts/tasks)
 
 **Output On Success**
@@ -106,9 +124,11 @@ All artifacts complete. All tasks complete.
 
 **Guardrails**
 - Always prompt for change selection if not provided
-- Use artifact graph (openspec status --json) for completion checking
+- Use artifact graph (openspec status --json) for completion checking, run from inside the worktree
 - Don't block archive on warnings - just inform and confirm
 - Preserve .openspec.yaml when moving to archive (it moves with the directory)
 - Show clear summary of what happened
 - If sync is requested, use openspec-sync-specs approach (agent-driven)
 - If delta specs exist, always run the sync assessment and show the combined summary before prompting
+- **Always commit and push the branch before removing the worktree** — the worktree removal is the final cleanup step
+- If the worktree was already removed (e.g., manually), skip the worktree removal step gracefully

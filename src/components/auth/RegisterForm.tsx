@@ -111,7 +111,7 @@ export default function RegisterForm() {
         <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
         <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
         
-        {/* TODO: Replace <a> with <Link> once /terms and /privacy-policy routes are created */}
+        {/* TODO: Replace <a> with <Link> for /terms once that route is created (#625) */}
         <p className="text-center text-xs text-[var(--theme-fg-subtle)] leading-relaxed">
           By creating an account you agree to our{" "}
           <a
@@ -121,12 +121,12 @@ export default function RegisterForm() {
             Terms
           </a>{" "}
           and{" "}
-          <a
-            href="/privacy-policy"
+          <Link
+            to="/privacy-policy"
             className="underline hover:text-[var(--theme-accent)] transition-colors"
           >
             Privacy Policy
-          </a>
+          </Link>
           .
         </p>
 

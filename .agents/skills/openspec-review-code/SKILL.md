@@ -22,7 +22,7 @@ No input is required. The skill will automatically inspect the repository's curr
 1. **Review Changes**
    Run the following commands to see all changes introduced by the feature branch:
    ```bash
-   git diff main...HEAD
+   git diff <default-branch>...HEAD
    git diff HEAD
    ```
 
