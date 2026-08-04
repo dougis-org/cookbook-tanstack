@@ -34,7 +34,7 @@ function ConsentPage() {
           setStatus("error")
           return
         }
-        window.location.href = data.url
+        window.location.href = `${data.url}`
         return
       }
       setStatus("idle")
