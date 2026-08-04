@@ -84,6 +84,17 @@ export const auth = betterAuth({
       loginPage: "/auth/login",
       consentPage: "/oauth/consent",
       scopes: ["openid", "profile", "email", "offline_access", "read:own-content"],
+      // Pins the only valid token audience to this app's own baseURL. This is
+      // also this app's mitigation for GHSA-p2fr-6hmx-4528 (moderate,
+      // unpatched as of @better-auth/oauth-provider 1.6.x — fixed only in the
+      // 1.7.0-beta.4+ pre-release, which requires a breaking `npx auth
+      // migrate` schema migration not taken in this change): with a single
+      // audience and no dynamic client registration enabled, there is no
+      // "other" audience for the described unbound-resource-indicator issue
+      // to redirect a token to. `src/server/alexa/token-validation.ts`
+      // independently re-checks `audience` on every verification as
+      // defense-in-depth.
+      validAudiences: [process.env.BETTER_AUTH_URL!],
     }),
     tanstackStartCookies(), // must be last
   ],

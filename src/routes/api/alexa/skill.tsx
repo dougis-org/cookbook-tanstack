@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { skill } from "@/server/alexa/skill"
-import { verifyAlexaRequest } from "@/server/alexa/verify-request"
+import { verifyAlexaRequest, verifyAlexaSkillId } from "@/server/alexa/verify-request"
 
 export const Route = createFileRoute("/api/alexa/skill")({
   server: {
@@ -18,6 +18,16 @@ export const Route = createFileRoute("/api/alexa/skill")({
         }
 
         const requestEnvelope = JSON.parse(rawBody)
+
+        // Signature verification proves the request is genuinely from Alexa
+        // infrastructure, but not that it's addressed to *this* skill —
+        // anyone can point their own registered skill's endpoint here.
+        try {
+          verifyAlexaSkillId(requestEnvelope)
+        } catch {
+          return new Response("Unrecognized skill application ID", { status: 401 })
+        }
+
         const responseEnvelope = await skill.invoke(requestEnvelope)
         return new Response(JSON.stringify(responseEnvelope), {
           headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
-import { verifyAlexaRequest } from "../verify-request";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { verifyAlexaRequest, verifyAlexaSkillId } from "../verify-request";
 
 const VALID_CERT_URL =
   "https://s3.amazonaws.com/echo.api/echo-api-cert-6-ats.pem";
@@ -49,4 +49,46 @@ describe("verifyAlexaRequest", () => {
       verifyAlexaRequest(buildEnvelope(staleTimestamp), headers),
     ).rejects.toThrow();
   }, 15000);
+});
+
+describe("verifyAlexaSkillId", () => {
+  const ORIGINAL_SKILL_ID = process.env.ALEXA_SKILL_ID;
+
+  beforeEach(() => {
+    process.env.ALEXA_SKILL_ID = "amzn1.ask.skill.my-real-skill";
+  });
+
+  afterEach(() => {
+    if (ORIGINAL_SKILL_ID === undefined) delete process.env.ALEXA_SKILL_ID;
+    else process.env.ALEXA_SKILL_ID = ORIGINAL_SKILL_ID;
+  });
+
+  function envelopeWithAppId(applicationId: string | undefined) {
+    return {
+      context: { System: { application: { applicationId } } },
+    } as never;
+  }
+
+  it("accepts a request whose application ID matches this skill", () => {
+    expect(() =>
+      verifyAlexaSkillId(envelopeWithAppId("amzn1.ask.skill.my-real-skill")),
+    ).not.toThrow();
+  });
+
+  it("rejects a request from a different (attacker-controlled) skill", () => {
+    expect(() =>
+      verifyAlexaSkillId(envelopeWithAppId("amzn1.ask.skill.someone-elses-skill")),
+    ).toThrow();
+  });
+
+  it("rejects a request with no application ID at all", () => {
+    expect(() => verifyAlexaSkillId(envelopeWithAppId(undefined))).toThrow();
+  });
+
+  it("fails closed when ALEXA_SKILL_ID is not configured", () => {
+    delete process.env.ALEXA_SKILL_ID;
+    expect(() =>
+      verifyAlexaSkillId(envelopeWithAppId("amzn1.ask.skill.my-real-skill")),
+    ).toThrow();
+  });
 });

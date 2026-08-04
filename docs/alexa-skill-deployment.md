@@ -25,6 +25,14 @@ Endpoint):
   a manifest-level checkbox, not an infrastructure change. It is not an ARN
   (no Lambda is involved).
 
+**Required: set `ALEXA_SKILL_ID`.** The skill route verifies Alexa's request
+signature (proves the request came from genuine Alexa infrastructure) and
+the request's `applicationId` (proves it's addressed to *this* skill, not
+some other skill someone points at the same URL). Copy the skill ID from the
+Developer Console (skill → "View Skill ID", format
+`amzn1.ask.skill.xxxxxxxx-xxxx-...`) into `ALEXA_SKILL_ID` before enabling
+the endpoint — every request is rejected while it's unset.
+
 ## 2. Private beta / developer testing process (task 6.2)
 
 This change ships a private (unpublished) custom skill only — no Alexa Skill

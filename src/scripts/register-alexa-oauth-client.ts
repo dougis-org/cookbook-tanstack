@@ -15,6 +15,11 @@
  * ALEXA_OAUTH_CLIENT_ID / ALEXA_OAUTH_CLIENT_SECRET for the skill manifest.
  * The exact redirect URI comes from the Amazon Developer Console during the
  * discovery spike (task 1.1) and cannot be known ahead of that manual step.
+ *
+ * The client_secret is printed to stdout because there is no other way to
+ * retrieve it — copy it into the skill manifest immediately and avoid
+ * leaving it in shell history or CI logs (run interactively, not in a
+ * logged pipeline step).
  */
 
 export function buildCreateClientRequest(
