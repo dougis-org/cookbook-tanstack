@@ -37,7 +37,7 @@ The system SHALL document, in a `## Production Secrets & Environment Variables` 
 #### Scenario: Storage-location categories are defined once
 
 - **Given** the new section
-- **When** a reader looks for what "Fly secret" vs "GH Actions Variable" means
+- **When** a reader looks for what "Fly secret" vs "GitHub Actions Variable" means
 - **Then** the four storage-location categories (Fly secret, Fly `[env]`, GitHub Actions secret, GitHub Actions Variable) are each defined with their runtime/build-time semantics before the table, so individual rows don't need to re-explain them
 
 ### Requirement: High-risk vars have documented failure modes
@@ -141,6 +141,8 @@ The system SHALL NOT include actual secret values (tokens, keys, URIs with crede
 - **Then** no cell or prose paragraph contains an actual production credential, token, or connection string value
 
 ### Requirement: Reliability — production secrets documentation reflects merged state
+
+The system SHALL document production secret values (`APP_PRIMARY_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS`) against their merged, settled state, and SHALL NOT block documentation of a variable's intended configuration on an unrelated, still-open implementation gap.
 
 #### Scenario: Doc reflects merged state for settled values
 
