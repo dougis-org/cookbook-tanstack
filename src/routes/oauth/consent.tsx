@@ -2,7 +2,7 @@ import { useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { ShieldCheck } from "lucide-react"
 import { requireAuth } from "@/lib/auth-guard"
-import { parseConsentRequest, buildConsentDecisionBody } from "@/lib/oauth-consent"
+import { parseConsentRequest, buildConsentDecisionBody, isSafeConsentRedirectUrl } from "@/lib/oauth-consent"
 import PageLayout from "@/components/layout/PageLayout"
 
 export const Route = createFileRoute("/oauth/consent")({
@@ -30,6 +30,10 @@ function ConsentPage() {
       }
       const data: { redirect?: boolean; url?: string } = await response.json()
       if (data.redirect && data.url) {
+        if (!isSafeConsentRedirectUrl(data.url)) {
+          setStatus("error")
+          return
+        }
         window.location.href = data.url
         return
       }

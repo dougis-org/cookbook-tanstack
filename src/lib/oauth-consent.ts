@@ -30,3 +30,23 @@ export function buildConsentDecisionBody(
     ...(request.oauthQuery ? { oauth_query: request.oauthQuery } : {}),
   }
 }
+
+/**
+ * Validates a post-consent redirect target before the page navigates to it.
+ *
+ * The oauth-provider plugin's own `/oauth2/consent` endpoint is the thing
+ * that validates `redirect_uri` against the registered client's allowlist
+ * (design.md Decision 3) — this redirect is expected to be an external URL
+ * (e.g. Alexa's `layla.amazon.com` linking callback), so it can't be
+ * restricted to our own origin. What this check *can* enforce client-side:
+ * reject anything that isn't a well-formed http(s) URL, so a malformed or
+ * script-scheme value (e.g. `javascript:`) in an unexpected/compromised
+ * response body can't be blindly handed to `window.location.href`.
+ */
+export function isSafeConsentRedirectUrl(url: string): boolean {
+  try {
+    return ['http:', 'https:'].includes(new URL(url).protocol)
+  } catch {
+    return false
+  }
+}

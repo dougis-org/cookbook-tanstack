@@ -22,6 +22,15 @@
  * logged pipeline step).
  */
 
+/** Rejects anything that isn't a well-formed https URL before it reaches fetch(). */
+export function isValidAppBaseUrl(baseUrl: string): boolean {
+  try {
+    return new URL(baseUrl).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function buildCreateClientRequest(
   baseUrl: string,
   sessionToken: string,
@@ -53,6 +62,11 @@ async function main() {
     console.error(
       "Usage: APP_BASE_URL=... ADMIN_SESSION_TOKEN=... ALEXA_REDIRECT_URIS=... npx tsx src/scripts/register-alexa-oauth-client.ts",
     );
+    process.exit(1);
+  }
+
+  if (!isValidAppBaseUrl(baseUrl)) {
+    console.error("APP_BASE_URL must be a well-formed https URL");
     process.exit(1);
   }
 

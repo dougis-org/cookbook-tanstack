@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseConsentRequest, buildConsentDecisionBody } from "../oauth-consent";
+import { parseConsentRequest, buildConsentDecisionBody, isSafeConsentRedirectUrl } from "../oauth-consent";
 
 describe("parseConsentRequest", () => {
   it("extracts client_id, scope, and oauth_query from search params", () => {
@@ -37,5 +37,20 @@ describe("buildConsentDecisionBody", () => {
   it("omits scope and oauth_query when absent", () => {
     const body = buildConsentDecisionBody("deny", { clientId: null, scope: null, oauthQuery: null });
     expect(body).toEqual({ accept: false });
+  });
+});
+
+describe("isSafeConsentRedirectUrl", () => {
+  it("accepts well-formed https and http URLs", () => {
+    expect(isSafeConsentRedirectUrl("https://layla.amazon.com/api/skill/link/XYZ")).toBe(true);
+    expect(isSafeConsentRedirectUrl("http://localhost:3000/callback")).toBe(true);
+  });
+
+  it("rejects a javascript: scheme URL", () => {
+    expect(isSafeConsentRedirectUrl("javascript:alert(1)")).toBe(false);
+  });
+
+  it("rejects a malformed string", () => {
+    expect(isSafeConsentRedirectUrl("not a url")).toBe(false);
   });
 });

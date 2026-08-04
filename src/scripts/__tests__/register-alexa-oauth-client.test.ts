@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildCreateClientRequest } from "../register-alexa-oauth-client";
+import { buildCreateClientRequest, isValidAppBaseUrl } from "../register-alexa-oauth-client";
 
 describe("buildCreateClientRequest", () => {
   it("targets the create-client endpoint with the admin session cookie and requested redirect_uris", () => {
@@ -18,5 +18,19 @@ describe("buildCreateClientRequest", () => {
       redirect_uris: ["https://layla.amazon.com/api/skill/link/XYZ"],
       scope: "read:own-content",
     });
+  });
+});
+
+describe("isValidAppBaseUrl", () => {
+  it("accepts a well-formed https URL", () => {
+    expect(isValidAppBaseUrl("https://cookbook.example.com")).toBe(true);
+  });
+
+  it("rejects a non-https URL", () => {
+    expect(isValidAppBaseUrl("http://cookbook.example.com")).toBe(false);
+  });
+
+  it("rejects a malformed string", () => {
+    expect(isValidAppBaseUrl("not a url")).toBe(false);
   });
 });
