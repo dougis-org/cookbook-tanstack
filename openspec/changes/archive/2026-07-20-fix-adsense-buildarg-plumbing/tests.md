@@ -33,7 +33,7 @@ For each task in `tasks.md`:
 
 - [ ] Test case: With `vars.VITE_GOOGLE_ADSENSE_TOP_SLOT_ID` (or any one of the 5) deliberately unset, trigger `deploy.yml` via `workflow_dispatch` in a disposable/dry-run context (or simulate the validation step's shell logic locally with the variable unset in the environment) — the step must exit non-zero with a message naming the missing variable, **before** the `flyctl deploy` step is reached. Confirms Spec scenario "Deploy fails loudly when a required variable is missing".
 - [ ] Test case: With all 5 variables set (non-empty), the same validation step exits zero and the job proceeds. Confirms Spec scenario "Deploy proceeds when all required variables are present".
-- [ ] Test case: `grep -L "VITE_ADSENSE_ENABLED\|VITE_GOOGLE_ADSENSE\|VITE_GOOGLE_ANALYTICS_ID" .github/workflows/*.yml | grep -v deploy.yml` — confirms no other workflow file references these variables or the validation logic. Confirms Spec scenario "Validation does not run on non-production workflows".
+- [ ] Test case: `grep -lE "VITE_ADSENSE_ENABLED|VITE_GOOGLE_ADSENSE|VITE_GOOGLE_ANALYTICS_ID" .github/workflows/*.yml | grep -v deploy.yml` — lists files that *do* reference these variables, excluding `deploy.yml`; must produce no output, confirming no other workflow file references these variables or the validation logic. Confirms Spec scenario "Validation does not run on non-production workflows".
 
 ### Task 7: Deploy step build-arg forwarding
 

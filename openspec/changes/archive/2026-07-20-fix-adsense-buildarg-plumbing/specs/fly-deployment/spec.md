@@ -58,15 +58,21 @@ The `deploy` job in `.github/workflows/deploy.yml` SHALL include a step, running
 
 ## MODIFIED Requirements
 
-### Requirement: MODIFIED GitHub Actions workflow deploys only on PR merge to main
+### Requirement: MODIFIED GitHub Actions workflow deploys on PR merge to main or manual dispatch
 
-The project SHALL contain `.github/workflows/deploy.yml` that triggers on `pull_request` closed events targeting `main`, with a job-level condition `if: github.event.pull_request.merged == true`. It MUST use the official `superfly/flyctl-actions` action, authenticate via a `FLY_API_TOKEN` GitHub secret, validate that the 5 required client-exposed build-time Variables are present (failing loudly if not), and then run `flyctl deploy --remote-only` with `--build-arg` flags for those same 5 variables sourced from repository Variables.
+The project SHALL contain `.github/workflows/deploy.yml` that triggers on either of two events: `pull_request` closed events targeting `main` (gated by a job-level condition `if: github.event.pull_request.merged == true`), or a manual `workflow_dispatch` trigger. It MUST use the official `superfly/flyctl-actions` action, authenticate via a `FLY_API_TOKEN` GitHub secret, validate that the 5 required client-exposed build-time Variables are present (failing loudly if not), and then run `flyctl deploy --remote-only` with `--build-arg` flags for those same 5 variables sourced from repository Variables.
 
 #### Scenario: Workflow triggers on PR merge to main
 
 - **Given** a pull request targeting `main`
 - **When** it is merged
 - **Then** the `deploy.yml` workflow is triggered automatically
+
+#### Scenario: Workflow triggers on manual dispatch
+
+- **Given** `workflow_dispatch` is invoked for `deploy.yml`
+- **When** the trigger fires
+- **Then** the workflow runs the same deploy job independent of any pull request state
 
 #### Scenario: Workflow does NOT trigger on direct push to main
 
