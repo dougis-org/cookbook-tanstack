@@ -18,31 +18,28 @@ function postHandler() {
   return handlers.POST;
 }
 
-describe("POST /api/alexa/skill", () => {
-  it("rejects a request that fails signature verification", async () => {
-    verifyAlexaRequest.mockRejectedValue(new Error("bad signature"));
-    const request = new Request("https://cookbook.test/api/alexa/skill", {
-      method: "POST",
-      body: JSON.stringify({ request: { type: "LaunchRequest" } }),
-    });
-
-    const response = await postHandler()({ request });
-
-    expect(response.status).toBe(401);
-    expect(invoke).not.toHaveBeenCalled();
+function buildSkillRequest(envelope: object = { request: { type: "LaunchRequest" } }) {
+  return new Request("https://cookbook.test/api/alexa/skill", {
+    method: "POST",
+    body: JSON.stringify(envelope),
   });
+}
 
-  it("rejects a request whose application ID doesn't match this skill", async () => {
-    verifyAlexaRequest.mockResolvedValue(undefined);
-    verifyAlexaSkillId.mockImplementation(() => {
-      throw new Error("mismatched skill id");
-    });
-    const request = new Request("https://cookbook.test/api/alexa/skill", {
-      method: "POST",
-      body: JSON.stringify({ request: { type: "LaunchRequest" } }),
-    });
-
-    const response = await postHandler()({ request });
+describe("POST /api/alexa/skill", () => {
+  it.each([
+    ["fails signature verification", () => verifyAlexaRequest.mockRejectedValue(new Error("bad signature"))],
+    [
+      "has an application ID that doesn't match this skill",
+      () => {
+        verifyAlexaRequest.mockResolvedValue(undefined);
+        verifyAlexaSkillId.mockImplementation(() => {
+          throw new Error("mismatched skill id");
+        });
+      },
+    ],
+  ])("rejects a request that %s", async (_label, arrangeMocks) => {
+    arrangeMocks();
+    const response = await postHandler()({ request: buildSkillRequest() });
 
     expect(response.status).toBe(401);
     expect(invoke).not.toHaveBeenCalled();
@@ -53,12 +50,8 @@ describe("POST /api/alexa/skill", () => {
     verifyAlexaSkillId.mockImplementation(() => undefined);
     invoke.mockResolvedValue({ version: "1.0", response: { shouldEndSession: true } });
     const envelope = { request: { type: "LaunchRequest" } };
-    const request = new Request("https://cookbook.test/api/alexa/skill", {
-      method: "POST",
-      body: JSON.stringify(envelope),
-    });
 
-    const response = await postHandler()({ request });
+    const response = await postHandler()({ request: buildSkillRequest(envelope) });
     const body = await response.json();
 
     expect(invoke).toHaveBeenCalledWith(envelope);

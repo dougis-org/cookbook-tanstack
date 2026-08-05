@@ -12,6 +12,13 @@ vi.mock("@/lib/mail", () => ({
 
 import { vi } from "vitest"
 
+function getOAuthPluginOptions(auth: { options: { plugins?: { id: string }[] } }) {
+  const plugin = auth.options.plugins?.find((p) => p.id === "oauth-provider") as
+    | { options?: { scopes?: string[]; consentPage?: string; loginPage?: string } }
+    | undefined
+  return plugin?.options
+}
+
 /**
  * These verify our oauth-provider wiring (scopes, consent/login pages, and that
  * the plugin's /authorize and /token endpoints are mounted). PKCE validation,
@@ -38,19 +45,14 @@ describe("auth oauth-provider wiring", () => {
 
   it("registers read:own-content among the supported scopes", async () => {
     const { auth } = await import("@/lib/auth")
-    const oauthPlugin = auth.options.plugins?.find(
-      (p: { id: string }) => p.id === "oauth-provider",
-    ) as { options?: { scopes?: string[] } } | undefined
-    expect(oauthPlugin?.options?.scopes).toContain("read:own-content")
+    expect(getOAuthPluginOptions(auth)?.scopes).toContain("read:own-content")
   })
 
   it("configures the consent and login pages the plugin redirects to", async () => {
     const { auth } = await import("@/lib/auth")
-    const oauthPlugin = auth.options.plugins?.find(
-      (p: { id: string }) => p.id === "oauth-provider",
-    ) as { options?: { consentPage?: string; loginPage?: string } } | undefined
-    expect(oauthPlugin?.options?.consentPage).toBe("/oauth/consent")
-    expect(oauthPlugin?.options?.loginPage).toBe("/auth/login")
+    const options = getOAuthPluginOptions(auth)
+    expect(options?.consentPage).toBe("/oauth/consent")
+    expect(options?.loginPage).toBe("/auth/login")
   })
 
   it("registers the jwt plugin required for access/ID tokens", async () => {

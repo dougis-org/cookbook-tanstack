@@ -17,18 +17,22 @@ async function getCaller() {
   return appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
 }
 
+/** Combines the standard clean-DB wrapper + anon caller setup shared by every test below. */
+async function withAlexaCaller<T>(fn: (caller: Awaited<ReturnType<typeof getCaller>>) => Promise<T>): Promise<T> {
+  return withCleanDb(async () => fn(await getCaller()));
+}
+
 beforeEach(() => {
   validateAlexaAccessToken.mockReset();
 });
 
 describe("alexa.searchRecipes", () => {
   it("returns only public recipes for an unauthenticated request", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       await new Recipe({ name: "Chicken Tikka Masala", userId: owner.id, isPublic: true }).save();
       await new Recipe({ name: "Secret Family Recipe", userId: owner.id, isPublic: false }).save();
 
-      const caller = await getCaller();
       const result = await caller.alexa.searchRecipes({ query: "recipe" });
 
       expect(result.items.every((i) => i.name !== "Secret Family Recipe")).toBe(true);
@@ -36,12 +40,11 @@ describe("alexa.searchRecipes", () => {
   });
 
   it("respects the search term against name/ingredients", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       await new Recipe({ name: "Chicken Tikka Masala", userId: owner.id, isPublic: true }).save();
       await new Recipe({ name: "Beef Stew", userId: owner.id, isPublic: true }).save();
 
-      const caller = await getCaller();
       const result = await caller.alexa.searchRecipes({ query: "tikka" });
 
       expect(result.items).toHaveLength(1);
@@ -50,8 +53,7 @@ describe("alexa.searchRecipes", () => {
   });
 
   it("returns an empty result set without erroring when there are no matches", async () => {
-    await withCleanDb(async () => {
-      const caller = await getCaller();
+    await withAlexaCaller(async (caller) => {
       const result = await caller.alexa.searchRecipes({ query: "nonexistent-xyz" });
       expect(result.items).toEqual([]);
     });
@@ -59,8 +61,8 @@ describe("alexa.searchRecipes", () => {
 });
 
 describe("alexa.recipeDetail", () => {
-  it("returns a voice/APL-shaped response with flattened ingredients and numbered steps", async () => {
-    await withCleanDb(async () => {
+  it("returns a voice/APL-shaped response with flattened ingredients and numbered steps, never including note content for any tier", async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       const recipe = await new Recipe({
         name: "Pancakes",
@@ -68,10 +70,9 @@ describe("alexa.recipeDetail", () => {
         isPublic: true,
         ingredients: "Flour\nEggs\nMilk",
         instructions: "Mix ingredients.\nCook on griddle.",
-        notes: "Best served hot.",
+        notes: "This must never be spoken aloud.",
       }).save();
 
-      const caller = await getCaller();
       const result = await caller.alexa.recipeDetail({ id: recipe.id.toString() });
 
       expect(result).toMatchObject({
@@ -79,22 +80,6 @@ describe("alexa.recipeDetail", () => {
         ingredients: ["Flour", "Eggs", "Milk"],
         steps: ["Mix ingredients.", "Cook on griddle."],
       });
-    });
-  });
-
-  it("never includes note content in the response, for any tier", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUserWithBetterAuth();
-      const recipe = await new Recipe({
-        name: "Pancakes",
-        userId: owner.id,
-        isPublic: true,
-        notes: "This must never be spoken aloud.",
-      }).save();
-
-      const caller = await getCaller();
-      const result = await caller.alexa.recipeDetail({ id: recipe.id.toString() });
-
       expect(JSON.stringify(result)).not.toContain("never be spoken");
     });
   });
@@ -102,14 +87,13 @@ describe("alexa.recipeDetail", () => {
 
 describe("alexa.myRecipes", () => {
   it("returns only the caller's own recipes for a valid access token", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       const other = await seedUserWithBetterAuth();
       await new Recipe({ name: "Owner's Private Recipe", userId: owner.id, isPublic: false }).save();
       await new Recipe({ name: "Other's Private Recipe", userId: other.id, isPublic: false }).save();
       validateAlexaAccessToken.mockResolvedValue({ userId: owner.id });
 
-      const caller = await getCaller();
       const result = await caller.alexa.myRecipes({ token: "valid-token" });
 
       expect(result.items).toHaveLength(1);
@@ -117,32 +101,23 @@ describe("alexa.myRecipes", () => {
     });
   });
 
-  it("rejects a request with a missing access token", async () => {
-    await withCleanDb(async () => {
+  it.each([
+    ["a missing access token", ""],
+    ["an expired or revoked access token", "expired-token"],
+  ])("rejects a request with %s", async (_label, token) => {
+    await withAlexaCaller(async (caller) => {
       validateAlexaAccessToken.mockResolvedValue(null);
-      const caller = await getCaller();
-      await expect(caller.alexa.myRecipes({ token: "" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-    });
-  });
-
-  it("rejects a request with an expired or revoked access token", async () => {
-    await withCleanDb(async () => {
-      validateAlexaAccessToken.mockResolvedValue(null);
-      const caller = await getCaller();
-      await expect(caller.alexa.myRecipes({ token: "expired-token" })).rejects.toMatchObject({
-        code: "UNAUTHORIZED",
-      });
+      await expect(caller.alexa.myRecipes({ token })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     });
   });
 
   it("hides recipes over the tier limit the same way the web app does", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       await new Recipe({ name: "Visible", userId: owner.id, isPublic: false, hiddenByTier: false }).save();
       await new Recipe({ name: "Hidden By Tier", userId: owner.id, isPublic: false, hiddenByTier: true }).save();
       validateAlexaAccessToken.mockResolvedValue({ userId: owner.id });
 
-      const caller = await getCaller();
       const result = await caller.alexa.myRecipes({ token: "valid-token" });
 
       expect(result.items.map((i) => i.name)).toEqual(["Visible"]);
@@ -152,12 +127,11 @@ describe("alexa.myRecipes", () => {
 
 describe("alexa.cookbookDetail", () => {
   it("returns chapters/entries for an owned, resolvable cookbook", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       const cookbook = await new Cookbook({ name: "My Cookbook", userId: owner.id, isPublic: false }).save();
       validateAlexaAccessToken.mockResolvedValue({ userId: owner.id });
 
-      const caller = await getCaller();
       const result = await caller.alexa.cookbookDetail({ token: "valid-token", id: cookbook.id.toString() });
 
       expect(result).toMatchObject({ name: "My Cookbook" });
@@ -165,13 +139,12 @@ describe("alexa.cookbookDetail", () => {
   });
 
   it("does not reveal a cookbook owned by another user", async () => {
-    await withCleanDb(async () => {
+    await withAlexaCaller(async (caller) => {
       const owner = await seedUserWithBetterAuth();
       const requester = await seedUserWithBetterAuth();
       const cookbook = await new Cookbook({ name: "Not Yours", userId: owner.id, isPublic: false }).save();
       validateAlexaAccessToken.mockResolvedValue({ userId: requester.id });
 
-      const caller = await getCaller();
       const result = await caller.alexa.cookbookDetail({ token: "valid-token", id: cookbook.id.toString() });
 
       expect(result).toBeNull();

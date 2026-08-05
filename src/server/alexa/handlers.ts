@@ -1,4 +1,4 @@
-import type { HandlerInput, RequestHandler } from "ask-sdk-core";
+import type { HandlerInput, RequestHandler, ResponseBuilder } from "ask-sdk-core";
 import {
   getRequestType,
   getIntentName,
@@ -7,6 +7,7 @@ import {
   getAccountLinkingAccessToken,
   getSupportedInterfaces,
 } from "ask-sdk-core";
+import type { Response } from "ask-sdk-model";
 import { alexaAdapter } from "@/server/trpc/routers/alexa";
 import { getProgress, saveProgress } from "@/server/alexa/progress-store";
 import { searchResultsDocument, recipeDetailDocument, cookbookBrowseDocument } from "@/server/alexa/apl-documents";
@@ -26,6 +27,21 @@ function addAplDirective(input: HandlerInput, document: object, datasources: obj
 
 function isIntent(input: HandlerInput, name: string): boolean {
   return getRequestType(input.requestEnvelope) === "IntentRequest" && getIntentName(input.requestEnvelope) === name;
+}
+
+/** Ends the turn with a single spoken line and no card/directive. */
+function speak(builder: ResponseBuilder, speech: string): Response {
+  return builder.speak(speech).getResponse();
+}
+
+/** Prompts an unlinked caller to link their account via the Alexa app. */
+function promptAccountLinking(builder: ResponseBuilder, speech: string): Response {
+  return builder.speak(speech).withLinkAccountCard().getResponse();
+}
+
+/** Returns the caller's OAuth access token, or null if their account isn't linked. */
+function accessToken(input: HandlerInput): string | null {
+  return getAccountLinkingAccessToken(input.requestEnvelope) ?? null;
 }
 
 export const LaunchRequestHandler: RequestHandler = {
@@ -49,9 +65,7 @@ export const SearchRecipesIntentHandler: RequestHandler = {
     const result = await alexaAdapter.searchRecipes({ query });
 
     if (result.items.length === 0) {
-      return input.responseBuilder
-        .speak(`I couldn't find any recipes matching "${query}". Try a different search term.`)
-        .getResponse();
+      return speak(input.responseBuilder, `I couldn't find any recipes matching "${query}". Try a different search term.`);
     }
 
     const top = result.items[0];
@@ -70,11 +84,11 @@ export const GetRecipeDetailsIntentHandler: RequestHandler = {
   async handle(input) {
     const recipeId = getSlotValue(input.requestEnvelope, "recipeId");
     if (!recipeId) {
-      return input.responseBuilder.speak("Which recipe would you like to hear about?").getResponse();
+      return speak(input.responseBuilder, "Which recipe would you like to hear about?");
     }
     const recipe = await alexaAdapter.recipeDetail({ id: recipeId });
     if (!recipe) {
-      return input.responseBuilder.speak("I couldn't find that recipe.").getResponse();
+      return speak(input.responseBuilder, "I couldn't find that recipe.");
     }
 
     const alexaUserId = getUserId(input.requestEnvelope);
@@ -95,24 +109,21 @@ export const GetRecipeDetailsIntentHandler: RequestHandler = {
 async function stepNavigation(input: HandlerInput, direction: 1 | -1) {
   const alexaUserId = getUserId(input.requestEnvelope);
   const progress = alexaUserId ? await getProgress(alexaUserId) : null;
-
   if (!progress) {
-    return input.responseBuilder
-      .speak("No recipe is currently in progress. Try searching for a recipe first.")
-      .getResponse();
+    return speak(input.responseBuilder, "No recipe is currently in progress. Try searching for a recipe first.");
   }
 
   const recipe = await alexaAdapter.recipeDetail({ id: progress.recipeId });
   if (!recipe) {
-    return input.responseBuilder.speak("I couldn't find that recipe anymore.").getResponse();
+    return speak(input.responseBuilder, "I couldn't find that recipe anymore.");
   }
 
   const nextIndex = progress.stepIndex + direction;
   if (nextIndex < 0) {
-    return input.responseBuilder.speak("You're already at the first step.").getResponse();
+    return speak(input.responseBuilder, "You're already at the first step.");
   }
   if (nextIndex >= recipe.steps.length) {
-    return input.responseBuilder.speak(`That's the last step. ${recipe.name} is complete. Enjoy!`).getResponse();
+    return speak(input.responseBuilder, `That's the last step. ${recipe.name} is complete. Enjoy!`);
   }
 
   if (alexaUserId) {
@@ -120,9 +131,7 @@ async function stepNavigation(input: HandlerInput, direction: 1 | -1) {
   }
 
   addAplDirective(input, recipeDetailDocument, { recipe, currentStepIndex: nextIndex });
-  return input.responseBuilder
-    .speak(`Step ${nextIndex + 1} of ${recipe.steps.length}: ${recipe.steps[nextIndex]}`)
-    .getResponse();
+  return speak(input.responseBuilder, `Step ${nextIndex + 1} of ${recipe.steps.length}: ${recipe.steps[nextIndex]}`);
 }
 
 export const NextStepIntentHandler: RequestHandler = {
@@ -148,17 +157,17 @@ export const MyRecipesIntentHandler: RequestHandler = {
     return isIntent(input, "MyRecipesIntent");
   },
   async handle(input) {
-    const token = getAccountLinkingAccessToken(input.requestEnvelope);
+    const token = accessToken(input);
     if (!token) {
-      return input.responseBuilder
-        .speak("You'll need to link your My CookBooks account to hear your own recipes. Check your Alexa app.")
-        .withLinkAccountCard()
-        .getResponse();
+      return promptAccountLinking(
+        input.responseBuilder,
+        "You'll need to link your My CookBooks account to hear your own recipes. Check your Alexa app.",
+      );
     }
 
     const { items } = await alexaAdapter.myRecipes({ token });
     if (items.length === 0) {
-      return input.responseBuilder.speak("You don't have any recipes yet.").getResponse();
+      return speak(input.responseBuilder, "You don't have any recipes yet.");
     }
 
     return input.responseBuilder
@@ -173,24 +182,20 @@ export const BrowseCookbookIntentHandler: RequestHandler = {
     return isIntent(input, "BrowseCookbookIntent");
   },
   async handle(input) {
-    const token = getAccountLinkingAccessToken(input.requestEnvelope);
+    const token = accessToken(input);
     if (!token) {
-      return input.responseBuilder
-        .speak("You'll need to link your My CookBooks account to browse your cookbooks. Check your Alexa app.")
-        .withLinkAccountCard()
-        .getResponse();
+      return promptAccountLinking(
+        input.responseBuilder,
+        "You'll need to link your My CookBooks account to browse your cookbooks. Check your Alexa app.",
+      );
     }
 
     const cookbookName = getSlotValue(input.requestEnvelope, "cookbookName");
     const { items } = await alexaAdapter.myCookbooks({ token });
     const match = items.find((cb) => cb.name.toLowerCase() === cookbookName?.toLowerCase());
-    if (!match) {
-      return input.responseBuilder.speak("I couldn't find that cookbook.").getResponse();
-    }
-
-    const cookbook = await alexaAdapter.cookbookDetail({ token, id: match.id });
+    const cookbook = match ? await alexaAdapter.cookbookDetail({ token, id: match.id }) : null;
     if (!cookbook) {
-      return input.responseBuilder.speak("I couldn't find that cookbook.").getResponse();
+      return speak(input.responseBuilder, "I couldn't find that cookbook.");
     }
 
     addAplDirective(input, cookbookBrowseDocument, { cookbook });
