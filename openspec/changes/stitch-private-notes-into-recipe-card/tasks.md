@@ -72,6 +72,6 @@
 - [x] 5.3 Update `.wolf/anatomy.md` and append to `.wolf/memory.md` per
       the OpenWolf protocol, since `PrivateRecipeNotes.tsx` is being
       edited. (`.wolf/` is gitignored and absent from this worktree — n/a.)
-- [ ] 5.4 Open a PR from the `stitch-private-notes-into-recipe-card`
+- [x] 5.4 Open a PR from the `stitch-private-notes-into-recipe-card`
       branch, referencing GitHub issue #639, with before/after screenshots
-      for at least one theme.
+      for at least one theme. (PR #645, auto-merge enabled.)
