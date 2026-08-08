@@ -152,20 +152,34 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     }),
   )
 
-  if (!isLoggedIn) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="anonymous" /></div>
+  if (!isLoggedIn)
+    return (
+      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+        <RecipeNotesUpgradeNudge state="anonymous" />
+      </div>
+    )
   if (isError) return null
 
   if (!canUsePrivateRecipeNotes) {
     if (isLoading) return null
-    if (data?.hasNote) return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="hidden-by-downgrade" /></div>
-    return <div className="mt-8 print:hidden"><RecipeNotesUpgradeNudge state="below-tier" /></div>
+    if (data?.hasNote)
+      return (
+        <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+          <RecipeNotesUpgradeNudge state="hidden-by-downgrade" />
+        </div>
+      )
+    return (
+      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+        <RecipeNotesUpgradeNudge state="below-tier" />
+      </div>
+    )
   }
 
   if (isLoading) {
     return (
       <div
         data-testid="private-notes-skeleton"
-        className="bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-sm)] p-6 mt-8 print:hidden animate-pulse h-28"
+        className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden animate-pulse h-28"
       />
     )
   }
@@ -189,7 +203,10 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   }
 
   return (
-    <div className="bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-xl shadow-[var(--theme-shadow-sm)] p-6 mt-8 print:hidden">
+    <div
+      data-testid="private-notes-panel"
+      className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden"
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-2xl font-bold text-[var(--theme-fg)]">Private Notes</h2>
         <EditButton visible={!isEditing && Boolean(data?.note?.body?.trim())} onEdit={handleEdit} />

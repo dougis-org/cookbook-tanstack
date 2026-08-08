@@ -306,4 +306,70 @@ describe('PrivateRecipeNotes', () => {
       expect(screen.getByRole('button', { name: /add a note/i })).toBeInTheDocument()
     })
   })
+
+  describe('visual integration with RecipeDetail card', () => {
+    it('anonymous nudge wrapper matches the recipe card width and seam styling', () => {
+      isLoggedIn = false
+      canUseNotes = false
+      renderComponent()
+      const wrapperEl = screen.getByTestId('nudge-anonymous').parentElement
+      expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('below-tier nudge wrapper matches the recipe card width and seam styling', async () => {
+      isLoggedIn = true
+      canUseNotes = false
+      seedQueryClient({ hasNote: false, note: null })
+      renderComponent()
+      await waitFor(() => expect(screen.getByTestId('nudge-below-tier')).toBeInTheDocument())
+      const wrapperEl = screen.getByTestId('nudge-below-tier').parentElement
+      expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('hidden-by-downgrade nudge wrapper matches the recipe card width and seam styling', async () => {
+      isLoggedIn = true
+      canUseNotes = false
+      seedQueryClient({ hasNote: true, note: null })
+      renderComponent()
+      await waitFor(() => expect(screen.getByTestId('nudge-hidden-by-downgrade')).toBeInTheDocument())
+      const wrapperEl = screen.getByTestId('nudge-hidden-by-downgrade').parentElement
+      expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('loading skeleton matches the recipe card width and continues its seam', async () => {
+      mockGetFn.mockImplementation(() => new Promise(() => {}))
+      renderComponent()
+      await waitFor(() =>
+        expect(screen.getByTestId('private-notes-skeleton')).toBeInTheDocument(),
+      )
+      const skeleton = screen.getByTestId('private-notes-skeleton')
+      expect(skeleton).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(skeleton).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(skeleton).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('loaded note panel matches the recipe card width and continues its seam', async () => {
+      seedQueryClient(makeNote('My private note'))
+      renderComponent()
+      await waitFor(() => expect(screen.getByText('My private note')).toBeInTheDocument())
+      const panel = screen.getByTestId('private-notes-panel')
+      expect(panel).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(panel).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(panel).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('editing panel keeps the same width and seam styling as the read-mode panel', async () => {
+      await openEditNote('Existing text')
+      const panel = screen.getByTestId('private-notes-panel')
+      expect(panel).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(panel).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(panel).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+  })
 })

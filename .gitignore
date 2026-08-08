@@ -45,6 +45,9 @@ data/legacy-migration/reports/*
 
 .vscode/
 
+# OpenSpec change worktrees
+.worktrees/
+
 # OpenWolf 
 .wolf/
 

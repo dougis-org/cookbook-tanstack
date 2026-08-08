@@ -140,7 +140,10 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-[var(--theme-surface)] rounded-lg shadow-lg overflow-hidden print:bg-transparent print:rounded-none print:shadow-none">
+      <div
+        data-testid="recipe-detail-card"
+        className="bg-[var(--theme-surface)] rounded-lg shadow-lg overflow-hidden print:bg-transparent print:rounded-none print:shadow-none"
+      >
         {/* Header Image */}
         <CardImage
           src={recipe.imageUrl}

@@ -74,7 +74,7 @@ test.describe("Recipe detail print card chrome suppression", () => {
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}`);
     await page.emulateMedia({ media: "print" });
 
-    await expectChromeSuppressed(page.locator("div.shadow-lg"));
+    await expectChromeSuppressed(page.getByTestId("recipe-detail-card"));
 
     await page.emulateMedia({ media: "screen" });
   });
@@ -82,7 +82,7 @@ test.describe("Recipe detail print card chrome suppression", () => {
   test("card chrome visible on screen (regression guard)", async ({ page }) => {
     await gotoAndWaitForHydration(page, `/recipes/${recipeId}`);
 
-    await expectChromeVisible(page.locator("div.shadow-lg"));
+    await expectChromeVisible(page.getByTestId("recipe-detail-card"));
   });
 
   test("card chrome suppressed in cookbook print view", async ({ page }) => {
@@ -93,7 +93,7 @@ test.describe("Recipe detail print card chrome suppression", () => {
     await page.emulateMedia({ media: "print" });
 
     const section = page.locator(".cookbook-recipe-section").first();
-    await expectChromeSuppressed(section.locator("div.shadow-lg"));
+    await expectChromeSuppressed(section.getByTestId("recipe-detail-card"));
 
     await page.emulateMedia({ media: "screen" });
   });
@@ -122,7 +122,7 @@ test.describe("Recipe detail print card chrome suppression", () => {
     // print the image is no longer clipped to the fixed h-96 box — the card
     // (with rounding suppressed but overflow-hidden retained) is the actual
     // clipping boundary to check against.
-    const card = page.locator("div.shadow-lg");
+    const card = page.getByTestId("recipe-detail-card");
     const image = card.locator('[data-testid="recipe-detail-image"] img');
     await image.evaluate((img: HTMLImageElement) =>
       img.complete ? undefined : new Promise((resolve) => img.addEventListener("load", resolve, { once: true })),
