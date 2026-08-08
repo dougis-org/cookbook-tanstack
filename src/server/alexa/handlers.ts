@@ -62,6 +62,13 @@ export const SearchRecipesIntentHandler: RequestHandler = {
   },
   async handle(input) {
     const query = getSlotValue(input.requestEnvelope, "query");
+    if (!query) {
+      return input.responseBuilder
+        .speak("What recipe would you like to search for?")
+        .reprompt("What recipe would you like to search for?")
+        .getResponse();
+    }
+
     const result = await alexaAdapter.searchRecipes({ query });
 
     if (result.items.length === 0) {
@@ -82,11 +89,16 @@ export const GetRecipeDetailsIntentHandler: RequestHandler = {
     return isIntent(input, "GetRecipeDetailsIntent");
   },
   async handle(input) {
-    const recipeId = getSlotValue(input.requestEnvelope, "recipeId");
-    if (!recipeId) {
+    // The recipeName slot is free-form speech (AMAZON.SearchQuery in the
+    // interaction model), not a recipe's database ID — resolve it to a
+    // recipe via search first, same as SearchRecipesIntent.
+    const recipeName = getSlotValue(input.requestEnvelope, "recipeName");
+    if (!recipeName) {
       return speak(input.responseBuilder, "Which recipe would you like to hear about?");
     }
-    const recipe = await alexaAdapter.recipeDetail({ id: recipeId });
+    const searchResult = await alexaAdapter.searchRecipes({ query: recipeName });
+    const match = searchResult.items[0];
+    const recipe = match ? await alexaAdapter.recipeDetail({ id: match.id }) : null;
     if (!recipe) {
       return speak(input.responseBuilder, "I couldn't find that recipe.");
     }
@@ -192,7 +204,18 @@ export const BrowseCookbookIntentHandler: RequestHandler = {
 
     const cookbookName = getSlotValue(input.requestEnvelope, "cookbookName");
     const { items } = await alexaAdapter.myCookbooks({ token });
-    const match = items.find((cb) => cb.name.toLowerCase() === cookbookName?.toLowerCase());
+
+    if (!cookbookName) {
+      if (items.length === 0) {
+        return speak(input.responseBuilder, "You don't have any cookbooks yet.");
+      }
+      return input.responseBuilder
+        .speak(`You have ${items.length} cookbook${items.length === 1 ? "" : "s"}: ${items.map((c) => c.name).join(", ")}.`)
+        .withSimpleCard("My Cookbooks", items.map((c) => c.name).join(", "))
+        .getResponse();
+    }
+
+    const match = items.find((cb) => cb.name.toLowerCase() === cookbookName.toLowerCase());
     const cookbook = match ? await alexaAdapter.cookbookDetail({ token, id: match.id }) : null;
     if (!cookbook) {
       return speak(input.responseBuilder, "I couldn't find that cookbook.");

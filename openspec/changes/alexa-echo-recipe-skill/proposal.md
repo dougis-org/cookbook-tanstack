@@ -24,7 +24,7 @@ None — no existing spec's requirements change. The skill consumes existing rec
 
 ## Impact
 
-- **New code (future implementation, not this change):** a self-hosted skill route (Node.js, `ask-sdk-core` + `ask-sdk-express-adapter`) within `src/routes/api/alexa/*`, a new read-only Alexa adapter, `@better-auth/oauth-provider` + `jwt()` configuration alongside `src/lib/auth.ts` plus a consent-page UI, APL document templates, ASK interaction model JSON.
+- **New code (shipped in this change):** a self-hosted skill route (Node.js, `ask-sdk-core` + `ask-sdk-express-adapter`) within `src/routes/api/alexa/*`, a new read-only Alexa adapter, `@better-auth/oauth-provider` + `jwt()` configuration alongside `src/lib/auth.ts` plus a consent-page UI, APL document templates, ASK interaction model JSON.
 - **Existing systems touched conceptually:** `recipes` and `cookbooks` tRPC routers (as data sources, called internally, not modified), Better-Auth (extended via an official plugin, not replaced, for account linking), tier/entitlement policy in `src/server/trpc/routers/_helpers.ts` (reused as-is per "Keep tier entitlement checks centralized in shared policy code").
 - **Dependencies:** Amazon Developer Console skill registration (manual, external, performed by a human — not automatable), `ask-sdk-core`/`ask-sdk-model`/`ask-sdk-express-adapter`, `@better-auth/oauth-provider`, an APL-capable interaction model. No new AWS account/Lambda/IAM required.
 - **Out of scope for this change:** writing/mutating recipes by voice, and publishing the skill to the Alexa Skill Store (certification). Everything else in `tasks.md` — account linking, the read-only adapter, the skill route, APL documents, and rollout documentation — is in scope and ships as code in this change.

@@ -34,12 +34,12 @@
         {
           "name": "GetRecipeDetailsIntent",
           "slots": [
-            { "name": "recipeId", "type": "AMAZON.SearchQuery" }
+            { "name": "recipeName", "type": "AMAZON.SearchQuery" }
           ],
           "samples": [
-            "tell me about {recipeId}",
-            "read me the recipe for {recipeId}",
-            "how do I make {recipeId}"
+            "tell me about {recipeName}",
+            "read me the recipe for {recipeName}",
+            "how do I make {recipeName}"
           ]
         },
         {

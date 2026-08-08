@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 
 const mockDb = () => ({})
 
@@ -9,8 +9,6 @@ vi.mock("@/db", () => ({
 vi.mock("@/lib/mail", () => ({
   sendEmail: vi.fn().mockResolvedValue({ messageId: "test-id" }),
 }))
-
-import { vi } from "vitest"
 
 function getOAuthPluginOptions(auth: { options: { plugins?: { id: string }[] } }) {
   const plugin = auth.options.plugins?.find((p) => p.id === "oauth-provider") as

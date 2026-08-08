@@ -10,6 +10,14 @@ import React from "react";
 import { VerificationEmail } from "@/emails/VerificationEmail";
 import { PasswordResetEmail } from "@/emails/PasswordResetEmail";
 
+function requiredBetterAuthUrl(): string {
+  const url = process.env.BETTER_AUTH_URL;
+  if (!url) {
+    throw new Error("BETTER_AUTH_URL is not set");
+  }
+  return url;
+}
+
 export const auth = betterAuth({
   trustedOrigins:
     process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",")
@@ -94,7 +102,7 @@ export const auth = betterAuth({
       // to redirect a token to. `src/server/alexa/token-validation.ts`
       // independently re-checks `audience` on every verification as
       // defense-in-depth.
-      validAudiences: [process.env.BETTER_AUTH_URL!],
+      validAudiences: [requiredBetterAuthUrl()],
     }),
     tanstackStartCookies(), // must be last
   ],

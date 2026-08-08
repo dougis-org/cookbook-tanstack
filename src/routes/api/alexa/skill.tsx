@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import type { RequestEnvelope } from "ask-sdk-model"
 import { skill } from "@/server/alexa/skill"
 import { verifyAlexaRequest, verifyAlexaSkillId } from "@/server/alexa/verify-request"
 
@@ -17,7 +18,12 @@ export const Route = createFileRoute("/api/alexa/skill")({
           return new Response("Invalid request signature", { status: 401 })
         }
 
-        const requestEnvelope = JSON.parse(rawBody)
+        let requestEnvelope: RequestEnvelope
+        try {
+          requestEnvelope = JSON.parse(rawBody)
+        } catch {
+          return new Response("Malformed request body", { status: 400 })
+        }
 
         // Signature verification proves the request is genuinely from Alexa
         // infrastructure, but not that it's addressed to *this* skill —

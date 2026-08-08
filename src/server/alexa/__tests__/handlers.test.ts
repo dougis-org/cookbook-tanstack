@@ -122,17 +122,37 @@ describe("SearchRecipesIntentHandler", () => {
     const response = await SearchRecipesIntentHandler.handle(input);
     expectSpokenOnlyResponse(response);
   });
+
+  it("prompts for a search term instead of searching when the query slot is missing", async () => {
+    const input = buildInput({ slots: {} });
+    const response = await SearchRecipesIntentHandler.handle(input);
+
+    expect(alexaAdapter.searchRecipes).not.toHaveBeenCalled();
+    expect(JSON.stringify(response.outputSpeech)).toContain("search for");
+  });
 });
 
 describe("GetRecipeDetailsIntentHandler", () => {
-  it("returns a spoken summary and APL detail card, and produces a coherent spoken-only response with no APL directive", async () => {
+  it("resolves the spoken recipe name via search, then returns a spoken summary and APL detail card with no APL directive when unsupported", async () => {
+    alexaAdapter.searchRecipes.mockResolvedValue({ items: [{ id: "1", name: "Pancakes", imageUrl: null }] });
     mockRecipe({ ingredients: ["Flour", "Eggs"], steps: ["Mix", "Cook"] });
 
-    const input = buildInput({ intentName: "GetRecipeDetailsIntent", slots: { recipeId: "1" } });
+    const input = buildInput({ intentName: "GetRecipeDetailsIntent", slots: { recipeName: "pancakes" } });
     const response = await GetRecipeDetailsIntentHandler.handle(input);
 
+    expect(alexaAdapter.searchRecipes).toHaveBeenCalledWith({ query: "pancakes" });
     expect(saveProgress).toHaveBeenCalledWith("amzn1.ask.account.TEST", { recipeId: "1", stepIndex: 0 });
     expectSpokenOnlyResponse(response);
+  });
+
+  it("responds that it couldn't find the recipe when search yields no matches", async () => {
+    alexaAdapter.searchRecipes.mockResolvedValue({ items: [] });
+
+    const input = buildInput({ intentName: "GetRecipeDetailsIntent", slots: { recipeName: "nonexistent" } });
+    const response = await GetRecipeDetailsIntentHandler.handle(input);
+
+    expect(JSON.stringify(response.outputSpeech)).toContain("couldn't find");
+    expect(alexaAdapter.recipeDetail).not.toHaveBeenCalled();
   });
 });
 
@@ -218,6 +238,25 @@ describe("BrowseCookbookIntentHandler", () => {
 
     expect(alexaAdapter.cookbookDetail).toHaveBeenCalledWith({ token: "linked-token", id: "cb-1" });
     expectSpokenOnlyResponse(response);
+  });
+
+  it("lists the caller's cookbooks when no cookbookName slot is given", async () => {
+    mockOwnedCookbook();
+
+    const input = buildInput({ intentName: "BrowseCookbookIntent", slots: {}, accessToken: "linked-token" });
+    const response = await BrowseCookbookIntentHandler.handle(input);
+
+    expect(alexaAdapter.cookbookDetail).not.toHaveBeenCalled();
+    expect(JSON.stringify(response.outputSpeech)).toContain("Family Favorites");
+  });
+
+  it("reports having no cookbooks when no cookbookName slot is given and the caller owns none", async () => {
+    alexaAdapter.myCookbooks.mockResolvedValue({ items: [] });
+
+    const input = buildInput({ intentName: "BrowseCookbookIntent", slots: {}, accessToken: "linked-token" });
+    const response = await BrowseCookbookIntentHandler.handle(input);
+
+    expect(JSON.stringify(response.outputSpeech)).toContain("don't have any cookbooks");
   });
 
   it("responds that it could not find the cookbook without revealing existence for another user", async () => {
