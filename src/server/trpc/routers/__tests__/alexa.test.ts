@@ -150,6 +150,19 @@ describe("alexa.cookbookDetail", () => {
       expect(result).toBeNull();
     });
   });
+
+  it("does not reveal a public cookbook owned by another user, since this procedure serves 'my cookbooks' only", async () => {
+    await withAlexaCaller(async (caller) => {
+      const owner = await seedUserWithBetterAuth();
+      const requester = await seedUserWithBetterAuth();
+      const cookbook = await new Cookbook({ name: "Someone Else's Public Cookbook", userId: owner.id, isPublic: true }).save();
+      validateAlexaAccessToken.mockResolvedValue({ userId: requester.id });
+
+      const result = await caller.alexa.cookbookDetail({ token: "valid-token", id: cookbook.id.toString() });
+
+      expect(result).toBeNull();
+    });
+  });
 });
 
 describe("alexa read-only boundary", () => {

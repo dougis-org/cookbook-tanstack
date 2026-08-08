@@ -122,7 +122,10 @@ export const alexaRouter = router({
       const ctx = await authedContext(input.token);
       const caller = readRouter.createCaller(ctx);
       const cookbook = await caller.cookbooks.byId({ id: input.id });
-      if (!cookbook) return null;
+      // cookbooks.byId also returns public/collaborator cookbooks the caller
+      // doesn't own — this procedure serves "my cookbooks" only, so require
+      // ownership explicitly rather than relying on general visibility.
+      if (!cookbook || cookbook.userId !== ctx.user!.id) return null;
       return {
         id: cookbook.id,
         name: cookbook.name,
