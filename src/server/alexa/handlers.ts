@@ -9,7 +9,7 @@ import {
 } from "ask-sdk-core";
 import type { Response } from "ask-sdk-model";
 import { alexaAdapter } from "@/server/trpc/routers/alexa";
-import { getProgress, saveProgress } from "@/server/alexa/progress-store";
+import { getProgress, saveProgress, clearProgress } from "@/server/alexa/progress-store";
 import { searchResultsDocument, recipeDetailDocument, cookbookBrowseDocument } from "@/server/alexa/apl-documents";
 
 function supportsApl(input: HandlerInput): boolean {
@@ -135,6 +135,9 @@ async function stepNavigation(input: HandlerInput, direction: 1 | -1) {
     return speak(input.responseBuilder, "You're already at the first step.");
   }
   if (nextIndex >= recipe.steps.length) {
+    if (alexaUserId) {
+      await clearProgress(alexaUserId);
+    }
     return speak(input.responseBuilder, `That's the last step. ${recipe.name} is complete. Enjoy!`);
   }
 
