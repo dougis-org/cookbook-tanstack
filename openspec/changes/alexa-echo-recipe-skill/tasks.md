@@ -55,4 +55,4 @@
 - [x] 7.1 Run the full existing test suite (`npm run test`) to confirm no regressions to existing recipe/cookbook/auth behavior
 - [ ] 7.2 Manually exercise the private skill against a local/staging deployment for each scenario in `specs/alexa-skill-integration/spec.md`
 - [x] 7.3 Spawn a sub-agent to run the `openspec-review-code` skill and apply all resulting fixes before committing (required pre-commit review step)
-- [ ] 7.4 Commit, push, and open a PR with auto-merge enabled; monitor CI and review threads to completion
+- [x] 7.4 Commit, push, and open a PR with auto-merge enabled; monitor CI and review threads to completion
