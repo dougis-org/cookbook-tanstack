@@ -3,6 +3,10 @@ import { cleanup } from "@testing-library/react"
 import { afterEach, vi } from "vitest"
 import { createRouterMock } from "./test-helpers/mocks"
 
+// Required in production/dev (see .env.example); auth.ts fails fast without it.
+// Not otherwise set in the test environment, so provide the same default here.
+process.env.BETTER_AUTH_URL ??= "http://localhost:3000"
+
 // Mock react-router globally for all unit tests to avoid duplicate mock declarations across test files
 vi.mock("@tanstack/react-router", () => createRouterMock())
 

@@ -1,0 +1,275 @@
+import type { HandlerInput, RequestHandler, ResponseBuilder } from "ask-sdk-core";
+import {
+  getRequestType,
+  getIntentName,
+  getSlotValue,
+  getUserId,
+  getAccountLinkingAccessToken,
+  getSupportedInterfaces,
+} from "ask-sdk-core";
+import type { Response } from "ask-sdk-model";
+import { alexaAdapter } from "@/server/trpc/routers/alexa";
+import { getProgress, saveProgress, clearProgress } from "@/server/alexa/progress-store";
+import { searchResultsDocument, recipeDetailDocument, cookbookBrowseDocument } from "@/server/alexa/apl-documents";
+
+function supportsApl(input: HandlerInput): boolean {
+  return !!getSupportedInterfaces(input.requestEnvelope)["Alexa.Presentation.APL"];
+}
+
+function addAplDirective(input: HandlerInput, document: object, datasources: object) {
+  if (!supportsApl(input)) return;
+  input.responseBuilder.addDirective({
+    type: "Alexa.Presentation.APL.RenderDocument",
+    document,
+    datasources,
+  } as never);
+}
+
+function isIntent(input: HandlerInput, name: string): boolean {
+  return getRequestType(input.requestEnvelope) === "IntentRequest" && getIntentName(input.requestEnvelope) === name;
+}
+
+/** Ends the turn with a single spoken line and no card/directive. */
+function speak(builder: ResponseBuilder, speech: string): Response {
+  return builder.speak(speech).getResponse();
+}
+
+/** Prompts an unlinked caller to link their account via the Alexa app. */
+function promptAccountLinking(builder: ResponseBuilder, speech: string): Response {
+  return builder.speak(speech).withLinkAccountCard().getResponse();
+}
+
+/** Returns the caller's OAuth access token, or null if their account isn't linked. */
+function accessToken(input: HandlerInput): string | null {
+  return getAccountLinkingAccessToken(input.requestEnvelope) ?? null;
+}
+
+export const LaunchRequestHandler: RequestHandler = {
+  canHandle(input) {
+    return getRequestType(input.requestEnvelope) === "LaunchRequest";
+  },
+  handle(input) {
+    return input.responseBuilder
+      .speak("Welcome to My CookBooks. You can search for a recipe, or ask for one of your own recipes or cookbooks.")
+      .reprompt("What would you like to cook?")
+      .getResponse();
+  },
+};
+
+export const SearchRecipesIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "SearchRecipesIntent");
+  },
+  async handle(input) {
+    const query = getSlotValue(input.requestEnvelope, "query");
+    if (!query) {
+      return input.responseBuilder
+        .speak("What recipe would you like to search for?")
+        .reprompt("What recipe would you like to search for?")
+        .getResponse();
+    }
+
+    const result = await alexaAdapter.searchRecipes({ query });
+
+    if (result.items.length === 0) {
+      return speak(input.responseBuilder, `I couldn't find any recipes matching "${query}". Try a different search term.`);
+    }
+
+    const top = result.items[0];
+    addAplDirective(input, searchResultsDocument, { results: { items: result.items } });
+    return input.responseBuilder
+      .speak(`I found ${result.items.length} recipe${result.items.length === 1 ? "" : "s"}. The first is ${top.name}.`)
+      .withSimpleCard("Recipe Search Results", result.items.map((r) => r.name).join(", "))
+      .getResponse();
+  },
+};
+
+export const GetRecipeDetailsIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "GetRecipeDetailsIntent");
+  },
+  async handle(input) {
+    // The recipeName slot is free-form speech (AMAZON.SearchQuery in the
+    // interaction model), not a recipe's database ID — resolve it to a
+    // recipe via search first, same as SearchRecipesIntent.
+    const recipeName = getSlotValue(input.requestEnvelope, "recipeName");
+    if (!recipeName) {
+      return speak(input.responseBuilder, "Which recipe would you like to hear about?");
+    }
+    const searchResult = await alexaAdapter.searchRecipes({ query: recipeName });
+    const match = searchResult.items[0];
+    const recipe = match ? await alexaAdapter.recipeDetail({ id: match.id }) : null;
+    if (!recipe) {
+      return speak(input.responseBuilder, "I couldn't find that recipe.");
+    }
+
+    const alexaUserId = getUserId(input.requestEnvelope);
+    if (alexaUserId) {
+      await saveProgress(alexaUserId, { recipeId: recipe.id, stepIndex: 0 });
+    }
+
+    addAplDirective(input, recipeDetailDocument, { recipe });
+    return input.responseBuilder
+      .speak(
+        `${recipe.name}. It has ${recipe.ingredients.length} ingredients. The first step is: ${recipe.steps[0] ?? "no instructions available"}.`,
+      )
+      .withSimpleCard(recipe.name, recipe.ingredients.join(", "))
+      .getResponse();
+  },
+};
+
+async function stepNavigation(input: HandlerInput, direction: 1 | -1) {
+  const alexaUserId = getUserId(input.requestEnvelope);
+  const progress = alexaUserId ? await getProgress(alexaUserId) : null;
+  if (!progress) {
+    return speak(input.responseBuilder, "No recipe is currently in progress. Try searching for a recipe first.");
+  }
+
+  const recipe = await alexaAdapter.recipeDetail({ id: progress.recipeId });
+  if (!recipe) {
+    return speak(input.responseBuilder, "I couldn't find that recipe anymore.");
+  }
+
+  const nextIndex = progress.stepIndex + direction;
+  if (nextIndex < 0) {
+    return speak(input.responseBuilder, "You're already at the first step.");
+  }
+  if (nextIndex >= recipe.steps.length) {
+    if (alexaUserId) {
+      await clearProgress(alexaUserId);
+    }
+    return speak(input.responseBuilder, `That's the last step. ${recipe.name} is complete. Enjoy!`);
+  }
+
+  if (alexaUserId) {
+    await saveProgress(alexaUserId, { recipeId: recipe.id, stepIndex: nextIndex });
+  }
+
+  addAplDirective(input, recipeDetailDocument, { recipe, currentStepIndex: nextIndex });
+  return speak(input.responseBuilder, `Step ${nextIndex + 1} of ${recipe.steps.length}: ${recipe.steps[nextIndex]}`);
+}
+
+export const NextStepIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "NextStepIntent");
+  },
+  handle(input) {
+    return stepNavigation(input, 1);
+  },
+};
+
+export const PreviousStepIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "PreviousStepIntent");
+  },
+  handle(input) {
+    return stepNavigation(input, -1);
+  },
+};
+
+export const MyRecipesIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "MyRecipesIntent");
+  },
+  async handle(input) {
+    const token = accessToken(input);
+    if (!token) {
+      return promptAccountLinking(
+        input.responseBuilder,
+        "You'll need to link your My CookBooks account to hear your own recipes. Check your Alexa app.",
+      );
+    }
+
+    const { items } = await alexaAdapter.myRecipes({ token });
+    if (items.length === 0) {
+      return speak(input.responseBuilder, "You don't have any recipes yet.");
+    }
+
+    return input.responseBuilder
+      .speak(`You have ${items.length} recipe${items.length === 1 ? "" : "s"}. The first is ${items[0].name}.`)
+      .withSimpleCard("My Recipes", items.map((r) => r.name).join(", "))
+      .getResponse();
+  },
+};
+
+export const BrowseCookbookIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "BrowseCookbookIntent");
+  },
+  async handle(input) {
+    const token = accessToken(input);
+    if (!token) {
+      return promptAccountLinking(
+        input.responseBuilder,
+        "You'll need to link your My CookBooks account to browse your cookbooks. Check your Alexa app.",
+      );
+    }
+
+    const cookbookName = getSlotValue(input.requestEnvelope, "cookbookName");
+    const { items } = await alexaAdapter.myCookbooks({ token });
+
+    if (!cookbookName) {
+      if (items.length === 0) {
+        return speak(input.responseBuilder, "You don't have any cookbooks yet.");
+      }
+      return input.responseBuilder
+        .speak(`You have ${items.length} cookbook${items.length === 1 ? "" : "s"}: ${items.map((c) => c.name).join(", ")}.`)
+        .withSimpleCard("My Cookbooks", items.map((c) => c.name).join(", "))
+        .getResponse();
+    }
+
+    const match = items.find((cb) => cb.name.toLowerCase() === cookbookName.toLowerCase());
+    const cookbook = match ? await alexaAdapter.cookbookDetail({ token, id: match.id }) : null;
+    if (!cookbook) {
+      return speak(input.responseBuilder, "I couldn't find that cookbook.");
+    }
+
+    addAplDirective(input, cookbookBrowseDocument, { cookbook });
+    return input.responseBuilder
+      .speak(`${cookbook.name} has ${cookbook.recipes.length} recipes across ${cookbook.chapters.length} chapters.`)
+      .withSimpleCard(cookbook.name, cookbook.recipes.map((r) => r.name).join(", "))
+      .getResponse();
+  },
+};
+
+export const HelpIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "AMAZON.HelpIntent");
+  },
+  handle(input) {
+    return input.responseBuilder
+      .speak("You can say things like: find me a chicken recipe, or read me my cookbook.")
+      .reprompt("What would you like to do?")
+      .getResponse();
+  },
+};
+
+export const CancelAndStopIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "AMAZON.CancelIntent") || isIntent(input, "AMAZON.StopIntent");
+  },
+  handle(input) {
+    return input.responseBuilder.speak("Goodbye!").withShouldEndSession(true).getResponse();
+  },
+};
+
+export const FallbackIntentHandler: RequestHandler = {
+  canHandle(input) {
+    return isIntent(input, "AMAZON.FallbackIntent");
+  },
+  handle(input) {
+    return input.responseBuilder
+      .speak("Sorry, I didn't understand that. You can ask me to find a recipe.")
+      .reprompt("What would you like to do?")
+      .getResponse();
+  },
+};
+
+export const SessionEndedRequestHandler: RequestHandler = {
+  canHandle(input) {
+    return getRequestType(input.requestEnvelope) === "SessionEndedRequest";
+  },
+  handle(input) {
+    return input.responseBuilder.getResponse();
+  },
+};
