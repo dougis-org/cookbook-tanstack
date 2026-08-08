@@ -314,7 +314,8 @@ describe('PrivateRecipeNotes', () => {
       renderComponent()
       const wrapperEl = screen.getByTestId('nudge-anonymous').parentElement
       expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
-      expect(wrapperEl).not.toHaveClass('mt-8')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
     })
 
     it('below-tier nudge wrapper matches the recipe card width and seam styling', async () => {
@@ -325,7 +326,8 @@ describe('PrivateRecipeNotes', () => {
       await waitFor(() => expect(screen.getByTestId('nudge-below-tier')).toBeInTheDocument())
       const wrapperEl = screen.getByTestId('nudge-below-tier').parentElement
       expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
-      expect(wrapperEl).not.toHaveClass('mt-8')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
     })
 
     it('hidden-by-downgrade nudge wrapper matches the recipe card width and seam styling', async () => {
@@ -336,7 +338,8 @@ describe('PrivateRecipeNotes', () => {
       await waitFor(() => expect(screen.getByTestId('nudge-hidden-by-downgrade')).toBeInTheDocument())
       const wrapperEl = screen.getByTestId('nudge-hidden-by-downgrade').parentElement
       expect(wrapperEl).toHaveClass('max-w-4xl', 'mx-auto')
-      expect(wrapperEl).not.toHaveClass('mt-8')
+      expect(wrapperEl).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(wrapperEl).not.toHaveClass('mt-8', 'rounded-xl', 'border')
     })
 
     it('loading skeleton matches the recipe card width and continues its seam', async () => {
@@ -355,6 +358,14 @@ describe('PrivateRecipeNotes', () => {
       seedQueryClient(makeNote('My private note'))
       renderComponent()
       await waitFor(() => expect(screen.getByText('My private note')).toBeInTheDocument())
+      const panel = screen.getByTestId('private-notes-panel')
+      expect(panel).toHaveClass('max-w-4xl', 'mx-auto')
+      expect(panel).toHaveClass('rounded-b-lg', 'shadow-lg')
+      expect(panel).not.toHaveClass('mt-8', 'rounded-xl', 'border')
+    })
+
+    it('editing panel keeps the same width and seam styling as the read-mode panel', async () => {
+      await openEditNote('Existing text')
       const panel = screen.getByTestId('private-notes-panel')
       expect(panel).toHaveClass('max-w-4xl', 'mx-auto')
       expect(panel).toHaveClass('rounded-b-lg', 'shadow-lg')

@@ -152,13 +152,27 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     }),
   )
 
-  if (!isLoggedIn) return <div className="max-w-4xl mx-auto print:hidden"><RecipeNotesUpgradeNudge state="anonymous" /></div>
+  if (!isLoggedIn)
+    return (
+      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+        <RecipeNotesUpgradeNudge state="anonymous" />
+      </div>
+    )
   if (isError) return null
 
   if (!canUsePrivateRecipeNotes) {
     if (isLoading) return null
-    if (data?.hasNote) return <div className="max-w-4xl mx-auto print:hidden"><RecipeNotesUpgradeNudge state="hidden-by-downgrade" /></div>
-    return <div className="max-w-4xl mx-auto print:hidden"><RecipeNotesUpgradeNudge state="below-tier" /></div>
+    if (data?.hasNote)
+      return (
+        <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+          <RecipeNotesUpgradeNudge state="hidden-by-downgrade" />
+        </div>
+      )
+    return (
+      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+        <RecipeNotesUpgradeNudge state="below-tier" />
+      </div>
+    )
   }
 
   if (isLoading) {
