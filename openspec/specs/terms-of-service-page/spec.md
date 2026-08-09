@@ -31,7 +31,7 @@ The Terms of Service page SHALL present its content as a single flat page divide
 
 ### Requirement: Terms content covers required topics
 
-The Terms of Service SHALL describe: account eligibility/responsibility, ownership and licensing of user-generated recipe/cookbook content, acceptable use, Stripe-based tier/billing terms, third-party (OAuth) connections, account termination, and liability/warranty disclaimers.
+The Terms of Service SHALL describe: account eligibility/responsibility, ownership and licensing of user-generated recipe/cookbook content, acceptable use, Stripe-based tier/billing terms, third-party (OAuth) connections, account termination, liability/warranty disclaimers, and how changes to the terms are communicated.
 
 #### Scenario: Billing section names the payment processor and renewal behavior
 
@@ -57,7 +57,7 @@ The Terms of Service SHALL describe: account eligibility/responsibility, ownersh
 
 ### Requirement: Terms page follows the design system
 
-The Terms of Service page SHALL use only theme-token colors (no hardcoded hex values), Lucide icons where icons are used, and the established type scale, and SHALL remain legible across all four supported themes.
+The Terms of Service page SHALL use only theme-token colors (no hardcoded hex values), Lucide icons where icons are used, and the established type scale. The page SHALL remain legible across all four supported themes.
 
 #### Scenario: Page renders legibly in every theme
 
@@ -88,4 +88,6 @@ The `/terms` route SHALL NOT require or expose authenticated session state.
 
 #### Scenario: Public access without session-gated content
 
-See functional scenario: "Unauthenticated visitor loads the page" — no additional distinct security property beyond public accessibility applies to this static-content route.
+- **Given** any visitor, authenticated or not
+- **When** they load `/terms`
+- **Then** the rendered page contains no session-derived personalization, no user-identifying UI, and no auth-gated data
