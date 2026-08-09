@@ -189,10 +189,14 @@ describe("RegisterForm", () => {
     expect(screen.getByText(/By creating an account you agree to our/i)).toBeInTheDocument()
   })
 
-  it("renders the Privacy Policy link as a router Link, not a raw anchor", () => {
+  it("renders both legal consent links as router Links, not raw anchors", () => {
     render(<RegisterForm />)
     const privacyLink = screen.getByRole("link", { name: "Privacy Policy" })
     expect(privacyLink.tagName).toBe("A")
     expect(privacyLink).toHaveAttribute("data-router-link", "true")
+
+    const termsLink = screen.getByRole("link", { name: "Terms" })
+    expect(termsLink.tagName).toBe("A")
+    expect(termsLink).toHaveAttribute("data-router-link", "true")
   })
 })

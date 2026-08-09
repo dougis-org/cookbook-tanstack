@@ -75,3 +75,6 @@ src/e2e/e2e-coverage/lcov.info
 .verity/.task-context/
 .codacy/generated/
 .claude/settings.local.json
+
+# OpenSpec change worktrees
+.worktrees/
