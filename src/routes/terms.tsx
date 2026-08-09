@@ -7,7 +7,7 @@ export const Route = createFileRoute("/terms")({
   component: TermsPage,
 })
 
-const LAST_UPDATED = "Last updated: July 17, 2026"
+const LAST_UPDATED = "Last updated: August 8, 2026"
 const TERMS_CONTACT_EMAIL = "privacy@mycookbooks.com"
 
 const SECTIONS: AccordionItem[] = [
