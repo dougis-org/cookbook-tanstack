@@ -111,15 +111,14 @@ export default function RegisterForm() {
         <FormInput id="password" label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" required error={fieldErrors.password} />
         <FormSubmitButton isLoading={isLoading} label="Create Account" loadingLabel="Creating account..." />
         
-        {/* TODO: Replace <a> with <Link> for /terms once that route is created (#625) */}
         <p className="text-center text-xs text-[var(--theme-fg-subtle)] leading-relaxed">
           By creating an account you agree to our{" "}
-          <a
-            href="/terms"
+          <Link
+            to="/terms"
             className="underline hover:text-[var(--theme-accent)] transition-colors"
           >
             Terms
-          </a>{" "}
+          </Link>{" "}
           and{" "}
           <Link
             to="/privacy-policy"
