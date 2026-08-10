@@ -11,6 +11,7 @@ import { GOOGLE_ADSENSE_ACCOUNT } from '@/lib/google-adsense'
 import { useEffect } from 'react'
 
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import VerificationBanner from '@/components/auth/VerificationBanner'
 
 import appCss from '../styles.css?url'
@@ -344,6 +345,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <Header />
                 <VerificationBanner />
                 {children}
+                <Footer />
               </AuthProvider>
               <TanStackDevtools
                 config={{
