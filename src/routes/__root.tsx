@@ -11,7 +11,7 @@ import { GOOGLE_ADSENSE_ACCOUNT } from '@/lib/google-adsense'
 import { useEffect } from 'react'
 
 import Header from '../components/Header'
-import Footer from '../components/Footer'
+import Footer from '@/components/Footer'
 import VerificationBanner from '@/components/auth/VerificationBanner'
 
 import appCss from '../styles.css?url'
