@@ -414,7 +414,7 @@ test.describe('Theme system', () => {
 
     // Switch to light-cool using the dropdown
     await selectThemeViaDropdown(page, 'Light (cool)', { commit: true })
-    await page.waitForTimeout(100)
+    await expect(page.locator('html')).toHaveClass(/light-cool/)
 
     // Header background should change
     const headerBgLight = await page.evaluate(() => {

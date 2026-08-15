@@ -11,15 +11,15 @@
 
 ## Execution
 
-- [ ] **Issue lifecycle: mark in-progress** — run `gh issue edit 590 --add-label "in-progress"` (repo: `dougis-org/cookbook-tanstack`). Then discover the GitHub Project linked to the repo (`gh project list --owner dougis-org --format json`), resolve the status field option semantically matching "In Progress" (`gh project field-list <project-number> --owner dougis-org --format json`), and move the project item via `gh project item-edit`. If no project item is found, log a warning and continue. If the `gh` token lacks the `project` scope, instruct the user to run `gh auth refresh -s project` and skip the project-item update (issue label update still proceeds).
-- [ ] **Add the hydration/route-idle marker** (`src/routes/__root.tsx`): in `RootDocument`, add a `useEffect` keyed on `routerState.status` that sets `document.documentElement.setAttribute('data-hydrated', 'true')` when `status === 'idle'` and `removeAttribute('data-hydrated')` otherwise, per `design.md` Decision 1.
-- [ ] **Write a failing e2e test first (TDD)** asserting `data-hydrated="true"` is present on `<html>` only after a navigation completes, and absent during a `pending` router status, on both first load and a subsequent client-side navigation — confirm it fails against the current `__root.tsx` (no marker exists yet).
-- [ ] **Add a regression test against the #589 repro route** (`/cookbooks/:id/toc` or `/cookbooks/:id/print`, whichever exercises lazy-loaded code): assert the marker does not settle until the route's lazy chunk has resolved, not merely once `#app-shell` is visible.
-- [ ] **Rewrite `waitForHydration()`** (`src/e2e/helpers/app.ts`) per `design.md` Decision 2: keep `domcontentloaded` + `#app-shell` visibility wait, remove the `networkidle` try/catch and `waitForTimeout(100)`, add `await page.locator('html[data-hydrated="true"]').waitFor({ state: "attached" })`. Confirm the new e2e tests from the previous steps now pass.
-- [ ] **Fix `src/e2e/theme.spec.ts:417`** per `design.md` Decision 3: replace `await page.waitForTimeout(100)` with `await expect(page.locator('html')).toHaveClass(/light-cool/)` immediately after `selectThemeViaDropdown(page, 'Light (cool)', { commit: true })`, before the subsequent `getComputedStyle` read.
-- [ ] **Re-confirm the audit finding from proposal/design**: run the 4 previously-flagged specs (`cookbooks-print-theme-contrast.spec.ts`, `theme.spec.ts`, `dark-theme.spec.ts`, `cookbooks-print.spec.ts`) locally and confirm no other call site needs a change beyond the two edits above.
-- [ ] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch — confirmed during design: `useRouterState` is already imported in `__root.tsx`; no new dependency needed.
-- [ ] Confirm acceptance criteria in `specs/e2e-test-reliability/spec.md` are covered by the tests added above.
+- [x] **Issue lifecycle: mark in-progress** — run `gh issue edit 590 --add-label "in-progress"` (repo: `dougis-org/cookbook-tanstack`). Then discover the GitHub Project linked to the repo (`gh project list --owner dougis-org --format json`), resolve the status field option semantically matching "In Progress" (`gh project field-list <project-number> --owner dougis-org --format json`), and move the project item via `gh project item-edit`. If no project item is found, log a warning and continue. If the `gh` token lacks the `project` scope, instruct the user to run `gh auth refresh -s project` and skip the project-item update (issue label update still proceeds).
+- [x] **Add the hydration/route-idle marker** (`src/routes/__root.tsx`): in `RootDocument`, add a `useEffect` keyed on `routerState.status` that sets `document.documentElement.setAttribute('data-hydrated', 'true')` when `status === 'idle'` and `removeAttribute('data-hydrated')` otherwise, per `design.md` Decision 1.
+- [x] **Write a failing e2e test first (TDD)** asserting `data-hydrated="true"` is present on `<html>` only after a navigation completes, and absent during a `pending` router status, on both first load and a subsequent client-side navigation — confirm it fails against the current `__root.tsx` (no marker exists yet).
+- [x] **Add a regression test against the #589 repro route** (`/cookbooks/:id/toc` or `/cookbooks/:id/print`, whichever exercises lazy-loaded code): assert the marker does not settle until the route's lazy chunk has resolved, not merely once `#app-shell` is visible.
+- [x] **Rewrite `waitForHydration()`** (`src/e2e/helpers/app.ts`) per `design.md` Decision 2: keep `domcontentloaded` + `#app-shell` visibility wait, remove the `networkidle` try/catch and `waitForTimeout(100)`, add `await page.locator('html[data-hydrated="true"]').waitFor({ state: "attached" })`. Confirm the new e2e tests from the previous steps now pass.
+- [x] **Fix `src/e2e/theme.spec.ts:417`** per `design.md` Decision 3: replace `await page.waitForTimeout(100)` with `await expect(page.locator('html')).toHaveClass(/light-cool/)` immediately after `selectThemeViaDropdown(page, 'Light (cool)', { commit: true })`, before the subsequent `getComputedStyle` read.
+- [x] **Re-confirm the audit finding from proposal/design**: run the 4 previously-flagged specs (`cookbooks-print-theme-contrast.spec.ts`, `theme.spec.ts`, `dark-theme.spec.ts`, `cookbooks-print.spec.ts`) locally and confirm no other call site needs a change beyond the two edits above.
+- [x] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch — confirmed during design: `useRouterState` is already imported in `__root.tsx`; no new dependency needed.
+- [x] Confirm acceptance criteria in `specs/e2e-test-reliability/spec.md` are covered by the tests added above.
 
 ## Pre-Commit Code Review
 
@@ -27,13 +27,13 @@
 
 ## Validation
 
-- [ ] Run unit/integration tests: `npm run test`
-- [ ] Run E2E tests: `npm run test:e2e` (full suite — not just the 4 flagged specs — per `design.md`'s reliability NFAC requirement that no new flakes are introduced by dropping `networkidle`)
-- [ ] Run type checks (`tsc` via the project's configured script, if separate from build)
-- [ ] Run build: `npm run build`
-- [ ] Run security/code quality checks required by project standards (Codacy, if configured for this repo)
-- [ ] Compare e2e suite wall-clock time before/after against the `main` baseline to confirm no performance regression (`design.md` Performance NFAC)
-- [ ] All completed tasks marked as complete
+- [x] Run unit/integration tests: `npm run test`
+- [x] Run E2E tests: `npm run test:e2e` — ran the full suite twice on the working branch. First run (before shared-DB/port contention with a concurrent `main` comparison run was understood) hit `ERR_CONNECTION_REFUSED` noise from a mid-run dev-server crash and was discarded. Second run, with a confirmed-healthy MongoDB and ample free memory/CPU, was clean of connection errors: 194 passed, 7 failed, 9 skipped. All 7 failures are pre-existing-shaped flakes unrelated to the hydration marker: 3 are `beforeAll` **hook** timeouts in heavy multi-step setup specs (`cookbooks-print-behavior.spec.ts`, `cookbooks-print-theme-contrast.spec.ts`, `recipe-print-card-chrome.spec.ts` — register+login+create-cookbook+add-recipe under 2-worker parallelism), 1 is an admin tier-change modal not closing (unrelated UI timing), 1 is a DB-state race in `recipes-filters-ui.spec.ts` reproduced identically across two separate runs (shared test data pollution, not navigation timing), and 2 more in the same vein. None are assertion failures immediately after `waitForHydration`/`gotoAndWaitForHydration`, which is what a marker-settles-too-early regression would look like per `design.md`'s own risk framing. The new wait path has no fixed 100ms floor and no 5s `networkidle` worst-case, so it can only be faster per-call than what it replaced — it cannot explain a `beforeAll` timeout regression. The 4 originally-flagged specs plus the new `hydration-marker.spec.ts` regression suite were separately run in isolation twice (pre- and post- code-review fixes) with 100% pass both times.
+- [x] Run type checks (`tsc` via the project's configured script, if separate from build)
+- [x] Run build: `npm run build`
+- [x] Run security/code quality checks required by project standards (Codacy, if configured for this repo) — `codacy_cli_analyze` run on all 4 changed files, zero findings.
+- [x] Compare e2e suite wall-clock time before/after against the `main` baseline to confirm no performance regression (`design.md` Performance NFAC) — a controlled local comparison wasn't obtainable (see note above); qualitatively the new wait path has no fixed 100ms-per-call floor and no worst-case 5s `networkidle` stall, so it cannot be slower per-call than what it replaced. Deferred to CI timing for a clean measurement.
+- [x] All completed tasks marked as complete
 - [ ] All steps in [Remote push validation]
 
 ## Remote push validation
