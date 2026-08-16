@@ -702,6 +702,174 @@ describe("RecipeDetail", () => {
   })
 })
 
+describe("RecipeDetail — printPreferences", () => {
+  const contentRecipe = makeRecipe({
+    prepTime: 15,
+    cookTime: 30,
+    servings: 4,
+    difficulty: "easy",
+    ingredients: "Flour\nSugar",
+    instructions: "Boil water\nCook pasta",
+    notes: "Season well",
+  })
+
+  it("prop omitted: defaults to all-true (today's behavior)", () => {
+    render(<RecipeDetail recipe={contentRecipe} personalNote="Secret" />)
+    expect(screen.getByTestId("print-meta-line")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Ingredients" }).closest("section")).not.toHaveClass("print:hidden")
+    expect(screen.getByRole("heading", { name: "Instructions" }).closest("section")).not.toHaveClass("print:hidden")
+    expect(screen.getByRole("heading", { name: "Notes" }).closest("section")).not.toHaveClass("print:hidden")
+    expect(screen.getByRole("heading", { name: "Personal Notes" })).toBeInTheDocument()
+  })
+
+  it("all-true: matches baseline (everything present, nothing print:hidden)", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        personalNote="Secret"
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: true,
+          printShowInstructions: true,
+          printShowNotes: true,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    expect(screen.getByTestId("print-meta-line")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Personal Notes" })).toBeInTheDocument()
+  })
+
+  it("printShowMeta=false: suppresses the print-meta-line", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        printPreferences={{
+          printShowMeta: false,
+          printShowIngredients: true,
+          printShowInstructions: true,
+          printShowNotes: true,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+  })
+
+  it("printShowIngredients=false: print:hidden on the section, but still visible on screen", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: false,
+          printShowInstructions: true,
+          printShowNotes: true,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    const section = screen.getByRole("heading", { name: "Ingredients" }).closest("section")
+    expect(section).toHaveClass("print:hidden")
+    // still on screen
+    expect(screen.getByText("Flour")).toBeInTheDocument()
+  })
+
+  it("printShowInstructions=false: print:hidden on the section, but still visible on screen", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: true,
+          printShowInstructions: false,
+          printShowNotes: true,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    const section = screen.getByRole("heading", { name: "Instructions" }).closest("section")
+    expect(section).toHaveClass("print:hidden")
+    expect(screen.getByText("Boil water")).toBeInTheDocument()
+  })
+
+  it("printShowNotes=false: print:hidden on the section, but still visible on screen", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: true,
+          printShowInstructions: true,
+          printShowNotes: false,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    const section = screen.getByRole("heading", { name: "Notes" }).closest("section")
+    expect(section).toHaveClass("print:hidden")
+    expect(screen.getByText("Season well")).toBeInTheDocument()
+  })
+
+  it("printShowPersonalNotes=false: Personal Notes section absent entirely", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        personalNote="Secret"
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: true,
+          printShowInstructions: true,
+          printShowNotes: true,
+          printShowPersonalNotes: false,
+        }}
+      />,
+    )
+    expect(screen.queryByRole("heading", { name: "Personal Notes" })).not.toBeInTheDocument()
+  })
+
+  it("all-false: every gated section suppressed from print, but content stays on screen", () => {
+    render(
+      <RecipeDetail
+        recipe={contentRecipe}
+        personalNote="Secret"
+        printPreferences={{
+          printShowMeta: false,
+          printShowIngredients: false,
+          printShowInstructions: false,
+          printShowNotes: false,
+          printShowPersonalNotes: false,
+        }}
+      />,
+    )
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "Personal Notes" })).not.toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Ingredients" }).closest("section")).toHaveClass("print:hidden")
+    expect(screen.getByRole("heading", { name: "Instructions" }).closest("section")).toHaveClass("print:hidden")
+    expect(screen.getByRole("heading", { name: "Notes" }).closest("section")).toHaveClass("print:hidden")
+    // on-screen content unaffected
+    expect(screen.getByText("Flour")).toBeInTheDocument()
+    expect(screen.getByText("Boil water")).toBeInTheDocument()
+    expect(screen.getByText("Season well")).toBeInTheDocument()
+  })
+
+  it("does not suppress content that is already absent (Notes section still absent when notes is empty, regardless of preference)", () => {
+    render(
+      <RecipeDetail
+        recipe={makeRecipe({ notes: null })}
+        printPreferences={{
+          printShowMeta: true,
+          printShowIngredients: true,
+          printShowInstructions: true,
+          printShowNotes: true,
+          printShowPersonalNotes: true,
+        }}
+      />,
+    )
+    expect(screen.queryByRole("heading", { name: "Notes" })).not.toBeInTheDocument()
+  })
+})
+
 describe("splitLines", () => {
   it("returns [] for null input", () => {
     expect(splitLines(null)).toEqual([])

@@ -17,6 +17,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ session: null, isPending: false, isLoggedIn: false, userId: null }) }))
 vi.mock('@/components/recipes/RecipeDetail', () => ({
   default: ({ recipe }: { recipe: { name: string } }) => <div>{recipe.name}</div>,
 }))

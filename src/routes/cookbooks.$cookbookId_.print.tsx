@@ -15,6 +15,8 @@ import {
 } from '@/components/cookbooks/CookbookStandaloneLayout'
 import { PrintLayout } from '@/components/cookbooks/PrintLayout'
 import RecipeDetail, { type RecipeDetailProps } from '@/components/recipes/RecipeDetail'
+import { useAuth } from '@/hooks/useAuth'
+import { resolvePrintPreferences } from '@/lib/printPreferences'
 
 export const Route = createFileRoute('/cookbooks/$cookbookId_/print')({
   component: CookbookPrintPage,
@@ -36,6 +38,8 @@ export function CookbookPrintPage() {
   const { displayonly } = Route.useSearch()
   const displayOnly = String(displayonly) === '1'
   const hasPrinted = useRef(false)
+  const { session } = useAuth()
+  const printPreferences = resolvePrintPreferences(session)
   const { data: printData, isLoading } = useQuery(
     trpc.cookbooks.printById.queryOptions({ id: cookbookId }),
   )
@@ -103,6 +107,7 @@ export function CookbookPrintPage() {
             <div key={recipe.id} className="cookbook-recipe-section">
               <RecipeDetail
                 recipe={recipeForDetail}
+                printPreferences={printPreferences}
                 printFooter={
                   pageNumber !== undefined && (
                     <div

@@ -9,13 +9,30 @@ vi.mock('@tanstack/react-router', async () => {
 
 vi.mock('@/components/ui/Breadcrumb', () => ({ default: () => null }))
 vi.mock('@/components/ui/PrintButton', () => ({ default: () => null }))
+type MockAuthState = {
+  session: { user: Record<string, unknown> } | null
+  isPending: boolean
+  isLoggedIn: boolean
+  userId: string | null
+}
+const mockUseAuth = vi.fn<() => MockAuthState>(() => ({
+  session: null,
+  isPending: false,
+  isLoggedIn: false,
+  userId: null,
+}))
+vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mockUseAuth() }))
+const mockRecipeDetail = vi.fn()
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ recipe, printFooter }: { recipe: { name: string }; printFooter?: ReactNode }) => (
-    <div data-testid="recipe-detail">
-      {recipe.name}
-      {printFooter}
-    </div>
-  ),
+  default: (props: { recipe: { name: string }; printFooter?: ReactNode }) => {
+    mockRecipeDetail(props)
+    return (
+      <div data-testid="recipe-detail">
+        {props.recipe.name}
+        {props.printFooter}
+      </div>
+    )
+  },
 }))
 
 const mockUseQuery = vi.fn()
@@ -57,6 +74,54 @@ const chapteredData = {
     { id: 'r3', name: 'Breakfast Toast', prepTime: null, cookTime: null, orderIndex: 2, chapterId: 'c1' },
   ],
 }
+
+describe('CookbookPrintPage — printPreferences wiring', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockUseAuth.mockReturnValue({ session: null, isPending: false, isLoggedIn: false, userId: null })
+  })
+
+  it('resolves printPreferences from the session and passes it to every RecipeDetail', () => {
+    mockUseAuth.mockReturnValue({
+      session: { user: { id: 'u1', printShowInstructions: false } },
+      isPending: false,
+      isLoggedIn: true,
+      userId: 'u1',
+    })
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: { ...baseData, recipes: threeRecipes },
+    })
+    render(<CookbookPrintPage />)
+
+    expect(mockRecipeDetail).toHaveBeenCalledTimes(3)
+    for (const call of mockRecipeDetail.mock.calls) {
+      expect(call[0].printPreferences).toMatchObject({
+        printShowMeta: true,
+        printShowIngredients: true,
+        printShowInstructions: false,
+        printShowNotes: true,
+        printShowPersonalNotes: true,
+      })
+    }
+  })
+
+  it('defaults printPreferences to all-true for a logged-out/anonymous session', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: false,
+      data: { ...baseData, recipes: threeRecipes },
+    })
+    render(<CookbookPrintPage />)
+
+    expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
+      printShowMeta: true,
+      printShowIngredients: true,
+      printShowInstructions: true,
+      printShowNotes: true,
+      printShowPersonalNotes: true,
+    })
+  })
+})
 
 describe('CookbookPrintPage — alphabetical index', () => {
   beforeEach(() => {

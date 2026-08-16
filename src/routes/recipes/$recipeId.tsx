@@ -5,6 +5,7 @@ import { Heart, User } from 'lucide-react'
 import { trpc } from '@/lib/trpc'
 import { useAuth } from '@/hooks/useAuth'
 import { useTierEntitlements } from '@/hooks/useTierEntitlements'
+import { resolvePrintPreferences } from '@/lib/printPreferences'
 import PageLayout from '@/components/layout/PageLayout'
 import RecipeDetail from '@/components/recipes/RecipeDetail'
 import RelatedRecipesSection from '@/components/recipes/RelatedRecipesSection'
@@ -23,7 +24,8 @@ export function RecipeDetailPage() {
   const { recipeId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { isLoggedIn, userId } = useAuth()
+  const { session, isLoggedIn, userId } = useAuth()
+  const printPreferences = resolvePrintPreferences(session)
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const [showDelete, setShowDelete] = useState(false)
   const [deleteError, setDeleteError] = useState<string | undefined>()
@@ -129,6 +131,7 @@ export function RecipeDetailPage() {
       <RecipeDetail
         recipe={recipe}
         personalNote={personalNoteBody}
+        printPreferences={printPreferences}
         actions={
           <div className="flex items-center gap-2 print:hidden">
             <ShareButton />

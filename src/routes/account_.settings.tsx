@@ -7,8 +7,17 @@ import { useAuth } from "@/hooks/useAuth"
 import { authClient } from "@/lib/auth-client"
 import { DEFAULT_THEME, isValidThemeId, THEMES } from "@/contexts/ThemeContext"
 import type { AuthErrorContext } from "@/components/auth/types"
+import { DEFAULT_PRINT_PREFERENCES, resolvePrintPreferences, type PrintPreferences } from "@/lib/printPreferences"
 
 const DEFAULT_ERROR_MESSAGE = "Unable to save. Try again."
+
+const PRINT_PREFERENCE_TOGGLES: { key: keyof PrintPreferences; label: string }[] = [
+  { key: "printShowMeta", label: "Prep/cook time, servings, difficulty" },
+  { key: "printShowIngredients", label: "Ingredients" },
+  { key: "printShowInstructions", label: "Instructions" },
+  { key: "printShowNotes", label: "Notes" },
+  { key: "printShowPersonalNotes", label: "Personal Notes" },
+]
 
 export const Route = createFileRoute("/account_/settings")({
   beforeLoad: requireAuth(),
@@ -20,6 +29,7 @@ type SaveStatus = "idle" | "saving" | "success" | "error"
 export function SettingsPage() {
   const { session, isPending } = useAuth()
   const [selectedTheme, setSelectedTheme] = useState(DEFAULT_THEME)
+  const [printPreferences, setPrintPreferences] = useState<PrintPreferences>(DEFAULT_PRINT_PREFERENCES)
   const [hasEdited, setHasEdited] = useState(false)
   const [status, setStatus] = useState<SaveStatus>("idle")
   const [errorMessage, setErrorMessage] = useState(DEFAULT_ERROR_MESSAGE)
@@ -30,11 +40,18 @@ export function SettingsPage() {
     if (isValidThemeId(sessionTheme)) {
       setSelectedTheme(sessionTheme)
     }
+    setPrintPreferences(resolvePrintPreferences(session))
   }, [session, hasEdited])
 
   function selectTheme(id: (typeof THEMES)[number]["id"]) {
     setHasEdited(true)
     setSelectedTheme(id)
+    setStatus("idle")
+  }
+
+  function togglePrintPreference(key: keyof PrintPreferences) {
+    setHasEdited(true)
+    setPrintPreferences((prev) => ({ ...prev, [key]: !prev[key] }))
     setStatus("idle")
   }
 
@@ -56,7 +73,7 @@ export function SettingsPage() {
     setStatus("saving")
     try {
       await authClient.updateUser(
-        { theme: themeToSave },
+        { theme: themeToSave, ...printPreferences },
         {
           onSuccess: () => setStatus("success"),
           onError: (ctx: AuthErrorContext) => {
@@ -128,6 +145,31 @@ export function SettingsPage() {
                 {t.label}
               </button>
             ))}
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold text-[var(--theme-fg)] mb-1">Print Preferences</h2>
+            <p className="text-sm text-[var(--theme-fg-muted)] mb-4">
+              Choose which sections print with your recipes. Applies to both single-recipe and cookbook printing (Personal Notes only ever prints from a recipe's own page).
+            </p>
+            <div className="space-y-3">
+              {PRINT_PREFERENCE_TOGGLES.map(({ key, label }) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between gap-4 rounded-lg border border-[var(--theme-border)] px-4 py-3 cursor-pointer"
+                >
+                  <span className="text-sm font-medium text-[var(--theme-fg)]">{label}</span>
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    aria-checked={printPreferences[key]}
+                    checked={printPreferences[key]}
+                    onChange={() => togglePrintPreference(key)}
+                    className="h-5 w-5 accent-[var(--theme-accent)]"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
