@@ -10,13 +10,17 @@ vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+const mockRecipeDetail = vi.fn()
 vi.mock('@/components/recipes/RecipeDetail', () => ({
-  default: ({ actions, personalNote }: RecipeDetailProps) => (
-    <div>
-      {actions}
-      <div data-testid="personal-note">{personalNote ?? 'null'}</div>
-    </div>
-  ),
+  default: (props: RecipeDetailProps) => {
+    mockRecipeDetail(props)
+    return (
+      <div>
+        {props.actions}
+        <div data-testid="personal-note">{props.personalNote ?? 'null'}</div>
+      </div>
+    )
+  },
 }))
 vi.mock('@/components/recipes/RelatedRecipesSection', () => ({ default: () => null }))
 vi.mock('@/components/recipes/DeleteConfirmModal', () => ({ default: () => null }))
@@ -227,5 +231,71 @@ describe('RecipeDetailPage personalNoteBody gating', () => {
     })
     const lastCall = privateNoteCalls[privateNoteCalls.length - 1] as [{ enabled?: boolean }] | undefined
     expect(lastCall?.[0].enabled).toBe(false)
+  })
+})
+
+describe('RecipeDetailPage printPreferences wiring', () => {
+  beforeEach(() => {
+    mockRecipeDetail.mockClear()
+    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+    mockUseQuery.mockImplementation(({ queryKey }: { queryKey: unknown[] }) => {
+      if (Array.isArray(queryKey) && queryKey[0] === 'privateRecipeNotes') {
+        return { data: { hasNote: false, note: null }, isLoading: false }
+      }
+      return { data: baseRecipe, isLoading: false }
+    })
+  })
+
+  it('resolves printPreferences from the session and passes it to RecipeDetail', () => {
+    mockUseAuth.mockReturnValue({
+      isLoggedIn: true,
+      userId: 'user1',
+      isPending: false,
+      session: { user: { id: 'user1', printShowInstructions: false } },
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(mockRecipeDetail).toHaveBeenCalledTimes(1)
+    expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
+      printShowMeta: true,
+      printShowIngredients: true,
+      printShowInstructions: false,
+      printShowNotes: true,
+      printShowPersonalNotes: true,
+    })
+  })
+
+  it('defaults printPreferences to all-true for an anonymous/logged-out viewer', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: false, userId: undefined, isPending: false, session: null })
+
+    render(<RecipeDetailPage />)
+
+    expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
+      printShowMeta: true,
+      printShowIngredients: true,
+      printShowInstructions: true,
+      printShowNotes: true,
+      printShowPersonalNotes: true,
+    })
+  })
+
+  it('does not change the private-note query enablement when printShowPersonalNotes is false', () => {
+    mockUseAuth.mockReturnValue({
+      isLoggedIn: true,
+      userId: 'user1',
+      isPending: false,
+      session: { user: { id: 'user1', printShowPersonalNotes: false } },
+    })
+
+    render(<RecipeDetailPage />)
+
+    const privateNoteCalls = mockUseQuery.mock.calls.filter((args: unknown[]) => {
+      const opts = args[0] as { queryKey?: unknown[] } | undefined
+      return Array.isArray(opts?.queryKey) && opts.queryKey[0] === 'privateRecipeNotes'
+    })
+    const lastCall = privateNoteCalls[privateNoteCalls.length - 1] as [{ enabled?: boolean }] | undefined
+    expect(lastCall?.[0].enabled).toBe(true)
   })
 })

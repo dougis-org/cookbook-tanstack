@@ -25,9 +25,13 @@ vi.mock('@/lib/auth-client', () => ({
 import { useAuth } from '@/hooks/useAuth'
 import { SettingsPage, Route } from '@/routes/account_.settings'
 
-function authState(theme: string | undefined, isPending = false) {
+function authState(
+  theme: string | undefined,
+  isPending = false,
+  printPrefs: Partial<Record<string, boolean>> = {},
+) {
   return {
-    session: { user: { id: 'u1', theme } },
+    session: { user: { id: 'u1', theme, ...printPrefs } },
     isPending,
     isLoggedIn: true,
   }
@@ -142,7 +146,14 @@ describe('/account/settings — form', () => {
 
     expect(mockUpdateUser).toHaveBeenCalledTimes(1)
     expect(mockUpdateUser).toHaveBeenCalledWith(
-      { theme: 'light-warm' },
+      {
+        theme: 'light-warm',
+        printShowMeta: true,
+        printShowIngredients: true,
+        printShowInstructions: true,
+        printShowNotes: true,
+        printShowPersonalNotes: true,
+      },
       expect.objectContaining({ onSuccess: expect.any(Function), onError: expect.any(Function) }),
     )
   })
@@ -251,5 +262,68 @@ describe('/account/settings — form', () => {
     )
 
     expect(screen.getByTestId('sibling-theme').textContent).toBe('light-warm')
+  })
+})
+
+describe('/account/settings — print preferences', () => {
+  beforeEach(() => {
+    mockUpdateUser.mockReset()
+  })
+
+  it('renders a switch for each print preference, defaulting to on', () => {
+    renderSettingsWithTheme('dark')
+    for (const name of [
+      /prep\/cook time, servings, difficulty/i,
+      /ingredients/i,
+      /instructions/i,
+      /^notes$/i,
+      /personal notes/i,
+    ]) {
+      expect(screen.getByRole('checkbox', { name })).toBeChecked()
+    }
+  })
+
+  it('reflects an off preference from the session', () => {
+    mockUseAuth.mockReturnValue(authState('dark', false, { printShowIngredients: false }))
+    render(<SettingsPage />)
+    expect(screen.getByRole('checkbox', { name: /ingredients/i })).not.toBeChecked()
+  })
+
+  it('toggling one preference does not affect the others', () => {
+    renderSettingsWithTheme('dark')
+    act(() => {
+      screen.getByRole('checkbox', { name: /instructions/i }).click()
+    })
+    expect(screen.getByRole('checkbox', { name: /instructions/i })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /ingredients/i })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /^notes$/i })).toBeChecked()
+  })
+
+  it('saves toggled print preferences alongside theme', async () => {
+    mockUpdateUserSuccess()
+    renderSettingsWithTheme('dark')
+
+    act(() => {
+      screen.getByRole('checkbox', { name: /personal notes/i }).click()
+    })
+    await clickSave()
+
+    expect(mockUpdateUser).toHaveBeenCalledWith(
+      expect.objectContaining({ printShowPersonalNotes: false }),
+      expect.anything(),
+    )
+  })
+
+  it('a failed save keeps the toggle state as the user left it', async () => {
+    mockUpdateUserError()
+    renderSettingsWithTheme('dark')
+
+    act(() => {
+      screen.getByRole('checkbox', { name: /^notes$/i }).click()
+    })
+    await clickSave()
+
+    expect(screen.getByTestId('settings-error')).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /^notes$/i })).not.toBeChecked()
   })
 })

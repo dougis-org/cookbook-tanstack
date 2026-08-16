@@ -75,6 +75,31 @@ export const auth = betterAuth({
         defaultValue: "dark",
         required: false,
       },
+      printShowMeta: {
+        type: "boolean" as const,
+        defaultValue: true,
+        required: false,
+      },
+      printShowIngredients: {
+        type: "boolean" as const,
+        defaultValue: true,
+        required: false,
+      },
+      printShowInstructions: {
+        type: "boolean" as const,
+        defaultValue: true,
+        required: false,
+      },
+      printShowNotes: {
+        type: "boolean" as const,
+        defaultValue: true,
+        required: false,
+      },
+      printShowPersonalNotes: {
+        type: "boolean" as const,
+        defaultValue: true,
+        required: false,
+      },
     },
   },
   session: {

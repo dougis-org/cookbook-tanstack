@@ -6,6 +6,7 @@ import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
 import TaxonomyBadge from '@/components/ui/TaxonomyBadge'
 import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from '@/components/printHeadingDensity'
+import { DEFAULT_PRINT_PREFERENCES, type PrintPreferences } from '@/lib/printPreferences'
 
 export interface RecipeDetailProps {
   recipe: Recipe & {
@@ -22,6 +23,8 @@ export interface RecipeDetailProps {
   printFooter?: ReactNode
   /** Current user's own saved private recipe note, resolved and tier-gated by the caller. Renders a print-only "Personal Notes" section when non-empty. */
   personalNote?: string | null
+  /** Resolved per-user print section preferences (see resolvePrintPreferences). Defaults to all-shown when omitted. */
+  printPreferences?: PrintPreferences
 }
 
 function RecipeMetaItem({
@@ -107,7 +110,13 @@ function isSafeUrl(url: string): boolean {
 // sections. The personalNote print section adds one more conditional branch;
 // prior changes replaced inline prepTime/cookTime ternaries with formatMinutesOrNA()
 // calls, which reduced local branching elsewhere in the same function.
-export default function RecipeDetail({ recipe, actions, printFooter, personalNote }: RecipeDetailProps) {
+export default function RecipeDetail({
+  recipe,
+  actions,
+  printFooter,
+  personalNote,
+  printPreferences = DEFAULT_PRINT_PREFERENCES,
+}: RecipeDetailProps) {
   const recipeServings = recipe.servings ?? 1
   const ingredientLines = useMemo(() => splitLines(recipe.ingredients), [recipe.ingredients])
   const [currentServings, setCurrentServings] = useState(recipeServings)
@@ -285,7 +294,7 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
               recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
               recipe.addedByName && `Added by: ${recipe.addedByName}`,
             ].filter(Boolean).join(' · ')
-            return printMetaLine ? (
+            return printPreferences.printShowMeta && printMetaLine ? (
               <p
                 data-testid="print-meta-line"
                 className="hidden print:block text-sm text-[var(--theme-fg-muted)] mb-8"
@@ -296,7 +305,9 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
           })()}
 
           {/* Ingredients Section */}
-          <section className="mb-8 print:mb-4">
+          <section
+            className={`mb-8 print:mb-4 ${printPreferences.printShowIngredients ? '' : 'print:hidden'}`}
+          >
             <h2
               className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
@@ -331,7 +342,9 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
           </section>
 
           {/* Instructions Section */}
-          <section className="mb-8 print:mb-4">
+          <section
+            className={`mb-8 print:mb-4 ${printPreferences.printShowInstructions ? '' : 'print:hidden'}`}
+          >
             <h2
               className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
             >
@@ -369,7 +382,9 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
 
           {/* Notes Section */}
           {trimmedNotes && (
-            <section className="mb-8 print:mb-4">
+            <section
+              className={`mb-8 print:mb-4 ${printPreferences.printShowNotes ? '' : 'print:hidden'}`}
+            >
               <h2
                 className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
               >
@@ -382,7 +397,7 @@ export default function RecipeDetail({ recipe, actions, printFooter, personalNot
           )}
 
           {/* Personal Notes Section (print-only) */}
-          {personalNote && (
+          {personalNote && printPreferences.printShowPersonalNotes && (
             <section className="hidden print:block mb-8 print:mb-4">
               <h2
                 className={`text-2xl font-bold text-[var(--theme-fg)] mb-4 ${PRINT_HEADING_DENSITY_SECTION}`}
