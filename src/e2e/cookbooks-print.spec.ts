@@ -77,7 +77,9 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     );
 
     const toc = page.locator(".cookbook-toc-page");
-    await expect(toc.locator("li").first()).toBeAttached();
+    // Wait for both expected recipes to be present, not just the first <li> — the list can
+    // render incrementally as the client-side cookbook/recipe query resolves.
+    await expect(toc.locator("li")).toContainText([recipe1Name, recipe2Name]);
     const tocItems = await toc.locator("li").allTextContents();
     const recipe1Index = tocItems.findIndex((text) => text.includes(recipe1Name));
     const recipe2Index = tocItems.findIndex((text) => text.includes(recipe2Name));
