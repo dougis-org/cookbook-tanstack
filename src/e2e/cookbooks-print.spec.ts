@@ -77,6 +77,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     );
 
     const toc = page.locator(".cookbook-toc-page");
+    await expect(toc.locator("li").first()).toBeAttached();
     const tocItems = await toc.locator("li").allTextContents();
     const recipe1Index = tocItems.findIndex((text) => text.includes(recipe1Name));
     const recipe2Index = tocItems.findIndex((text) => text.includes(recipe2Name));
