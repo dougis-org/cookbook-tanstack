@@ -23,7 +23,6 @@ jobs:
       pull-requests: write
       issues: write
     env:
-      BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
 
     steps:
@@ -32,6 +31,9 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.sha || github.ref }}
           token: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && secrets.WORKFLOW_PAT || github.token }}
+
+      - name: Generate ephemeral auth secret
+        run: echo "BETTER_AUTH_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - name: Detect automation-triggered lockfile update
         run: |
@@ -100,12 +102,14 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
     env:
-      BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Generate ephemeral auth secret
+        run: echo "BETTER_AUTH_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -136,12 +140,14 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MONGODB_URI: mongodb://localhost:27017/cookbook
-      BETTER_AUTH_SECRET: ci-test-secret-do-not-use-in-production
       BETTER_AUTH_URL: http://localhost:3000
       PLAYWRIGHT_CI_WORKERS: 2
       PLAYWRIGHT_RUNTIME_REPORT: playwright-report/results.json
 
     steps:
+      - name: Generate ephemeral auth secret
+        run: echo "BETTER_AUTH_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+
       - name: Start MongoDB replica set
         run: |
           docker run -d --name mongodb -p 27017:27017 mongo:7 --replSet rs0 --bind_ip_all
@@ -195,6 +201,13 @@ jobs:
 
           # Warm up the SSR bundle with a page route request
           curl -sf http://localhost:3000/ > /dev/null
+
+          # Also warm up the auth SSR bundle (~2.5 MB mongoose+auth) specifically: it lazy-loads
+          # on first request to an auth-touching route, not on "/". Without this, the first e2e
+          # test to call registerAndLogin can hit a 20-30s+ cold-load stall on this module,
+          # which the deterministic hydration marker now surfaces as a real test timeout instead
+          # of silently absorbing it the way the old networkidle-guess wait did.
+          curl -sf http://localhost:3000/api/auth/session > /dev/null
 
           # Server continues running in the background for Playwright to reuse
           wait $SERVER_PID &

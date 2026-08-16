@@ -5,40 +5,41 @@ import { createCookbookWithRecipe } from "./helpers/cookbooks";
 import { waitForHydration, waitForRouterIdle } from "./helpers/app";
 
 /**
- * Delays the route-chunk request matching `urlSignature` so a route transition can be
- * observed mid-flight. Mirrors the CSS-delay pattern in fouc-prevention.spec.ts but targets
- * the route's lazy-loaded module, since #589's root cause was route-level code-splitting
- * racing the (CSS-only) boot-loader readiness gate. Matching by URL signature (not "first
- * script request") avoids delaying the client entry bundle instead of the route chunk itself.
- * `release()` is safe to call more than once and must be called even if the caller throws,
- * or the intercepted request is left parked and the test hangs at teardown.
+ * Records every `data-hydrated` attribute mutation on `<html>` alongside whether `contentSelector`
+ * is visible in the DOM at that instant, from before navigation through to router-idle. Installed
+ * via an init script so the observer is live from the very first paint, not attached after the
+ * fact where it could miss an early flip.
+ *
+ * This checks the actual invariant #589 was about (the marker must never claim readiness before
+ * the route's real content exists) without depending on network-level interception of a specific
+ * chunk request: an earlier version of this test tried to delay-and-inspect the route's lazy JS
+ * chunk by name, but the current build's code-splitting/bundling behavior doesn't expose a
+ * request matching any name derived from the route file — chasing that mapping made the test
+ * bundler-config-fragile for no additional coverage over asserting the outcome directly.
  */
-async function delayRouteChunkRequest(page: Page, urlSignature: string) {
-  let releaseRequest!: () => void;
-  const released = new Promise<void>((resolve) => {
-    releaseRequest = resolve;
-  });
-  let resolveRequested!: (url: string) => void;
-  const requested = new Promise<string>((resolve) => {
-    resolveRequested = resolve;
-  });
-  let intercepted = false;
-
-  await page.route("**/*", async (route) => {
-    const request = route.request();
-
-    if (!intercepted && request.resourceType() === "script" && request.url().includes(urlSignature)) {
-      intercepted = true;
-      resolveRequested(request.url());
-      await released;
-    }
-    await route.continue();
-  });
-
-  return {
-    requested,
-    release: releaseRequest,
-  };
+async function observeHydratedVsContent(page: Page, contentSelector: string) {
+  await page.addInitScript((selector) => {
+    const events: Array<{ hydrated: boolean; contentPresent: boolean }> = [];
+    (window as unknown as { __hydrationEvents: typeof events }).__hydrationEvents = events;
+    const setup = () => {
+      // addInitScript runs before the document is parsed, so <html> doesn't exist as a Node yet;
+      // retry each frame until it does rather than letting observer.observe() throw silently.
+      if (!document.documentElement) {
+        requestAnimationFrame(setup);
+        return;
+      }
+      const record = () => {
+        events.push({
+          hydrated: document.documentElement.getAttribute("data-hydrated") === "true",
+          contentPresent: document.querySelector(selector) !== null,
+        });
+      };
+      const observer = new MutationObserver(record);
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-hydrated"] });
+      record();
+    };
+    setup();
+  }, contentSelector);
 }
 
 test.describe("Hydration/route-idle marker", () => {
@@ -104,30 +105,29 @@ test.describe("Hydration/route-idle marker", () => {
     await expect(page).toHaveURL(/\/recipes/);
   });
 
-  test("data-hydrated does not settle until the #589 repro route's lazy chunk resolves, not merely once #app-shell is visible", async ({
+  test("data-hydrated never claims readiness before the #589 repro route's real content is present", async ({
     page,
   }) => {
     await registerAndLogin(page);
     const { cookbookId } = await createCookbookWithRecipe(page, "HydrationMarkerRegression");
 
-    const { requested, release } = await delayRouteChunkRequest(page, "cookbooks.$cookbookId_.toc");
+    // Use a new page sharing the same authenticated browser context (cookies carry over) so this
+    // is a genuinely first-ever navigation to the toc route, not one riding on code already
+    // loaded by createCookbookWithRecipe's earlier navigation through the cookbook detail view.
+    const tocPage = await page.context().newPage();
+    await observeHydratedVsContent(tocPage, "header h1");
 
-    try {
-      await page.goto(`/cookbooks/${cookbookId}/toc`, { waitUntil: "commit" });
-      await requested;
+    await tocPage.goto(`/cookbooks/${cookbookId}/toc`, { waitUntil: "commit" });
+    await waitForRouterIdle(tocPage);
+    await expect(tocPage.locator("header").getByText("Table of Contents")).toBeVisible();
 
-      // #app-shell can already be visible (CSS is unaffected by the JS-chunk delay above) while
-      // the route's lazy module — and therefore the marker — must still be pending.
-      await expect(page.locator("#app-shell")).toBeVisible();
-      const hydratedWhileChunkPending = await page.evaluate(() =>
-        document.documentElement.getAttribute("data-hydrated"),
-      );
-      expect(hydratedWhileChunkPending).toBeNull();
-    } finally {
-      release();
-    }
+    const events = await tocPage.evaluate(
+      () => (window as unknown as { __hydrationEvents: Array<{ hydrated: boolean; contentPresent: boolean }> }).__hydrationEvents,
+    );
+    const badEvent = events.find((e) => e.hydrated && !e.contentPresent);
+    expect(badEvent, "data-hydrated flipped true while the route's real content was not yet in the DOM").toBeUndefined();
+    expect(events.some((e) => e.hydrated)).toBe(true);
 
-    await waitForRouterIdle(page);
-    await expect(page.locator("header").getByText("Table of Contents")).toBeVisible();
+    await tocPage.close();
   });
 });

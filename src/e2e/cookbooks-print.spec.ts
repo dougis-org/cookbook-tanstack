@@ -213,8 +213,12 @@ test.describe("Cookbook Print Route — public cookbook", () => {
       page,
       `/cookbooks/${cookbookId}/print?displayonly=1`,
     );
-    // All recipe entries in the TOC <ol> should be <a> links to recipe pages
+    // All recipe entries in the TOC <ol> should be <a> links to recipe pages.
+    // The route module is ready once gotoAndWaitForHydration resolves, but the cookbook/recipe
+    // data itself loads via a separate client-side query, so the first link needs its own
+    // retrying wait rather than an immediate one-shot count.
     const tocLinks = page.locator("ol").first().locator("a");
+    await expect(tocLinks.first()).toBeAttached();
     const count = await tocLinks.count();
     expect(count).toBeGreaterThan(0);
     for (let i = 0; i < count; i++) {

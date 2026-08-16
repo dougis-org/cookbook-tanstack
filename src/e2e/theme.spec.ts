@@ -473,7 +473,11 @@ test.describe('Theme system', () => {
 
     await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print`)
 
-    // PrintLayout renders a wrapper div with inline CSS variable overrides.
+    // PrintLayout renders a wrapper div with inline CSS variable overrides, but the cookbook/
+    // recipe data it depends on loads via a separate client-side query after the route module
+    // is ready, so it needs its own retrying wait rather than an immediate one-shot query.
+    await expect(page.locator('[style*="--theme-bg"]')).toBeAttached()
+
     // Assert that the --theme-bg token is overridden to white inside that wrapper.
     const printBg = await page.evaluate(() => {
       // The PrintLayout div is the first child of the print route content area
