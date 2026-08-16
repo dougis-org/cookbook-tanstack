@@ -207,7 +207,7 @@ jobs:
           # test to call registerAndLogin can hit a 20-30s+ cold-load stall on this module,
           # which the deterministic hydration marker now surfaces as a real test timeout instead
           # of silently absorbing it the way the old networkidle-guess wait did.
-          curl -sf http://localhost:3000/api/auth/session > /dev/null
+          curl -sf http://localhost:3000/api/auth/get-session > /dev/null
 
           # Server continues running in the background for Playwright to reuse
           wait $SERVER_PID &
