@@ -4,6 +4,12 @@ import { gotoAndWaitForHydration } from './helpers/app'
 import { registerAndLogin } from './helpers/auth'
 import { createCookbookWithRecipe } from './helpers/cookbooks'
 
+declare global {
+  interface Window {
+    __htmlClassMutations?: string[]
+  }
+}
+
 // Helper: open sidebar, open the theme dropdown, select an option, optionally commit
 async function selectThemeViaDropdown(
   page: Page,
@@ -92,11 +98,11 @@ test.describe('Theme system', () => {
     // Pre-set localStorage and listen to HTML class mutations before any elements are parsed
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light-cool');
-      (window as any).__htmlClassMutations = [];
+      window.__htmlClassMutations = [];
       const observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
           if (m.attributeName === 'class' && m.target === document.documentElement) {
-            (window as any).__htmlClassMutations.push(document.documentElement.className);
+            window.__htmlClassMutations!.push(document.documentElement.className);
           }
         }
       });
@@ -105,7 +111,7 @@ test.describe('Theme system', () => {
 
     await gotoAndWaitForHydration(page, '/');
 
-    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    const mutations = await page.evaluate(() => window.__htmlClassMutations ?? []);
     expect(mutations.length).toBeGreaterThan(0);
     expect(mutations[0]).toContain('light-cool');
   })
@@ -116,11 +122,11 @@ test.describe('Theme system', () => {
     // Pre-set legacy 'light' value and track class mutations before page parse
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light');
-      (window as any).__htmlClassMutations = [];
+      window.__htmlClassMutations = [];
       const observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
           if (m.attributeName === 'class' && m.target === document.documentElement) {
-            (window as any).__htmlClassMutations.push(document.documentElement.className);
+            window.__htmlClassMutations!.push(document.documentElement.className);
           }
         }
       });
@@ -129,7 +135,7 @@ test.describe('Theme system', () => {
 
     await gotoAndWaitForHydration(page, '/');
 
-    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    const mutations = await page.evaluate(() => window.__htmlClassMutations ?? []);
     expect(mutations.length).toBeGreaterThan(0);
     expect(mutations[0]).toBe('light-cool');
 
@@ -385,11 +391,11 @@ test.describe('Theme system', () => {
   }) => {
     await page.addInitScript(() => {
       localStorage.setItem('cookbook-theme', 'light-warm');
-      (window as any).__htmlClassMutations = [];
+      window.__htmlClassMutations = [];
       const observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
           if (m.attributeName === 'class' && m.target === document.documentElement) {
-            (window as any).__htmlClassMutations.push(document.documentElement.className);
+            window.__htmlClassMutations!.push(document.documentElement.className);
           }
         }
       });
@@ -398,7 +404,7 @@ test.describe('Theme system', () => {
 
     await gotoAndWaitForHydration(page, '/');
 
-    const mutations = await page.evaluate(() => (window as any).__htmlClassMutations);
+    const mutations = await page.evaluate(() => window.__htmlClassMutations ?? []);
     expect(mutations.length).toBeGreaterThan(0);
     expect(mutations[0]).toContain('light-warm');
   })
