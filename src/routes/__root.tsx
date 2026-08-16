@@ -339,6 +339,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </div>
         <div id="app-shell">
           <QueryClientProvider client={getQueryClient()}>
+            <RouterIdleMarker />
             <ThemeProvider>
               {googleAnalyticsId ? <GoogleAnalyticsPageTracker measurementId={googleAnalyticsId} /> : null}
               <AuthProvider>
@@ -365,6 +366,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </body>
     </html>
   )
+}
+
+/**
+ * Deterministic e2e readiness signal: `data-hydrated` sits on <html> only while the router
+ * is fully settled (no pending navigation, lazy route-chunk load, or loader in flight).
+ * Replaces guessing via #app-shell visibility (a CSS-load signal, not a React-commit /
+ * route-readiness one) — see waitForHydration() in src/e2e/helpers/app.ts.
+ *
+ * Kept as a leaf so the router-status subscription re-renders only this node rather than
+ * the whole document shell and provider tree on every navigation.
+ */
+function RouterIdleMarker() {
+  const routerStatus = useRouterState({ select: (state) => state.status })
+
+  useEffect(() => {
+    if (routerStatus === 'idle') {
+      document.documentElement.setAttribute('data-hydrated', 'true')
+    } else {
+      document.documentElement.removeAttribute('data-hydrated')
+    }
+  }, [routerStatus])
+
+  return null
 }
 
 function GoogleAnalyticsPageTracker({

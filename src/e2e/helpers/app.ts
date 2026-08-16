@@ -1,18 +1,26 @@
 import type { Page } from "@playwright/test";
 
 /**
- * Wait until the client app has hydrated and attached event handlers.
+ * Selector for the readiness marker set by RouterIdleMarker in src/routes/__root.tsx.
  */
-export async function waitForHydration(page: Page) {
+export const ROUTER_IDLE_SELECTOR = 'html[data-hydrated="true"]';
+
+/** Wait until the router has settled on the currently loaded route. */
+export async function waitForRouterIdle(page: Page): Promise<void> {
+  await page.locator(ROUTER_IDLE_SELECTOR).waitFor({ state: "attached" });
+}
+
+/**
+ * Wait until the client app has hydrated and attached event handlers.
+ *
+ * The #app-shell check is not redundant with the router marker: shell visibility is driven
+ * by the boot-loader script off CSS load, so the app can be router-idle while still
+ * display:none behind unloaded stylesheets.
+ */
+export async function waitForHydration(page: Page): Promise<void> {
   await page.waitForLoadState("domcontentloaded");
   await page.locator("#app-shell").waitFor({ state: "visible" });
-  try {
-    await page.waitForLoadState("networkidle", { timeout: 5000 });
-  } catch {
-    // Some routes keep background requests open; visibility plus a short settle
-    // still avoids interacting during the initial React hydration pass.
-  }
-  await page.waitForTimeout(100);
+  await waitForRouterIdle(page);
 }
 
 /**
