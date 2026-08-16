@@ -279,24 +279,24 @@ describe('/account/settings — print preferences', () => {
       /^notes$/i,
       /personal notes/i,
     ]) {
-      expect(screen.getByRole('switch', { name })).toHaveAttribute('aria-checked', 'true')
+      expect(screen.getByRole('checkbox', { name })).toBeChecked()
     }
   })
 
   it('reflects an off preference from the session', () => {
     mockUseAuth.mockReturnValue(authState('dark', false, { printShowIngredients: false }))
     render(<SettingsPage />)
-    expect(screen.getByRole('switch', { name: /ingredients/i })).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('checkbox', { name: /ingredients/i })).not.toBeChecked()
   })
 
   it('toggling one preference does not affect the others', () => {
     renderSettingsWithTheme('dark')
     act(() => {
-      screen.getByRole('switch', { name: /instructions/i }).click()
+      screen.getByRole('checkbox', { name: /instructions/i }).click()
     })
-    expect(screen.getByRole('switch', { name: /instructions/i })).toHaveAttribute('aria-checked', 'false')
-    expect(screen.getByRole('switch', { name: /ingredients/i })).toHaveAttribute('aria-checked', 'true')
-    expect(screen.getByRole('switch', { name: /^notes$/i })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('checkbox', { name: /instructions/i })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /ingredients/i })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /^notes$/i })).toBeChecked()
   })
 
   it('saves toggled print preferences alongside theme', async () => {
@@ -304,7 +304,7 @@ describe('/account/settings — print preferences', () => {
     renderSettingsWithTheme('dark')
 
     act(() => {
-      screen.getByRole('switch', { name: /personal notes/i }).click()
+      screen.getByRole('checkbox', { name: /personal notes/i }).click()
     })
     await clickSave()
 
@@ -319,11 +319,11 @@ describe('/account/settings — print preferences', () => {
     renderSettingsWithTheme('dark')
 
     act(() => {
-      screen.getByRole('switch', { name: /^notes$/i }).click()
+      screen.getByRole('checkbox', { name: /^notes$/i }).click()
     })
     await clickSave()
 
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: /^notes$/i })).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('checkbox', { name: /^notes$/i })).not.toBeChecked()
   })
 })

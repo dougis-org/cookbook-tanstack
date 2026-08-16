@@ -161,11 +161,9 @@ export function SettingsPage() {
                   <span className="text-sm font-medium text-[var(--theme-fg)]">{label}</span>
                   <input
                     type="checkbox"
-                    role="switch"
-                    aria-checked={printPreferences[key]}
                     checked={printPreferences[key]}
                     onChange={() => togglePrintPreference(key)}
-                    className="h-5 w-5 accent-[var(--theme-accent)]"
+                    className="w-4 h-4 rounded border-[var(--theme-border)] bg-[var(--theme-surface-raised)] text-[var(--theme-accent)] accent-[var(--theme-accent)] focus:ring-[var(--theme-accent)]"
                   />
                 </label>
               ))}
