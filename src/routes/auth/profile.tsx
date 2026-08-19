@@ -1,18 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { User } from "lucide-react"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { requireAuth } from "@/lib/auth-guard"
-import AuthPageLayout from "@/components/auth/AuthPageLayout"
-import ProfileInfo from "@/components/auth/ProfileInfo"
 
 export const Route = createFileRoute("/auth/profile")({
-  component: ProfilePage,
-  beforeLoad: requireAuth(),
+  beforeLoad: (args) => {
+    requireAuth()(args)
+    throw redirect({ to: "/account" })
+  },
+  component: LegacyProfileRedirect,
 })
 
-function ProfilePage() {
-  return (
-    <AuthPageLayout icon={User} title="Profile">
-      <ProfileInfo />
-    </AuthPageLayout>
-  )
+// Unreachable: beforeLoad always throws a redirect before this would render.
+function LegacyProfileRedirect() {
+  return null
 }

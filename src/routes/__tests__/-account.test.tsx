@@ -30,10 +30,20 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
+vi.mock('@/lib/auth-client', () => ({
+  authClient: {
+    updateUser: vi.fn(),
+  },
+}))
+
 import { AccountPage, Route } from '@/routes/account'
 
 function tierSession(tier: string) {
-  return { session: { user: { id: 'u1', tier, isAdmin: false } }, isLoggedIn: true }
+  return {
+    session: { user: { id: 'u1', tier, isAdmin: false, createdAt: '2026-01-01T00:00:00Z' } },
+    isPending: false,
+    isLoggedIn: true,
+  }
 }
 
 function usageData(recipeCount: number, cookbookCount: number) {
@@ -61,6 +71,30 @@ describe('/account — beforeLoad', () => {
     expect(() => {
       beforeLoad({ context: { session: { user: { id: 'u1' } } }, location: { href: '/account' } } as never)
     }).not.toThrow()
+  })
+})
+
+describe('/account — composed page', () => {
+  beforeEach(() => {
+    mockUseQuery.mockReturnValue(usageData(0, 0))
+  })
+
+  it('renders Profile, Status, and Preferences sections in one page', () => {
+    mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    render(<AccountPage />)
+
+    // Profile section
+    expect(screen.getByText(/member since/i)).toBeInTheDocument()
+    // Status section
+    expect(screen.getByText(/home cook/i)).toBeInTheDocument()
+    // Preferences section
+    expect(screen.getByRole('radiogroup', { name: /theme/i })).toBeInTheDocument()
+  })
+
+  it('does not render an internal link to /account/settings', () => {
+    mockUseAuth.mockReturnValue(tierSession('home-cook'))
+    render(<AccountPage />)
+    expect(screen.queryByRole('link', { name: /settings/i })).not.toBeInTheDocument()
   })
 })
 
@@ -127,11 +161,11 @@ describe('/account — tier section', () => {
   it('renders primary upgrade CTA button and secondary link for home-cook', () => {
     mockUseAuth.mockReturnValue(tierSession('home-cook'))
     render(<AccountPage />)
-    
+
     const upgradeButton = screen.getByRole('link', { name: /Upgrade to Prep Cook — \$2.99\/mo/i })
     expect(upgradeButton).toBeInTheDocument()
     expect(upgradeButton.getAttribute('href')).toBe('/pricing?focus=prep-cook')
-    
+
     const compareLink = screen.getByRole('link', { name: /Compare all plans →/i })
     expect(compareLink).toBeInTheDocument()
     expect(compareLink.getAttribute('href')).toBe('/pricing')
@@ -140,7 +174,7 @@ describe('/account — tier section', () => {
   it('renders friendly banner and no upgrade button for executive-chef (top-tier)', () => {
     mockUseAuth.mockReturnValue(tierSession('executive-chef'))
     render(<AccountPage />)
-    
+
     expect(screen.queryByRole('link', { name: /Upgrade to/i })).not.toBeInTheDocument()
     expect(screen.getByText(/You're on the top plan/i)).toBeInTheDocument()
   })
@@ -148,20 +182,12 @@ describe('/account — tier section', () => {
   it('renders the upgrade CTA above the next tier preview card', () => {
     mockUseAuth.mockReturnValue(tierSession('home-cook'))
     render(<AccountPage />)
-    
+
     const upgradeButton = screen.getByRole('link', { name: /Upgrade to Prep Cook — \$2.99\/mo/i })
     const nextTierPreview = screen.getByTestId('next-tier-preview')
-    
+
     const position = upgradeButton.compareDocumentPosition(nextTierPreview)
     expect(position & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  })
-
-  it('renders a link to /account/settings', () => {
-    mockUseAuth.mockReturnValue(tierSession('home-cook'))
-    render(<AccountPage />)
-    const settingsLink = screen.getByRole('link', { name: /settings/i })
-    expect(settingsLink).toBeInTheDocument()
-    expect(settingsLink.getAttribute('href')).toBe('/account/settings')
   })
 
   it('does not render "coming soon" stub text', () => {

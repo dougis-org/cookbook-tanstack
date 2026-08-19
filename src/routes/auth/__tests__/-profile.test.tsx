@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 
-import { Route } from '@/routes/account_.settings'
+import { Route } from '@/routes/auth/profile'
 
-describe('/account/settings — redirect-only route', () => {
+describe('/auth/profile — redirect-only route', () => {
   it('redirects unauthenticated visitors to /auth/login (not /account)', () => {
     const beforeLoad = Route.options.beforeLoad
     if (!beforeLoad) throw new Error('beforeLoad not defined')
     try {
-      beforeLoad({ context: { session: null }, location: { href: '/account/settings' } } as never)
+      beforeLoad({ context: { session: null }, location: { href: '/auth/profile' } } as never)
       throw new Error('Should have thrown')
     } catch (err: unknown) {
       const e = err as { type?: string; options?: { to?: string; search?: { reason?: string } } }
@@ -23,7 +23,7 @@ describe('/account/settings — redirect-only route', () => {
     try {
       beforeLoad({
         context: { session: { user: { id: 'u1' } } },
-        location: { href: '/account/settings' },
+        location: { href: '/auth/profile' },
       } as never)
       throw new Error('Should have thrown')
     } catch (err: unknown) {

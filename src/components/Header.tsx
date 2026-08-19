@@ -305,7 +305,7 @@ export default function Header() {
                 <>
                   <NotificationBell />
                   <Link
-                    to="/auth/profile"
+                    to="/account"
                     className="flex items-center gap-2 text-sm text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
                   >
                     <User size={18} />

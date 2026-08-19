@@ -8,7 +8,7 @@ export default defineConfig({
     globalSetup: ['./src/test-helpers/db-global-setup.ts'],
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts', './src/test-helpers/db-connect.ts'],
-    exclude: ['**/node_modules/**', '**/e2e/**', '**/*.e2e.*'],
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/*.e2e.*', '**/.verity/**'],
     // Use threads pool with Vitest defaults. Per-worker isolation is managed via db-connect.ts
     // and the shared DB cleanup helper in with-clean-db.ts.
     pool: 'threads',

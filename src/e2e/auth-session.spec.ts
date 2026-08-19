@@ -20,15 +20,15 @@ test.describe("Auth session flows", () => {
   }) => {
     const creds = await registerAndLogin(page);
 
-    await gotoAndWaitForHydration(page, "/auth/profile");
-    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await gotoAndWaitForHydration(page, "/account");
+    await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
     await expect(page.getByText(creds.email)).toBeVisible();
 
     await page.reload();
     await page.waitForLoadState("networkidle");
     await waitForHydration(page);
 
-    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
     await expect(page.getByText(creds.email)).toBeVisible();
   });
 
@@ -37,7 +37,7 @@ test.describe("Auth session flows", () => {
   }) => {
     const creds = await registerAndLogin(page);
 
-    await gotoAndWaitForHydration(page, "/auth/profile");
+    await gotoAndWaitForHydration(page, "/account");
 
     const cookies = await page.context().cookies();
     const authCookies = cookies.filter((cookie) =>
@@ -53,8 +53,8 @@ test.describe("Auth session flows", () => {
     await page.context().clearCookies();
     await page.context().addCookies([sessionToken!]);
 
-    await gotoAndWaitForHydration(page, "/auth/profile");
-    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
+    await gotoAndWaitForHydration(page, "/account");
+    await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
     await expect(page.getByText(creds.email)).toBeVisible();
   });
 

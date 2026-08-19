@@ -74,6 +74,13 @@ describe("Header", () => {
     expect(screen.queryByText("Register")).not.toBeInTheDocument()
   })
 
+  it("user link targets /account, not /auth/profile", () => {
+    mockUseAuth.mockReturnValue(authedUser)
+    render(<Header />)
+    const userLink = screen.getByText("Test User").closest("a")
+    expect(userLink).toHaveAttribute("href", "/account")
+  })
+
   it("shows nothing while session is loading", () => {
     mockUseAuth.mockReturnValue({ session: null, isPending: true, isLoggedIn: false, userId: null })
     render(<Header />)
