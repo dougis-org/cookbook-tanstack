@@ -7,7 +7,29 @@ vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => mockUseAuth(),
 }))
 
-import ProfileSection from "@/components/account/ProfileSection"
+import ProfileSection, { safeImageUrl } from "@/components/account/ProfileSection"
+
+describe("safeImageUrl", () => {
+  it("allows an https URL whose host is in the trusted list", () => {
+    expect(safeImageUrl("https://cdn.example.com/avatar.jpg", ["cdn.example.com"])).toBe(
+      "https://cdn.example.com/avatar.jpg",
+    )
+  })
+
+  it("rejects an https URL whose host is not in the trusted list", () => {
+    expect(safeImageUrl("https://untrusted.example.com/avatar.jpg", ["cdn.example.com"])).toBeNull()
+  })
+
+  it("rejects http even for a trusted host", () => {
+    expect(safeImageUrl("http://cdn.example.com/avatar.jpg", ["cdn.example.com"])).toBeNull()
+  })
+
+  it("rejects malformed URLs and empty/null input", () => {
+    expect(safeImageUrl("not a url", ["cdn.example.com"])).toBeNull()
+    expect(safeImageUrl(null, ["cdn.example.com"])).toBeNull()
+    expect(safeImageUrl(undefined, ["cdn.example.com"])).toBeNull()
+  })
+})
 
 describe("ProfileSection", () => {
   it("shows loading skeleton when session is pending", () => {

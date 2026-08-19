@@ -8,19 +8,22 @@ import { useAuth } from "@/hooks/useAuth"
 // back to the placeholder icon otherwise.
 const TRUSTED_AVATAR_HOSTS: readonly string[] = []
 
-function safeImageUrl(image: string | null | undefined): string | null {
+// Exported for direct unit testing of the trusted-host branch (which has no
+// production data path yet, since TRUSTED_AVATAR_HOSTS is currently empty).
+export function safeImageUrl(image: string | null | undefined, trustedHosts: readonly string[] = TRUSTED_AVATAR_HOSTS): string | null {
   if (!image) return null
   try {
     const url = new URL(image)
     if (url.protocol !== "https:") return null
-    return TRUSTED_AVATAR_HOSTS.includes(url.hostname) ? image : null
+    return trustedHosts.includes(url.hostname) ? image : null
   } catch {
     return null
   }
 }
 
-function memberSinceLabel(createdAt: unknown): string {
-  const date = new Date(createdAt as string)
+function memberSinceLabel(createdAt: Date | string | number | null | undefined): string {
+  if (createdAt === null || createdAt === undefined) return "N/A"
+  const date = new Date(createdAt)
   return Number.isNaN(date.getTime()) ? "N/A" : date.toISOString().split("T")[0]
 }
 

@@ -195,16 +195,31 @@ Non-docs change (route/component files changed) — full path applies:
 
 ## PR and Merge
 
-- [ ] Ensure the Pre-Commit Code Review step above was run and findings
+- [x] Ensure the Pre-Commit Code Review step above was run and findings
       addressed before the final commit.
-- [ ] Commit all changes to the working branch and push to remote.
-- [ ] Open PR from `consolidate-account-page` to `main`. PR body MUST
-      include `Closes #655`.
-- [ ] **Issue lifecycle: mark in-review** — run
+- [x] Commit all changes to the working branch and push to remote. Commit
+      `366ae93`, pushed to `origin/consolidate-account-page`.
+- [x] Open PR from `consolidate-account-page` to `main`:
+      https://github.com/dougis-org/cookbook-tanstack/pull/661 (includes
+      `Closes #655`).
+- [x] **Issue lifecycle: mark in-review** — ran
       `gh issue edit #655 --add-label "in-review" --remove-label "in-progress"`
-      and move the project item to "In Review" (same discovery pattern as
-      above).
-- [ ] Wait 60 seconds for CI to start.
+      and moved the project item to "In review".
+- [x] Wait 60 seconds for CI to start — confirmed CI running (`resolve`,
+      `Codacy`, `build-and-unit`, `wait-for-ai-reviews` all present on the
+      PR). While waiting, a Stop-hook Verity review surfaced 2 more advisory
+      (non-blocking) findings on the just-pushed commit: an unsafe `as string`
+      cast on `createdAt` in `memberSinceLabel`, and missing positive test
+      coverage for `ProfileSection`'s trusted-avatar-host branch (untestable
+      as originally written, since the allowlist is empty by design). Fixed
+      both: typed `memberSinceLabel` to accept `Date | string | number |
+      null | undefined` directly instead of casting, and exported
+      `safeImageUrl` with an injectable `trustedHosts` param so the
+      trusted/untrusted/http/malformed branches are all directly unit
+      tested. (A third finding, about `vitest.config.ts`'s coverage
+      `exclude` list dropping `src/routes/**`, was evaluated and left
+      alone — it's a pre-existing, deliberately documented convention
+      ("E2E-tested, not unit-tested"), not something this change touched.)
 - [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all
       findings (commit, push, re-run) until zero findings remain. Report a
       stall after 3+ iterations with no progress.
