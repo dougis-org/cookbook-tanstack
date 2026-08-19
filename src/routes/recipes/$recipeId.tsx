@@ -74,7 +74,7 @@ export function RecipeDetailPage() {
 
   if (isLoading) {
     return (
-      <PageLayout>
+      <PageLayout role="public-content">
         <div className="text-center py-12">
           <p className="text-[var(--theme-fg-subtle)]">Loading recipe...</p>
         </div>
@@ -84,7 +84,7 @@ export function RecipeDetailPage() {
 
   if (!recipe) {
     return (
-      <PageLayout>
+      <PageLayout role="public-content">
         <div className="text-center py-12">
           <p className="text-[var(--theme-fg-subtle)] mb-4">Recipe not found</p>
           <Link
@@ -99,7 +99,7 @@ export function RecipeDetailPage() {
   }
 
   return (
-    <PageLayout>
+    <PageLayout role="public-content">
       <div className="print:hidden">
         <Breadcrumb items={[{ label: 'Recipes', to: '/recipes' }, { label: recipe.name }]} />
       </div>
