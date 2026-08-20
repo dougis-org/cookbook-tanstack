@@ -134,7 +134,7 @@
       `ProfileSection`'s email/username spans had no truncation and
       overflowed horizontally on narrow viewports — added `truncate`/`min-w-0`.
 
-- [ ] Look for existing tooling or functions in the codebase that can be
+- [x] Look for existing tooling or functions in the codebase that can be
       reused or extended before writing new logic from scratch — done
       throughout (e.g. reused `requireAuth()`, `REDIRECT_REASON_MESSAGES`,
       existing theme/print-preference helpers verbatim rather than
@@ -262,11 +262,27 @@ Non-docs change (route/component files changed) — full path applies:
         judgment calls, not acted on.
       Re-validated after fixes: 2072/2072 unit tests, build clean, spot-check
       e2e (account.spec.ts + theme.spec.ts, 23/23) all pass.
-- [ ] Enable auto-merge only after the review gate passes:
+- [x] Enable auto-merge only after the review gate passes:
       `gh pr merge <PR-URL> --auto --merge` (never `--admin`).
-- [ ] Iterate until merged: build/tests → PR comments → CI checks, repeating
+- [x] Iterate until merged: build/tests → PR comments → CI checks, repeating
       from step 1 after every push, until `gh pr view --json state` returns
       `MERGED` (or `CLOSED`, in which case stop and notify the user).
+      The `e2e` CI check failed twice at ~11 minutes (CI's step-level
+      timeout) with zero streamed output before this loop reached this
+      step. Investigated by reproducing CI's exact conditions locally
+      (production build via `node .output/server/index.mjs`, not dev mode)
+      and running the full 223-test suite: confirmed via
+      `git diff origin/main...HEAD --name-only` that every failing/slow test
+      (`personal-source-privacy.spec.ts`, `cookbooks-chapters.spec.ts`,
+      `recipe-source-picker.spec.ts`) lives in files this branch never
+      touches — this branch's own new/changed e2e tests all passed cleanly
+      early in the run. At the user's request, rebased onto latest `main`
+      (clean, no conflicts) and force-pushed to trigger a fresh CI run: all
+      10 checks passed, `e2e` in 5m22s (in line with `main`'s normal ~5m48s
+      baseline), confirming the two prior failures were pre-existing
+      CI/environment flakiness unrelated to this change, not a regression.
+      No PR review comments were posted (Codacy: 0 new issues). Enabled
+      auto-merge; PR #661 merged immediately (commit `0d9f4a1`).
 
 Ownership metadata:
 
@@ -282,25 +298,30 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only` (from the primary
-      checkout, not the worktree).
-- [ ] Verify the merged changes appear on `main`.
-- [ ] Mark all remaining tasks as complete.
-- [ ] Update repository documentation impacted by the change (none
+- [x] `git checkout main` and `git pull --ff-only` (from the primary
+      checkout, not the worktree). Fast-forwarded `7255e0d..0d9f4a1`.
+- [x] Verify the merged changes appear on `main`. Confirmed via the pull
+      diffstat (32 files changed, matching the PR).
+- [x] Mark all remaining tasks as complete.
+- [x] Update repository documentation impacted by the change (none
       identified beyond this file).
-- [ ] Sync approved spec deltas into `openspec/specs/` (account-page and
-      header are new capabilities; auth-route-guards and user-settings get
-      ADDED/MODIFIED/REMOVED sections merged in). Update relative links
-      pointing into the change directory to resolve from the archive
-      location.
-- [ ] Archive the change: move `openspec/changes/consolidate-account-page/`
-      to `openspec/changes/archive/YYYY-MM-DD-consolidate-account-page/` in
-      a single commit (copy + delete together).
-- [ ] Confirm the archive directory exists and the original is gone.
-- [ ] Create a doc branch `doc/archive-YYYY-MM-DD-consolidate-account-page`,
+- [x] Sync approved spec deltas into `openspec/specs/`: created
+      `openspec/specs/account-page/spec.md` (new capability) and
+      `openspec/specs/header/spec.md` (new spec.md in the existing `header/`
+      capability directory, which previously only had `branding.md` and
+      `sidebar-close-behavior.md`); merged ADDED requirements into
+      `auth-route-guards/spec.md` and MODIFIED/REMOVED requirements into
+      `user-settings/spec.md`. No relative links into the change directory
+      needed updating (none of the delta specs referenced `../../design.md`
+      or `../../tasks.md`).
+- [x] Archive the change: moved `openspec/changes/consolidate-account-page/`
+      to `openspec/changes/archive/2026-08-20-consolidate-account-page/` via
+      `git mv` (single rename, staged as one commit below).
+- [x] Confirm the archive directory exists and the original is gone.
+- [ ] Create a doc branch `doc/archive-2026-08-20-consolidate-account-page`,
       push it, open a PR titled
-      `docs: archive consolidate-account-page (YYYY-MM-DD)` to `main`.
+      `docs: archive consolidate-account-page (2026-08-20)` to `main`.
 - [ ] Immediately enable auto-merge on the doc PR.
 - [ ] Monitor the doc PR until merged (same loop as the implementation PR).
 - [ ] Prune merged local branches: `git fetch --prune` and
-      `git branch -D consolidate-account-page doc/archive-YYYY-MM-DD-consolidate-account-page`.
+      `git branch -D consolidate-account-page doc/archive-2026-08-20-consolidate-account-page`.
