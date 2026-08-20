@@ -83,8 +83,9 @@ export default function PreferencesSection() {
 
   return (
     <div className="rounded-xl border border-[var(--theme-border)] bg-[var(--theme-surface)] p-6 space-y-6">
+      <h2 className="text-xl font-bold text-[var(--theme-fg)]">Preferences</h2>
       <div>
-        <h2 className="text-xl font-bold text-[var(--theme-fg)] mb-1">Theme</h2>
+        <h3 className="text-lg font-bold text-[var(--theme-fg)] mb-1">Theme</h3>
         <p className="text-sm text-[var(--theme-fg-muted)]">
           Choose how My CookBooks looks. Your selection is saved to your account.
         </p>
@@ -128,7 +129,7 @@ export default function PreferencesSection() {
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-[var(--theme-fg)] mb-1">Print Preferences</h2>
+        <h3 className="text-lg font-bold text-[var(--theme-fg)] mb-1">Print Preferences</h3>
         <p className="text-sm text-[var(--theme-fg-muted)] mb-4">
           Choose which sections print with your recipes. Applies to both single-recipe and cookbook printing (Personal Notes only ever prints from a recipe's own page).
         </p>

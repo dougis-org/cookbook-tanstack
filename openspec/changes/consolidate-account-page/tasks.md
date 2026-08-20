@@ -220,9 +220,48 @@ Non-docs change (route/component files changed) — full path applies:
       `exclude` list dropping `src/routes/**`, was evaluated and left
       alone — it's a pre-existing, deliberately documented convention
       ("E2E-tested, not unit-tested"), not something this change touched.)
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all
-      findings (commit, push, re-run) until zero findings remain. Report a
-      stall after 3+ iterations with no progress.
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all
+      findings (commit, push, re-run) until zero findings remain. Ran the
+      full 4-agent review (code-reviewer, pr-test-analyzer, silent-failure-
+      hunter, comment-analyzer) in parallel against PR #661. Findings and
+      resolution:
+      - **code-reviewer (Important, confidence 85):** the empty avatar
+        allowlist silently blanked avatars for the real `users.updateProfile`
+        tRPC write path (`z.string().url()`, no origin check) that already
+        existed on `main` — a genuine regression, not a false positive.
+        Fixed at both boundaries: `updateProfile` now requires `https:`,
+        and `ProfileSection.safeImageUrl` was relaxed from an (empty,
+        untestable-in-practice) host allowlist to a simple https-only check
+        matching the write-side policy.
+      - **code-reviewer (Important, confidence 82):** heading hierarchy
+        regression (h1→h3→h2→h2, and Profile had no section heading at all,
+        unlike the deleted `AuthPageLayout`'s `<h2>Profile</h2>`). Fixed:
+        added `<h2>Profile</h2>` / `<h2>Preferences</h2>` section headings,
+        demoted `PreferencesSection`'s "Theme"/"Print Preferences" from
+        `<h2>` to `<h3>`. Now a clean h1 → h2 → h2 → h2 → h3 → h3 tree.
+      - **pr-test-analyzer (Critical, severity 8):** the `reason` banner
+        (explicitly a design.md decision to thread as a prop specifically
+        for testability) had zero test coverage, and no `StatusSection`
+        test file existed at all. Fixed: new
+        `src/components/account/__tests__/StatusSection.test.tsx` covering
+        both `reason` values, no-banner default, and the tier-fallback edge
+        case from proposal.md ("unrecognized/missing tier value").
+      - **pr-test-analyzer (severity 4):** `user.name` falsy fallback
+        untested. Fixed with one added test.
+      - **silent-failure-hunter finding #1** ("CLAUDE.md mandates
+        `logError`/`errorIds.ts`"): rejected — verified `logError` has zero
+        usages anywhere in this codebase and CLAUDE.md doesn't mention it;
+        the finding referenced a convention that doesn't exist in this repo.
+        `console.error` + on-screen `role="alert"` state is the actual
+        established pattern here, carried over verbatim from the original
+        `SettingsPage`.
+      - silent-failure-hunter's other findings, comment-analyzer's findings,
+        and code-reviewer's "below threshold" notes (duplicated Header
+        assertion, redirect-reason placement, StatusSection loading-state
+        inconsistency) were evaluated and left as pre-existing/non-blocking
+        judgment calls, not acted on.
+      Re-validated after fixes: 2072/2072 unit tests, build clean, spot-check
+      e2e (account.spec.ts + theme.spec.ts, 23/23) all pass.
 - [ ] Enable auto-merge only after the review gate passes:
       `gh pr merge <PR-URL> --auto --merge` (never `--admin`).
 - [ ] Iterate until merged: build/tests → PR comments → CI checks, repeating

@@ -1,21 +1,17 @@
 import { User, Mail, AtSign } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 
-// No social-login providers or public avatar-hosting CDN are configured for
-// this app (see src/lib/auth.ts), so there is currently no legitimate
-// external source for `user.image`. Add a host here only once such a source
-// is wired up — until then, avatars render only from trusted hosts and fall
-// back to the placeholder icon otherwise.
-const TRUSTED_AVATAR_HOSTS: readonly string[] = []
-
-// Exported for direct unit testing of the trusted-host branch (which has no
-// production data path yet, since TRUSTED_AVATAR_HOSTS is currently empty).
-export function safeImageUrl(image: string | null | undefined, trustedHosts: readonly string[] = TRUSTED_AVATAR_HOSTS): string | null {
+// The real access-control boundary is `users.updateProfile` (see
+// src/server/trpc/routers/users.ts), which already rejects non-https and
+// malformed URLs before persisting `user.image`. This is a render-side
+// defense-in-depth check against that same policy — https-only, well-formed
+// URL — not a host allowlist, since any authenticated user can legitimately
+// set an avatar today via that mutation.
+export function safeImageUrl(image: string | null | undefined): string | null {
   if (!image) return null
   try {
     const url = new URL(image)
-    if (url.protocol !== "https:") return null
-    return trustedHosts.includes(url.hostname) ? image : null
+    return url.protocol === "https:" ? image : null
   } catch {
     return null
   }
@@ -47,6 +43,7 @@ export default function ProfileSection() {
 
   return (
     <div className="space-y-6">
+      <h2 className="text-xl font-bold text-[var(--theme-fg)]">Profile</h2>
       <div className="flex items-center gap-4">
         {imageUrl ? (
           <img
