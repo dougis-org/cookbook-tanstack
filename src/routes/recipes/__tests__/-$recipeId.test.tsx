@@ -6,8 +6,12 @@ vi.mock('@tanstack/react-router', async () => {
   return createRouterMock({ params: { recipeId: 'r1' } })
 })
 
+const mockPageLayout = vi.fn()
 vi.mock('@/components/layout/PageLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children, role }: { children: React.ReactNode; role?: string }) => {
+    mockPageLayout({ role })
+    return <div>{children}</div>
+  },
 }))
 
 const mockRecipeDetail = vi.fn()
@@ -115,6 +119,39 @@ describe('RecipeDetailPage', () => {
     expect(shareButton).toBeInTheDocument()
     expect(printButton).toBeInTheDocument()
     expect(shareButton.nextElementSibling).toBe(printButton)
+  })
+})
+
+describe('RecipeDetailPage ad-eligible role', () => {
+  beforeEach(() => {
+    mockPageLayout.mockClear()
+    mockUseAuth.mockReturnValue({ isLoggedIn: false, userId: undefined, isPending: false, session: null })
+    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+  })
+
+  it('passes role="public-content" on the loading branch', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: true })
+
+    render(<RecipeDetailPage />)
+
+    expect(mockPageLayout).toHaveBeenCalledWith({ role: 'public-content' })
+  })
+
+  it('passes role="public-content" on the not-found branch', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false })
+
+    render(<RecipeDetailPage />)
+
+    expect(mockPageLayout).toHaveBeenCalledWith({ role: 'public-content' })
+  })
+
+  it('passes role="public-content" on the success branch, for anonymous and authenticated viewers alike', () => {
+    mockUseQuery.mockReturnValue({ data: baseRecipe, isLoading: false })
+
+    render(<RecipeDetailPage />)
+
+    expect(mockPageLayout).toHaveBeenCalledWith({ role: 'public-content' })
   })
 })
 
