@@ -59,7 +59,9 @@ The system SHALL expose page-layout ad slot groundwork without requiring a live 
 ### Requirement: MODIFIED Page Layout Policy
 
 The system SHALL distinguish page roles so ad display can be controlled without hard-coding ad decisions into each
-route component.
+route component. Every render branch of a public-content route MUST assign its page-eligible role explicitly,
+independent of `PageLayout`'s default role, so that no branch of a public route silently falls back to a
+protected-task role.
 
 #### Scenario: Public content page allows ad policy evaluation
 
@@ -72,6 +74,14 @@ route component.
 - **Given** any viewer on an auth, create, import, edit, admin, account/profile, or print surface
 - **When** the page layout evaluates ad eligibility
 - **Then** ads are not eligible to render
+
+#### Scenario: Recipe detail page assigns its public-content role on every render branch
+
+- **Given** the recipe detail route (`/recipes/$recipeId`) in any of its render states — loading, not-found, or
+  loaded
+- **When** that render branch constructs its page layout
+- **Then** the layout is given the `public-content` role explicitly, matching the recipe list page's role
+  assignment, rather than relying on `PageLayout`'s default role
 
 ## REMOVED Requirements
 
@@ -111,6 +121,10 @@ hard to audit and redesign.
 - Design decision -> Requirement: Decision 3 -> ADDED Central Ad Eligibility Policy and REMOVED Session-Only Ad Decisions.
 - Design decision -> Requirement: Decision 5 -> ADDED Provider-Neutral Ad Slots.
 - Requirement -> Task(s): implementation tasks 5 and 6; validation tasks in `tests.md`.
+- `fix-recipe-detail-ad-role` (archived `changes/archive/2026-08-20-fix-recipe-detail-ad-role/`) -> MODIFIED Page
+  Layout Policy, scenario "Recipe detail page assigns its public-content role on every render branch": recipe
+  detail route was omitting `role` on all three `<PageLayout>` render branches, silently inheriting the
+  protected-task default and suppressing ads for anonymous visitors.
 
 ## Non-Functional Acceptance Criteria
 
