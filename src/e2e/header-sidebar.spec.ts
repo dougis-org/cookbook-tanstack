@@ -1,5 +1,6 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 import { gotoAndWaitForHydration } from './helpers/app'
+import { registerAndLogin } from './helpers/auth'
 
 test.describe('Header sidebar close behaviors', () => {
   test.beforeEach(async ({ page }) => {
@@ -92,5 +93,17 @@ test.describe('Header sidebar close behaviors', () => {
     await aside.getByRole('link', { name: 'Recipes' }).click()
 
     await expect(aside).toHaveClass(/-translate-x-full/)
+  })
+})
+
+test.describe('Header user link', () => {
+  test('clicking the Header user link navigates to the consolidated /account page', async ({ page }) => {
+    const { name } = await registerAndLogin(page)
+
+    await page.getByRole('link', { name }).click()
+
+    await expect(page).toHaveURL('/account')
+    await expect(page.getByRole('heading', { name: 'Account' })).toBeVisible()
+    await expect(page.getByRole('radiogroup', { name: 'Theme' })).toBeVisible()
   })
 })

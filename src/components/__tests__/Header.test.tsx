@@ -76,6 +76,13 @@ describe("Header nav visibility", () => {
     expect(screen.queryByText("Import Recipe")).not.toBeInTheDocument()
   })
 
+  it("user link targets /account, not /auth/profile", () => {
+    mockAuthResult = { session: mockSession, isPending: false }
+    render(<Header />)
+    const userLink = screen.getByText(mockSession.user.name).closest("a")
+    expect(userLink).toHaveAttribute("href", "/account")
+  })
+
   it("shows Import Recipe link when session is non-null and tier is executive-chef", () => {
     mockAuthResult = { session: mockSession, isPending: false }
     mockCanImport = true

@@ -497,7 +497,7 @@ test.describe('Theme system', () => {
     expect(printBg).toBe('white')
   })
 
-  test('logged-in user saves theme in /account/settings and it persists across reload', async ({
+  test('logged-in user saves theme in /account and it persists across reload', async ({
     page,
   }) => {
     // beforeEach's addInitScript already cleared localStorage before registerAndLogin's
@@ -506,7 +506,7 @@ test.describe('Theme system', () => {
     // persisted — defeating the point of this test.
     await registerAndLogin(page)
 
-    await gotoAndWaitForHydration(page, '/account/settings')
+    await gotoAndWaitForHydration(page, '/account')
 
     await page.getByRole('radio', { name: 'Dark (greens)' }).click()
     await page.getByRole('button', { name: /save/i }).click()

@@ -109,7 +109,13 @@ export const usersRouter = router({
       z
         .object({
           name: z.string().min(1).max(255).optional(),
-          image: z.string().url().optional(),
+          image: z
+            .string()
+            .url()
+            .refine((url) => new URL(url).protocol === "https:", {
+              message: "Image URL must use https",
+            })
+            .optional(),
         })
         .refine((data) => Object.keys(data).length > 0, {
           message: "At least one field must be provided",

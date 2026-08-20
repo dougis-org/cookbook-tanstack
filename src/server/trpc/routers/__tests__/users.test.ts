@@ -100,6 +100,14 @@ describe("users router", () => {
       });
     });
 
+    it("rejects a non-https image URL", async () => {
+      await withLoggedIn(async (_user, caller) => {
+        await expect(
+          caller.users.updateProfile({ image: "http://example.com/avatar.jpg" }),
+        ).rejects.toThrow();
+      });
+    });
+
     it("rejects name that is too short", async () => {
       await withLoggedIn(async (_user, caller) => {
         await expect(
