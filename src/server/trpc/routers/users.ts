@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ObjectId } from "mongodb";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, verifiedProcedure, router } from "../init";
-import { getMongoClient, toHexString } from "@/db";
+import { getBetterAuthCollection, toHexString } from "@/db";
 import type { UserTier } from "@/types/user";
 import { TIER_RANK, hasAtLeastTier } from "@/types/user";
 
@@ -68,13 +68,13 @@ export function transformUserDoc(
 
 export const usersRouter = router({
   search: verifiedProcedure
-    .input(z.object({ query: z.string().min(2) }))
+    .input(z.object({ query: z.string().trim().min(2).max(254) }))
     .query(async ({ ctx, input }) => {
       if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
         throw new TRPCError({ code: 'FORBIDDEN' })
       }
       if (!ObjectId.isValid(ctx.user.id)) return []
-      const usersCollection = getMongoClient().db().collection("user")
+      const usersCollection = getBetterAuthCollection("user")
       const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const callerObjectId = new ObjectId(ctx.user.id)
       const docs = await usersCollection
@@ -122,7 +122,7 @@ export const usersRouter = router({
         }),
     )
     .mutation(async ({ ctx, input }) => {
-      const usersCollection = getMongoClient().db().collection("user");
+      const usersCollection = getBetterAuthCollection("user");
 
       const userId = ctx.user.id;
       let objectId: ObjectId;

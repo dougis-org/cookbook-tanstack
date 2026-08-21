@@ -392,4 +392,65 @@ describe("users.search", () => {
       await expect(caller.users.search({ query: "x" })).rejects.toThrow();
     });
   });
+
+  it("accepts a query at the minimum boundary (2 characters)", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAuthCaller(
+        (await seedUserWithBetterAuth()).id,
+        { tier: "executive-chef", emailVerified: true },
+      );
+      await expect(caller.users.search({ query: "ab" })).resolves.toEqual(
+        expect.any(Array),
+      );
+    });
+  });
+
+  it("accepts a query at the maximum boundary (254 characters)", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAuthCaller(
+        (await seedUserWithBetterAuth()).id,
+        { tier: "executive-chef", emailVerified: true },
+      );
+      await expect(
+        caller.users.search({ query: "a".repeat(254) }),
+      ).resolves.toEqual(expect.any(Array));
+    });
+  });
+
+  it("rejects a query exceeding the maximum boundary (255 characters)", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAuthCaller(
+        (await seedUserWithBetterAuth()).id,
+        { tier: "executive-chef", emailVerified: true },
+      );
+      await expect(
+        caller.users.search({ query: "a".repeat(255) }),
+      ).rejects.toThrow();
+    });
+  });
+
+  it("trims whitespace before validation, treating a padded query like its trimmed form", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAuthCaller(
+        (await seedUserWithBetterAuth()).id,
+        { tier: "executive-chef", emailVerified: true },
+      );
+      // 253 significant chars padded with whitespace to 258 raw chars: rejected
+      // pre-trim (258 > 254) but accepted post-trim (253 <= 254).
+      const padded = `  ${"a".repeat(253)}   `;
+      await expect(
+        caller.users.search({ query: padded }),
+      ).resolves.toEqual(expect.any(Array));
+    });
+  });
+
+  it("rejects a query that is too short only after trimming", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAuthCaller(
+        (await seedUserWithBetterAuth()).id,
+        { tier: "executive-chef", emailVerified: true },
+      );
+      await expect(caller.users.search({ query: " a" })).rejects.toThrow();
+    });
+  });
 });
