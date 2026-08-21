@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ObjectId } from "mongodb";
+import { ObjectId, type Collection } from "mongodb";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, verifiedProcedure, router } from "../init";
 import { getBetterAuthCollection, toHexString } from "@/db";
@@ -74,7 +74,7 @@ export const usersRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN' })
       }
       if (!ObjectId.isValid(ctx.user.id)) return []
-      const usersCollection = getBetterAuthCollection("user")
+      const usersCollection = getBetterAuthCollection("user") as Collection<UserDocument>
       const escaped = input.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const callerObjectId = new ObjectId(ctx.user.id)
       const docs = await usersCollection
