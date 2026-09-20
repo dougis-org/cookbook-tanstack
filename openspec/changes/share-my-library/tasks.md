@@ -1,22 +1,23 @@
 # Tasks
 
-**Change:** `share-my-library` · **Issue:** #668 · **Follow-up:** #669 (print, out of scope)
+**Change:** `share-my-library` · **Epic:** #670 · **Design issue:** #668
+**Follow-up:** #669 (print, out of scope)
 **Worktree:** `.worktrees/share-my-library` · **Branch:** `share-my-library` · **Base:** `main`
 
 ## PR Decomposition
 
 This change is too large for a single reviewable PR. It ships as **five sequential PRs**
-off `main`, each independently testable and mergeable. Every PR runs the full
-Preflight → Pre-Commit Code Review → Validation → PR and Merge cycle below before the
-next one starts.
+off `main`, each independently testable and mergeable, each tracked by a child issue of
+epic #670. Every PR runs the full Preflight → Pre-Commit Code Review → Validation →
+PR and Merge cycle below before the next one starts.
 
-| PR | Scope | Depends on | User-visible? |
-| -- | ----- | ---------- | ------------- |
-| 1 | `LibraryShare` model + `visibilityFilter` + context (Tasks 1.x) | — | No |
-| 2 | `sharing` tRPC router: grant, revoke, list (Tasks 2.x) | PR 1 | No |
-| 3 | Read-path integration: `sharedBy`, cross-owner entries, read-only tests (Tasks 3.x) | PR 2 | No |
-| 4 | Recipe/cookbook UI: badges, gated affordances, unavailable placeholder (Tasks 4.x) | PR 3 | Yes |
-| 5 | Account "Sharing & Collaboration" section (Tasks 5.x) | PR 4 | Yes |
+| PR | Issue | Scope | Depends on | User-visible? |
+| -- | ----- | ----- | ---------- | ------------- |
+| 1 | #671 | `LibraryShare` model + `visibilityFilter` + context (Tasks 1.x) | — | No |
+| 2 | #672 | `sharing` tRPC router: grant, revoke, list (Tasks 2.x) | PR 1 | No |
+| 3 | #673 | Read-path integration: `sharedBy`, cross-owner entries, read-only tests (Tasks 3.x) | PR 2 | No |
+| 4 | #674 | Recipe/cookbook UI: badges, gated affordances, unavailable placeholder (Tasks 4.x) | PR 3 | Yes |
+| 5 | #675 | Account "Sharing & Collaboration" section (Tasks 5.x) | PR 4 | Yes |
 
 PRs 1-3 are server-only and ship dark: no UI references the new capability, so merging
 them cannot change user-visible behavior. The feature becomes reachable at PR 5.
@@ -67,7 +68,9 @@ Ownership metadata:
       origin; if not, `git push -u origin share-my-library` from inside the worktree
       before any implementation work.
 - [ ] **Step 3 — Issue lifecycle: mark in-progress:** run
-      `gh issue edit 668 --add-label "in-progress"`. Then discover the linked project
+      `gh issue edit <child-issue> --add-label "in-progress"` for the child issue of the
+      PR being started (#671-#675 per the decomposition table), not the epic.
+      Then discover the linked project
       (`gh project list --owner dougis-org --format json`), resolve the status field
       option semantically matching "In Progress"
       (`gh project field-list <project-number> --owner dougis-org --format json`), and
@@ -308,11 +311,14 @@ Run this section once per PR in the decomposition table.
       automatically addressed before the final commit
 - [ ] Commit all changes to the working branch and push to remote
 - [ ] Open PR from the working branch to `main`. **The PR body MUST include
-      `Closes #668`** (on the final PR of the sequence; earlier PRs reference
-      `Part of #668` so the issue is not closed prematurely). Include the
-      `visibilityFilter` call-site list from Task 3.1 in the PR 3 description.
+      `Closes #<child-issue>`** for the child issue that PR delivers (#671-#675), plus
+      `Part of #670` to link the epic. The **final** PR (#675) additionally carries
+      `Closes #668`, closing the original design issue. Earlier PRs must NOT close #668
+      or #670. Include the `visibilityFilter` call-site list from Task 3.1 in the PR 3
+      description.
 - [ ] **Issue lifecycle: mark in-review:** run
-      `gh issue edit 668 --add-label "in-review" --remove-label "in-progress"`. Then move
+      `gh issue edit <child-issue> --add-label "in-review" --remove-label "in-progress"`.
+      Then move
       the project item to the status column semantically matching "In Review" via
       `gh project item-edit` (same discovery pattern as the in-progress step; warn and
       skip if not found).
@@ -386,8 +392,9 @@ Blocking resolution flow:
       `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin`)
 - [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address
       comments and CI failures, push to the same doc branch, repeat)
-- [ ] Confirm #668 closed via the final PR's `Closes #668`, and that #669 remains open as
-      the print follow-up
+- [ ] Confirm all five child issues (#671-#675) are closed, #668 is closed via the final
+      PR's `Closes #668`, and epic #670 can be closed. Confirm #669 remains **open** as
+      the deferred print follow-up
 - [ ] Remove the change's dedicated worktree:
       `git worktree remove .worktrees/share-my-library`
 - [ ] Prune merged local branches: `git fetch --prune` and
