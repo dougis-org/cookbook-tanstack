@@ -110,7 +110,7 @@
   explicitly does not want.
 - Trade-offs: A maintainer who knows the `Collaborator` pattern will expect
   `LibraryShare` to behave the same way and may add a downgrade job unprompted. This
-  is why Task 1.2 requires a comment on the model file itself, not just in this design
+  is why Task 1.3 requires a comment on the model file itself, not just in this design
   doc.
 
 ### Decision 4: Failure of the tier lookup degrades to `[]`, not a thrown error

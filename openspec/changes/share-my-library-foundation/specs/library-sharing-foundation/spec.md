@@ -171,11 +171,11 @@ No requirements are removed by this change.
   owner-eligibility resolution in one query (downgrade/re-upgrade scenarios)
 - Design Decision 4 (fail closed) -> Requirement: ADDED Owner-eligibility lookup fails
   closed
-- Requirement: ADDED LibraryShare grant storage -> Task 1.2 (model)
-- Requirement: ADDED Live owner-eligibility resolution in one query -> Task 1.2
+- Requirement: ADDED LibraryShare grant storage -> Task 1.3 (model)
+- Requirement: ADDED Live owner-eligibility resolution in one query -> Task 1.4
   (context)
 - Requirement: ADDED Visibility filter shared-owner clause -> Task 1.1
-- Requirement: ADDED Owner-eligibility lookup fails closed -> Task 1.2 (context)
+- Requirement: ADDED Owner-eligibility lookup fails closed -> Task 1.4 (context)
 
 ## Non-Functional Acceptance Criteria
 
