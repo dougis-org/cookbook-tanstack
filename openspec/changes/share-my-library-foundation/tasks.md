@@ -140,12 +140,21 @@ it fails for the expected reason, then implement until it passes.
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the
       `openspec-review-code` skill. The primary agent must automatically apply all
       clearly-correct findings directly to the code — without stopping, without
       presenting the findings list to the user, and without asking for confirmation.
       Apply fixes, re-run tests to confirm they pass, then proceed to commit. This step
       is mandatory and must never be skipped.
+      (`openspec-review-code` is not installed in this session; substituted
+      `pr-review-toolkit:review-pr` per user direction — ran code-reviewer,
+      pr-test-analyzer, type-design-analyzer, silent-failure-hunter, and
+      comment-analyzer in parallel. Fixed: missing pendingVerification exclusion on the
+      shared-owner visibility clause (HIGH), silent fail-closed catch with no logging
+      (CRITICAL), flaky index-dependent model tests missing `await Model.init()`,
+      stale visibilityFilter JSDoc, and serialized independent guard queries in
+      context.ts. Filed #678 for the pre-existing withCleanDb/file-parallelism test
+      flake surfaced during this review, unrelated to this change.)
 
 ## Validation
 
