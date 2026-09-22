@@ -90,7 +90,9 @@ to the same hidden-content exclusion applied to every other visibility clause.
 - **When** `visibilityFilter` is invoked with that list
 - **Then** the returned filter's `$or` array contains a clause matching
   `userId: { $in: <shared-owner ids as ObjectIds> }`
-- **And** that clause also requires `hiddenByTier: { $ne: true }`
+- **And** that clause also requires `hiddenByTier: { $ne: true }` and
+  `pendingVerification: { $ne: true }`, matching the public clause's protection for
+  non-owner viewers
 
 #### Scenario: Omitting the new parameter preserves prior behavior exactly
 

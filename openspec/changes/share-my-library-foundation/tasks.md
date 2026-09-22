@@ -12,38 +12,38 @@ child issues (#672-#675).
 
 ## Preparation
 
-- [ ] **Step 1 — Sync default branch:** from the primary checkout, `git checkout main`
+- [x] **Step 1 — Sync default branch:** from the primary checkout, `git checkout main`
       and `git pull --ff-only`
-- [ ] **Step 2 — Create and publish working branch:** already done — worktree exists at
+- [x] **Step 2 — Create and publish working branch:** already done — worktree exists at
       `.worktrees/share-my-library-foundation` on branch `share-my-library-foundation`,
       published to origin. Verify with `git worktree list` and
       `git rev-parse --abbrev-ref --symbolic-full-name @{u}`
-- [ ] **Step 3 — Confirm submodule is initialized:** run
+- [x] **Step 3 — Confirm submodule is initialized:** run
       `git submodule update --init --recursive` inside
       `.worktrees/share-my-library-foundation` if `openspec/schemas/` is empty
-- [ ] **Step 4 — Confirm local environment:** `docker compose up -d` for MongoDB, then
+- [x] **Step 4 — Confirm local environment:** `docker compose up -d` for MongoDB, then
       `npm install` and `npm run db:connect`
 
 ## Preflight
 
-- [ ] **Verify `pr-review-toolkit:review-pr` is available** — check the available
+- [x] **Verify `pr-review-toolkit:review-pr` is available** — check the available
       skills list. If not listed, halt, inform the user the plugin is required, and do
       not proceed until confirmed installed.
 - [ ] **Verify the `openspec-review-code` skill is available** for the mandatory
       pre-commit review step. Halt and inform the user if missing.
-- [ ] **Verify `gh` auth and scopes:** `gh auth status`. The project-item lifecycle
+- [x] **Verify `gh` auth and scopes:** `gh auth status`. The project-item lifecycle
       steps need the `project` scope; if absent, surface `gh auth refresh -s project`
       and continue with issue-label updates only.
 
 ## Execution
 
-- [ ] **Step 1 — Confirm the dedicated worktree:** confirm
+- [x] **Step 1 — Confirm the dedicated worktree:** confirm
       `.worktrees/share-my-library-foundation` exists and `cd` into it. If missing,
       from the primary checkout run `git fetch origin main` then
       `git worktree add .worktrees/share-my-library-foundation -b
       share-my-library-foundation origin/main`. Never checkout this branch in the
       primary checkout.
-- [ ] **Step 2 — Confirm the branch is pushed:** verify
+- [x] **Step 2 — Confirm the branch is pushed:** verify
       `share-my-library-foundation` exists on origin; if not, `git push -u origin
       share-my-library-foundation` from inside the worktree before any implementation
       work.
@@ -55,7 +55,7 @@ child issues (#672-#675).
       move the item with `gh project item-edit`. If no project item is found, log a
       warning and continue. If the token lacks `project` scope, instruct the user to
       run `gh auth refresh -s project` and skip the project-item update only.
-- [ ] **Step 4 — Reuse audit:** re-read `src/server/trpc/routers/cookbooks.ts:224-260`
+- [x] **Step 4 — Reuse audit:** re-read `src/server/trpc/routers/cookbooks.ts:224-260`
       (`isDuplicateKeyError`, `userLookupStages`, `fetchCollaboratorsWithUsers`) and
       `src/db/models/collaborator.ts` before writing anything. This change extends and
       relocates existing patterns; it does not invent new ones.
@@ -65,54 +65,54 @@ it fails for the expected reason, then implement until it passes.
 
 ### Task 1.1 — `visibilityFilter` shared-owner clause
 
-- [ ] Write failing unit tests in `src/server/trpc/routers/__tests__/` covering:
+- [x] Write failing unit tests in `src/server/trpc/routers/__tests__/` covering:
       anonymous caller unchanged regardless of the new parameter; authenticated caller
       with the parameter omitted produces a filter structurally identical to the
       pre-change output; non-empty `sharedOwnerIds` adds an `$or` clause on `userId:
       { $in: [...] }` that also requires `hiddenByTier: { $ne: true }`; invalid
       ObjectId strings in the list are filtered out before reaching the query; the
       existing collaborator clause is unchanged when both parameters are non-empty.
-- [ ] Add a third parameter `sharedOwnerIds: string[] = []` to `visibilityFilter` in
+- [x] Add a third parameter `sharedOwnerIds: string[] = []` to `visibilityFilter` in
       `src/server/trpc/routers/_helpers.ts` and implement the fourth `$or` clause.
-- [ ] Verify: `npx vitest run src/server/trpc/routers/__tests__`
+- [x] Verify: `npx vitest run src/server/trpc/routers/__tests__`
 - _Covers spec: ADDED Visibility filter shared-owner clause_
 
 ### Task 1.2 — Relocate `userLookupStages` into `_helpers.ts`
 
-- [ ] Write a failing test in `_helpers.ts`'s test file asserting the exported
+- [x] Write a failing test in `_helpers.ts`'s test file asserting the exported
       `userLookupStages(localField, alias)` returns the same two-stage pipeline shape
       (`$lookup` + `$unwind`, `preserveNullAndEmptyArrays: true`) as the current
       `cookbooks.ts`-private implementation.
-- [ ] Move `userLookupStages` from `src/server/trpc/routers/cookbooks.ts` to
+- [x] Move `userLookupStages` from `src/server/trpc/routers/cookbooks.ts` to
       `src/server/trpc/routers/_helpers.ts`, export it, and update `cookbooks.ts` to
       import it from there. Remove the now-dead private copy and its two call sites'
       local reference.
-- [ ] **Confirm `cookbooks.ts`'s existing test suite for `fetchCollaboratorsWithUsers`
+- [x] **Confirm `cookbooks.ts`'s existing test suite for `fetchCollaboratorsWithUsers`
       passes unchanged** — this is a regression guard, not new coverage. Do not modify
       those tests' assertions to make them pass; if one fails, the relocation broke
       something and must be fixed, not the test.
-- [ ] Verify: `npx vitest run src/server/trpc/routers/__tests__`
+- [x] Verify: `npx vitest run src/server/trpc/routers/__tests__`
 - _Covers spec: NFAC Operability "Relocating a shared helper does not regress its existing caller"_
 
 ### Task 1.3 — `LibraryShare` model
 
-- [ ] Write failing model unit tests: duplicate `(ownerId, recipientId)` throws a
+- [x] Write failing model unit tests: duplicate `(ownerId, recipientId)` throws a
       duplicate-key error; indexes exist on `ownerId`, on `recipientId`, and uniquely
       on the pair; `addedAt` defaults to now; `addedBy` is required; `ownerId` and
       `recipientId` are required.
-- [ ] Create `src/db/models/library-share.ts` with `ILibraryShare { ownerId,
+- [x] Create `src/db/models/library-share.ts` with `ILibraryShare { ownerId,
       recipientId, addedAt, addedBy }` and the three indexes, following the structure
       of `src/db/models/collaborator.ts`.
-- [ ] **Include a comment in the model file** recording why grants are not deleted on
+- [x] **Include a comment in the model file** recording why grants are not deleted on
       tier downgrade (design Decision 3) — point future readers at this change's
       `design.md` rather than re-deriving the rationale.
-- [ ] Export `LibraryShare` from `src/db/models/index.ts`.
-- [ ] Verify: `npx vitest run src/db/models`
+- [x] Export `LibraryShare` from `src/db/models/index.ts`.
+- [x] Verify: `npx vitest run src/db/models`
 - _Covers spec: ADDED LibraryShare grant storage_
 
 ### Task 1.4 — `ctx.sharedOwnerIds` resolution in context.ts
 
-- [ ] Write failing integration tests: a grant from an `executive-chef` owner appears
+- [x] Write failing integration tests: a grant from an `executive-chef` owner appears
       in `ctx.sharedOwnerIds`; a grant from an owner currently below `executive-chef`
       does not appear, and the grant row still exists afterwards; an owner downgraded
       then re-upgraded is included again with no new row created; a caller with zero
@@ -121,20 +121,20 @@ it fails for the expected reason, then implement until it passes.
       fixture); a caller with grants incurs exactly one additional query beyond the
       pre-change baseline; a forced failure of the aggregation degrades to `[]` without
       throwing, and context creation still succeeds.
-- [ ] Extend `src/server/trpc/context.ts` to resolve `sharedOwnerIds` using the
+- [x] Extend `src/server/trpc/context.ts` to resolve `sharedOwnerIds` using the
       relocated `userLookupStages` from Task 1.2, per design Decision 1's aggregation
       shape. Guard the call so it is skipped entirely when the caller has no
       `LibraryShare` rows as recipient (do not run-and-discard).
-- [ ] Wrap the aggregation so any thrown error or timeout resolves to `[]` rather than
+- [x] Wrap the aggregation so any thrown error or timeout resolves to `[]` rather than
       propagating.
-- [ ] **Add a code comment on this block** explaining that it fails closed
+- [x] **Add a code comment on this block** explaining that it fails closed
       deliberately, unlike the adjacent `collabCookbookIds` block above it, and
       pointing to #677 for the tracked follow-up decision. Do **not** change
       `collabCookbookIds`'s behavior in this task.
-- [ ] Verify: `npm run test:integration`
+- [x] Verify: `npm run test:integration`
 - _Covers spec: ADDED Live owner-eligibility resolution in one query; ADDED Owner-eligibility lookup fails closed_
 
-- [ ] **Confirm acceptance criteria are covered:** walk every requirement in
+- [x] **Confirm acceptance criteria are covered:** walk every requirement in
       `openspec/changes/share-my-library-foundation/specs/library-sharing-foundation/spec.md`
       and confirm a test exercises each scenario.
 

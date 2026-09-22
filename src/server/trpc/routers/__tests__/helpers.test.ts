@@ -35,6 +35,57 @@ describe("visibilityFilter", () => {
     expect(collabClause).toBeDefined()
     expect(collabClause!._id.$in.map(String)).toContain(id)
   })
+
+  it("anonymous caller filter is unaffected by sharedOwnerIds", async () => {
+    const ownerId = "c".repeat(24)
+    expect(visibilityFilter(null, [], [ownerId])).toEqual({
+      isPublic: true,
+      hiddenByTier: { $ne: true },
+      pendingVerification: { $ne: true },
+    })
+  })
+
+  it("omitting sharedOwnerIds preserves the two-parameter output exactly", async () => {
+    const user = { id: "a".repeat(24) }
+    const collabIds = ["b".repeat(24)]
+    expect(visibilityFilter(user, collabIds)).toEqual(visibilityFilter(user, collabIds, []))
+  })
+
+  it("adds a shared-owner $or clause when sharedOwnerIds is non-empty", async () => {
+    const ownerId = "c".repeat(24)
+    const result = visibilityFilter({ id: "a".repeat(24) }, [], [ownerId]) as { $or: object[] }
+    expect(result.$or).toHaveLength(3)
+    const sharedClause = result.$or.find(
+      (c) => 'userId' in c && '$in' in (c as { userId: { $in?: unknown } }).userId,
+    ) as { userId: { $in: unknown[] }; hiddenByTier: unknown } | undefined
+    expect(sharedClause).toBeDefined()
+    expect(sharedClause!.userId.$in.map(String)).toContain(ownerId)
+    expect(sharedClause!.hiddenByTier).toEqual({ $ne: true })
+    expect((sharedClause as unknown as { pendingVerification: unknown }).pendingVerification).toEqual({ $ne: true })
+  })
+
+  it("discards invalid ObjectId strings from sharedOwnerIds", async () => {
+    const validId = "c".repeat(24)
+    const result = visibilityFilter({ id: "a".repeat(24) }, [], [validId, "not-an-object-id"]) as { $or: object[] }
+    const sharedClause = result.$or.find((c) => 'userId' in c && '$in' in (c as { userId: { $in?: unknown } }).userId) as {
+      userId: { $in: unknown[] }
+    }
+    expect(sharedClause.userId.$in).toHaveLength(1)
+    expect(sharedClause.userId.$in.map(String)).toEqual([validId])
+  })
+
+  it("includes both collaborator and shared-owner clauses, each unchanged in shape, when both are non-empty", async () => {
+    const collabId = "b".repeat(24)
+    const ownerId = "c".repeat(24)
+    const result = visibilityFilter({ id: "a".repeat(24) }, [collabId], [ownerId]) as { $or: object[] }
+    expect(result.$or).toHaveLength(4)
+    const collabClause = result.$or.find((c) => '_id' in c) as { _id: { $in: unknown[] } }
+    const sharedClause = result.$or.find((c) => 'userId' in c && '$in' in (c as { userId: { $in?: unknown } }).userId) as {
+      userId: { $in: unknown[] }
+    }
+    expect(collabClause._id.$in.map(String)).toEqual([collabId])
+    expect(sharedClause.userId.$in.map(String)).toEqual([ownerId])
+  })
 })
 
 describe("visibilityFilter — behavior with actual documents", () => {
@@ -125,6 +176,16 @@ describe("visibilityFilter — behavior with actual documents", () => {
     });
   });
 });
+
+describe("userLookupStages", () => {
+  it("returns a two-stage $lookup + $unwind pipeline fragment", async () => {
+    const { userLookupStages } = await import("../_helpers")
+    expect(userLookupStages("ownerId", "_owner")).toEqual([
+      { $lookup: { from: "user", localField: "ownerId", foreignField: "_id", as: "_owner" } },
+      { $unwind: { path: "$_owner", preserveNullAndEmptyArrays: true } },
+    ])
+  })
+})
 
 describe("verifyOwnership", () => {
   it("throws NOT_FOUND when record does not exist (fetchRecord returns null)", async () => {

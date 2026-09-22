@@ -9,6 +9,7 @@ export { Cookbook } from "./cookbook";
 export { RecipeLike } from "./recipe-like";
 export { AdminAuditLog } from "./admin-audit-log";
 export { Collaborator } from "./collaborator";
+export { LibraryShare } from "./library-share";
 export { Notification } from "./notification";
 export { RecipeNote } from "./recipe-note";
 export { AlexaSkillProgress } from "./alexa-skill-progress";

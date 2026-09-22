@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, userLookupStages } from "./_helpers";
 import { Cookbook, Recipe, Collaborator, Notification } from "@/db/models";
 import { ObjectId } from "mongodb";
 import { hasAtLeastTier } from "@/types/user";
@@ -223,14 +223,6 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
 /** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
 function isDuplicateKeyError(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000
-}
-
-/** Lookup user docs by id field on the source collection. Used to join Better-Auth user names. */
-function userLookupStages(localField: string, alias: string) {
-  return [
-    { $lookup: { from: 'user', localField, foreignField: '_id', as: alias } },
-    { $unwind: { path: `$${alias}`, preserveNullAndEmptyArrays: true } },
-  ]
 }
 
 /** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
