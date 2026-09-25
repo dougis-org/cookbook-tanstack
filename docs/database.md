@@ -14,7 +14,7 @@ To use MongoDB Atlas instead of Docker, set `MONGODB_URI` in `.env.local` to you
 
 ## Collections Overview
 
-Twelve collections organized into four groups:
+Fourteen collections organized into four groups:
 
 ### Core Collections
 
@@ -167,6 +167,7 @@ src/db/models/
 ├── recipe.ts
 ├── cookbook.ts
 ├── recipe-like.ts
+├── library-share.ts
 └── index.ts            # Barrel export of all models
 ```
 
