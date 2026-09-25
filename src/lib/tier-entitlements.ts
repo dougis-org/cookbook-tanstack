@@ -3,6 +3,10 @@ import { hasAtLeastTier, type UserTier } from '@/types/user'
 
 export type EntitlementTier = UserTier | 'anonymous'
 
+// Minimum tier an owner must hold, evaluated live, for a library-sharing grant
+// to be effective (see openspec/changes/share-my-library-foundation/design.md).
+export const SHARING_OWNER_TIER: UserTier = 'executive-chef'
+
 export const CAPABILITY_TIERS = {
   createPrivate:      'sous-chef',
   privateRecipeNotes: 'sous-chef',

@@ -93,23 +93,27 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
       const { createContext } = await import("@/server/trpc/context");
       const recipient = await seedUserWithBetterAuth();
       mockSessionWithUser(recipient.id);
+      const existsSpy = vi.spyOn(LibraryShare, "exists");
       const aggregateSpy = vi.spyOn(LibraryShare, "aggregate");
 
       const ctx = await createContext(fetchOpts);
 
       expect(ctx.sharedOwnerIds).toEqual([]);
+      expect(existsSpy).toHaveBeenCalledTimes(1);
       expect(aggregateSpy).not.toHaveBeenCalled();
     });
   });
 
-  it("issues exactly one additional aggregation round trip, projecting only ownerId, for a caller with grants", async () => {
+  it("issues exactly one existence check and one aggregation, projecting only ownerId, for a caller with grants", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
       await seedGrant("executive-chef");
+      const existsSpy = vi.spyOn(LibraryShare, "exists");
       const aggregateSpy = vi.spyOn(LibraryShare, "aggregate");
 
       await createContext(fetchOpts);
 
+      expect(existsSpy).toHaveBeenCalledTimes(1);
       expect(aggregateSpy).toHaveBeenCalledTimes(1);
       const pipeline = aggregateSpy.mock.calls[0]?.[0] as { $project?: Record<string, number> }[];
       const projectStage = pipeline.find((stage) => "$project" in stage);
