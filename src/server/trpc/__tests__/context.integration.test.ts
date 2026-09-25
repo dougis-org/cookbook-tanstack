@@ -22,10 +22,8 @@ const fetchOpts = {
 };
 
 async function setTier(userId: string, tier: string) {
-  const mongoose = (await import("mongoose")).default;
-  const db = mongoose.connection.db;
-  if (!db) throw new Error("MongoDB connection has no active database");
-  await db.collection("user").updateOne({ _id: new Types.ObjectId(userId) }, { $set: { tier } });
+  const { getBetterAuthCollection } = await import("@/db");
+  await getBetterAuthCollection("user").updateOne({ _id: new Types.ObjectId(userId) }, { $set: { tier } });
 }
 
 function mockSessionWithUser(userId: string) {
