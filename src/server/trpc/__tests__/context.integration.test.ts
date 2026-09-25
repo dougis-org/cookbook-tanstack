@@ -32,6 +32,16 @@ function mockSessionWithUser(userId: string) {
   mockGetSession.mockResolvedValue({ session: { id: "s1" }, user: { id: userId } });
 }
 
+/** Seed an owner + recipient pair with a grant between them, owner at the given tier, and mock the session as the recipient. */
+async function seedGrant(ownerTier: string) {
+  const owner = await seedUserWithBetterAuth();
+  const recipient = await seedUserWithBetterAuth();
+  await setTier(owner.id, ownerTier);
+  await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+  mockSessionWithUser(recipient.id);
+  return { owner, recipient };
+}
+
 describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -44,11 +54,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   it("includes an executive-chef owner's id in ctx.sharedOwnerIds", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "executive-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
-      mockSessionWithUser(recipient.id);
+      const { owner } = await seedGrant("executive-chef");
 
       const ctx = await createContext(fetchOpts);
 
@@ -59,11 +65,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   it("excludes an owner currently below executive-chef, without deleting the grant", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "sous-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
-      mockSessionWithUser(recipient.id);
+      const { owner, recipient } = await seedGrant("sous-chef");
 
       const ctx = await createContext(fetchOpts);
 
@@ -76,13 +78,9 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   it("re-includes an owner re-upgraded to executive-chef, with no new grant row created", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "executive-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, recipient } = await seedGrant("executive-chef");
       await setTier(owner.id, "sous-chef");
       await setTier(owner.id, "executive-chef");
-      mockSessionWithUser(recipient.id);
 
       const ctx = await createContext(fetchOpts);
 
@@ -109,11 +107,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   it("issues exactly one additional aggregation round trip, projecting only ownerId, for a caller with grants", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "executive-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
-      mockSessionWithUser(recipient.id);
+      await seedGrant("executive-chef");
       const aggregateSpy = vi.spyOn(LibraryShare, "aggregate");
 
       await createContext(fetchOpts);
@@ -129,14 +123,22 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
   it("degrades to [] without throwing when the aggregation fails, and context creation still succeeds", async () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "executive-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
-      mockSessionWithUser(recipient.id);
+      await seedGrant("executive-chef");
       vi.spyOn(LibraryShare, "aggregate").mockImplementation(() => {
         throw new Error("forced aggregation failure");
       });
+
+      const ctx = await createContext(fetchOpts);
+
+      expect(ctx.sharedOwnerIds).toEqual([]);
+    });
+  });
+
+  it("degrades to [] without throwing when the existence guard itself fails", async () => {
+    await withCleanDb(async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      await seedGrant("executive-chef");
+      vi.spyOn(LibraryShare, "exists").mockRejectedValue(new Error("forced existence-check failure"));
 
       const ctx = await createContext(fetchOpts);
 
@@ -148,11 +150,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
     await withCleanDb(async () => {
       const { createContext } = await import("@/server/trpc/context");
       const { visibilityFilter } = await import("../routers/_helpers");
-      const owner = await seedUserWithBetterAuth();
-      const recipient = await seedUserWithBetterAuth();
-      await setTier(owner.id, "executive-chef");
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
-      mockSessionWithUser(recipient.id);
+      const { recipient } = await seedGrant("executive-chef");
       vi.spyOn(LibraryShare, "aggregate").mockImplementation(() => {
         throw new Error("forced aggregation failure");
       });
