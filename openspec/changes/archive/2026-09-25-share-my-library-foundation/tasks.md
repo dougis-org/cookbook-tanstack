@@ -167,9 +167,12 @@ it fails for the expected reason, then implement until it passes.
 - [x] Run type checks: `npx tsc --noEmit` (strict mode with `noUnusedLocals` and
       `noUnusedParameters`)
 - [x] Run build: `npm run build`
-- [ ] Run security/code quality checks required by project standards — Codacy and Snyk
+- [x] Run security/code quality checks required by project standards — Codacy and Snyk
       per `.github/instructions/`. Findings touching `_helpers.ts`, `context.ts`, or
       `library-share.ts` are blocking and must be fixed, never waived.
+      (Codacy passed clean on PR #679 after 3 false-positive NoSQL-injection findings
+      on test code were marked TestCode and a duplication-gate failure was fixed. No
+      Snyk integration found configured in this repo's CI.)
 - [x] All completed tasks marked as complete
 - [x] All steps in [Remote push validation]
 
