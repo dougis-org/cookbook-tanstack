@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockGetSession = vi.fn();
 const mockCollaboratorFind = vi.fn();
+const mockLibraryShareAggregate = vi.fn();
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: mockGetSession } },
@@ -9,6 +10,7 @@ vi.mock("@/lib/auth", () => ({
 
 vi.mock("@/db/models", () => ({
   Collaborator: { find: mockCollaboratorFind },
+  LibraryShare: { aggregate: mockLibraryShareAggregate },
 }));
 
 const fetchOpts = {
@@ -21,6 +23,7 @@ describe("createContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCollaboratorFind.mockReturnValue({ lean: () => Promise.resolve([]) });
+    mockLibraryShareAggregate.mockResolvedValue([]);
   });
 
   it("returns session and user when authenticated", async () => {

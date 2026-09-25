@@ -22,8 +22,15 @@ export function escapeRegex(str: string): string {
  * to their owner only when not hidden by tier. Documents with hiddenByTier: true
  * are excluded for all users (including the owner) so hidden content is invisible
  * to everyone. Collaborative cookbooks are accessible via the third $or clause.
+ * Content owned by a currently-eligible library-sharing owner (see
+ * ctx.sharedOwnerIds) is accessible via the fourth $or clause — public and
+ * private alike, subject to the same hiddenByTier/pendingVerification exclusions.
  */
-export function visibilityFilter(user: { id: string } | null, collabCookbookIds: string[] = []) {
+export function visibilityFilter(
+  user: { id: string } | null,
+  collabCookbookIds: string[] = [],
+  sharedOwnerIds: string[] = [],
+) {
   if (user) {
     const userId = Types.ObjectId.isValid(user.id) ? new Types.ObjectId(user.id) : user.id
     const orClauses: object[] = [
@@ -35,6 +42,12 @@ export function visibilityFilter(user: { id: string } | null, collabCookbookIds:
         .filter((id) => Types.ObjectId.isValid(id))
         .map((id) => new Types.ObjectId(id))
       orClauses.push({ _id: { $in: collabIds }, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } })
+    }
+    const sharedIds = sharedOwnerIds
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id))
+    if (sharedIds.length > 0) {
+      orClauses.push({ userId: { $in: sharedIds }, hiddenByTier: { $ne: true }, pendingVerification: { $ne: true } })
     }
     return { $or: orClauses }
   }
@@ -61,6 +74,19 @@ export async function verifyOwnership<T extends { userId: unknown }>(
     });
   }
   return existing;
+}
+
+/**
+ * Lookup user docs by id field on the source collection. Shared by
+ * fetchCollaboratorsWithUsers (display) and context.ts's sharedOwnerIds resolution
+ * (access control, see design.md Decision 2) — kept here so both stay on one
+ * implementation.
+ */
+export function userLookupStages(localField: string, alias: string) {
+  return [
+    { $lookup: { from: 'user', localField, foreignField: '_id', as: alias } },
+    { $unwind: { path: `$${alias}`, preserveNullAndEmptyArrays: true } },
+  ]
 }
 
 /** Shared predicate for counting non-hidden, non-pending user-owned documents. */

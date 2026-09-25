@@ -3,6 +3,13 @@ import { hasAtLeastTier, type UserTier } from '@/types/user'
 
 export type EntitlementTier = UserTier | 'anonymous'
 
+// Exact tier an owner must hold, evaluated live, for a library-sharing grant to
+// be effective (see openspec/changes/share-my-library-foundation/design.md).
+// Matched by equality, not hasAtLeastTier(), because it is the top tier today —
+// revisit as a rank comparison if a higher tier is ever added. isAdmin does not
+// bypass this check, unlike most other tier gates in this codebase.
+export const SHARING_OWNER_TIER: UserTier = 'executive-chef'
+
 export const CAPABILITY_TIERS = {
   createPrivate:      'sous-chef',
   privateRecipeNotes: 'sous-chef',
