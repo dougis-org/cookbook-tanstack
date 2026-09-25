@@ -50,6 +50,7 @@ All taxonomy collections share the same structure: `_id` (ObjectId), `name`, `de
 |------------|---------|
 | `recipelikes` | Recipe favorites — compound unique index on `(userId, recipeId)` |
 | `recipenotes` | Private per-user notes on a recipe — compound unique index on `(userId, recipeId)` |
+| `library-shares` | Account-wide read-sharing grants (owner → recipient) — compound unique index on `(ownerId, recipientId)` |
 
 #### recipenotes
 
@@ -66,6 +67,21 @@ Stores one private markdown note per `(userId, recipeId)` pair.
 **Index:** compound unique `(userId, recipeId)` — enforced at the database layer, so duplicate notes for the same user+recipe are rejected with MongoDB error code `11000`.
 
 **Tier gate:** access is enforced at the API layer (`hasAtLeastTier(user, 'sous-chef')`). No visibility flag is stored on the document. Downgraded users retain their stored notes but are denied access until they re-upgrade.
+
+#### library-shares
+
+Stores one account-wide read-sharing grant per `(ownerId, recipientId)` pair — the recipient may view everything the owner owns, subject to the owner currently holding the Executive Chef tier.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `ownerId` | ObjectId | ref: `user` — required |
+| `recipientId` | ObjectId | ref: `user` — required |
+| `addedAt` | Date | defaults to creation time |
+| `addedBy` | ObjectId | ref: `user` — required |
+
+**Indexes:** `ownerId`, `recipientId`, and a compound unique index on `(ownerId, recipientId)` — enforced at the database layer, so a duplicate grant for the same owner+recipient pair is rejected with MongoDB error code `11000`.
+
+**Tier gate:** unlike `recipenotes`, grants are never deleted or reconciled when the owner's tier changes. Eligibility is resolved live on every request (`ctx.sharedOwnerIds` in `src/server/trpc/context.ts`, joined against the owner's current tier) — a downgraded owner's shares simply stop resolving, and a re-upgrade restores them with no re-grant needed. Failures in that lookup fail closed (no shared content exposed), unlike most other tier-driven request context resolution in this codebase.
 
 ## Document Design
 
