@@ -188,12 +188,15 @@
 ## Non-Functional Requirements Mapping
 
 - Requirement category: performance
-  - Requirement: Resolving `ctx.sharedOwnerIds` costs at most one additional indexed
-    query per authenticated request, and zero additional queries for a caller with no
-    grants.
-  - Design element: Decision 1 (single aggregation); an early-return guard when
-    `LibraryShare.exists({ recipientId })` (or equivalent) finds nothing — see Task
-    1.2's query-count test for the exact mechanism.
+  - Requirement: Resolving `ctx.sharedOwnerIds` costs exactly one additional indexed
+    query per authenticated request, whether or not the caller holds any grants.
+  - Design element: Decision 1 (single aggregation), run unconditionally — no separate
+    `LibraryShare.exists()` guard. A guard was considered but rejected: it never
+    reduces the round-trip count (the aggregation's initial `$match` on the indexed
+    `recipientId` already returns empty in one round trip when there are no grants,
+    since `$lookup` short-circuits on an empty input) and, run before the aggregation,
+    it strictly adds one for a caller who does have grants. See Task 1.4's query-count
+    test for the exact mechanism.
   - Acceptance criteria reference: Epic spec, NFAC Performance.
   - Testability notes: Assert query count in a context-creation unit test using a
     query-spy or count assertion against a test database.

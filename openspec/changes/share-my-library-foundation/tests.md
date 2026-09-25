@@ -95,9 +95,9 @@ For each task in `tasks.md`:
       effective again with no new row created **[T 1.4]**
       **[S: ADDED Live owner-eligibility resolution in one query — "Re-upgraded owner is included again with no new grant"]**
 - [ ] Caller with zero `LibraryShare` rows as recipient: `ctx.sharedOwnerIds` is `[]`
-      **and** no aggregation runs against `LibraryShare` for this purpose (assert via
-      the query-count fixture) **[T 1.4]**
-      **[S: ADDED Live owner-eligibility resolution in one query — "Recipient with no grants performs no owner lookup"]**
+      **and** exactly one aggregation runs against `LibraryShare`, matching nothing
+      (assert via the query-count fixture) **[T 1.4]**
+      **[S: ADDED Live owner-eligibility resolution in one query — "Recipient with no grants incurs no owner-tier lookup"]**
 - [ ] Caller with one or more grants: exactly one additional round trip is issued,
       projecting only the owner id field **[T 1.4]**
       **[S: ADDED Live owner-eligibility resolution in one query — "Owner-tier resolution is a single round trip"]**

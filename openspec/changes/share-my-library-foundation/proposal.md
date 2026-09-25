@@ -60,8 +60,11 @@
   - The existing `Collaborator`-style unique-index and lean-projection patterns
     generalize directly to `LibraryShare`.
 - Edge cases considered:
-  - Caller holds zero grants: `sharedOwnerIds` must be `[]` **and** the aggregation
-    must not run at all — not run-and-return-empty.
+  - Caller holds zero grants: `sharedOwnerIds` must be `[]`. This costs the same one
+    aggregation as the has-grants case — its initial `$match` on the indexed
+    `recipientId` matches nothing and the `$lookup` never executes — rather than a
+    separate existence-guard query, which was tried and rejected: it never reduces
+    the round-trip count and strictly adds one for a caller who does have grants.
   - Owner downgraded below Executive Chef: grant row persists, `sharedOwnerIds`
     excludes that owner on the very next request.
   - Owner re-upgraded: same grant row becomes effective again with no re-grant.

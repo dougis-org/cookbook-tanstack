@@ -33,8 +33,10 @@ supporting lookup by either party.
 The system SHALL resolve, for each authenticated request, the set of owners currently
 sharing their library with the caller — filtered to owners whose tier is Executive
 Chef at the moment of the request — using exactly one additional database round trip
-beyond what the request already performs, and zero additional round trips when the
-caller holds no grants.
+beyond what the request already performs, whether or not the caller holds any grants.
+There is no separate existence-guard query: the single aggregation's initial `$match`
+on the indexed `recipientId` field returns empty in that same round trip when the
+caller holds no grants, so the `$lookup` into owner tier data never executes.
 
 #### Scenario: Eligible owner appears in the resolved set
 
@@ -63,20 +65,21 @@ caller holds no grants.
 - **Then** `ctx.sharedOwnerIds` contains Owner's id
 - **And** no new `LibraryShare` document was created during either tier change
 
-#### Scenario: Recipient with no grants performs no owner lookup
+#### Scenario: Recipient with no grants incurs no owner-tier lookup
 
 - **Given** a caller holding zero `LibraryShare` documents as recipient
 - **When** a request context is created for that caller
 - **Then** `ctx.sharedOwnerIds` is an empty array
-- **And** no aggregation or query against `LibraryShare` or the owner-tier data is
-  issued for that purpose
+- **And** the single aggregation's `$match` on `recipientId` matches nothing, so the
+  `$lookup` into owner-tier data never executes
 
 #### Scenario: Owner-tier resolution is a single round trip
 
-- **Given** a caller holding one or more `LibraryShare` documents as recipient
+- **Given** a caller holding zero or more `LibraryShare` documents as recipient
 - **When** a request context is created for that caller
 - **Then** exactly one additional database round trip is issued to resolve
-  `ctx.sharedOwnerIds`, projecting only the owner id field
+  `ctx.sharedOwnerIds`, projecting only the owner id field, whether or not the caller
+  holds any grants
 
 ### Requirement: ADDED Visibility filter shared-owner clause
 

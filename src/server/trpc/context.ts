@@ -21,9 +21,9 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
   }
 
   // Live at every request (see design.md, Decision 1) — not cached, not denormalized.
-  // The existence guard below is the query that costs nothing extra for a caller with
-  // no grants (the aggregation itself never runs, per the epic spec's NFAC); a caller
-  // with grants pays exactly one further query for the aggregation.
+  // Exactly one query beyond the collabCookbookIds lookup above: the initial $match on
+  // the indexed recipientId returns empty in one round trip for a caller with no
+  // grants (the $lookup never executes), so there is no separate existence guard.
   // Fails closed on lookup failure — sharedOwnerIds stays [] rather than propagating
   // (see design.md, Decision 4) — unlike the adjacent collabCookbookIds block above,
   // which still throws. #677 tracks the deliberate follow-up decision on whether to
@@ -31,16 +31,13 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
   let sharedOwnerIds: string[] = []
   if (hasValidUser) {
     try {
-      const hasGrants = await LibraryShare.exists({ recipientId: session!.user.id })
-      if (hasGrants) {
-        const eligibleOwners = await LibraryShare.aggregate<{ ownerId: Types.ObjectId }>([
-          { $match: { recipientId: new Types.ObjectId(session!.user.id) } },
-          ...userLookupStages("ownerId", "_owner"),
-          { $match: { "_owner.tier": SHARING_OWNER_TIER } },
-          { $project: { ownerId: 1 } },
-        ])
-        sharedOwnerIds = eligibleOwners.map((o) => o.ownerId.toString())
-      }
+      const eligibleOwners = await LibraryShare.aggregate<{ ownerId: Types.ObjectId }>([
+        { $match: { recipientId: new Types.ObjectId(session!.user.id) } },
+        ...userLookupStages("ownerId", "_owner"),
+        { $match: { "_owner.tier": SHARING_OWNER_TIER } },
+        { $project: { ownerId: 1 } },
+      ])
+      sharedOwnerIds = eligibleOwners.map((o) => o.ownerId.toString())
     } catch (err) {
       console.error('[context.sharedOwnerIds] Library-share lookup failed; failing closed:', err)
       sharedOwnerIds = []
