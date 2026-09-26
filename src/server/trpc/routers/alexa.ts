@@ -21,7 +21,7 @@ const readRouter = router({ recipes: recipesRouter, cookbooks: cookbooksRouter }
  */
 
 function anonContext(): Context {
-  return { session: null, user: null, collabCookbookIds: [] };
+  return { session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]), sharedOwnerIds: [] };
 }
 
 async function authedContext(token: string | undefined | null): Promise<Context> {
@@ -32,7 +32,8 @@ async function authedContext(token: string | undefined | null): Promise<Context>
   return {
     session: { id: "alexa-oauth" } as unknown as Context["session"],
     user: { id: result.userId } as unknown as Context["user"],
-    collabCookbookIds: [],
+    getCollabCookbookIds: () => Promise.resolve([]),
+    sharedOwnerIds: [],
   };
 }
 

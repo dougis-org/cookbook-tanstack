@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
 import { Types } from "mongoose"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
 import { Recipe, RecipeNote } from "@/db/models"
@@ -203,6 +203,28 @@ describe("privateRecipeNotes.delete", () => {
       await expect(caller.privateRecipeNotes.delete({ recipeId })).rejects.toMatchObject({
         code: "NOT_FOUND",
       })
+    })
+  })
+})
+
+describe("privateRecipeNotes — isolation from the collaboration lookup", () => {
+  it("succeeds normally and never invokes getCollabCookbookIds, even if it would fail", async () => {
+    await withCleanDb(async () => {
+      const { appRouter } = await import("@/server/trpc/router")
+      const user = await seedUserWithBetterAuth()
+      const getCollabCookbookIds = vi.fn(() => Promise.reject(new Error("should never be called")))
+      const caller = appRouter.createCaller({
+        session: { id: "s1" } as never,
+        user: { id: user.id, email: "test@test.com", emailVerified: true, tier: "sous-chef" } as never,
+        getCollabCookbookIds,
+        sharedOwnerIds: [],
+      })
+
+      const recipeId = new Types.ObjectId().toHexString()
+      const result = await caller.privateRecipeNotes.get({ recipeId })
+
+      expect(result).toEqual({ hasNote: false, note: null })
+      expect(getCollabCookbookIds).not.toHaveBeenCalled()
     })
   })
 })

@@ -81,44 +81,44 @@ describe("createContext", () => {
     expect(ctx).not.toHaveProperty("db");
   });
 
-  describe("collabCookbookIds", () => {
+  describe("getCollabCookbookIds", () => {
     const VALID_USER_ID = "aaaaaaaaaaaaaaaaaaaaaaaa";
 
     function mockSessionWithUser(userId: string) {
       mockGetSession.mockResolvedValue({ session: { id: "s1" }, user: { id: userId } });
     }
 
-    it("returns empty array when unauthenticated", async () => {
+    it("resolves to an empty array when unauthenticated, without querying Collaborator", async () => {
       const { createContext } = await import("@/server/trpc/context");
       mockGetSession.mockResolvedValue(null);
 
       const ctx = await createContext(fetchOpts);
 
-      expect(ctx.collabCookbookIds).toEqual([]);
+      expect(await ctx.getCollabCookbookIds()).toEqual([]);
       expect(mockCollaboratorFind).not.toHaveBeenCalled();
     });
 
-    it("returns empty array when user id is not a valid ObjectId", async () => {
+    it("resolves to an empty array when user id is not a valid ObjectId", async () => {
       const { createContext } = await import("@/server/trpc/context");
       mockSessionWithUser("not-an-object-id");
 
       const ctx = await createContext(fetchOpts);
 
-      expect(ctx.collabCookbookIds).toEqual([]);
+      expect(await ctx.getCollabCookbookIds()).toEqual([]);
       expect(mockCollaboratorFind).not.toHaveBeenCalled();
     });
 
-    it("returns empty array when user has no collaborations", async () => {
+    it("resolves to an empty array when user has no collaborations", async () => {
       const { createContext } = await import("@/server/trpc/context");
       mockSessionWithUser(VALID_USER_ID);
       mockCollaboratorFind.mockReturnValue({ lean: () => Promise.resolve([]) });
 
       const ctx = await createContext(fetchOpts);
 
-      expect(ctx.collabCookbookIds).toEqual([]);
+      expect(await ctx.getCollabCookbookIds()).toEqual([]);
     });
 
-    it("returns cookbook ids when user is a collaborator", async () => {
+    it("resolves to cookbook ids when user is a collaborator", async () => {
       const { createContext } = await import("@/server/trpc/context");
       const cbId1 = "bbbbbbbbbbbbbbbbbbbbbbbb";
       const cbId2 = "cccccccccccccccccccccccc";
@@ -132,19 +132,96 @@ describe("createContext", () => {
 
       const ctx = await createContext(fetchOpts);
 
-      expect(ctx.collabCookbookIds).toEqual([cbId1, cbId2]);
+      expect(await ctx.getCollabCookbookIds()).toEqual([cbId1, cbId2]);
     });
 
     it("queries Collaborator by the authenticated user id", async () => {
       const { createContext } = await import("@/server/trpc/context");
       mockSessionWithUser(VALID_USER_ID);
 
-      await createContext(fetchOpts);
+      const ctx = await createContext(fetchOpts);
+      await ctx.getCollabCookbookIds();
 
       expect(mockCollaboratorFind).toHaveBeenCalledWith(
         { userId: VALID_USER_ID },
         { cookbookId: 1 },
       );
+    });
+
+    it("does not query Collaborator during createContext itself — the lookup is lazy", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockSessionWithUser(VALID_USER_ID);
+
+      await createContext(fetchOpts);
+
+      expect(mockCollaboratorFind).not.toHaveBeenCalled();
+    });
+
+    it("memoizes repeated and concurrent calls to a single underlying query", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockSessionWithUser(VALID_USER_ID);
+      mockCollaboratorFind.mockReturnValue({
+        lean: () => Promise.resolve([{ cookbookId: { toString: () => "bbbbbbbbbbbbbbbbbbbbbbbb" } }]),
+      });
+
+      const ctx = await createContext(fetchOpts);
+      const [first, second] = await Promise.all([
+        ctx.getCollabCookbookIds(),
+        ctx.getCollabCookbookIds(),
+      ]);
+      const third = await ctx.getCollabCookbookIds();
+
+      expect(mockCollaboratorFind).toHaveBeenCalledTimes(1);
+      expect(first).toEqual(second);
+      expect(second).toEqual(third);
+    });
+
+    it("rejects with a retry-friendly TRPCError instead of the raw exception on lookup failure", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      const { TRPCError } = await import("@trpc/server");
+      mockSessionWithUser(VALID_USER_ID);
+      mockCollaboratorFind.mockReturnValue({ lean: () => Promise.reject(new Error("db blip")) });
+
+      const ctx = await createContext(fetchOpts);
+
+      await expect(ctx.getCollabCookbookIds()).rejects.toBeInstanceOf(TRPCError);
+      await expect(ctx.getCollabCookbookIds()).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Unable to load cookbook collaborations. Please try again.",
+      });
+    });
+
+    it("logs the original error before rejecting", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const { createContext } = await import("@/server/trpc/context");
+      mockSessionWithUser(VALID_USER_ID);
+      const originalError = new Error("db blip");
+      mockCollaboratorFind.mockReturnValue({ lean: () => Promise.reject(originalError) });
+
+      const ctx = await createContext(fetchOpts);
+      await ctx.getCollabCookbookIds().catch(() => {});
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("[context.collabCookbookIds]"),
+        originalError,
+      );
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("resolves independently in a fresh context after a prior context's lookup failed", async () => {
+      const { createContext } = await import("@/server/trpc/context");
+      mockSessionWithUser(VALID_USER_ID);
+      mockCollaboratorFind.mockReturnValueOnce({ lean: () => Promise.reject(new Error("transient blip")) });
+
+      const ctxA = await createContext(fetchOpts);
+      await expect(ctxA.getCollabCookbookIds()).rejects.toThrow();
+
+      mockCollaboratorFind.mockReturnValueOnce({
+        lean: () => Promise.resolve([{ cookbookId: { toString: () => "bbbbbbbbbbbbbbbbbbbbbbbb" } }]),
+      });
+      const ctxB = await createContext(fetchOpts);
+
+      await expect(ctxB.getCollabCookbookIds()).resolves.toEqual(["bbbbbbbbbbbbbbbbbbbbbbbb"]);
     });
   });
 });

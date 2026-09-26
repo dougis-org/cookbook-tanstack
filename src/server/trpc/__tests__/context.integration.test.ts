@@ -142,7 +142,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
       });
 
       const ctx = await createContext(fetchOpts);
-      const filter = visibilityFilter({ id: recipient.id }, ctx.collabCookbookIds, ctx.sharedOwnerIds) as { $or: object[] };
+      const filter = visibilityFilter({ id: recipient.id }, await ctx.getCollabCookbookIds(), ctx.sharedOwnerIds) as { $or: object[] };
 
       const hasSharedClause = filter.$or.some(
         (c) => "userId" in c && "$in" in (c as { userId: { $in?: unknown } }).userId,
@@ -151,7 +151,7 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
     });
   });
 
-  it("does not change collabCookbookIds's existing throw-on-failure behavior", async () => {
+  it("createContext itself no longer throws on a Collaborator lookup failure — the lookup is lazy", async () => {
     await withCleanDb(async () => {
       const { Collaborator } = await import("@/db/models");
       const { createContext } = await import("@/server/trpc/context");
@@ -161,7 +161,24 @@ describe("createContext — ctx.sharedOwnerIds (integration)", () => {
         throw new Error("forced collaborator failure");
       });
 
-      await expect(createContext(fetchOpts)).rejects.toThrow("forced collaborator failure");
+      await expect(createContext(fetchOpts)).resolves.toBeDefined();
+    });
+  });
+
+  it("getCollabCookbookIds() rejects with a TRPCError when the underlying Collaborator lookup fails", async () => {
+    await withCleanDb(async () => {
+      const { Collaborator } = await import("@/db/models");
+      const { createContext } = await import("@/server/trpc/context");
+      const { TRPCError } = await import("@trpc/server");
+      const recipient = await seedUserWithBetterAuth();
+      mockSessionWithUser(recipient.id);
+      vi.spyOn(Collaborator, "find").mockImplementation(() => {
+        throw new Error("forced collaborator failure");
+      });
+
+      const ctx = await createContext(fetchOpts);
+
+      await expect(ctx.getCollabCookbookIds()).rejects.toBeInstanceOf(TRPCError);
     });
   });
 });

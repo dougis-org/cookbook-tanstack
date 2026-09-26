@@ -14,7 +14,7 @@ vi.mock("@/server/alexa/token-validation", () => ({
 
 async function getCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
+  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]) });
 }
 
 /** Combines the standard clean-DB wrapper + anon caller setup shared by every test below. */
@@ -161,6 +161,35 @@ describe("alexa.cookbookDetail", () => {
       const result = await caller.alexa.cookbookDetail({ token: "valid-token", id: cookbook.id.toString() });
 
       expect(result).toBeNull();
+    });
+  });
+});
+
+describe("alexa isolation from the collaboration lookup", () => {
+  it("the module-level alexaAdapter (built once from anonContext) still resolves normal queries", async () => {
+    const { alexaAdapter } = await import("@/server/trpc/routers/alexa");
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      await new Recipe({ name: "Public Recipe", userId: owner.id, isPublic: true }).save();
+      const result = await alexaAdapter.searchRecipes({ query: "recipe" });
+      expect(result.items.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("succeeds normally and never invokes Collaborator.find, even when it would reject", async () => {
+    await withAlexaCaller(async (caller) => {
+      const owner = await seedUserWithBetterAuth();
+      await new Recipe({ name: "Chicken Tikka Masala", userId: owner.id, isPublic: true }).save();
+      const { Collaborator } = await import("@/db/models");
+      const spy = vi.spyOn(Collaborator, "find").mockImplementation(() => {
+        throw new Error("Collaborator lookup should never be called for Alexa procedures");
+      });
+
+      const result = await caller.alexa.searchRecipes({ query: "tikka" });
+
+      expect(result.items).toHaveLength(1);
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 });

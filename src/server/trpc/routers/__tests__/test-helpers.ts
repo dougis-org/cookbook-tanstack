@@ -91,7 +91,7 @@ export function uid() {
 
 export async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null, collabCookbookIds: [] });
+  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]) });
 }
 
 export async function makeAuthCaller(
@@ -108,7 +108,7 @@ export async function makeAuthCaller(
       tier: opts.tier,
       isAdmin: opts.isAdmin ?? false,
     } as never,
-    collabCookbookIds: opts.collabCookbookIds ?? [],
+    getCollabCookbookIds: () => Promise.resolve(opts.collabCookbookIds ?? []),
   });
 }
 
