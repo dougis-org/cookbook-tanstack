@@ -24,17 +24,17 @@
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit.
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit. (`openspec-review-code` was not an installed skill; used `pr-review-toolkit:code-reviewer` sub-agents instead, before both commits — zero findings on the first pass, two low-severity findings on the second, both fixed.)
 
 ## Validation
 
-- [ ] Run unit/integration tests: `npx vitest run src/server/trpc/__tests__/context.test.ts src/server/trpc/__tests__/context.integration.test.ts src/server/trpc/routers/__tests__/cookbooks.test.ts src/server/trpc/routers/__tests__/alexa.test.ts`
-- [ ] Run E2E tests (if applicable) — not expected to be needed for this change (server-internal error-handling/scoping change with no UI-visible behavior change on the success path); confirm no E2E test asserts on the specific shape of a `Collaborator` failure before skipping.
-- [ ] Run type checks: `npx tsc --noEmit` (or project's configured type-check script) — required, since `Context`'s shape changes from a plain field to a function.
-- [ ] Run build: `npm run build`
-- [ ] Run security/code quality checks required by project standards (Codacy/Snyk per `CLAUDE.md` "Security" section)
-- [ ] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] Run unit/integration tests: `npx vitest run src/server/trpc/__tests__/context.test.ts src/server/trpc/__tests__/context.integration.test.ts src/server/trpc/routers/__tests__/cookbooks.test.ts src/server/trpc/routers/__tests__/alexa.test.ts` (310 passed)
+- [x] Run E2E tests (if applicable) — not expected to be needed for this change (server-internal error-handling/scoping change with no UI-visible behavior change on the success path); confirm no E2E test asserts on the specific shape of a `Collaborator` failure before skipping. (grep confirmed none; CI's `e2e` job also passed on PR #681)
+- [x] Run type checks: `npx tsc --noEmit` (or project's configured type-check script) — required, since `Context`'s shape changes from a plain field to a function. (zero new errors vs. `main`, confirmed via diff against a baseline worktree)
+- [x] Run build: `npm run build` (succeeded)
+- [x] Run security/code quality checks required by project standards (Codacy/Snyk per `CLAUDE.md` "Security" section) (Codacy Static Code Analysis / Coverage Variation / Diff Coverage all SUCCESS on PR #681)
+- [x] All completed tasks marked as complete
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -51,14 +51,14 @@ If **ANY** required step fails, you **MUST** iterate and address the failure bef
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `scope-collab-cookbook-lookup` to `main`. The PR body **MUST** include `Closes #677`.
-- [ ] **Issue lifecycle: mark in-review** — run `gh issue edit 677 --repo dougis-org/cookbook-tanstack --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same project/field/option discovery as the in-progress lifecycle step above; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `scope-collab-cookbook-lookup` to `main`. The PR body **MUST** include `Closes #677`. (PR #681)
+- [x] **Issue lifecycle: mark in-review** — run `gh issue edit 677 --repo dougis-org/cookbook-tanstack --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same project/field/option discovery as the in-progress lifecycle step above; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing. (code-reviewer + pr-test-analyzer sub-agents; two low-severity findings fixed and pushed; zero findings remained)
+- [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**: (all checks passed, no review comments landed, merged at 2026-09-26T21:39:56Z)
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
   3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
@@ -79,18 +79,18 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only` (from the primary checkout, not the worktree)
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change — confirm whether `docs/database.md` or any router-level doc references `collabCookbookIds`'s old synchronous shape and update if so
-- [ ] Sync approved spec deltas into `openspec/specs/`: copy `specs/trpc-request-context/spec.md` to `openspec/specs/trpc-request-context/spec.md` (new capability — no prior version to merge against). Update its relative links: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/design.md`, and similarly for any `../../tasks.md` reference.
-- [ ] Archive the change: move `openspec/changes/scope-collab-cookbook-lookup/` to `openspec/changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/` exists and `openspec/changes/scope-collab-cookbook-lookup/` is gone
-- [ ] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup` then `git push -u origin doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup`
-- [ ] Open a PR from `doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup` to `main` with title `docs: archive scope-collab-cookbook-lookup (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
-- [ ] Prune merged local branches: `git fetch --prune` and `git branch -D scope-collab-cookbook-lookup doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup`
-- [ ] Remove the change's dedicated worktree: `git worktree remove .worktrees/scope-collab-cookbook-lookup` (run from the primary checkout)
+- [x] `git checkout main` and `git pull --ff-only` (from the primary checkout, not the worktree)
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change — confirm whether `docs/database.md` or any router-level doc references `collabCookbookIds`'s old synchronous shape and update if so (grep found no references; nothing to update)
+- [x] Sync approved spec deltas into `openspec/specs/`: copy `specs/trpc-request-context/spec.md` to `openspec/specs/trpc-request-context/spec.md` (new capability — no prior version to merge against). Update its relative links: replace `../../design.md` with `../../changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/design.md`, and similarly for any `../../tasks.md` reference.
+- [x] Archive the change: move `openspec/changes/scope-collab-cookbook-lookup/` to `openspec/changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/` **and stage both the new location and the deletion of the old location in a single commit** — do not commit the copy and delete separately
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-scope-collab-cookbook-lookup/` exists and `openspec/changes/scope-collab-cookbook-lookup/` is gone
+- [x] **Create a doc branch** for the archive and spec updates: `git checkout -b doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup` then `git push -u origin doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup`
+- [x] Open a PR from `doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup` to `main` with title `docs: archive scope-collab-cookbook-lookup (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR — address comments and CI failures, push to the same doc branch, repeat)
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D scope-collab-cookbook-lookup doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup`
+- [x] Remove the change's dedicated worktree: `git worktree remove .worktrees/scope-collab-cookbook-lookup` (run from the primary checkout)
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D scope-collab-cookbook-lookup doc/archive-YYYY-MM-DD-scope-collab-cookbook-lookup`
