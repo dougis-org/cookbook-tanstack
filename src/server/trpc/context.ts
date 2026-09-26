@@ -22,8 +22,8 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
   // reads (e.g. printById's three call sites) resolve to one underlying query. Unlike
   // sharedOwnerIds below, a lookup failure here is not swallowed to [] — degrading a real
   // collaborator to "no collaborations" is a silent access-scope reduction, so it rejects
-  // with a retry-friendly TRPCError instead (see design.md, Decisions 1 and 2, for the
-  // full rationale: openspec/changes/scope-collab-cookbook-lookup/design.md).
+  // with a retry-friendly TRPCError instead (full rationale: the scope-collab-cookbook-lookup
+  // design notes, issue #677).
   let collabCookbookIdsPromise: Promise<string[]> | undefined
   function getCollabCookbookIds(): Promise<string[]> {
     if (!collabCookbookIdsPromise) {
@@ -37,6 +37,7 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Unable to load cookbook collaborations. Please try again.",
+            cause: err,
           })
         }
       })()
@@ -44,14 +45,14 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
     return collabCookbookIdsPromise
   }
 
-  // Live at every request (see design.md, Decision 1) — not cached, not denormalized.
-  // Exactly one query beyond the collabCookbookIds lookup above: the initial $match on
-  // the indexed recipientId returns empty in one round trip for a caller with no
-  // grants (the $lookup never executes), so there is no separate existence guard.
-  // Fails closed on lookup failure — sharedOwnerIds stays [] rather than propagating
-  // (see design.md, Decision 4) — unlike the collabCookbookIds accessor above, which
-  // fails loud with a TRPCError instead (a deliberate, now-documented asymmetry; see
-  // openspec/changes/scope-collab-cookbook-lookup/design.md).
+  // Live at every request (see share-my-library design notes, Decision 1) — not cached,
+  // not denormalized. Exactly one query beyond the collabCookbookIds lookup above: the
+  // initial $match on the indexed recipientId returns empty in one round trip for a
+  // caller with no grants (the $lookup never executes), so there is no separate
+  // existence guard. Fails closed on lookup failure — sharedOwnerIds stays [] rather
+  // than propagating — unlike the collabCookbookIds accessor above, which fails loud
+  // with a TRPCError instead (a deliberate, now-documented asymmetry; see the
+  // scope-collab-cookbook-lookup design notes, issue #677).
   let sharedOwnerIds: string[] = []
   if (hasValidUser) {
     try {
