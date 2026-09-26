@@ -2491,3 +2491,25 @@ describe("recipes - personalSourceName visibility / stripping", () => {
   });
 });
 
+describe("recipes — isolation from the collaboration lookup", () => {
+  it("succeeds normally and never invokes getCollabCookbookIds, even if it would fail", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await new Recipe({ name: "Public Recipe", userId: owner.id, isPublic: true }).save();
+      const { appRouter } = await import("@/server/trpc/router");
+      const getCollabCookbookIds = vi.fn(() => Promise.reject(new Error("should never be called")));
+      const caller = appRouter.createCaller({
+        session: { id: "s1" } as never,
+        user: { id: owner.id, email: "test@test.com", emailVerified: true } as never,
+        getCollabCookbookIds,
+        sharedOwnerIds: [],
+      });
+
+      const result = await caller.recipes.list({});
+
+      expect(result.items.length).toBeGreaterThan(0);
+      expect(getCollabCookbookIds).not.toHaveBeenCalled();
+    });
+  });
+});
+

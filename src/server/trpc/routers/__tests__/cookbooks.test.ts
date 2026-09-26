@@ -32,6 +32,37 @@ async function seedRecipe(userId: string) {
   return new Recipe({ name: `Recipe-${uid()}`, userId, isPublic: true }).save();
 }
 
+/** Caller whose ctx.getCollabCookbookIds() rejects with the retry-friendly TRPCError, simulating a Collaborator lookup failure. */
+async function makeFailingCollabCaller(userId: string) {
+  const { appRouter } = await import("@/server/trpc/router");
+  const { TRPCError } = await import("@trpc/server");
+  return appRouter.createCaller({
+    session: { id: "s1" } as never,
+    user: { id: userId, email: "test@test.com", emailVerified: true } as never,
+    getCollabCookbookIds: () =>
+      Promise.reject(
+        new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Unable to load cookbook collaborations. Please try again.",
+        }),
+      ),
+    sharedOwnerIds: [],
+  });
+}
+
+/** Caller whose ctx.getCollabCookbookIds() resolves normally but is instrumented to count calls. */
+async function makeSpiedCollabCaller(userId: string, cookbookIds: string[]) {
+  const { appRouter } = await import("@/server/trpc/router");
+  const getCollabCookbookIds = vi.fn(() => Promise.resolve(cookbookIds));
+  const caller = appRouter.createCaller({
+    session: { id: "s1" } as never,
+    user: { id: userId, email: "test@test.com", emailVerified: true } as never,
+    getCollabCookbookIds,
+    sharedOwnerIds: [],
+  });
+  return { caller, getCollabCookbookIds };
+}
+
 type Caller = Awaited<ReturnType<typeof makeAuthCaller>>;
 type CookbookDoc = Awaited<ReturnType<typeof seedCookbook>>;
 type RecipeDoc = Awaited<ReturnType<typeof seedRecipe>>;
@@ -251,6 +282,18 @@ describe("cookbooks.list", () => {
       }
     });
   });
+
+  it("rejects with a TRPCError and returns no cookbook data when the collaboration lookup fails", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await seedCookbook(owner.id);
+      const caller = await makeFailingCollabCaller(owner.id);
+
+      await expect(caller.cookbooks.list()).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+      });
+    });
+  });
 });
 
 // ─── cookbooks.byId ──────────────────────────────────────────────────────────
@@ -339,6 +382,18 @@ describe("cookbooks.byId", () => {
       const result = await caller.cookbooks.byId({ id: cb.id });
       expect(result!.recipes[0]).toMatchObject({
         classificationName: "Italian",
+      });
+    });
+  });
+
+  it("rejects with a TRPCError and returns no cookbook data when the collaboration lookup fails", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id, { isPublic: false });
+      const caller = await makeFailingCollabCaller(owner.id);
+
+      await expect(caller.cookbooks.byId({ id: cb.id })).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
       });
     });
   });
@@ -654,6 +709,35 @@ describe("cookbooks.printById", () => {
 
       const r = result!.recipes[0];
       expect(r.addedByName).toBe(owner.name);
+    });
+  });
+
+  it("resolves the collaboration lookup once and reuses it across all three read sites (visFilter, recipeVisFilter, isAuthorized)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const collabUser = await seedUser();
+      const cb = await seedCookbook(owner.id, { isPublic: false });
+      await new Collaborator({ cookbookId: cb._id, userId: collabUser.id, role: "editor", addedBy: owner.id }).save();
+      const recipe = await seedRecipe(owner.id);
+      await seedCookbookWithRecipes(cb.id, recipe.id);
+
+      const { caller, getCollabCookbookIds } = await makeSpiedCollabCaller(collabUser.id, [cb.id]);
+      const result = await caller.cookbooks.printById({ id: cb.id });
+
+      expect(result).not.toBeNull();
+      expect(getCollabCookbookIds).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("rejects with a TRPCError and does not fall through to non-collaborator treatment when the collaboration lookup fails", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const cb = await seedCookbook(owner.id, { isPublic: false });
+      const caller = await makeFailingCollabCaller(owner.id);
+
+      await expect(caller.cookbooks.printById({ id: cb.id })).rejects.toMatchObject({
+        code: "INTERNAL_SERVER_ERROR",
+      });
     });
   });
 

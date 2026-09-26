@@ -298,7 +298,7 @@ export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docs = await Cookbook.aggregate<any>([
-      { $match: visibilityFilter(ctx.user, ctx.collabCookbookIds) },
+      { $match: visibilityFilter(ctx.user, await ctx.getCollabCookbookIds()) },
       { $sort: { name: 1 } },
       {
         $lookup: {
@@ -331,7 +331,7 @@ export const cookbooksRouter = router({
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
+      const visFilter = visibilityFilter(ctx.user, await ctx.getCollabCookbookIds());
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
@@ -398,13 +398,14 @@ export const cookbooksRouter = router({
   printById: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
+      const collabCookbookIds = await ctx.getCollabCookbookIds();
+      const visFilter = visibilityFilter(ctx.user, collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
       const { cookbook, stubs } = row;
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
-      const recipeVisFilter = visibilityFilter(ctx.user, ctx.collabCookbookIds);
+      const recipeVisFilter = visibilityFilter(ctx.user, collabCookbookIds);
 
       const recipeDocs = await Recipe.find({
         _id: { $in: recipeIds },
@@ -420,7 +421,7 @@ export const cookbooksRouter = router({
       const isAuthorized = !!(
         ctx.user &&
         (ctx.user.id === cookbook.userId?.toString() ||
-          ctx.collabCookbookIds.includes(input.id))
+          collabCookbookIds.includes(input.id))
       );
       const collaborators = isAuthorized
         ? await fetchCollaboratorsWithUsers(input.id)
