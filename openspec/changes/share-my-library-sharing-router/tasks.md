@@ -16,19 +16,23 @@
 
 ## Preflight
 
-- [ ] **Verify `pr-review-toolkit:review-pr` is available** — check the available
+- [x] **Verify `pr-review-toolkit:review-pr` is available** — check the available
       skills list for `pr-review-toolkit:review-pr`. If it is not listed, halt
       immediately, inform the user the plugin is required, provide installation
       guidance, and do not proceed until the user confirms it is installed.
-- [ ] **Verify the `openspec-review-code` skill is available** for the mandatory
+- [x] **Verify the `openspec-review-code` skill is available** for the mandatory
       pre-commit review step. Halt and inform the user if missing.
-- [ ] **Verify `gh` auth and scopes:** `gh auth status`. The project-item lifecycle
+      **RESOLVED:** `openspec-review-code` is not present in this session's
+      available skills list. Flagged to the user; user directed substituting
+      `pr-review-toolkit:code-reviewer` as the pre-commit review sub-agent for
+      this PR instead.
+- [x] **Verify `gh` auth and scopes:** `gh auth status`. The project-item lifecycle
       steps need the `project` scope; if absent, surface `gh auth refresh -s project`
       to the user and continue with issue-label updates only.
 
 ## Execution
 
-- [ ] **Issue lifecycle: mark in-progress:** run
+- [x] **Issue lifecycle: mark in-progress:** run
       `gh issue edit 672 --add-label "in-progress"`. Then discover the linked project
       (`gh project list --owner dougis-org --format json`), resolve the status field
       option semantically matching "In Progress"
@@ -36,7 +40,7 @@
       move the item with `gh project item-edit`. If no project item is found, log a
       warning and continue. If the token lacks `project` scope, instruct the user to
       run `gh auth refresh -s project` and skip the project-item update only.
-- [ ] **Reuse audit (already performed during proposal):** `execChefProcedure`
+- [x] **Reuse audit (already performed during proposal):** `execChefProcedure`
       (`src/server/trpc/routers/cookbooks.ts:258`), `usersRouter.search`
       (`src/server/trpc/routers/users.ts`), `userLookupStages`
       (`src/server/trpc/routers/_helpers.ts`), and the `LibraryShare` model
@@ -48,27 +52,29 @@ confirm it fails for the expected reason, then implement until it passes.
 
 ### Task A — Extract shared helpers (no behavior change)
 
-- [ ] **A.1 — Promote `execChefProcedure`**
-  - [ ] Move the private `execChefProcedure` definition from `cookbooks.ts:258` to
+- [x] **A.1 — Promote `execChefProcedure`**
+  - [x] Move the private `execChefProcedure` definition from `cookbooks.ts:258` to
         `src/server/trpc/routers/_helpers.ts`, export it, update `cookbooks.ts` to
         import it from `./_helpers`.
-  - [ ] Verify: re-run `cookbooks.ts`'s existing collaboration integration suite
+  - [x] Verify: re-run `cookbooks.ts`'s existing collaboration integration suite
         unchanged — `npx vitest run src/server/trpc/routers/__tests__/cookbooks*` —
         confirm identical pass/fail outcomes to pre-move.
   - _Covers: design.md Decision 9_
 
-- [ ] **A.2 — Extract the owner-tier-eligibility pipeline helper**
-  - [ ] Write a failing unit test for the new helper (e.g.
+- [x] **A.2 — Extract the owner-tier-eligibility pipeline helper**
+  - [x] Write a failing unit test for the new helper (e.g.
         `sharingEligibleOwnerStages()`) in
         `src/server/trpc/routers/__tests__/_helpers.test.ts`: given a `$match`ed
         `LibraryShare` pipeline, an owner at `executive-chef` is included and an
         owner below it is excluded.
-  - [ ] Add the helper to `_helpers.ts`, built from `userLookupStages` + a
+        (Added to the existing `helpers.test.ts` file rather than a new
+        `_helpers.test.ts`, matching this codebase's naming convention.)
+  - [x] Add the helper to `_helpers.ts`, built from `userLookupStages` + a
         `$match "_owner.tier": SHARING_OWNER_TIER"` stage, extracted verbatim from
         `context.ts:34-39`.
-  - [ ] Refactor `context.ts`'s `sharedOwnerIds` resolution to call the new helper.
+  - [x] Refactor `context.ts`'s `sharedOwnerIds` resolution to call the new helper.
         No other change to `context.ts`.
-  - [ ] Verify: re-run `context.ts`'s existing test coverage
+  - [x] Verify: re-run `context.ts`'s existing test coverage
         (`npx vitest run src/server/trpc/__tests__/context*` or equivalent) unchanged
         — grant → visible, downgrade → invisible, re-upgrade → visible again, zero
         grants → `[]` with no owner-tier lookup, failed lookup → `[]`.
@@ -76,17 +82,17 @@ confirm it fails for the expected reason, then implement until it passes.
 
 ### Task B — `shareLibrary` grant procedure
 
-- [ ] **B.1 — Failing integration tests** in
+- [x] **B.1 — Failing integration tests** in
       `src/server/trpc/routers/__tests__/sharing.test.ts`:
-  - [ ] Executive Chef creates a grant; row has correct `ownerId`, `recipientId`,
+  - [x] Executive Chef creates a grant; row has correct `ownerId`, `recipientId`,
         `addedBy`, populated `addedAt`
-  - [ ] Table-driven: `home-cook`, `prep-cook`, `sous-chef` each receive `FORBIDDEN`;
+  - [x] Table-driven: `home-cook`, `prep-cook`, `sous-chef` each receive `FORBIDDEN`;
         no row created
-  - [ ] Unauthenticated caller receives `UNAUTHORIZED`
-  - [ ] Self-share receives `BAD_REQUEST`; no row created
-  - [ ] Non-existent recipient id receives `NOT_FOUND`
-  - [ ] Duplicate pair receives `CONFLICT`; exactly one row remains
-- [ ] **B.2 — Implement `shareLibrary`** in new
+  - [x] Unauthenticated caller receives `UNAUTHORIZED`
+  - [x] Self-share receives `BAD_REQUEST`; no row created
+  - [x] Non-existent recipient id receives `NOT_FOUND`
+  - [x] Duplicate pair receives `CONFLICT`; exactly one row remains
+- [x] **B.2 — Implement `shareLibrary`** in new
       `src/server/trpc/routers/sharing.ts`, built on `execChefProcedure` (from
       `_helpers.ts`). Validation order per design.md Decision 10: self-share check
       (in-memory) → recipient-existence lookup (Better-Auth `user` collection, same
@@ -94,68 +100,84 @@ confirm it fails for the expected reason, then implement until it passes.
       `E11000` via the same `isDuplicateKeyError()` pattern used in
       `cookbooks.ts:230` (either import it if exported, or mirror the one-line
       predicate).
-  - [ ] Verify: `npx vitest run src/server/trpc/routers/__tests__/sharing.test.ts`
+  - [x] Verify: `npx vitest run src/server/trpc/routers/__tests__/sharing.test.ts`
   - _Covers spec: specs/library-sharing-router/spec.md — ADDED Granting library
     access_
 
 ### Task C — `revokeLibraryShare` and listing procedures
 
-- [ ] **C.1 — Failing integration tests:**
-  - [ ] Owner revokes; row deleted
-  - [ ] Non-owner — including the recipient — receives `FORBIDDEN`; grant survives
-  - [ ] Revoking a non-existent grant id receives `NOT_FOUND`
-  - [ ] `myLibraryShares` returns grants given with recipient display name
-  - [ ] `mySharedLibraries` returns grants received with owner display name
-  - [ ] A grant from an owner currently below `executive-chef` is excluded from
+- [x] **C.1 — Failing integration tests:**
+  - [x] Owner revokes; row deleted
+  - [x] Non-owner — including the recipient — receives `FORBIDDEN`; grant survives
+  - [x] Revoking a non-existent grant id receives `NOT_FOUND`
+  - [x] `myLibraryShares` returns grants given with recipient display name
+  - [x] `mySharedLibraries` returns grants received with owner display name
+  - [x] A grant from an owner currently below `executive-chef` is excluded from
         **both** listings, and reappears in both without a new grant once the owner
         is restored to `executive-chef`
-  - [ ] Neither listing exposes `email` or `tier` for either party (assert absence
+  - [x] Neither listing exposes `email` or `tier` for either party (assert absence
         of the keys, not just presence of the allowed fields)
-- [ ] **C.2 — Implement `revokeLibraryShare`** per design.md Decision 11:
+- [x] **C.2 — Implement `revokeLibraryShare`** per design.md Decision 11:
       `findById` → `NOT_FOUND` if missing → compare `ownerId` to `ctx.user.id` →
       `FORBIDDEN` if mismatched → delete by `_id`.
-- [ ] **C.3 — Implement `myLibraryShares` / `mySharedLibraries`** using the Task A.2
+- [x] **C.3 — Implement `myLibraryShares` / `mySharedLibraries`** using the Task A.2
       shared eligibility helper plus `userLookupStages`, with an explicit `$project`
       allow-listing only `{ id, name }` for the other party (design.md Decision 12)
       — never project the joined user document wholesale.
-  - [ ] Verify: `npm run test:integration`
+  - [x] Verify: `npm run test:integration`
   - _Covers spec: specs/library-sharing-router/spec.md — ADDED Revoking a share;
     ADDED Managing shares (server half); Non-Functional Acceptance Criteria,
     Security_
 
 ### Task D — Wire up the router
 
-- [ ] **D.1 — Register `sharingRouter`** in `src/server/trpc/router.ts` (not
+- [x] **D.1 — Register `sharingRouter`** in `src/server/trpc/router.ts` (not
       `_app.ts` — see design.md Decision 13) as `sharing: sharingRouter`.
-- [ ] **D.2 — Confirm end-to-end wiring:** an integration test calling
+- [x] **D.2 — Confirm end-to-end wiring:** an integration test calling
       `trpc.sharing.shareLibrary` through the full router (not just the isolated
       procedure) exercises the registration.
-  - [ ] Verify: `npx tsc --noEmit && npm run build`
+  - [x] Verify: `npx tsc --noEmit && npm run build` (build succeeds; the 103
+        pre-existing `tsc --noEmit` errors are unchanged from the `main`/pre-PR
+        baseline — all in files this PR does not touch, stemming from #671's
+        already-merged `Context.sharedOwnerIds` addition — confirmed via a
+        `git stash` A/B comparison. Out of scope for #672; not introduced or
+        worsened by this PR.)
 
-- [ ] **Confirm acceptance criteria are covered:** walk every requirement in
+- [x] **Confirm acceptance criteria are covered:** walk every requirement in
       `openspec/changes/share-my-library-sharing-router/specs/library-sharing-router/spec.md`
       and confirm a test exercises each scenario.
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the
       `openspec-review-code` skill. The primary agent must automatically apply all
       clearly-correct findings directly to the code — without stopping, without
       presenting the findings list to the user, and without asking for confirmation.
       Apply fixes, re-run tests to confirm they pass, then proceed to commit.
-- [ ] Findings on `src/server/trpc/routers/sharing.ts` specifically are **blocking
+      (`openspec-review-code` unavailable this session; substituted
+      `pr-review-toolkit:code-reviewer` per user direction. 3 Important findings
+      applied: ObjectId-based self-share comparison, promoted `isDuplicateKeyError`
+      to `_helpers.ts`, switched recipient lookup to `getBetterAuthCollection`. All
+      540 `src/server/trpc` tests pass after fixes.)
+- [x] Findings on `src/server/trpc/routers/sharing.ts` specifically are **blocking
       and must not be waived** (per issue #672) — resolve them directly, never via
-      `verity waive`.
+      `verity waive`. (All 3 findings on `sharing.ts` resolved directly, not
+      waived. The one `verity waive` in this PR is unrelated — a `cookbooks.ts`
+      finding about missing `ctx.sharedOwnerIds` read-path wiring, explicitly
+      out of scope per proposal.md, confirmed with the user before waiving.)
 
 ## Validation
 
-- [ ] Run unit/integration tests
-- [ ] Run E2E tests (not applicable — this PR ships dark, no E2E surface changes)
-- [ ] Run type checks
-- [ ] Run build
-- [ ] Run security/code quality checks required by project standards
-- [ ] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] Run unit/integration tests (540/540 pass in `src/server/trpc`)
+- [x] Run E2E tests (not applicable — this PR ships dark, no E2E surface changes)
+- [x] Run type checks (no errors in any file this PR touches; pre-existing
+      unrelated `tsc --noEmit` errors from #671 confirmed via baseline diff)
+- [x] Run build (`npm run build` exits 0)
+- [x] Run security/code quality checks required by project standards
+      (`codacy_cli_analyze` clean on `sharing.ts`, `_helpers.ts`, `context.ts`,
+      `cookbooks.ts`)
+- [x] All completed tasks marked as complete
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 

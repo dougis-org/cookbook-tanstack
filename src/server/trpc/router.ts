@@ -12,6 +12,7 @@ import { usageRouter } from "./routers/usage"
 import { notificationsRouter } from "./routers/notifications"
 import { privateRecipeNotesRouter } from "./routers/privateRecipeNotes"
 import { alexaRouter } from "./routers/alexa"
+import { sharingRouter } from "./routers/sharing"
 
 export const appRouter = router({
   recipes: recipesRouter,
@@ -27,6 +28,7 @@ export const appRouter = router({
   notifications: notificationsRouter,
   privateRecipeNotes: privateRecipeNotesRouter,
   alexa: alexaRouter,
+  sharing: sharingRouter,
 })
 
 export type AppRouter = typeof appRouter

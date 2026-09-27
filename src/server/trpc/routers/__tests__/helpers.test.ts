@@ -187,6 +187,39 @@ describe("userLookupStages", () => {
   })
 })
 
+describe("sharingEligibleOwnerStages", () => {
+  it("includes an owner at executive-chef and excludes an owner below it, from a recipientId-matched pipeline", async () => {
+    await withCleanDb(async () => {
+      const { sharingEligibleOwnerStages } = await import("../_helpers")
+      const { getBetterAuthCollection } = await import("@/db")
+      const { LibraryShare } = await import("@/db/models")
+      const recipient = await seedUserWithBetterAuth()
+      const eligibleOwner = await seedUserWithBetterAuth()
+      const ineligibleOwner = await seedUserWithBetterAuth()
+      await getBetterAuthCollection("user").updateOne(
+        { _id: new mongoose.Types.ObjectId(eligibleOwner.id) },
+        { $set: { tier: "executive-chef" } },
+      )
+      await getBetterAuthCollection("user").updateOne(
+        { _id: new mongoose.Types.ObjectId(ineligibleOwner.id) },
+        { $set: { tier: "sous-chef" } },
+      )
+      await LibraryShare.create({ ownerId: eligibleOwner.id, recipientId: recipient.id, addedBy: eligibleOwner.id })
+      await LibraryShare.create({ ownerId: ineligibleOwner.id, recipientId: recipient.id, addedBy: ineligibleOwner.id })
+
+      const rows = await LibraryShare.aggregate<{ ownerId: mongoose.Types.ObjectId }>([
+        { $match: { recipientId: new mongoose.Types.ObjectId(recipient.id) } },
+        ...sharingEligibleOwnerStages(),
+        { $project: { ownerId: 1 } },
+      ])
+
+      const ownerIds = rows.map((r) => r.ownerId.toString())
+      expect(ownerIds).toContain(eligibleOwner.id)
+      expect(ownerIds).not.toContain(ineligibleOwner.id)
+    })
+  })
+})
+
 describe("verifyOwnership", () => {
   it("throws NOT_FOUND when record does not exist (fetchRecord returns null)", async () => {
     const { verifyOwnership } = await import("../_helpers")

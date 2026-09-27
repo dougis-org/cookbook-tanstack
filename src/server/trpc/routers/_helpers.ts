@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import mongoose, { Types } from "mongoose";
-import { publicProcedure, router } from "../init";
+import { publicProcedure, verifiedProcedure, router } from "../init";
 import { Recipe, Cookbook } from "@/db/models";
-import { getRecipeLimit, getCookbookLimit, TIER_LIMITS } from "@/lib/tier-entitlements";
+import { getRecipeLimit, getCookbookLimit, TIER_LIMITS, SHARING_OWNER_TIER } from "@/lib/tier-entitlements";
 import type { EntitlementTier } from "@/lib/tier-entitlements";
+import { hasAtLeastTier } from "@/types/user";
 
 /** Validates a MongoDB ObjectId: a 24-character hexadecimal string. */
 export const objectId = z
@@ -88,6 +89,34 @@ export function userLookupStages(localField: string, alias: string) {
     { $unwind: { path: `$${alias}`, preserveNullAndEmptyArrays: true } },
   ]
 }
+
+/**
+ * Aggregation stages joining a `LibraryShare` row's `ownerId` to its user document
+ * and filtering to owners whose current tier is still SHARING_OWNER_TIER. Shared by
+ * context.ts's ctx.sharedOwnerIds resolution and sharing.ts's myLibraryShares /
+ * mySharedLibraries listings so the eligibility rule cannot drift between access
+ * control and display (design.md Decision 8). Expects to run after a $match stage
+ * on the caller's side of the LibraryShare row (recipientId or ownerId).
+ */
+export function sharingEligibleOwnerStages() {
+  return [
+    ...userLookupStages("ownerId", "_owner"),
+    { $match: { "_owner.tier": SHARING_OWNER_TIER } },
+  ]
+}
+
+/** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
+export function isDuplicateKeyError(err: unknown): boolean {
+  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000
+}
+
+/** Procedure requiring email verification and executive-chef tier. */
+export const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
+  if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
+    throw new TRPCError({ code: 'FORBIDDEN' })
+  }
+  return next({ ctx })
+})
 
 /** Shared predicate for counting non-hidden, non-pending user-owned documents. */
 function userContentFilter(userId: string) {
