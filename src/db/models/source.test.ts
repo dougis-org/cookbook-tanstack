@@ -23,6 +23,7 @@ describe("Source model — slug field", () => {
 
   it("TC-1.2 — slug uniqueness: duplicate slug rejects with duplicate key error", async () => {
     await withCleanDb(async () => {
+      await Source.init(); // ensure the unique index is built before asserting on it
       await new Source({ name: "Bon Appetit", slug: "bon-appetit" }).save();
       await expect(
         new Source({ name: "Bon Appetit 2", slug: "bon-appetit" }).save(),
