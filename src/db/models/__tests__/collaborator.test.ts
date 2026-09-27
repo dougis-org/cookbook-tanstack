@@ -81,6 +81,7 @@ describe("Collaborator model — schema validation", () => {
 describe("Collaborator model — unique constraint", () => {
   it("throws on duplicate cookbookId + userId pair", async () => {
     await withCleanDb(async () => {
+      await Collaborator.init(); // ensure the unique index is built before asserting on it
       const { cookbookId, userId, addedBy } = makeIds();
       await new Collaborator({ cookbookId, userId, role: "editor", addedBy }).save();
       const dup = new Collaborator({ cookbookId, userId, role: "viewer", addedBy });
