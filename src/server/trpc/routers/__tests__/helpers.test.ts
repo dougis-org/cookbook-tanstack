@@ -218,6 +218,30 @@ describe("sharingEligibleOwnerStages", () => {
       expect(ownerIds).not.toContain(ineligibleOwner.id)
     })
   })
+
+  it("includes an admin owner regardless of tier, matching execChefProcedure's admin bypass", async () => {
+    await withCleanDb(async () => {
+      const { sharingEligibleOwnerStages } = await import("../_helpers")
+      const { getBetterAuthCollection } = await import("@/db")
+      const { LibraryShare } = await import("@/db/models")
+      const recipient = await seedUserWithBetterAuth()
+      const adminOwner = await seedUserWithBetterAuth()
+      await getBetterAuthCollection("user").updateOne(
+        { _id: new mongoose.Types.ObjectId(adminOwner.id) },
+        { $set: { tier: "home-cook", isAdmin: true } },
+      )
+      await LibraryShare.create({ ownerId: adminOwner.id, recipientId: recipient.id, addedBy: adminOwner.id })
+
+      const rows = await LibraryShare.aggregate<{ ownerId: mongoose.Types.ObjectId }>([
+        { $match: { recipientId: new mongoose.Types.ObjectId(recipient.id) } },
+        ...sharingEligibleOwnerStages(),
+        { $project: { ownerId: 1 } },
+      ])
+
+      const ownerIds = rows.map((r) => r.ownerId.toString())
+      expect(ownerIds).toContain(adminOwner.id)
+    })
+  })
 })
 
 describe("verifyOwnership", () => {

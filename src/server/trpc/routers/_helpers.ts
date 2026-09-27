@@ -92,16 +92,18 @@ export function userLookupStages(localField: string, alias: string) {
 
 /**
  * Aggregation stages joining a `LibraryShare` row's `ownerId` to its user document
- * and filtering to owners whose current tier is still SHARING_OWNER_TIER. Shared by
- * context.ts's ctx.sharedOwnerIds resolution and sharing.ts's myLibraryShares /
- * mySharedLibraries listings so the eligibility rule cannot drift between access
- * control and display (design.md Decision 8). Expects to run after a $match stage
- * on the caller's side of the LibraryShare row (recipientId or ownerId).
+ * and filtering to owners currently eligible to share: tier still SHARING_OWNER_TIER,
+ * or isAdmin — matching execChefProcedure's own admin bypass, so an admin owner's
+ * grant is never silently invisible/unrevocable. Shared by context.ts's
+ * ctx.sharedOwnerIds resolution and sharing.ts's myLibraryShares / mySharedLibraries
+ * listings so the eligibility rule cannot drift between access control and display
+ * (design.md Decision 8). Expects to run after a $match stage on the caller's side
+ * of the LibraryShare row (recipientId or ownerId).
  */
 export function sharingEligibleOwnerStages() {
   return [
     ...userLookupStages("ownerId", "_owner"),
-    { $match: { "_owner.tier": SHARING_OWNER_TIER } },
+    { $match: { $or: [{ "_owner.tier": SHARING_OWNER_TIER }, { "_owner.isAdmin": true }] } },
   ]
 }
 
