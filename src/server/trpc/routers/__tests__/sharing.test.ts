@@ -194,6 +194,37 @@ describe("sharing.revokeLibraryShare", () => {
       expect(result).toEqual({ success: true });
     });
   });
+
+  it("throws UNAUTHORIZED for an unauthenticated caller", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const recipient = await seedUser();
+      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const caller = await makeAnonCaller();
+
+      await expect(
+        caller.sharing.revokeLibraryShare({ shareId: grant.id }),
+      ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+
+      expect(await LibraryShare.findById(grant.id)).not.toBeNull();
+    });
+  });
+
+  it("deletes only the targeted grant, leaving sibling grants for the same owner intact", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const recipientA = await seedUser();
+      const recipientB = await seedUser();
+      const grantA = await LibraryShare.create({ ownerId: owner.id, recipientId: recipientA.id, addedBy: owner.id });
+      const grantB = await LibraryShare.create({ ownerId: owner.id, recipientId: recipientB.id, addedBy: owner.id });
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      await caller.sharing.revokeLibraryShare({ shareId: grantA.id });
+
+      expect(await LibraryShare.findById(grantA.id)).toBeNull();
+      expect(await LibraryShare.findById(grantB.id)).not.toBeNull();
+    });
+  });
 });
 
 describe("sharing.myLibraryShares", () => {
@@ -257,6 +288,46 @@ describe("sharing.myLibraryShares", () => {
 
       expect(rows[0]).not.toHaveProperty("email");
       expect(rows[0]).not.toHaveProperty("tier");
+    });
+  });
+
+  it("throws UNAUTHORIZED for an unauthenticated caller", async () => {
+    await withCleanDb(async () => {
+      const caller = await makeAnonCaller();
+
+      await expect(caller.sharing.myLibraryShares()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+    });
+  });
+
+  it("returns an empty array when the caller has no grants", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const rows = await caller.sharing.myLibraryShares();
+
+      expect(rows).toEqual([]);
+    });
+  });
+
+  it("returns exactly the caller's own grants, one row per recipient, excluding an unrelated owner's grants", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUser();
+      await setTier(owner.id, "executive-chef");
+      const recipientA = await seedUser();
+      const recipientB = await seedUser();
+      const otherOwner = await seedUser();
+      await setTier(otherOwner.id, "executive-chef");
+      const otherRecipient = await seedUser();
+      await LibraryShare.create({ ownerId: owner.id, recipientId: recipientA.id, addedBy: owner.id });
+      await LibraryShare.create({ ownerId: owner.id, recipientId: recipientB.id, addedBy: owner.id });
+      await LibraryShare.create({ ownerId: otherOwner.id, recipientId: otherRecipient.id, addedBy: otherOwner.id });
+      const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
+
+      const rows = await caller.sharing.myLibraryShares();
+
+      expect(rows).toHaveLength(2);
+      expect(rows.map((r) => r.recipientId).sort()).toEqual([recipientA.id, recipientB.id].sort());
     });
   });
 });

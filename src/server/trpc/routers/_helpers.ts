@@ -80,7 +80,7 @@ export async function verifyOwnership<T extends { userId: unknown }>(
 /**
  * Lookup user docs by id field on the source collection. Shared by
  * fetchCollaboratorsWithUsers (display) and context.ts's sharedOwnerIds resolution
- * (access control, see design.md Decision 2) — kept here so both stay on one
+ * (access control) via sharingEligibleOwnerStages() — kept here so both stay on one
  * implementation.
  */
 export function userLookupStages(localField: string, alias: string) {

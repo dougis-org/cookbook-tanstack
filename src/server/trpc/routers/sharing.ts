@@ -10,6 +10,9 @@ export const sharingRouter = router({
   shareLibrary: execChefProcedure
     .input(z.object({ recipientId: objectId }))
     .mutation(async ({ ctx, input }) => {
+      if (!ObjectId.isValid(ctx.user.id)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid user ID in session context" });
+      }
       if (new ObjectId(input.recipientId).equals(new ObjectId(ctx.user.id))) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot share your library with yourself" });
       }
@@ -54,11 +57,16 @@ export const sharingRouter = router({
       if (grant.ownerId.toString() !== ctx.user.id) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Not your share" });
       }
-      await LibraryShare.deleteOne({ _id: grant._id });
+      const result = await LibraryShare.deleteOne({ _id: grant._id });
+      if (result.deletedCount === 0) {
+        // Grant was deleted by a concurrent request between findById and deleteOne.
+        throw new TRPCError({ code: "NOT_FOUND", message: "Share not found" });
+      }
       return { success: true };
     }),
 
   myLibraryShares: verifiedProcedure.query(async ({ ctx }) => {
+    if (!ObjectId.isValid(ctx.user.id)) return []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await LibraryShare.aggregate<any>([
       { $match: { ownerId: { $eq: new ObjectId(ctx.user.id) } } },
@@ -81,6 +89,7 @@ export const sharingRouter = router({
   }),
 
   mySharedLibraries: verifiedProcedure.query(async ({ ctx }) => {
+    if (!ObjectId.isValid(ctx.user.id)) return []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = await LibraryShare.aggregate<any>([
       { $match: { recipientId: { $eq: new ObjectId(ctx.user.id) } } },
