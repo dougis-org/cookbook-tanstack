@@ -2,10 +2,9 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, userLookupStages } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, userLookupStages, execChefProcedure, isDuplicateKeyError } from "./_helpers";
 import { Cookbook, Recipe, Collaborator, Notification } from "@/db/models";
 import { ObjectId } from "mongodb";
-import { hasAtLeastTier } from "@/types/user";
 // Side-effect imports register models needed for Recipe.populate() chains
 import "@/db/models/classification";
 import "@/db/models/source";
@@ -220,11 +219,6 @@ function recipeStub(s: { recipeId: unknown; orderIndex?: number }, chapterId?: u
   return stub;
 }
 
-/** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
-function isDuplicateKeyError(err: unknown): boolean {
-  return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000
-}
-
 /** Fetch a cookbook's collaborators joined with user names from Better-Auth's `user` collection. */
 async function fetchCollaboratorsWithUsers(cookbookId: string) {
   if (!Types.ObjectId.isValid(cookbookId)) return []
@@ -245,14 +239,6 @@ async function fetchCollaboratorsWithUsers(cookbookId: string) {
     onboarded: (c.onboarded ?? true) as boolean,
   }))
 }
-
-/** Procedure requiring email verification and executive-chef tier. */
-const execChefProcedure = verifiedProcedure.use(({ ctx, next }) => {
-  if (!hasAtLeastTier({ tier: ctx.user.tier, isAdmin: ctx.user.isAdmin ?? false }, 'executive-chef')) {
-    throw new TRPCError({ code: 'FORBIDDEN' })
-  }
-  return next({ ctx })
-})
 
 /** Verify cookbook ownership without returning the document. */
 async function verifyCookbookOwner(cookbookId: string, userId: string): Promise<void> {

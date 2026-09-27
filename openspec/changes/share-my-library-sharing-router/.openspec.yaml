@@ -1,0 +1,4 @@
+schema: sdd-with-feedback-loop
+created: 2026-09-26
+goal: "Implement the sharing tRPC router per issue #672, depending on the merged
+  foundation PR (#671)."

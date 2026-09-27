@@ -3,8 +3,7 @@ import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch"
 import { TRPCError } from "@trpc/server"
 import { Types } from "mongoose"
 import { Collaborator, LibraryShare } from "@/db/models"
-import { userLookupStages } from "./routers/_helpers"
-import { SHARING_OWNER_TIER } from "@/lib/tier-entitlements"
+import { sharingEligibleOwnerStages } from "./routers/_helpers"
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
   const session = await auth.api.getSession({
@@ -58,8 +57,7 @@ export async function createContext(opts: FetchCreateContextFnOptions) {
     try {
       const eligibleOwners = await LibraryShare.aggregate<{ ownerId: Types.ObjectId }>([
         { $match: { recipientId: new Types.ObjectId(session!.user.id) } },
-        ...userLookupStages("ownerId", "_owner"),
-        { $match: { "_owner.tier": SHARING_OWNER_TIER } },
+        ...sharingEligibleOwnerStages(),
         { $project: { ownerId: 1 } },
       ])
       sharedOwnerIds = eligibleOwners.map((o) => o.ownerId.toString())
