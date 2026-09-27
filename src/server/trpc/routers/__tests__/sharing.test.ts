@@ -15,6 +15,15 @@ async function setTier(userId: string, tier: string) {
   );
 }
 
+/** Seed an owner + recipient pair with a grant between them, optionally setting the owner's tier. */
+async function seedGrant(opts: { ownerTier?: string } = {}) {
+  const owner = await seedUser();
+  if (opts.ownerTier) await setTier(owner.id, opts.ownerTier);
+  const recipient = await seedUser();
+  const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+  return { owner, recipient, grant };
+}
+
 describe("sharing.shareLibrary", () => {
   it("creates a grant with correct ownerId, recipientId, addedBy, and populated addedAt", async () => {
     await withCleanDb(async () => {
@@ -127,9 +136,7 @@ describe("sharing.shareLibrary", () => {
 describe("sharing.revokeLibraryShare", () => {
   it("owner revokes and the row is deleted", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, grant } = await seedGrant({ ownerTier: "executive-chef" });
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
       const result = await caller.sharing.revokeLibraryShare({ shareId: grant.id });
@@ -141,10 +148,8 @@ describe("sharing.revokeLibraryShare", () => {
 
   it("throws FORBIDDEN for a non-owner and the grant survives", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
+      const { grant } = await seedGrant();
       const other = await seedUser();
-      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
       const caller = await makeAuthCaller(other.id);
 
       await expect(
@@ -157,9 +162,7 @@ describe("sharing.revokeLibraryShare", () => {
 
   it("throws FORBIDDEN when the recipient attempts to revoke their own received grant, and it survives", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { recipient, grant } = await seedGrant();
       const caller = await makeAuthCaller(recipient.id);
 
       await expect(
@@ -184,9 +187,7 @@ describe("sharing.revokeLibraryShare", () => {
 
   it("allows a downgraded owner to revoke their own grant (not tier-gated)", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, grant } = await seedGrant();
       const caller = await makeAuthCaller(owner.id, { tier: "sous-chef" });
 
       const result = await caller.sharing.revokeLibraryShare({ shareId: grant.id });
@@ -197,9 +198,7 @@ describe("sharing.revokeLibraryShare", () => {
 
   it("throws UNAUTHORIZED for an unauthenticated caller", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { grant } = await seedGrant();
       const caller = await makeAnonCaller();
 
       await expect(
@@ -212,10 +211,8 @@ describe("sharing.revokeLibraryShare", () => {
 
   it("deletes only the targeted grant, leaving sibling grants for the same owner intact", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipientA = await seedUser();
+      const { owner, grant: grantA } = await seedGrant({ ownerTier: "executive-chef" });
       const recipientB = await seedUser();
-      const grantA = await LibraryShare.create({ ownerId: owner.id, recipientId: recipientA.id, addedBy: owner.id });
       const grantB = await LibraryShare.create({ ownerId: owner.id, recipientId: recipientB.id, addedBy: owner.id });
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
@@ -230,10 +227,7 @@ describe("sharing.revokeLibraryShare", () => {
 describe("sharing.myLibraryShares", () => {
   it("returns grants given, with the recipient's display name", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, recipient } = await seedGrant({ ownerTier: "executive-chef" });
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
       const rows = await caller.sharing.myLibraryShares();
@@ -246,9 +240,7 @@ describe("sharing.myLibraryShares", () => {
 
   it("excludes a grant whose owner is currently below executive-chef", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner } = await seedGrant();
       await setTier(owner.id, "sous-chef");
       const caller = await makeAuthCaller(owner.id, { tier: "sous-chef" });
 
@@ -261,10 +253,7 @@ describe("sharing.myLibraryShares", () => {
 
   it("re-includes the grant once the owner is restored to executive-chef, with no new grant row", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner } = await seedGrant({ ownerTier: "executive-chef" });
       await setTier(owner.id, "sous-chef");
       await setTier(owner.id, "executive-chef");
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
@@ -278,10 +267,7 @@ describe("sharing.myLibraryShares", () => {
 
   it("never exposes email or tier for the recipient", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner } = await seedGrant({ ownerTier: "executive-chef" });
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
       const rows = await caller.sharing.myLibraryShares();
@@ -312,16 +298,10 @@ describe("sharing.myLibraryShares", () => {
 
   it("returns exactly the caller's own grants, one row per recipient, excluding an unrelated owner's grants", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipientA = await seedUser();
+      const { owner, recipient: recipientA } = await seedGrant({ ownerTier: "executive-chef" });
       const recipientB = await seedUser();
-      const otherOwner = await seedUser();
-      await setTier(otherOwner.id, "executive-chef");
-      const otherRecipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipientA.id, addedBy: owner.id });
       await LibraryShare.create({ ownerId: owner.id, recipientId: recipientB.id, addedBy: owner.id });
-      await LibraryShare.create({ ownerId: otherOwner.id, recipientId: otherRecipient.id, addedBy: otherOwner.id });
+      await seedGrant({ ownerTier: "executive-chef" }); // unrelated owner/recipient pair
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
       const rows = await caller.sharing.myLibraryShares();
@@ -335,10 +315,7 @@ describe("sharing.myLibraryShares", () => {
 describe("sharing.mySharedLibraries", () => {
   it("returns grants received, with the owner's display name", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, recipient } = await seedGrant({ ownerTier: "executive-chef" });
       const caller = await makeAuthCaller(recipient.id);
 
       const rows = await caller.sharing.mySharedLibraries();
@@ -351,9 +328,7 @@ describe("sharing.mySharedLibraries", () => {
 
   it("excludes a grant whose owner is currently below executive-chef", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { recipient } = await seedGrant();
       const caller = await makeAuthCaller(recipient.id);
 
       const rows = await caller.sharing.mySharedLibraries();
@@ -364,10 +339,7 @@ describe("sharing.mySharedLibraries", () => {
 
   it("re-includes the grant once the owner is restored to executive-chef, with no new grant row", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { owner, recipient } = await seedGrant({ ownerTier: "executive-chef" });
       await setTier(owner.id, "sous-chef");
       await setTier(owner.id, "executive-chef");
       const caller = await makeAuthCaller(recipient.id);
@@ -381,10 +353,7 @@ describe("sharing.mySharedLibraries", () => {
 
   it("never exposes email or tier for the owner, and a non-executive-chef recipient can still call it", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      await setTier(owner.id, "executive-chef");
-      const recipient = await seedUser();
-      await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+      const { recipient } = await seedGrant({ ownerTier: "executive-chef" });
       const caller = await makeAuthCaller(recipient.id, { tier: "home-cook" });
 
       const rows = await caller.sharing.mySharedLibraries();
