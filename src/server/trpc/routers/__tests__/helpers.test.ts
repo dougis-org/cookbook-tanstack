@@ -188,32 +188,38 @@ describe("userLookupStages", () => {
 })
 
 describe("sharingEligibleOwnerStages", () => {
+  async function setUserFields(userId: string, fields: Record<string, unknown>) {
+    const { getBetterAuthCollection } = await import("@/db")
+    await getBetterAuthCollection("user").updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      { $set: fields },
+    )
+  }
+
+  async function eligibleOwnerIdsFor(recipientId: string) {
+    const { sharingEligibleOwnerStages } = await import("../_helpers")
+    const { LibraryShare } = await import("@/db/models")
+    const rows = await LibraryShare.aggregate<{ ownerId: mongoose.Types.ObjectId }>([
+      { $match: { recipientId: new mongoose.Types.ObjectId(recipientId) } },
+      ...sharingEligibleOwnerStages(),
+      { $project: { ownerId: 1 } },
+    ])
+    return rows.map((r) => r.ownerId.toString())
+  }
+
   it("includes an owner at executive-chef and excludes an owner below it, from a recipientId-matched pipeline", async () => {
     await withCleanDb(async () => {
-      const { sharingEligibleOwnerStages } = await import("../_helpers")
-      const { getBetterAuthCollection } = await import("@/db")
       const { LibraryShare } = await import("@/db/models")
       const recipient = await seedUserWithBetterAuth()
       const eligibleOwner = await seedUserWithBetterAuth()
       const ineligibleOwner = await seedUserWithBetterAuth()
-      await getBetterAuthCollection("user").updateOne(
-        { _id: new mongoose.Types.ObjectId(eligibleOwner.id) },
-        { $set: { tier: "executive-chef" } },
-      )
-      await getBetterAuthCollection("user").updateOne(
-        { _id: new mongoose.Types.ObjectId(ineligibleOwner.id) },
-        { $set: { tier: "sous-chef" } },
-      )
+      await setUserFields(eligibleOwner.id, { tier: "executive-chef" })
+      await setUserFields(ineligibleOwner.id, { tier: "sous-chef" })
       await LibraryShare.create({ ownerId: eligibleOwner.id, recipientId: recipient.id, addedBy: eligibleOwner.id })
       await LibraryShare.create({ ownerId: ineligibleOwner.id, recipientId: recipient.id, addedBy: ineligibleOwner.id })
 
-      const rows = await LibraryShare.aggregate<{ ownerId: mongoose.Types.ObjectId }>([
-        { $match: { recipientId: new mongoose.Types.ObjectId(recipient.id) } },
-        ...sharingEligibleOwnerStages(),
-        { $project: { ownerId: 1 } },
-      ])
+      const ownerIds = await eligibleOwnerIdsFor(recipient.id)
 
-      const ownerIds = rows.map((r) => r.ownerId.toString())
       expect(ownerIds).toContain(eligibleOwner.id)
       expect(ownerIds).not.toContain(ineligibleOwner.id)
     })
@@ -221,24 +227,14 @@ describe("sharingEligibleOwnerStages", () => {
 
   it("includes an admin owner regardless of tier, matching execChefProcedure's admin bypass", async () => {
     await withCleanDb(async () => {
-      const { sharingEligibleOwnerStages } = await import("../_helpers")
-      const { getBetterAuthCollection } = await import("@/db")
       const { LibraryShare } = await import("@/db/models")
       const recipient = await seedUserWithBetterAuth()
       const adminOwner = await seedUserWithBetterAuth()
-      await getBetterAuthCollection("user").updateOne(
-        { _id: new mongoose.Types.ObjectId(adminOwner.id) },
-        { $set: { tier: "home-cook", isAdmin: true } },
-      )
+      await setUserFields(adminOwner.id, { tier: "home-cook", isAdmin: true })
       await LibraryShare.create({ ownerId: adminOwner.id, recipientId: recipient.id, addedBy: adminOwner.id })
 
-      const rows = await LibraryShare.aggregate<{ ownerId: mongoose.Types.ObjectId }>([
-        { $match: { recipientId: new mongoose.Types.ObjectId(recipient.id) } },
-        ...sharingEligibleOwnerStages(),
-        { $project: { ownerId: 1 } },
-      ])
+      const ownerIds = await eligibleOwnerIdsFor(recipient.id)
 
-      const ownerIds = rows.map((r) => r.ownerId.toString())
       expect(ownerIds).toContain(adminOwner.id)
     })
   })

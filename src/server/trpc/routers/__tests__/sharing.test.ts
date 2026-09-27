@@ -24,6 +24,24 @@ async function seedGrant(opts: { ownerTier?: string } = {}) {
   return { owner, recipient, grant };
 }
 
+/** Seed a grant whose owner has since dropped from executive-chef to sous-chef and back. */
+async function seedDowngradedThenRestoredGrant() {
+  const { owner, recipient } = await seedGrant({ ownerTier: "executive-chef" });
+  await setTier(owner.id, "sous-chef");
+  await setTier(owner.id, "executive-chef");
+  return { owner, recipient };
+}
+
+/** Assert a revokeLibraryShare call is rejected with `code` and the grant survives. */
+async function expectRevokeRejected(
+  caller: Awaited<ReturnType<typeof makeAuthCaller>> | Awaited<ReturnType<typeof makeAnonCaller>>,
+  shareId: string,
+  code: string,
+) {
+  await expect(caller.sharing.revokeLibraryShare({ shareId })).rejects.toMatchObject({ code });
+  expect(await LibraryShare.findById(shareId)).not.toBeNull();
+}
+
 describe("sharing.shareLibrary", () => {
   it("creates a grant with correct ownerId, recipientId, addedBy, and populated addedAt", async () => {
     await withCleanDb(async () => {
@@ -152,11 +170,7 @@ describe("sharing.revokeLibraryShare", () => {
       const other = await seedUser();
       const caller = await makeAuthCaller(other.id);
 
-      await expect(
-        caller.sharing.revokeLibraryShare({ shareId: grant.id }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-
-      expect(await LibraryShare.findById(grant.id)).not.toBeNull();
+      await expectRevokeRejected(caller, grant.id, "FORBIDDEN");
     });
   });
 
@@ -165,11 +179,7 @@ describe("sharing.revokeLibraryShare", () => {
       const { recipient, grant } = await seedGrant();
       const caller = await makeAuthCaller(recipient.id);
 
-      await expect(
-        caller.sharing.revokeLibraryShare({ shareId: grant.id }),
-      ).rejects.toMatchObject({ code: "FORBIDDEN" });
-
-      expect(await LibraryShare.findById(grant.id)).not.toBeNull();
+      await expectRevokeRejected(caller, grant.id, "FORBIDDEN");
     });
   });
 
@@ -201,11 +211,7 @@ describe("sharing.revokeLibraryShare", () => {
       const { grant } = await seedGrant();
       const caller = await makeAnonCaller();
 
-      await expect(
-        caller.sharing.revokeLibraryShare({ shareId: grant.id }),
-      ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
-
-      expect(await LibraryShare.findById(grant.id)).not.toBeNull();
+      await expectRevokeRejected(caller, grant.id, "UNAUTHORIZED");
     });
   });
 
@@ -253,9 +259,7 @@ describe("sharing.myLibraryShares", () => {
 
   it("re-includes the grant once the owner is restored to executive-chef, with no new grant row", async () => {
     await withCleanDb(async () => {
-      const { owner } = await seedGrant({ ownerTier: "executive-chef" });
-      await setTier(owner.id, "sous-chef");
-      await setTier(owner.id, "executive-chef");
+      const { owner } = await seedDowngradedThenRestoredGrant();
       const caller = await makeAuthCaller(owner.id, { tier: "executive-chef" });
 
       const rows = await caller.sharing.myLibraryShares();
@@ -339,9 +343,7 @@ describe("sharing.mySharedLibraries", () => {
 
   it("re-includes the grant once the owner is restored to executive-chef, with no new grant row", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedGrant({ ownerTier: "executive-chef" });
-      await setTier(owner.id, "sous-chef");
-      await setTier(owner.id, "executive-chef");
+      const { recipient } = await seedDowngradedThenRestoredGrant();
       const caller = await makeAuthCaller(recipient.id);
 
       const rows = await caller.sharing.mySharedLibraries();
