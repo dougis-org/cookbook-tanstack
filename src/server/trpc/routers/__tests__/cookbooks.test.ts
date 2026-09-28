@@ -1143,7 +1143,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       // The new stub must not be assigned orderIndex 0, since the legacy chaptered stub with no
       // orderIndex field sorts as 0 elsewhere in the codebase -- a collision would make ordering
       // ambiguous between the legacy stub and the newly-chaptered one.
-      expect(newlyChaptered.orderIndex).toBeGreaterThan(0);
+      expect(newlyChaptered!.orderIndex).toBeGreaterThan(0);
     });
   });
 
@@ -1213,7 +1213,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const privateStub = persisted!.recipes.find(
         (r: { recipeId: unknown }) => String(r.recipeId) === String(privateRecipe.id),
       );
-      expect(privateStub.chapterId).toBeUndefined();
+      expect(privateStub!.chapterId).toBeUndefined();
     });
   });
 
@@ -1237,7 +1237,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const persisted = await Cookbook.findById(cb.id).lean();
       const stubFor = (id: string) =>
         persisted!.recipes.find((r: { recipeId: unknown }) => String(r.recipeId) === id);
-      expect(stubFor(String(recipeA.id)).orderIndex).toBeLessThan(stubFor(String(recipeB.id)).orderIndex);
+      expect(stubFor(String(recipeA.id))!.orderIndex!).toBeLessThan(stubFor(String(recipeB.id))!.orderIndex!);
     });
   });
 

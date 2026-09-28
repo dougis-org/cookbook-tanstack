@@ -91,12 +91,19 @@ export function uid() {
 
 export async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]) });
+  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]), sharedOwnerIds: [] });
 }
 
 export async function makeAuthCaller(
   userId: string,
-  opts: { email?: string; tier?: string; isAdmin?: boolean; emailVerified?: boolean; collabCookbookIds?: string[] } = {},
+  opts: {
+    email?: string;
+    tier?: string;
+    isAdmin?: boolean;
+    emailVerified?: boolean;
+    collabCookbookIds?: string[];
+    sharedOwnerIds?: string[];
+  } = {},
 ) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
@@ -109,6 +116,7 @@ export async function makeAuthCaller(
       isAdmin: opts.isAdmin ?? false,
     } as never,
     getCollabCookbookIds: () => Promise.resolve(opts.collabCookbookIds ?? []),
+    sharedOwnerIds: opts.sharedOwnerIds ?? [],
   });
 }
 

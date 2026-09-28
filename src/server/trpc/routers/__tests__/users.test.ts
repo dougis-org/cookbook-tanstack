@@ -42,6 +42,7 @@ describe("users router", () => {
           session: null,
           user: null,
           getCollabCookbookIds: () => Promise.resolve([]),
+          sharedOwnerIds: [],
         });
 
         // protectedProcedure should throw UNAUTHORIZED before reaching the handler
@@ -221,6 +222,7 @@ describe("users router", () => {
           session: { id: "s1" } as never,
           user: { id: fakeUserId, email: "fake@test.com" } as never,
           getCollabCookbookIds: () => Promise.resolve([]),
+          sharedOwnerIds: [],
         });
 
         const result = await caller.users.updateProfile({ name: "Test" });
@@ -253,6 +255,7 @@ describe("users router - error cases", () => {
         session: { id: "s1" } as never,
         user: { id: invalidUserId, email: "test@test.com" } as never,
         getCollabCookbookIds: () => Promise.resolve([]),
+        sharedOwnerIds: [],
       });
 
       // Should throw an error due to invalid ObjectId
