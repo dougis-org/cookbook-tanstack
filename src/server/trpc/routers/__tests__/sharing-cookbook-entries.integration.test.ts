@@ -23,6 +23,21 @@ async function callerFor(recipientId: string) {
   return makeAuthCaller(recipientId, { sharedOwnerIds });
 }
 
+/**
+ * Seeds a grant, a private recipe owned by the grantor, and the recipient's own
+ * cookbook already containing that recipe as a cross-owner entry — the setup shared
+ * by most of the "degrades to unavailable" tests below.
+ */
+async function seedGrantWithCookbookEntry(recipeFields: Record<string, unknown> = {}) {
+  const { owner, recipient, grant } = await seedLibraryShareGrant();
+  const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false, ...recipeFields }).save();
+  const ownCookbook = await new Cookbook({
+    name: "My Cookbook", userId: recipient.id, isPublic: false,
+    recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
+  }).save();
+  return { owner, recipient, grant, sharedRecipe, ownCookbook };
+}
+
 describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
   it("adds the owner's shared recipe to the recipient's cookbook without creating a new Recipe document or touching quota", async () => {
     await withCleanDb(async () => {
@@ -44,12 +59,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
 
   it("resolves the cross-owner entry via cookbooks.byId with sharedBy populated", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false }).save();
-      const ownCookbook = await new Cookbook({
-        name: "My Cookbook", userId: recipient.id, isPublic: false,
-        recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
-      }).save();
+      const { owner, recipient, sharedRecipe, ownCookbook } = await seedGrantWithCookbookEntry();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.cookbooks.byId({ id: ownCookbook.id });
@@ -62,12 +72,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
 
   it("reflects the owner's later edits (live reference, not a copy)", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false, servings: 2 }).save();
-      const ownCookbook = await new Cookbook({
-        name: "My Cookbook", userId: recipient.id, isPublic: false,
-        recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
-      }).save();
+      const { recipient, sharedRecipe, ownCookbook } = await seedGrantWithCookbookEntry({ servings: 2 });
 
       await Recipe.updateOne({ _id: sharedRecipe._id }, { $set: { servings: 8 } });
 
@@ -119,12 +124,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
 
   it("degrades to unavailable: true after the owner's tier drops below executive-chef", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false }).save();
-      const ownCookbook = await new Cookbook({
-        name: "My Cookbook", userId: recipient.id, isPublic: false,
-        recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
-      }).save();
+      const { owner, recipient, ownCookbook } = await seedGrantWithCookbookEntry();
 
       await setUserTier(owner.id, "sous-chef");
 
@@ -137,12 +137,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
 
   it("degrades to unavailable: true after the owner soft-deletes the recipe (grant still active)", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false }).save();
-      const ownCookbook = await new Cookbook({
-        name: "My Cookbook", userId: recipient.id, isPublic: false,
-        recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
-      }).save();
+      const { recipient, sharedRecipe, ownCookbook } = await seedGrantWithCookbookEntry();
 
       await Recipe.updateOne({ _id: sharedRecipe._id }, { $set: { deleted: true } });
 

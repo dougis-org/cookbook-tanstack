@@ -23,11 +23,17 @@ async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
   return makeAuthCaller(recipientId, { tier: opts.tier, sharedOwnerIds });
 }
 
+/** Seeds a grant plus a single private recipe owned by the grantor — the setup shared by most tests below. */
+async function seedGrantWithPrivateRecipe(name = "Secret Soup") {
+  const { owner, recipient } = await seedLibraryShareGrant();
+  const recipe = await new Recipe({ name, userId: owner.id, isPublic: false }).save();
+  return { owner, recipient, recipe };
+}
+
 describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
   it("recipes.list includes the owner's private recipe", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateRecipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false }).save();
+      const { recipient, recipe: privateRecipe } = await seedGrantWithPrivateRecipe();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.recipes.list();
@@ -38,8 +44,7 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
 
   it("recipes.byId succeeds for the owner's private recipe", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateRecipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false }).save();
+      const { recipient, recipe: privateRecipe } = await seedGrantWithPrivateRecipe();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.recipes.byId({ id: privateRecipe.id });
@@ -121,8 +126,7 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
 
   it("privateRecipeNotes.upsert allows a note on the owner's shared recipe", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateRecipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false }).save();
+      const { recipient, recipe: privateRecipe } = await seedGrantWithPrivateRecipe();
 
       const caller = await callerFor(recipient.id, { tier: "sous-chef" });
       const result = await caller.privateRecipeNotes.upsert({ recipeId: privateRecipe.id, body: "Great recipe" });
@@ -252,8 +256,7 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
 describe("Task 3.2 — sharedBy attribution", () => {
   it("a shared recipe carries sharedBy: { id, name } matching the owner", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateRecipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false }).save();
+      const { owner, recipient, recipe: privateRecipe } = await seedGrantWithPrivateRecipe();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.recipes.byId({ id: privateRecipe.id });
@@ -289,8 +292,7 @@ describe("Task 3.2 — sharedBy attribution", () => {
 
   it("payload contains no owner email or tier anywhere in the response", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateRecipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false }).save();
+      const { owner, recipient, recipe: privateRecipe } = await seedGrantWithPrivateRecipe();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.recipes.byId({ id: privateRecipe.id });
