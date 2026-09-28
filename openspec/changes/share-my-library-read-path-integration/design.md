@@ -98,31 +98,43 @@
   3.1's exhaustive grep-and-record step exists as a review gate rather than being
   incidental.
 
-### Decision 2: `sharedBy` resolved via one extra `$lookup` stage appended to each list/byId aggregation, not a separate follow-up query
+### Decision 2: `sharedBy` resolved via a single batched follow-up query (`resolveSharedByMap`), not an aggregation `$lookup`
 
-- Chosen: Extend the existing `recipes.list`/`byId` and `cookbooks.list`/`byId`
-  Mongoose aggregations with a lookup joining each result's `userId` against the
-  Better-Auth `user` collection (reusing `userLookupStages`), projecting `sharedBy`
-  as `null` when `userId === caller.id` or the source document has `isPublic: true`
-  and no shared-owner relationship, and as `{ id, name }` when `userId` is in
-  `sharedOwnerIds`.
+- Chosen (revised during implementation — see below): `resolveSharedByMap` in
+  `_helpers.ts` collects the caller-relevant `userId`s for a response, filters them
+  down to ids present in `ctx.sharedOwnerIds`, and issues exactly one
+  `getBetterAuthCollection("user").find({ _id: { $in: [...] } }, { projection: {
+  name: 1 } })` per response, then `sharedByFor(docUserId, map)` looks each document's
+  owner up in that map. `null` when `userId === caller.id` or the owner isn't in
+  `sharedOwnerIds` (covers owned and public/unrelated content); `{ id, name }` when
+  `userId` is in `sharedOwnerIds`, regardless of the document's own `isPublic` value.
+- Originally chosen at proposal time: extend the existing `recipes.list`/`byId` and
+  `cookbooks.list`/`byId` Mongoose aggregations with a lookup joining each result's
+  `userId` against the Better-Auth `user` collection (reusing `userLookupStages`).
 - Alternatives considered: (a) Fetch documents first, then issue one follow-up
   `User.find({ _id: { $in: uniqueOwnerIds } })` query and merge in application code.
   (b) Resolve `sharedBy` per-document with an aggregation-level lookup that isn't
   deduplicated (naive per-row `$lookup`), relying on MongoDB to have already
   deduplicated the underlying `user` documents.
-- Rationale: (a) is functionally equivalent in query count (still one batched query)
-  but requires a second round trip to the database and a manual merge step; an
-  aggregation-stage `$lookup` does the same batching in a single round trip, and
-  `userLookupStages` already exists and is unit-tested for exactly this join. (b) is
-  the trap the proposal explicitly rules out — an unindexed or per-document lookup
-  degrades to effectively N queries under the aggregation planner even though it's
-  syntactically "batched"; the required test (`sharedBy` resolves in one query for N
-  items) is designed to catch this.
-- Trade-offs: Aggregation pipelines become one stage longer and marginally harder to
-  read; mitigated by extracting the `sharedBy`-projection stage into a small named
-  helper alongside `userLookupStages` in `_helpers.ts`, following the file's existing
-  convention.
+- Revised rationale (why implementation moved to alternative (a)): `recipes.list`,
+  `recipes.byId`, and `cookbooks.byId` are plain `find`/`findOne` calls, not
+  aggregation pipelines — converting them to aggregations solely to attach a
+  `$lookup` stage would have been a materially larger and riskier change than this
+  proposal's stated scope (Decision 1 already establishes that call sites are
+  extended minimally, not restructured). `cookbooks.list` is already an aggregation
+  but uses `resolveSharedByMap` too, for one consistent implementation across all
+  four endpoints rather than two different patterns. Query count is identical either
+  way — a query-count test (`sharing-read-path.integration.test.ts`, spying on
+  `getBetterAuthCollection`) asserts exactly one call per response, which is what
+  actually matters for the NFAC Performance requirement, not which of the two
+  functionally-equivalent query shapes produced it. (b) remains rejected for the
+  reason originally stated.
+- Trade-offs: `cookbooks.byId` resolves both the cookbook's own owner and its
+  resolved recipes' owners through one `resolveSharedByMap` call (concatenating both
+  sets of ids before the single query) rather than two separate calls, to preserve
+  the "one query per response" guarantee — this is the one place callers must
+  remember to batch across both document kinds in a single response, called out here
+  so a future endpoint following this pattern doesn't reintroduce a second query.
 
 ### Decision 3: Cross-owner cookbook-entry resolution happens in the read path, not by rewriting `Cookbook.recipes[]` at write time
 
@@ -150,6 +162,16 @@
   already-fetched, typically small (single cookbook) recipe set, not an added round
   trip at scale. The audit (Task 3.3) is the primary mechanism for finding every
   place this trade-off must be paid.
+- Refinement during implementation: `cookbooks.byId` is a `publicProcedure` —
+  emitting `{ recipeId, unavailable: true, orderIndex, chapterId }` for *every*
+  caller (not just the cookbook's own owner/editor collaborator) would let an
+  anonymous viewer of a public cookbook enumerate the existence, id, and position of
+  another user's private recipe by watching an entry silently appear as "unavailable"
+  once they lose access to it — a new information-disclosure surface this proposal
+  didn't intend to open. The resolver therefore only emits the `unavailable` stub for
+  a caller who owns the cookbook or is an editor collaborator on it (the same
+  privilege `printById` already checks for its `isAuthorized` gate); every other
+  caller gets the pre-change behavior of the entry being silently absent.
 
 ### Decision 4: Read-only enforcement is proved, not implemented, via a router-introspecting test
 

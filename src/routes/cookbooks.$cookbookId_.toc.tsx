@@ -26,7 +26,9 @@ function CookbookTocPage() {
   if (isLoading) return <CookbookPageLoading />
   if (!cookbook) return <CookbookPageNotFound />
 
-  const recipes = cookbook.recipes ?? []
+  // Cross-owner entries the caller can no longer see resolve as { recipeId, unavailable: true }
+  // rather than a full recipe — filtered out here rather than rendered.
+  const recipes = (cookbook.recipes ?? []).filter((r) => "id" in r)
   const chapters = cookbook.chapters ?? []
 
   return (

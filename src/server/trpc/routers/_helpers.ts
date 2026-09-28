@@ -107,6 +107,47 @@ export function sharingEligibleOwnerStages() {
   ]
 }
 
+/**
+ * Batch-resolves `sharedBy: { id, name } | null` for a list of documents against the
+ * caller's sharedOwnerIds. One query for the whole list (not one per document, per
+ * design.md Decision 2) — a plain `find` follow-up rather than an aggregation
+ * `$lookup`, since recipes.list/cookbooks.byId are not aggregation pipelines and a
+ * second round trip is simpler here than converting them to one. Returns owner id ->
+ * { id, name } only (no email, no tier — the allow-list this field is scoped to).
+ */
+export async function resolveSharedByMap(
+  ownerUserIds: string[],
+  sharedOwnerIds: string[],
+): Promise<Map<string, { id: string; name: string }>> {
+  const relevantIds = [...new Set(ownerUserIds)].filter((id) => sharedOwnerIds.includes(id));
+  if (relevantIds.length === 0) return new Map();
+  const { getBetterAuthCollection } = await import("@/db");
+  const docs = await getBetterAuthCollection("user")
+    .find(
+      { _id: { $in: relevantIds.map((id) => new Types.ObjectId(id)) } },
+      { projection: { name: 1 } },
+    )
+    .toArray();
+  const map = new Map<string, { id: string; name: string }>();
+  for (const doc of docs) {
+    const id = doc._id.toString();
+    map.set(id, { id, name: typeof doc.name === "string" ? doc.name : "" });
+  }
+  return map;
+}
+
+/**
+ * Returns `sharedBy: { id, name } | null` for a single document owner, consulting an
+ * already-resolved sharedBy map (see resolveSharedByMap). `null` for content the
+ * caller owns or that isn't attributed to a sharedOwnerIds entry (owned/public).
+ */
+export function sharedByFor(
+  docUserId: string,
+  sharedByMap: Map<string, { id: string; name: string }>,
+): { id: string; name: string } | null {
+  return sharedByMap.get(docUserId) ?? null;
+}
+
 /** True if a thrown error is a MongoDB duplicate-key (E11000) error. */
 export function isDuplicateKeyError(err: unknown): boolean {
   return typeof err === 'object' && err !== null && 'code' in err && (err as { code: number }).code === 11000

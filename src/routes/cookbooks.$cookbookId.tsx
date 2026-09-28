@@ -329,7 +329,10 @@ function CookbookDetailPage() {
     }),
   )
 
-  const recipes: CookbookRecipe[] = cookbook?.recipes ?? []
+  // Cross-owner entries the caller can no longer see resolve as { recipeId, unavailable: true }
+  // rather than a full recipe — filtered out here rather than rendered (PR4/#674 owns any
+  // "unavailable" UI treatment).
+  const recipes: CookbookRecipe[] = (cookbook?.recipes ?? []).filter((r) => "id" in r)
   const chapters: Chapter[] = (cookbook?.chapters ?? []).slice().sort((a, b) => a.orderIndex - b.orderIndex)
   const hasChapters = chapters.length > 0
   const hasUnchapteredRecipes = recipes.some((r) => !r.chapterId)

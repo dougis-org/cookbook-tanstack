@@ -36,7 +36,7 @@ export const privateRecipeNotesRouter = router({
       const { userId, recipeId } = toIds(ctx.user.id, input.recipeId)
       const recipe = await Recipe.findOne({
         _id: recipeId,
-        ...visibilityFilter(ctx.user),
+        ...visibilityFilter(ctx.user, [], ctx.sharedOwnerIds),
         deleted: { $ne: true },
       }).lean()
       if (!recipe) throw new TRPCError({ code: "NOT_FOUND", message: "Recipe not found" })

@@ -124,6 +124,42 @@ export async function makeTieredCaller(tier: UserTier, isAdmin = false) {
   return makeAuthCaller(new Types.ObjectId().toHexString(), { tier, isAdmin });
 }
 
+/** Sets a user's tier directly in the BetterAuth user collection (bypasses billing). */
+export async function setUserTier(userId: string, tier: string) {
+  const { getBetterAuthCollection } = await import("@/db");
+  await getBetterAuthCollection("user").updateOne(
+    { _id: new Types.ObjectId(userId) },
+    { $set: { tier } },
+  );
+}
+
+/**
+ * Resolves the current `sharedOwnerIds` a recipient would see, via the same
+ * `sharingEligibleOwnerStages()` pipeline `ctx.sharedOwnerIds` uses (context.ts).
+ * Re-runs the real eligibility computation rather than assuming grants are always
+ * eligible, so tests exercise the same tier/admin gating production requests do.
+ */
+export async function resolveSharedOwnerIds(recipientId: string): Promise<string[]> {
+  const { sharingEligibleOwnerStages } = await import("../_helpers");
+  const { LibraryShare } = await import("@/db/models");
+  const rows = await LibraryShare.aggregate<{ ownerId: Types.ObjectId }>([
+    { $match: { recipientId: new Types.ObjectId(recipientId) } },
+    ...sharingEligibleOwnerStages(),
+    { $project: { ownerId: 1 } },
+  ]);
+  return rows.map((r) => r.ownerId.toString());
+}
+
+/** Seeds an owner + recipient pair with an active `LibraryShare` grant between them. */
+export async function seedLibraryShareGrant(opts: { ownerTier?: string } = {}) {
+  const { LibraryShare } = await import("@/db/models");
+  const owner = await seedUserWithBetterAuth();
+  await setUserTier(owner.id, opts.ownerTier ?? "executive-chef");
+  const recipient = await seedUserWithBetterAuth();
+  const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+  return { owner, recipient, grant };
+}
+
 export async function withSeededUser<TReturn>(
   fn: (
     user: {

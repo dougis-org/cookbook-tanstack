@@ -131,7 +131,9 @@ export const alexaRouter = router({
         id: cookbook.id,
         name: cookbook.name,
         chapters: cookbook.chapters,
-        recipes: cookbook.recipes.map((r) => ({ id: r.id, name: r.name })),
+        recipes: cookbook.recipes
+          .filter((r): r is Extract<typeof r, { id: string }> => "id" in r)
+          .map((r) => ({ id: r.id, name: r.name })),
       };
     }),
 });

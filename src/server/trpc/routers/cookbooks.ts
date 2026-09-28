@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Types } from "mongoose";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, userLookupStages, execChefProcedure, isDuplicateKeyError } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, userLookupStages, execChefProcedure, isDuplicateKeyError, resolveSharedByMap, sharedByFor } from "./_helpers";
 import { Cookbook, Recipe, Collaborator, Notification } from "@/db/models";
 import { ObjectId } from "mongodb";
 // Side-effect imports register models needed for Recipe.populate() chains
@@ -284,7 +284,7 @@ export const cookbooksRouter = router({
   list: publicProcedure.query(async ({ ctx }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const docs = await Cookbook.aggregate<any>([
-      { $match: visibilityFilter(ctx.user, await ctx.getCollabCookbookIds()) },
+      { $match: visibilityFilter(ctx.user, await ctx.getCollabCookbookIds(), ctx.sharedOwnerIds) },
       { $sort: { name: 1 } },
       {
         $lookup: {
@@ -299,6 +299,12 @@ export const cookbooksRouter = router({
       { $project: { _collabs: 0 } },
     ])
 
+    const sharedByMap = await resolveSharedByMap(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      docs.map((cb: any) => cb.userId?.toString()).filter(Boolean),
+      ctx.sharedOwnerIds,
+    )
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return docs.map((cb: any) => ({
       id: cb._id.toString() as string,
@@ -311,18 +317,20 @@ export const cookbooksRouter = router({
       chapterCount: Array.isArray(cb.chapters) ? cb.chapters.length : 0,
       userId: cb.userId?.toString() as string,
       collaboratorCount: (cb.collaboratorCount ?? 0) as number,
+      sharedBy: sharedByFor(cb.userId?.toString(), sharedByMap),
     }));
   }),
 
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user, await ctx.getCollabCookbookIds());
+      const collabCookbookIds = await ctx.getCollabCookbookIds();
+      const visFilter = visibilityFilter(ctx.user, collabCookbookIds, ctx.sharedOwnerIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
       const { cookbook, stubs } = row;
-      const recipeVisFilter = visibilityFilter(ctx.user);
+      const recipeVisFilter = visibilityFilter(ctx.user, [], ctx.sharedOwnerIds);
 
       // Fetch the actual Recipe docs for the ordered stubs
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
@@ -334,12 +342,35 @@ export const cookbooksRouter = router({
         .populate("classificationId", "name")
         .lean();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cb = cookbook as any;
+      // Only the cookbook's own owner/editor collaborator gets to see *that an entry
+      // exists but is unavailable* (id/orderIndex/chapterId of a recipe they otherwise
+      // can't see) — anyone else (including a stranger viewing a public cookbook)
+      // gets the old behavior of the entry silently absent, so this never becomes a
+      // way to enumerate another owner's private recipe ids via a public cookbook.
+      const isPrivilegedViewer = !!(
+        ctx.user &&
+        (ctx.user.id === cb.userId?.toString() || collabCookbookIds.includes(input.id))
+      );
+
       // Re-map to preserve orderIndex and chapterId from the stub
       const recipeById = indexByStringId(recipeDocs);
+      const sharedByMap = await resolveSharedByMap(
+        [
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ...recipeDocs.map((d: any) => d.userId?.toString()),
+          cb.userId?.toString(),
+        ].filter(Boolean),
+        ctx.sharedOwnerIds,
+      );
       const recipes = stubs
         .map((stub) => {
           const d = docFromStub(stub, recipeById);
-          if (!d) return null;
+          if (!d) {
+            if (!isPrivilegedViewer) return null;
+            return { recipeId: String(stub.recipeId), unavailable: true as const, orderIndex: stub.orderIndex, chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null) };
+          }
           const stubRes = {
             id: d._id.toString() as string,
             userId: d.userId?.toString() as string,
@@ -354,15 +385,14 @@ export const cookbooksRouter = router({
               (null as string | null),
             orderIndex: stub.orderIndex,
             chapterId: stub.chapterId != null ? String(stub.chapterId) : (null as string | null),
+            sharedBy: sharedByFor(d.userId?.toString(), sharedByMap),
           };
           sanitizeRecipePersonalSource(stubRes, ctx.user?.id);
           delete (stubRes as any).userId;
           return stubRes;
         })
-        .filter((r): r is NonNullable<typeof r> => r !== null);
+        .filter((r): r is NonNullable<typeof r> => r !== null)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cb = cookbook as any;
       const chapters = transformChapters(cb);
 
       const collaborators = await fetchCollaboratorsWithUsers(input.id)
@@ -378,6 +408,7 @@ export const cookbooksRouter = router({
         chapters,
         collaborators,
         collaboratorCount: collaborators.length,
+        sharedBy: sharedByFor(cb.userId?.toString(), sharedByMap),
       };
     }),
 
@@ -385,12 +416,16 @@ export const cookbooksRouter = router({
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const collabCookbookIds = await ctx.getCollabCookbookIds();
-      const visFilter = visibilityFilter(ctx.user, collabCookbookIds);
+      const visFilter = visibilityFilter(ctx.user, collabCookbookIds, ctx.sharedOwnerIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
       const { cookbook, stubs } = row;
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
+      // Deliberately excludes ctx.sharedOwnerIds (design.md Decision 3 / spec "The print
+      // route excludes cross-owner entries"): a cross-owner recipe stub must not resolve
+      // here, so it's excluded from the printed output entirely rather than rendered or
+      // marked unavailable, until #669 defines print-view attribution.
       const recipeVisFilter = visibilityFilter(ctx.user, collabCookbookIds);
 
       const recipeDocs = await Recipe.find({
@@ -756,7 +791,7 @@ export const cookbooksRouter = router({
     .mutation(async ({ ctx, input }) => {
       const cookbook = await fetchEditableCookbook(input.cookbookId, ctx.user.id);
 
-      const recipeVisFilter = visibilityFilter(ctx.user);
+      const recipeVisFilter = visibilityFilter(ctx.user, [], ctx.sharedOwnerIds);
       const accessible = await Recipe.findOne({
         _id: input.recipeId,
         ...recipeVisFilter,
@@ -1059,7 +1094,7 @@ export const cookbooksRouter = router({
 
       const categoryByRecipeId = new Map<string, string>();
       if (unchapteredRecipeIds.length > 0) {
-        const recipeVisFilter = visibilityFilter(ctx.user);
+        const recipeVisFilter = visibilityFilter(ctx.user, [], ctx.sharedOwnerIds);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const recipeDocs = await Recipe.find({ _id: { $in: toObjectIds(unchapteredRecipeIds) }, ...recipeVisFilter })
           .select("classificationId")
