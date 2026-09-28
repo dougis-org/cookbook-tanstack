@@ -226,23 +226,25 @@ confirm it fails for the expected reason, then implement until it passes.
 
 - [x] Run unit/integration tests: `npm run test:unit && npm run test:integration`
       (2117 + 92 tests, all passing)
-- [ ] Run E2E tests (if this change touches any E2E-covered path): `npm run test:e2e`
-      — **attempted, not completed.** This worktree's local dev server couldn't
-      start under Vite's file watcher (`EMFILE`/inotify `max_user_instances`
-      exhausted by other concurrently-running worktree processes on this machine).
-      Falling back to the CI-style production-build path
-      (`node .output/server/index.mjs`) required env vars this sandbox doesn't
-      have configured for e2e (a fresh `BETTER_AUTH_SECRET`/isolated `MONGODB_URI`
-      were created to avoid colliding with sibling worktrees' shared local Mongo
-      and JWKS keys, and `MAILTRAP_API_TOKEN`/Stripe/ImageKit credentials are
-      unset). The two print-route specs run got no further than intermittent
-      timeouts before this was judged disproportionate: this change is
-      server-only (no new UI, no new route), and the affected print/toc route
-      code (filtering `unavailable` entries) is exercised by
-      `sharing-cookbook-entries.integration.test.ts`'s print-route-exclusion
-      test at the data layer. Recommend running the real `npm run test:e2e`
-      suite in CI (or a properly provisioned local environment) before merge as
-      a final confirmation, rather than blocking on it here.
+- [x] Run E2E tests (if this change touches any E2E-covered path): `npm run test:e2e`
+      — **completed.** Vite dev mode hit `EMFILE` (inotify `max_user_instances`
+      exhausted by other concurrent processes on this machine); worked around by
+      running Playwright's CI-mode production-build server path (`CI=true`, which
+      runs `node .output/server/index.mjs`) instead, with a dedicated
+      `.env.local` (fresh `BETTER_AUTH_SECRET`, isolated
+      `MONGODB_URI=.../cookbook-e2e-read-path-integration`) to avoid colliding
+      with sibling worktrees' shared local Mongo/JWKS keys, plus `npm run
+      db:seed` for taxonomy data the isolated DB otherwise lacked. Full suite:
+      **223 passed, 1 failed, 2 skipped**; the failure
+      (`recipes-filters-ui.spec.ts` "should toggle My Recipes quick filter") is
+      unrelated to this change (recipe-list quick-filter UI, no cookbook/sharing
+      involvement) and passed cleanly (10/10) re-run in isolation with
+      `--workers=1` — full-suite parallel workers all sharing one local database
+      caused one test's unfiltered-count assertion to race against other
+      workers' concurrent public-recipe creation. All cookbook/sharing-relevant
+      specs (print, print-behavior, print-theme-contrast, chapters,
+      collaboration, auth) passed cleanly both standalone and as part of the
+      full run: 52/52.
 - [x] Run type checks: `npx tsc --noEmit` (clean)
 - [x] Run build: `npm run build` (succeeds)
 - [ ] Run security/code quality checks required by project standards (Codacy local
