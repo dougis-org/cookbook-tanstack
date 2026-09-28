@@ -169,9 +169,15 @@
   another user's private recipe by watching an entry silently appear as "unavailable"
   once they lose access to it — a new information-disclosure surface this proposal
   didn't intend to open. The resolver therefore only emits the `unavailable` stub for
-  a caller who owns the cookbook or is an editor collaborator on it (the same
-  privilege `printById` already checks for its `isAuthorized` gate); every other
-  caller gets the pre-change behavior of the entry being silently absent.
+  a caller who owns the cookbook or is a collaborator on it, viewer or editor (the
+  same privilege `printById` already checks for its `isAuthorized` gate); every other
+  caller gets the pre-change behavior of the entry being silently absent. Accepted
+  residual: an invited viewer-role collaborator (who has read access to the cookbook
+  but not necessarily to every recipe referenced in it) does learn the id,
+  orderIndex, and existence of an otherwise-invisible cross-owner entry, which a
+  stranger cannot — judged acceptable since the collaborator was deliberately invited
+  to that cookbook, but worth re-checking if #674's UI ever surfaces `unavailable`
+  entries to non-owner viewers.
 
 ### Decision 4: Read-only enforcement is proved, not implemented, via a router-introspecting test
 

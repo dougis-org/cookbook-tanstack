@@ -212,21 +212,42 @@ confirm it fails for the expected reason, then implement until it passes.
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the
       `openspec-review-code` skill (or its confirmed Preflight substitute). The
       primary agent must automatically apply all clearly-correct findings directly
       to the code — without stopping, without presenting the findings list to the
       user, and without asking for confirmation. Apply fixes, re-run tests to
-      confirm they pass, then proceed to commit.
+      confirm they pass, then proceed to commit. (`openspec-review-code` not
+      installed; substituted `pr-review-toolkit:code-reviewer` per the documented
+      precedent. Found and fixed 3 real issues — see the Task 3.1-3.4 commit
+      message.)
 
 ## Validation
 
-- [ ] Run unit/integration tests: `npm run test:unit && npm run test:integration`
+- [x] Run unit/integration tests: `npm run test:unit && npm run test:integration`
+      (2117 + 92 tests, all passing)
 - [ ] Run E2E tests (if this change touches any E2E-covered path): `npm run test:e2e`
-- [ ] Run type checks: `npx tsc --noEmit`
-- [ ] Run build: `npm run build`
+      — **attempted, not completed.** This worktree's local dev server couldn't
+      start under Vite's file watcher (`EMFILE`/inotify `max_user_instances`
+      exhausted by other concurrently-running worktree processes on this machine).
+      Falling back to the CI-style production-build path
+      (`node .output/server/index.mjs`) required env vars this sandbox doesn't
+      have configured for e2e (a fresh `BETTER_AUTH_SECRET`/isolated `MONGODB_URI`
+      were created to avoid colliding with sibling worktrees' shared local Mongo
+      and JWKS keys, and `MAILTRAP_API_TOKEN`/Stripe/ImageKit credentials are
+      unset). The two print-route specs run got no further than intermittent
+      timeouts before this was judged disproportionate: this change is
+      server-only (no new UI, no new route), and the affected print/toc route
+      code (filtering `unavailable` entries) is exercised by
+      `sharing-cookbook-entries.integration.test.ts`'s print-route-exclusion
+      test at the data layer. Recommend running the real `npm run test:e2e`
+      suite in CI (or a properly provisioned local environment) before merge as
+      a final confirmation, rather than blocking on it here.
+- [x] Run type checks: `npx tsc --noEmit` (clean)
+- [x] Run build: `npm run build` (succeeds)
 - [ ] Run security/code quality checks required by project standards (Codacy local
-      analysis on touched files)
+      analysis on touched files) — pending; see PR review step below, which will
+      also surface Codacy findings on the opened PR.
 - [ ] All completed tasks marked as complete
 - [ ] All steps in [Remote push validation]
 
