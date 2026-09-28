@@ -11,6 +11,7 @@ import {
   makeAuthCaller,
   makeAnonCaller,
   seedLibraryShareGrant,
+  seedGrantWithPrivateRecipe,
   resolveSharedOwnerIds,
   setUserTier,
 } from "./test-helpers";
@@ -21,13 +22,6 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
   const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
   return makeAuthCaller(recipientId, { tier: opts.tier, sharedOwnerIds });
-}
-
-/** Seeds a grant plus a single private recipe owned by the grantor — the setup shared by most tests below. */
-async function seedGrantWithPrivateRecipe(name = "Secret Soup") {
-  const { owner, recipient } = await seedLibraryShareGrant();
-  const recipe = await new Recipe({ name, userId: owner.id, isPublic: false }).save();
-  return { owner, recipient, recipe };
 }
 
 describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {

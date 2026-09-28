@@ -160,6 +160,32 @@ export async function seedLibraryShareGrant(opts: { ownerTier?: string } = {}) {
   return { owner, recipient, grant };
 }
 
+/**
+ * Seeds a grant plus a single private recipe owned by the grantor — the setup
+ * shared across most of the sharing-read-path test suites. `recipeFields`
+ * overrides/extends the default `{ name: "Secret Soup" }`.
+ */
+export async function seedGrantWithPrivateRecipe(recipeFields: Record<string, unknown> = {}) {
+  const { Recipe } = await import("@/db/models");
+  const { owner, recipient, grant } = await seedLibraryShareGrant();
+  const recipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false, ...recipeFields }).save();
+  return { owner, recipient, grant, recipe };
+}
+
+/**
+ * Seeds a grant, a private recipe owned by the grantor, and the recipient's own
+ * cookbook already containing that recipe as a cross-owner entry.
+ */
+export async function seedGrantWithCookbookEntry(recipeFields: Record<string, unknown> = {}) {
+  const { Cookbook } = await import("@/db/models");
+  const { owner, recipient, grant, recipe: sharedRecipe } = await seedGrantWithPrivateRecipe(recipeFields);
+  const ownCookbook = await new Cookbook({
+    name: "My Cookbook", userId: recipient.id, isPublic: false,
+    recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
+  }).save();
+  return { owner, recipient, grant, sharedRecipe, ownCookbook };
+}
+
 export async function withSeededUser<TReturn>(
   fn: (
     user: {

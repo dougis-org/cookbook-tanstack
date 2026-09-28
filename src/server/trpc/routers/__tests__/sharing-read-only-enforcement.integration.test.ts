@@ -15,7 +15,7 @@ import { Recipe, Cookbook, Collaborator } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   makeAuthCaller,
-  seedLibraryShareGrant,
+  seedGrantWithPrivateRecipe,
   resolveSharedOwnerIds,
   setUserTier,
 } from "./test-helpers";
@@ -81,8 +81,7 @@ async function mutationNames(routerModule: string, exportName: string): Promise<
 }
 
 async function seedFixture(): Promise<Fixture> {
-  const { owner, recipient } = await seedLibraryShareGrant();
-  const recipe = await new Recipe({ name: "Owner's Recipe", userId: owner.id, isPublic: false }).save();
+  const { owner, recipient, recipe } = await seedGrantWithPrivateRecipe({ name: "Owner's Recipe" });
   const cookbook = await new Cookbook({ name: "Owner's Cookbook", userId: owner.id, isPublic: false, recipes: [] }).save();
   return { owner, recipient, recipeId: recipe.id, cookbookId: cookbook.id };
 }

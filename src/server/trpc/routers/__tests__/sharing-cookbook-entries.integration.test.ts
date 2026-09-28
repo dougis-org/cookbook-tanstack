@@ -12,6 +12,7 @@ import {
   seedUserWithBetterAuth,
   makeAuthCaller,
   seedLibraryShareGrant,
+  seedGrantWithCookbookEntry,
   resolveSharedOwnerIds,
   setUserTier,
 } from "./test-helpers";
@@ -21,21 +22,6 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 async function callerFor(recipientId: string) {
   const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
   return makeAuthCaller(recipientId, { sharedOwnerIds });
-}
-
-/**
- * Seeds a grant, a private recipe owned by the grantor, and the recipient's own
- * cookbook already containing that recipe as a cross-owner entry — the setup shared
- * by most of the "degrades to unavailable" tests below.
- */
-async function seedGrantWithCookbookEntry(recipeFields: Record<string, unknown> = {}) {
-  const { owner, recipient, grant } = await seedLibraryShareGrant();
-  const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false, ...recipeFields }).save();
-  const ownCookbook = await new Cookbook({
-    name: "My Cookbook", userId: recipient.id, isPublic: false,
-    recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
-  }).save();
-  return { owner, recipient, grant, sharedRecipe, ownCookbook };
 }
 
 describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
@@ -118,7 +104,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
       const entry = result!.recipes[0];
 
       expect(entry).toEqual({ recipeId: sharedRecipe.id, unavailable: true, orderIndex: 3, chapterId: null });
-      expect(JSON.stringify(entry)).not.toContain("Owner's Soup");
+      expect(JSON.stringify(entry)).not.toContain("Secret Soup");
     });
   });
 
@@ -264,7 +250,7 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
       const ids = result!.recipes.map((r) => r.id);
       expect(ids).toContain(ownRecipe.id);
       expect(ids).not.toContain(sharedRecipe.id);
-      expect(JSON.stringify(result)).not.toContain("Owner's Soup");
+      expect(JSON.stringify(result)).not.toContain("Secret Soup");
     });
   });
 
