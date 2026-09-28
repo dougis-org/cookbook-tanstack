@@ -12,6 +12,7 @@ import {
   makeAnonCaller,
   seedLibraryShareGrant,
   seedGrantWithPrivateRecipe,
+  seedGrantWithPrivateCookbook,
   resolveSharedOwnerIds,
   setUserTier,
 } from "./test-helpers";
@@ -50,8 +51,7 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
 
   it("cookbooks.list includes the owner's private cookbook", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateCookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [] }).save();
+      const { recipient, cookbook: privateCookbook } = await seedGrantWithPrivateCookbook();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.cookbooks.list();
@@ -62,8 +62,7 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
 
   it("cookbooks.byId succeeds for the owner's private cookbook", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateCookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [] }).save();
+      const { recipient, cookbook: privateCookbook } = await seedGrantWithPrivateCookbook();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.cookbooks.byId({ id: privateCookbook.id });
@@ -261,8 +260,7 @@ describe("Task 3.2 — sharedBy attribution", () => {
 
   it("a shared cookbook carries sharedBy", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateCookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [] }).save();
+      const { owner, recipient, cookbook: privateCookbook } = await seedGrantWithPrivateCookbook();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.cookbooks.byId({ id: privateCookbook.id });
@@ -273,8 +271,7 @@ describe("Task 3.2 — sharedBy attribution", () => {
 
   it("cookbooks.list also carries sharedBy on each row (byId and list resolve it via separate code paths)", async () => {
     await withCleanDb(async () => {
-      const { owner, recipient } = await seedLibraryShareGrant();
-      const privateCookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [] }).save();
+      const { owner, recipient, cookbook: privateCookbook } = await seedGrantWithPrivateCookbook();
 
       const caller = await callerFor(recipient.id);
       const result = await caller.cookbooks.list();

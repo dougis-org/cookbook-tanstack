@@ -211,7 +211,7 @@ describe("Task 3.4 — additional read-only enforcement scenarios", () => {
       const { Types } = await import("mongoose");
       const danglingRecipientId = new Types.ObjectId();
       await LibraryShare.create({ ownerId: owner.id, recipientId: danglingRecipientId, addedBy: owner.id });
-      await new Recipe({ name: "Owner Recipe", userId: owner.id, isPublic: false }).save();
+      const ownerRecipe = await new Recipe({ name: "Owner Recipe", userId: owner.id, isPublic: false }).save();
 
       // Computing sharedOwnerIds against a recipientId with no corresponding user
       // must not throw. This scenario is only reachable defensively in a test — in
@@ -230,7 +230,7 @@ describe("Task 3.4 — additional read-only enforcement scenarios", () => {
       expect(strangerSharedOwnerIds).not.toContain(owner.id);
       const strangerCaller = await makeAuthCaller(stranger.id, { sharedOwnerIds: strangerSharedOwnerIds });
       const result = await strangerCaller.recipes.list();
-      expect(result.items.map((r) => r.id)).not.toContain((await Recipe.findOne({ userId: owner.id }))!.id);
+      expect(result.items.map((r) => r.id)).not.toContain(ownerRecipe.id);
     });
   });
 });

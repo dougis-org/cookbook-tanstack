@@ -172,6 +172,14 @@ export async function seedGrantWithPrivateRecipe(recipeFields: Record<string, un
   return { owner, recipient, grant, recipe };
 }
 
+/** Seeds a grant plus a single private cookbook owned by the grantor. */
+export async function seedGrantWithPrivateCookbook(cookbookFields: Record<string, unknown> = {}) {
+  const { Cookbook } = await import("@/db/models");
+  const { owner, recipient, grant } = await seedLibraryShareGrant();
+  const cookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [], ...cookbookFields }).save();
+  return { owner, recipient, grant, cookbook };
+}
+
 /**
  * Seeds a grant, a private recipe owned by the grantor, and the recipient's own
  * cookbook already containing that recipe as a cross-owner entry.
