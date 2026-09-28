@@ -187,7 +187,7 @@ describe("Task 3.4 — additional read-only enforcement scenarios", () => {
     });
   });
 
-  it("after revocation, re-requesting the previously visible shared recipe by id returns NOT_FOUND", async () => {
+  it("after revocation, re-requesting the previously visible shared recipe by id resolves to null (recipes.byId's existing not-visible contract)", async () => {
     await withCleanDb(async () => {
       const fixture = await seedFixture();
       const caller = await callerFor(fixture.recipient.id);
