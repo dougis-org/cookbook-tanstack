@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { withCleanDb } from "@/test-helpers/with-clean-db";
-import { Recipe, Cookbook } from "@/db/models";
+import { Recipe, Cookbook, Collaborator } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   makeAuthCaller,
@@ -204,6 +204,52 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
     });
   });
 
+  it("a viewer-role collaborator (not just an editor) sees the unavailable stub for a cross-owner entry — accepted residual, design.md Decision 3", async () => {
+    await withCleanDb(async () => {
+      const { owner } = await seedLibraryShareGrant();
+      const sharedRecipe = await new Recipe({ name: "Owner's Soup", userId: owner.id, isPublic: false }).save();
+      const ownerCookbook = await new Cookbook({
+        name: "Owner's Cookbook", userId: owner.id, isPublic: true,
+        recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
+      }).save();
+      const viewerCollaborator = await seedUserWithBetterAuth();
+      await new Collaborator({ cookbookId: ownerCookbook.id, userId: viewerCollaborator.id, role: "viewer", addedBy: owner.id }).save();
+
+      // Grant revoked so the entry can no longer resolve for anyone but a privileged viewer.
+      const { LibraryShare } = await import("@/db/models");
+      await LibraryShare.deleteMany({ ownerId: owner.id });
+
+      const caller = await makeAuthCaller(viewerCollaborator.id, { collabCookbookIds: [ownerCookbook.id] });
+      const result = await caller.cookbooks.byId({ id: ownerCookbook.id });
+
+      expect(result!.recipes).toHaveLength(1);
+      expect(result!.recipes[0]).toMatchObject({ recipeId: sharedRecipe.id, unavailable: true });
+    });
+  });
+
+  it("a grantee viewing the owner's own cookbook (not their own, not a collaboration) never sees the unavailable stub for an entry that becomes inaccessible", async () => {
+    await withCleanDb(async () => {
+      const { owner, recipient } = await seedLibraryShareGrant();
+      const otherOwnerRecipe = await new Recipe({ name: "Third Owner's Soup", userId: owner.id, isPublic: false }).save();
+      const ownerCookbook = await new Cookbook({
+        name: "Owner's Cookbook", userId: owner.id, isPublic: false,
+        recipes: [{ recipeId: otherOwnerRecipe.id, orderIndex: 0 }],
+      }).save();
+
+      // Soft-delete the referenced recipe so the entry can no longer resolve.
+      await Recipe.updateOne({ _id: otherOwnerRecipe._id }, { $set: { deleted: true } });
+
+      const caller = await callerFor(recipient.id);
+      const result = await caller.cookbooks.byId({ id: ownerCookbook.id });
+
+      // Recipient can still see the owner's cookbook itself (via the grant), but is not
+      // a privileged viewer of it (not the owner, not a collaborator), so the
+      // now-unresolvable entry is silently absent rather than shown as unavailable.
+      expect(result).not.toBeNull();
+      expect(result!.recipes).toHaveLength(0);
+    });
+  });
+
   it("the print route excludes cross-owner entries entirely (not rendered as unavailable, not rendered at all)", async () => {
     await withCleanDb(async () => {
       const { owner, recipient } = await seedLibraryShareGrant();
@@ -224,6 +270,24 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
       expect(ids).toContain(ownRecipe.id);
       expect(ids).not.toContain(sharedRecipe.id);
       expect(JSON.stringify(result)).not.toContain("Owner's Soup");
+    });
+  });
+
+  it("printById on the owner's own shared cookbook stays unreachable to a grantee (not an empty print view)", async () => {
+    await withCleanDb(async () => {
+      const { owner, recipient } = await seedLibraryShareGrant();
+      const ownerCookbook = await new Cookbook({
+        name: "Owner's Cookbook", userId: owner.id, isPublic: false, recipes: [],
+      }).save();
+
+      // Threading ctx.sharedOwnerIds into only the cookbook-level filter here would let
+      // this resolve to a cookbook shell with an empty recipes[] (every recipe excluded
+      // by the recipe-level filter) — worse than the pre-existing "not found" behavior,
+      // since it looks like a real, correctly-empty print view rather than "no access."
+      const caller = await callerFor(recipient.id);
+      const result = await caller.cookbooks.printById({ id: ownerCookbook.id });
+
+      expect(result).toBeNull();
     });
   });
 });

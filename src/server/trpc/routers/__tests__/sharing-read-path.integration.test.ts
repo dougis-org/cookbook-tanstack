@@ -9,6 +9,7 @@ import { Recipe, Cookbook } from "@/db/models";
 import {
   seedUserWithBetterAuth,
   makeAuthCaller,
+  makeAnonCaller,
   seedLibraryShareGrant,
   resolveSharedOwnerIds,
   setUserTier,
@@ -207,6 +208,30 @@ describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
     });
   });
 
+  it("regression: recipes.list({ isPublic: false }) does not leak every user's private recipes (isPublic must narrow, not replace, visibility)", async () => {
+    await withCleanDb(async () => {
+      const owner = await seedUserWithBetterAuth();
+      const privateRecipe = await new Recipe({ name: "Stranger's Diary Recipe", userId: owner.id, isPublic: false }).save();
+
+      // No userId supplied — this must not become "every private recipe from anyone."
+      const anonResult = await (await makeAnonCaller()).recipes.list({ isPublic: false });
+      expect(anonResult.items.map((r) => r.id)).not.toContain(privateRecipe.id);
+
+      const stranger = await seedUserWithBetterAuth();
+      const strangerResult = await (await makeAuthCaller(stranger.id)).recipes.list({ isPublic: false });
+      expect(strangerResult.items.map((r) => r.id)).not.toContain(privateRecipe.id);
+
+      // The actual exploit shape: isPublic: false + an explicit victim userId must not
+      // bypass visibility either — a stranger naming the owner directly still sees nothing.
+      const targetedResult = await (await makeAuthCaller(stranger.id)).recipes.list({ isPublic: false, userId: owner.id });
+      expect(targetedResult.items.map((r) => r.id)).not.toContain(privateRecipe.id);
+
+      // The owner themselves still sees it via isPublic: false + userId.
+      const ownerResult = await (await makeAuthCaller(owner.id)).recipes.list({ isPublic: false, userId: owner.id });
+      expect(ownerResult.items.map((r) => r.id)).toContain(privateRecipe.id);
+    });
+  });
+
   it("regression: sharedOwnerIds omitted produces byte-identical visibility to a caller with no grant", async () => {
     await withCleanDb(async () => {
       const owner = await seedUserWithBetterAuth();
@@ -246,6 +271,19 @@ describe("Task 3.2 — sharedBy attribution", () => {
       const result = await caller.cookbooks.byId({ id: privateCookbook.id });
 
       expect(result!.sharedBy).toEqual({ id: owner.id, name: owner.name });
+    });
+  });
+
+  it("cookbooks.list also carries sharedBy on each row (byId and list resolve it via separate code paths)", async () => {
+    await withCleanDb(async () => {
+      const { owner, recipient } = await seedLibraryShareGrant();
+      const privateCookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [] }).save();
+
+      const caller = await callerFor(recipient.id);
+      const result = await caller.cookbooks.list();
+
+      const row = result.find((c) => c.id === privateCookbook.id);
+      expect(row?.sharedBy).toEqual({ id: owner.id, name: owner.name });
     });
   });
 

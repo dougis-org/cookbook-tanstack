@@ -116,15 +116,21 @@ export const recipesRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const filter: Record<string, any> = {};
 
+      // Visibility is always applied first; isPublic (when supplied) only narrows
+      // within what the caller can already see — it must never replace or be
+      // overwritten by the visibility check. visibilityFilter(null) (anonymous
+      // callers) sets a top-level `isPublic: true` itself, so narrowing via a plain
+      // `filter.isPublic = ...` assignment would silently clobber it — combine both
+      // under $and instead, the same pattern used for `search` below.
+      Object.assign(filter, visibilityFilter(ctx.user, [], ctx.sharedOwnerIds));
       if (input?.isPublic !== undefined) {
-        filter.isPublic = input.isPublic
-        filter.hiddenByTier = { $ne: true }
-        const isOwnRecipes = ctx.user && input?.userId === ctx.user.id
-        if (!isOwnRecipes) {
-          filter.pendingVerification = { $ne: true }
-        }
-      } else {
-        Object.assign(filter, visibilityFilter(ctx.user, [], ctx.sharedOwnerIds));
+        const visibilityIsPublic = filter.isPublic;
+        delete filter.isPublic;
+        filter.$and = [
+          ...(filter.$and ?? []),
+          ...(visibilityIsPublic !== undefined ? [{ isPublic: visibilityIsPublic }] : []),
+          { isPublic: input.isPublic },
+        ];
       }
 
       if (input?.classificationIds?.length)

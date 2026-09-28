@@ -344,11 +344,15 @@ export const cookbooksRouter = router({
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cb = cookbook as any;
-      // Only the cookbook's own owner/editor collaborator gets to see *that an entry
+      // Only the cookbook's own owner or a collaborator on it (viewer or editor —
+      // getCollabCookbookIds() doesn't filter by role) gets to see *that an entry
       // exists but is unavailable* (id/orderIndex/chapterId of a recipe they otherwise
       // can't see) — anyone else (including a stranger viewing a public cookbook)
       // gets the old behavior of the entry silently absent, so this never becomes a
       // way to enumerate another owner's private recipe ids via a public cookbook.
+      // A viewer-role collaborator does learn this about a cookbook they were
+      // deliberately invited to, which is an accepted residual — see design.md
+      // Decision 3's "Refinement during implementation" note.
       const isPrivilegedViewer = !!(
         ctx.user &&
         (ctx.user.id === cb.userId?.toString() || collabCookbookIds.includes(input.id))
@@ -416,16 +420,21 @@ export const cookbooksRouter = router({
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
       const collabCookbookIds = await ctx.getCollabCookbookIds();
-      const visFilter = visibilityFilter(ctx.user, collabCookbookIds, ctx.sharedOwnerIds);
+      // Deliberately excludes ctx.sharedOwnerIds at BOTH the cookbook level and the
+      // recipe-stub level (design.md Decision 3 / spec "The print route excludes
+      // cross-owner entries"), until #669 defines print-view attribution. Threading
+      // it only into the cookbook-level filter would let a grantee open a shared
+      // owner's cookbook for print while every recipe in it is excluded by the
+      // recipe-level filter below — an empty-looking print view with no indication
+      // anything was withheld, which is worse than the pre-existing "not found"
+      // behavior for a shared owner's own cookbook. So this endpoint's visibility of
+      // shared content stays exactly where it was before this change: unreachable.
+      const visFilter = visibilityFilter(ctx.user, collabCookbookIds);
       const row = await fetchCookbookWithOrderedStubs(input.id, visFilter);
       if (!row) return null;
 
       const { cookbook, stubs } = row;
       const recipeIds = toObjectIds(stubs.map((s) => s.recipeId));
-      // Deliberately excludes ctx.sharedOwnerIds (design.md Decision 3 / spec "The print
-      // route excludes cross-owner entries"): a cross-owner recipe stub must not resolve
-      // here, so it's excluded from the printed output entirely rather than rendered or
-      // marked unavailable, until #669 defines print-view attribution.
       const recipeVisFilter = visibilityFilter(ctx.user, collabCookbookIds);
 
       const recipeDocs = await Recipe.find({

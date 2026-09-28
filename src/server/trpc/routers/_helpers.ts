@@ -111,9 +111,12 @@ export function sharingEligibleOwnerStages() {
  * Batch-resolves `sharedBy: { id, name } | null` for a list of documents against the
  * caller's sharedOwnerIds. One query for the whole list (not one per document, per
  * design.md Decision 2) — a plain `find` follow-up rather than an aggregation
- * `$lookup`, since recipes.list/cookbooks.byId are not aggregation pipelines and a
- * second round trip is simpler here than converting them to one. Returns owner id ->
- * { id, name } only (no email, no tier — the allow-list this field is scoped to).
+ * `$lookup`, since recipes.list/recipes.byId/cookbooks.byId are not aggregation
+ * pipelines and converting them just for this would be a larger change than the
+ * lookup itself. `cookbooks.list` *is* already an aggregation pipeline but uses this
+ * same helper too, deliberately, so all four endpoints share one implementation
+ * instead of two different patterns. Returns owner id -> { id, name } only (no
+ * email, no tier — the allow-list this field is scoped to).
  */
 export async function resolveSharedByMap(
   ownerUserIds: string[],
@@ -137,9 +140,11 @@ export async function resolveSharedByMap(
 }
 
 /**
- * Returns `sharedBy: { id, name } | null` for a single document owner, consulting an
- * already-resolved sharedBy map (see resolveSharedByMap). `null` for content the
- * caller owns or that isn't attributed to a sharedOwnerIds entry (owned/public).
+ * Looks up `docUserId` in a map built by resolveSharedByMap, returning `{ id, name }`
+ * if present or `null` otherwise. The "null for owned/public content" guarantee is a
+ * property of how resolveSharedByMap builds the map (it only inserts sharedOwnerIds
+ * entries, never the caller's own id) — not something this lookup enforces on its
+ * own, so it only holds when sharedByMap came from resolveSharedByMap.
  */
 export function sharedByFor(
   docUserId: string,

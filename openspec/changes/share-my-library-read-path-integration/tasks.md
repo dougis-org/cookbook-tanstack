@@ -238,13 +238,15 @@ confirm it fails for the expected reason, then implement until it passes.
       **223 passed, 1 failed, 2 skipped**; the failure
       (`recipes-filters-ui.spec.ts` "should toggle My Recipes quick filter") is
       unrelated to this change (recipe-list quick-filter UI, no cookbook/sharing
-      involvement) and passed cleanly (10/10) re-run in isolation with
-      `--workers=1` — full-suite parallel workers all sharing one local database
-      caused one test's unfiltered-count assertion to race against other
-      workers' concurrent public-recipe creation. All cookbook/sharing-relevant
-      specs (print, print-behavior, print-theme-contrast, chapters,
-      collaboration, auth) passed cleanly both standalone and as part of the
-      full run: 52/52.
+      involvement) — root-caused by reproducing it on a byte-fresh, single-worker
+      database: `gotoAndWaitForHydration` only waits for React hydration, not for
+      the recipes list's async data fetch, so the test's first recipe-card count
+      races the initial load and can read `0` before any card has rendered. A
+      pre-existing test bug in a file this PR never touches, not a data-pollution
+      or regression issue; not fixed here (different file, different concern).
+      All cookbook/sharing-relevant specs (print, print-behavior,
+      print-theme-contrast, chapters, collaboration, auth) passed cleanly both
+      standalone and as part of the full run: 52/52.
 - [x] Run type checks: `npx tsc --noEmit` (clean)
 - [x] Run build: `npm run build` (succeeds)
 - [x] Run security/code quality checks required by project standards (Codacy local

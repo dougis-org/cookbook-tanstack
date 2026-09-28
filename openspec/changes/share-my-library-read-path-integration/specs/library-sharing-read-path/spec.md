@@ -297,7 +297,9 @@ grantees at any of the four touched endpoints, regardless of an active share.
 - **Given** a grantee whose client holds a previously fetched payload of shared
   content
 - **When** the grant is revoked and the client re-requests that content by id
-- **Then** the server responds `NOT_FOUND` for each shared document
+- **Then** `recipes.byId`/`cookbooks.byId` resolve to `null` for each shared document
+  (their existing, pre-change contract for anything the caller can't see — they are
+  public queries and don't throw `NOT_FOUND`)
 - **And** no shared content is returned from any endpoint
 
 ### Requirement: Reliability
