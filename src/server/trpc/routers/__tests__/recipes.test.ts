@@ -2180,19 +2180,6 @@ describe("recipes.create — tier limit enforcement", () => {
 
 // ─── recipes.list / byId — hiddenByTier in response ──────────────────────────
 
-
-async function seedHiddenRecipe(ownerId: string, name: string, isPublic: boolean) {
-  return new Recipe({
-    name,
-    userId: ownerId,
-    isPublic,
-    hiddenByTier: true,
-    mealIds: [],
-    courseIds: [],
-    preparationIds: [],
-  }).save();
-}
-
 describe("recipes.list — hiddenByTier in response", () => {
   it("list items include hiddenByTier: false by default", async () => {
     await withCleanDb(async () => {
@@ -2205,46 +2192,42 @@ describe("recipes.list — hiddenByTier in response", () => {
     });
   });
 
-  it("owner cannot see hiddenByTier recipe in list", async () => {
+  it.each([
+    ["recipe", true],
+    ["private recipe", false]
+  ])("owner cannot see hiddenByTier %s in list", async (label, isPublic) => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      await new Recipe({ name: "Visible Recipe", userId: owner.id, isPublic: true }).save();
-      await seedHiddenRecipe(owner.id, "Hidden Recipe", true);
+      await new Recipe({ name: "Visible " + label, userId: owner.id, isPublic }).save();
+      await new Recipe({
+        name: "Hidden " + label,
+        userId: owner.id,
+        isPublic,
+        hiddenByTier: true,
+        mealIds: [], courseIds: [], preparationIds: [],
+      }).save();
       const caller = await makeAuthCaller(owner.id);
       const result = await caller.recipes.list({ userId: owner.id });
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].name).toBe("Visible Recipe");
-    });
-  });
-
-  it("owner cannot see hiddenByTier private recipe in list", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      await new Recipe({ name: "Visible Private Recipe", userId: owner.id, isPublic: false }).save();
-      await seedHiddenRecipe(owner.id, "Hidden Private Recipe", false);
-      const caller = await makeAuthCaller(owner.id);
-      const result = await caller.recipes.list({ userId: owner.id });
-      expect(result.items).toHaveLength(1);
-      expect(result.items[0].name).toBe("Visible Private Recipe");
+      expect(result.items[0].name).toBe("Visible " + label);
     });
   });
 });
 
 describe("recipes.byId — hiddenByTier (owner exclusion)", () => {
-  it("owner cannot see own hiddenByTier recipe byId — returns null", async () => {
+  it.each([
+    ["recipe", true],
+    ["private recipe", false]
+  ])("owner cannot see own hiddenByTier %s byId — returns null", async (label, isPublic) => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      const inserted = await seedHiddenRecipe(owner.id, "Hidden Recipe", true);
-      const caller = await makeAuthCaller(owner.id);
-      const result = await caller.recipes.byId({ id: inserted.id });
-      expect(result).toBeNull();
-    });
-  });
-
-  it("owner cannot see own hiddenByTier private recipe byId — returns null", async () => {
-    await withCleanDb(async () => {
-      const owner = await seedUser();
-      const inserted = await seedHiddenRecipe(owner.id, "Hidden Private Recipe", false);
+      const inserted = await new Recipe({
+        name: "Hidden " + label,
+        userId: owner.id,
+        isPublic,
+        hiddenByTier: true,
+        mealIds: [], courseIds: [], preparationIds: [],
+      }).save();
       const caller = await makeAuthCaller(owner.id);
       const result = await caller.recipes.byId({ id: inserted.id });
       expect(result).toBeNull();
@@ -2254,22 +2237,17 @@ describe("recipes.byId — hiddenByTier (owner exclusion)", () => {
 
 // ─── pendingVerification — visibility filtering (T2.1–T2.4) ──────────────────
 
-
-async function seedPublishedAndPending(ownerId: string) {
-  await new Recipe({ name: "Published", userId: ownerId, isPublic: true }).save();
-  return new Recipe({
-    name: "Pending",
-    userId: ownerId,
-    isPublic: true,
-    pendingVerification: true,
-  }).save();
-}
-
 describe("recipes.list — pending recipe filtering", () => {
   it("T2.1 — REQUIRED: public list excludes pending recipes", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      await seedPublishedAndPending(owner.id);
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
 
       const caller = await makeAnonCaller();
       const result = await caller.recipes.list({ userId: owner.id });
@@ -2282,7 +2260,13 @@ describe("recipes.list — pending recipe filtering", () => {
   it("T2.2 — owner-scoped query includes own pending recipes", async () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
-      await seedPublishedAndPending(owner.id);
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
 
       const caller = await makeAuthCaller(owner.id);
       const result = await caller.recipes.list({ userId: owner.id });
@@ -2297,7 +2281,13 @@ describe("recipes.list — pending recipe filtering", () => {
     await withCleanDb(async () => {
       const owner = await seedUser();
       const other = await seedUser();
-      await seedPublishedAndPending(owner.id);
+      await new Recipe({ name: "Published", userId: owner.id, isPublic: true }).save();
+      await new Recipe({
+        name: "Pending",
+        userId: owner.id,
+        isPublic: true,
+        pendingVerification: true,
+      }).save();
 
       const anonResult = await (await makeAnonCaller()).recipes.list({ isPublic: true, userId: owner.id });
       expect(anonResult.items).toHaveLength(1);
