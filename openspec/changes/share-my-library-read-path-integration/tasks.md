@@ -38,7 +38,7 @@
 
 ## Execution
 
-- [ ] **Issue lifecycle: mark in-progress:** run
+- [x] **Issue lifecycle: mark in-progress:** run
       `gh issue edit 673 --add-label "in-progress"`. Then discover the linked project
       (`gh project list --owner dougis-org --format json`), resolve the status field
       option semantically matching "In Progress"
