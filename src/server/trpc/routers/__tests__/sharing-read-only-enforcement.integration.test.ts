@@ -103,9 +103,8 @@ describe("Task 3.4 — router-derived mutation coverage is exhaustive", () => {
 });
 
 describe("Task 3.4 — every enumerated recipe mutation is rejected", () => {
-  it.each(Object.entries(RECIPE_MUTATIONS))(
-    "recipes.%s rejects a recipient acting on the owner's recipe",
-    async (name, buildInput) => {
+  for (const [name, buildInput] of Object.entries(RECIPE_MUTATIONS)) {
+    it(`recipes.${name} rejects a recipient acting on the owner's recipe`, async () => {
       await withCleanDb(async () => {
         const fixture = await seedFixture();
         const before = await Recipe.findById(fixture.recipeId).lean();
@@ -118,14 +117,13 @@ describe("Task 3.4 — every enumerated recipe mutation is rejected", () => {
         const after = await Recipe.findById(fixture.recipeId).lean();
         expect(after).toEqual(before);
       });
-    }
-  );
+    });
+  }
 });
 
 describe("Task 3.4 — every enumerated cookbook mutation is rejected", () => {
-  it.each(Object.entries(COOKBOOK_MUTATIONS))(
-    "cookbooks.%s rejects a recipient acting on the owner's cookbook",
-    async (name, buildInput) => {
+  for (const [name, buildInput] of Object.entries(COOKBOOK_MUTATIONS)) {
+    it(`cookbooks.${name} rejects a recipient acting on the owner's cookbook`, async () => {
       await withCleanDb(async () => {
         const fixture = await seedFixture();
         const before = await Cookbook.findById(fixture.cookbookId).lean();
@@ -142,8 +140,8 @@ describe("Task 3.4 — every enumerated cookbook mutation is rejected", () => {
         const after = await Cookbook.findById(fixture.cookbookId).lean();
         expect(after).toEqual(before);
       });
-    }
-  );
+    });
+  }
 });
 
 describe("Task 3.4 — additional read-only enforcement scenarios", () => {
