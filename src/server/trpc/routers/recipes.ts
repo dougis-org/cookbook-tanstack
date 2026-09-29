@@ -164,12 +164,13 @@ export const recipesRouter = router({
           filter.servings = { ...filter.servings, $gte: input.minServings };
         if (input.maxServings !== undefined)
           filter.servings = { ...filter.servings, $lte: input.maxServings };
+        
+        if (input.mealIds) filter.mealIds = { $in: input.mealIds };
+        if (input.courseIds) filter.courseIds = { $in: input.courseIds };
+        if (input.preparationIds) filter.preparationIds = { $in: input.preparationIds };
       }
 
-      if (input?.mealIds) filter.mealIds = { $in: input.mealIds };
-      if (input?.courseIds) filter.courseIds = { $in: input.courseIds };
-      if (input?.preparationIds)
-        filter.preparationIds = { $in: input.preparationIds };
+
 
       let likedIds: Set<string> | null = null;
       if (ctx.user) {
