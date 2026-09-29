@@ -1178,22 +1178,15 @@ describe("recipes.list — hasImage filter", () => {
 
 // ─── recipes.list — servings range filter ─────────────────────────────────────
 
+async function seedServingsRecipes() {
+  const { user } = await seedServingsRecipes();
+  return { user };
+}
+
 describe("recipes.list — servings range filter", () => {
   it("minServings returns only recipes with servings >= min", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      await new Recipe({
-        name: "Small Batch",
-        userId: user.id,
-        isPublic: true,
-        servings: 2,
-      }).save();
-      await new Recipe({
-        name: "Large Batch",
-        userId: user.id,
-        isPublic: true,
-        servings: 8,
-      }).save();
+      const { user } = await seedServingsRecipes();
 
       const caller = await makeAnonCaller();
       const result = await caller.recipes.list({
@@ -1208,19 +1201,7 @@ describe("recipes.list — servings range filter", () => {
 
   it("maxServings returns only recipes with servings <= max", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      await new Recipe({
-        name: "Small Batch",
-        userId: user.id,
-        isPublic: true,
-        servings: 2,
-      }).save();
-      await new Recipe({
-        name: "Large Batch",
-        userId: user.id,
-        isPublic: true,
-        servings: 8,
-      }).save();
+      const { user } = await seedServingsRecipes();
 
       const caller = await makeAnonCaller();
       const result = await caller.recipes.list({
@@ -1587,6 +1568,11 @@ describe("recipes.list — marked field", () => {
 
 // ─── recipes.byId — marked field ─────────────────────────────────────────────
 
+async function seedPublicRecipeWithViewer() {
+  const { viewer, recipe } = await seedPublicRecipeWithViewer();
+  return { owner, viewer, recipe };
+}
+
 describe("recipes.byId — marked field", () => {
   it("anonymous caller — response has marked: false", async () => {
     await withCleanDb(async () => {
@@ -1606,13 +1592,7 @@ describe("recipes.byId — marked field", () => {
 
   it("authenticated caller, not liked — marked: false", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const viewer = await seedUser();
-      const recipe = await new Recipe({
-        name: "Public Recipe",
-        userId: owner.id,
-        isPublic: true,
-      }).save();
+      const { viewer, recipe } = await seedPublicRecipeWithViewer();
 
       const caller = await makeAuthCaller(viewer.id);
       const result = await caller.recipes.byId({ id: recipe.id });
@@ -1623,13 +1603,7 @@ describe("recipes.byId — marked field", () => {
 
   it("authenticated caller, liked — marked: true", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const viewer = await seedUser();
-      const recipe = await new Recipe({
-        name: "Public Recipe",
-        userId: owner.id,
-        isPublic: true,
-      }).save();
+      const { viewer, recipe } = await seedPublicRecipeWithViewer();
       await new RecipeLike({ userId: viewer.id, recipeId: recipe.id }).save();
 
       const caller = await makeAuthCaller(viewer.id);
@@ -1641,13 +1615,7 @@ describe("recipes.byId — marked field", () => {
 
   it("authenticated caller, liked then toggled off — byId response has marked: false", async () => {
     await withCleanDb(async () => {
-      const owner = await seedUser();
-      const viewer = await seedUser();
-      const recipe = await new Recipe({
-        name: "Public Recipe",
-        userId: owner.id,
-        isPublic: true,
-      }).save();
+      const { viewer, recipe } = await seedPublicRecipeWithViewer();
       await new RecipeLike({ userId: viewer.id, recipeId: recipe.id }).save();
 
       const caller = await makeAuthCaller(viewer.id);
@@ -1724,6 +1692,11 @@ describe("recipes.toggleMarked", () => {
 
 // ─── recipes.import ──────────────────────────────────────────────────────────
 
+
+async function setupExecChef() { const user = await seedUser(); const caller = await makeAuthCaller(user.id, { tier: "executive-chef" }); return { user, caller }; }
+async function setupSousChef() { const user = await seedUser(); const caller = await makeAuthCaller(user.id, { tier: "sous-chef" }); return { user, caller }; }
+async function setupHomeCook() { const user = await seedUser(); const caller = await makeAuthCaller(user.id, { tier: "home-cook" }); return { user, caller }; }
+
 describe("recipes.import", () => {
   it("rejects requests from users with unverified email", async () => {
     await withCleanDb(async () => {
@@ -1737,8 +1710,7 @@ describe("recipes.import", () => {
 
   it("creates a new recipe for the authenticated user", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
 
       const result = await caller.recipes.import({
         name: "Imported Dish",
@@ -1759,8 +1731,7 @@ describe("recipes.import", () => {
 
   it("fails validation for invalid payload", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
 
       await expect(
         caller.recipes.import({
@@ -1773,8 +1744,7 @@ describe("recipes.import", () => {
 
   it("fails validation for invalid dateAdded", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
 
       await expect(
         caller.recipes.import({
@@ -1788,8 +1758,7 @@ describe("recipes.import", () => {
 
   it("preserves an explicit null prepTime/cookTime rather than collapsing to undefined", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
 
       const result = await caller.recipes.import({
         name: "NA Time Import",
@@ -1806,8 +1775,7 @@ describe("recipes.import", () => {
 
   it("accepts 0 as a valid prepTime/cookTime value on import", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
 
       const result = await caller.recipes.import({
         name: "Instant Import",
@@ -1828,8 +1796,7 @@ describe("recipes.import", () => {
 describe("recipes.import — tier gate and count limit", () => {
   it("home-cook is blocked by tier gate", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      const { caller, user } = await setupHomeCook();
       await expect(
         caller.recipes.import({ name: "Blocked Import", _version: "1" }),
       ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
@@ -1848,8 +1815,7 @@ describe("recipes.import — tier gate and count limit", () => {
 
   it("executive-chef under limit is allowed", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "executive-chef" });
+      const { caller, user } = await setupExecChef();
       const result = await caller.recipes.import({ name: "Allowed Import", _version: "1" });
       expect(result).toMatchObject({ name: "Allowed Import" });
     });
@@ -1857,8 +1823,7 @@ describe("recipes.import — tier gate and count limit", () => {
 
   it("sous-chef is blocked by tier gate", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "sous-chef" });
+      const { caller, user } = await setupSousChef();
       await expect(
         caller.recipes.import({ name: "Blocked Import", _version: "1" }),
       ).rejects.toMatchObject({ code: "PAYMENT_REQUIRED" });
@@ -2170,8 +2135,7 @@ describe("recipes.create — tier limit enforcement", () => {
 
   it("create response includes hiddenByTier: false", async () => {
     await withCleanDb(async () => {
-      const user = await seedUser();
-      const caller = await makeAuthCaller(user.id, { tier: "home-cook" });
+      const { caller, user } = await setupHomeCook();
       const result = await caller.recipes.create({ name: "New Recipe" });
       expect(result.hiddenByTier).toBe(false);
     });

@@ -23,6 +23,12 @@ import {
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
+async function assertRejectedForbiddenOrNotFound(promise: Promise<unknown>) {
+  await expect(promise).rejects.toMatchObject({
+    code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
+  });
+}
+
 interface Fixture {
   owner: { id: string; name: string };
   recipient: { id: string; name: string };
@@ -106,9 +112,7 @@ describe("Task 3.4 — every enumerated recipe mutation is rejected", () => {
         const caller = await callerFor(fixture.recipient.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const proc = (caller.recipes as any)[name] as (input: unknown) => Promise<unknown>;
-        await expect(proc(buildInput(fixture))).rejects.toMatchObject({
-          code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
-        });
+        await assertRejectedForbiddenOrNotFound(proc(buildInput(fixture)));
 
         const after = await Recipe.findById(fixture.recipeId).lean();
         expect(after).toEqual(before);
@@ -131,9 +135,7 @@ describe("Task 3.4 — every enumerated cookbook mutation is rejected", () => {
         const caller = await callerFor(fixture.recipient.id, { tier: needsExecChef ? "executive-chef" : undefined });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const proc = (caller.cookbooks as any)[name] as (input: unknown) => Promise<unknown>;
-        await expect(proc(buildInput(fixture))).rejects.toMatchObject({
-          code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
-        });
+        await assertRejectedForbiddenOrNotFound(proc(buildInput(fixture)));
 
         const after = await Cookbook.findById(fixture.cookbookId).lean();
         expect(after).toEqual(before);

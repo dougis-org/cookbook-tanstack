@@ -263,8 +263,8 @@ confirm it fails for the expected reason, then implement until it passes.
       Codacy signal to Codacy Cloud's PR analysis, which the PR review step
       below (`pr-review-toolkit:review-pr`) will surface and this change will
       still be required to address before merge.
-- [ ] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] All completed tasks marked as complete
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -291,29 +291,29 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent (or confirmed substitute) was run
+- [x] Ensure the `openspec-review-code` sub-agent (or confirmed substitute) was run
       and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `share-my-library-read-path-integration` to `main`. The PR body
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `share-my-library-read-path-integration` to `main`. The PR body
       **MUST include `Closes #673`**, and should record the audit lists from Tasks
       3.1.1 and 3.3.4 (`visibilityFilter` and `.recipes[]` call sites), per issue
       #673's own review requirement.
-- [ ] **Issue lifecycle: mark in-review:** run
+- [x] **Issue lifecycle: mark in-review:** run
       `gh issue edit 673 --add-label "in-review" --remove-label "in-progress"`. Then
       move the project item to the status column semantically matching "In Review"
       via `gh project item-edit` (same project/field/option discovery as the
       in-progress lifecycle step above; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings
+- [x] Wait 60 seconds for CI to start
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings
       (commit, push, re-run) until zero findings remain. Security findings on this
       change are blocking per the parent epic's standing policy (mirrors PR2's
       "security findings on `sharing.ts` are blocking and must not be waived") and
       must not be waived without an explicit, cited human acceptance. If findings
       persist after three or more iterations with no progress, report the stall with
       remaining findings listed and wait for human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings):**
+- [x] **Enable auto-merge only after the review gate passes (zero findings):**
       `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously
+- [x] **Iterate until merged** — repeat the following priority loop continuously
       until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns
       `CLOSED` exit and notify the user — never wait for a human to report the
       merge; never force-merge:

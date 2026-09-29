@@ -104,29 +104,25 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
     });
   });
 
-  it("degrades to unavailable: true after the owner's tier drops below executive-chef", async () => {
+  async function assertDegradesToUnavailable(action: (fixture: Awaited<ReturnType<typeof seedGrantWithCookbookEntry>>) => Promise<void>) {
     await withCleanDb(async () => {
-      const { owner, recipient, ownCookbook } = await seedGrantWithCookbookEntry();
-
-      await setUserTier(owner.id, "sous-chef");
-
-      const caller = await callerFor(recipient.id);
-      const result = await caller.cookbooks.byId({ id: ownCookbook.id });
-
+      const fixture = await seedGrantWithCookbookEntry();
+      await action(fixture);
+      const caller = await callerFor(fixture.recipient.id);
+      const result = await caller.cookbooks.byId({ id: fixture.ownCookbook.id });
       expect(result!.recipes[0]).toMatchObject({ unavailable: true });
+    });
+  }
+
+  it("degrades to unavailable: true after the owner's tier drops below executive-chef", async () => {
+    await assertDegradesToUnavailable(async ({ owner }) => {
+      await setUserTier(owner.id, "sous-chef");
     });
   });
 
   it("degrades to unavailable: true after the owner soft-deletes the recipe (grant still active)", async () => {
-    await withCleanDb(async () => {
-      const { recipient, sharedRecipe, ownCookbook } = await seedGrantWithCookbookEntry();
-
+    await assertDegradesToUnavailable(async ({ sharedRecipe }) => {
       await Recipe.updateOne({ _id: sharedRecipe._id }, { $set: { deleted: true } });
-
-      const caller = await callerFor(recipient.id);
-      const result = await caller.cookbooks.byId({ id: ownCookbook.id });
-
-      expect(result!.recipes[0]).toMatchObject({ unavailable: true });
     });
   });
 
