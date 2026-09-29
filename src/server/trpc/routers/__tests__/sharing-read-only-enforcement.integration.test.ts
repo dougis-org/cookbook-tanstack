@@ -23,6 +23,12 @@ import {
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 
+async function assertRejectedForbiddenOrNotFound(promise: Promise<unknown>) {
+  await expect(promise).rejects.toMatchObject({
+    code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
+  });
+}
+
 interface Fixture {
   owner: { id: string; name: string };
   recipient: { id: string; name: string };
@@ -97,8 +103,9 @@ describe("Task 3.4 — router-derived mutation coverage is exhaustive", () => {
 });
 
 describe("Task 3.4 — every enumerated recipe mutation is rejected", () => {
-  for (const [name, buildInput] of Object.entries(RECIPE_MUTATIONS)) {
-    it(`recipes.${name} rejects a recipient acting on the owner's recipe`, async () => {
+  it.each(Object.entries(RECIPE_MUTATIONS))(
+    "recipes.%s rejects a recipient acting on the owner's recipe",
+    async (name, buildInput) => {
       await withCleanDb(async () => {
         const fixture = await seedFixture();
         const before = await Recipe.findById(fixture.recipeId).lean();
@@ -106,20 +113,19 @@ describe("Task 3.4 — every enumerated recipe mutation is rejected", () => {
         const caller = await callerFor(fixture.recipient.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const proc = (caller.recipes as any)[name] as (input: unknown) => Promise<unknown>;
-        await expect(proc(buildInput(fixture))).rejects.toMatchObject({
-          code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
-        });
+        await assertRejectedForbiddenOrNotFound(proc(buildInput(fixture)));
 
         const after = await Recipe.findById(fixture.recipeId).lean();
         expect(after).toEqual(before);
       });
-    });
-  }
+    }
+  );
 });
 
 describe("Task 3.4 — every enumerated cookbook mutation is rejected", () => {
-  for (const [name, buildInput] of Object.entries(COOKBOOK_MUTATIONS)) {
-    it(`cookbooks.${name} rejects a recipient acting on the owner's cookbook`, async () => {
+  it.each(Object.entries(COOKBOOK_MUTATIONS))(
+    "cookbooks.%s rejects a recipient acting on the owner's cookbook",
+    async (name, buildInput) => {
       await withCleanDb(async () => {
         const fixture = await seedFixture();
         const before = await Cookbook.findById(fixture.cookbookId).lean();
@@ -131,15 +137,13 @@ describe("Task 3.4 — every enumerated cookbook mutation is rejected", () => {
         const caller = await callerFor(fixture.recipient.id, { tier: needsExecChef ? "executive-chef" : undefined });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const proc = (caller.cookbooks as any)[name] as (input: unknown) => Promise<unknown>;
-        await expect(proc(buildInput(fixture))).rejects.toMatchObject({
-          code: expect.stringMatching(/^(FORBIDDEN|NOT_FOUND)$/),
-        });
+        await assertRejectedForbiddenOrNotFound(proc(buildInput(fixture)));
 
         const after = await Cookbook.findById(fixture.cookbookId).lean();
         expect(after).toEqual(before);
       });
-    });
-  }
+    }
+  );
 });
 
 describe("Task 3.4 — additional read-only enforcement scenarios", () => {
