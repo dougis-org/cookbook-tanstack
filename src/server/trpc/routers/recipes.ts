@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { publicProcedure, protectedProcedure, verifiedProcedure, router } from "../init";
-import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, escapeRegex } from "./_helpers";
+import { visibilityFilter, verifyOwnership, objectId, enforceContentLimit, sanitizeRecipePersonalSource, escapeRegex, resolveSharedByMap, sharedByFor } from "./_helpers";
 import { Recipe, RecipeLike, Cookbook, Source } from "@/db/models";
 import mongoose from "mongoose";
 // Side-effect imports register Mongoose models referenced in Recipe.populate()
@@ -116,43 +116,61 @@ export const recipesRouter = router({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const filter: Record<string, any> = {};
 
-      if (input?.isPublic !== undefined) {
-        filter.isPublic = input.isPublic
-        filter.hiddenByTier = { $ne: true }
-        const isOwnRecipes = ctx.user && input?.userId === ctx.user.id
-        if (!isOwnRecipes) {
-          filter.pendingVerification = { $ne: true }
-        }
-      } else {
-        Object.assign(filter, visibilityFilter(ctx.user));
-      }
-
-      if (input?.classificationIds?.length)
-        filter.classificationId = { $in: input.classificationIds };
-      if (input?.sourceIds?.length)
-        filter.sourceId = { $in: input.sourceIds };
-      if (input?.userId) filter.userId = input.userId;
-
-      if (input?.search) {
-        const term = escapeRegex(input.search.trim());
-        if (term) {
-          filter.$or = [
-            { name: { $regex: term, $options: "i" } },
-            { ingredients: { $regex: term, $options: "i" } },
+      // Visibility is always applied first; isPublic (when supplied) only narrows
+      // within what the caller can already see — it must never replace or be
+      // overwritten by the visibility check. visibilityFilter(null) (anonymous
+      // callers) sets a top-level `isPublic: true` itself, so narrowing via a plain
+      // `filter.isPublic = ...` assignment would silently clobber it — combine both
+      // under $and instead, the same pattern used for `search` below.
+      Object.assign(filter, visibilityFilter(ctx.user, [], ctx.sharedOwnerIds));
+      if (input) {
+        if (input.isPublic !== undefined) {
+          const visibilityIsPublic = filter.isPublic;
+          delete filter.isPublic;
+          filter.$and = [
+            ...(filter.$and ?? []),
+            ...(visibilityIsPublic !== undefined ? [{ isPublic: visibilityIsPublic }] : []),
+            { isPublic: input.isPublic },
           ];
         }
+
+        if (input.classificationIds)
+          filter.classificationId = { $in: input.classificationIds };
+        if (input.sourceIds)
+          filter.sourceId = { $in: input.sourceIds };
+        if (input.userId) filter.userId = input.userId;
+
+        if (input.search) {
+          const term = escapeRegex(input.search.trim());
+          if (term) {
+            const searchOr = [
+              { name: { $regex: term, $options: "i" } },
+              { ingredients: { $regex: term, $options: "i" } },
+            ];
+            // filter.$or may already hold the visibility clause (from visibilityFilter
+            // above) — a second `filter.$or =` here would silently discard it and bypass
+            // visibility entirely for any search query. Combine both under $and instead.
+            if (filter.$or) {
+              filter.$and = [...(filter.$and ?? []), { $or: filter.$or }, { $or: searchOr }];
+              delete filter.$or;
+            } else {
+              filter.$or = searchOr;
+            }
+          }
+        }
+
+        if (input.hasImage) filter.imageUrl = { $exists: true, $ne: null };
+        if (input.minServings !== undefined)
+          filter.servings = { ...filter.servings, $gte: input.minServings };
+        if (input.maxServings !== undefined)
+          filter.servings = { ...filter.servings, $lte: input.maxServings };
+        
+        if (input.mealIds) filter.mealIds = { $in: input.mealIds };
+        if (input.courseIds) filter.courseIds = { $in: input.courseIds };
+        if (input.preparationIds) filter.preparationIds = { $in: input.preparationIds };
       }
 
-      if (input?.hasImage) filter.imageUrl = { $exists: true, $ne: null };
-      if (input?.minServings !== undefined)
-        filter.servings = { ...filter.servings, $gte: input.minServings };
-      if (input?.maxServings !== undefined)
-        filter.servings = { ...filter.servings, $lte: input.maxServings };
 
-      if (input?.mealIds?.length) filter.mealIds = { $in: input.mealIds };
-      if (input?.courseIds?.length) filter.courseIds = { $in: input.courseIds };
-      if (input?.preparationIds?.length)
-        filter.preparationIds = { $in: input.preparationIds };
 
       let likedIds: Set<string> | null = null;
       if (ctx.user) {
@@ -196,7 +214,12 @@ export const recipesRouter = router({
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = (rawItems as any[]).map((r) => {
+      const rawItemsArr = rawItems as any[];
+      const sharedByMap = await resolveSharedByMap(
+        rawItemsArr.map((r) => r.userId?.toString()).filter(Boolean),
+        ctx.sharedOwnerIds,
+      );
+      const items = rawItemsArr.map((r) => {
         const item = {
           ...r,
           id: r._id.toString() as string,
@@ -206,6 +229,7 @@ export const recipesRouter = router({
             (r.classificationId as { name?: string } | null)?.name ?? null,
           hiddenByTier: (r.hiddenByTier ?? false) as boolean,
           marked: likedIds ? likedIds.has(r._id.toString()) : false,
+          sharedBy: sharedByFor(r.userId?.toString(), sharedByMap),
         };
         sanitizeRecipePersonalSource(item, ctx.user?.id);
         return item;
@@ -218,7 +242,7 @@ export const recipesRouter = router({
   byId: publicProcedure
     .input(z.object({ id: objectId }))
     .query(async ({ ctx, input }) => {
-      const visFilter = visibilityFilter(ctx.user);
+      const visFilter = visibilityFilter(ctx.user, [], ctx.sharedOwnerIds);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const r = (await Recipe.findOne({ _id: input.id, ...visFilter })
         .populate("classificationId", "name slug")
@@ -234,6 +258,7 @@ export const recipesRouter = router({
       const marked = ctx.user
         ? !!(await RecipeLike.exists({ userId: ctx.user.id, recipeId: input.id }))
         : false;
+      const sharedByMap = await resolveSharedByMap([r.userId?.toString()], ctx.sharedOwnerIds);
 
       type PopItem = { _id: unknown; name: string };
 
@@ -285,6 +310,7 @@ export const recipesRouter = router({
           id: String(p._id),
           name: p.name,
         })),
+        sharedBy: sharedByFor(r.userId?.toString(), sharedByMap),
       };
       sanitizeRecipePersonalSource(result, ctx.user?.id);
       return result;

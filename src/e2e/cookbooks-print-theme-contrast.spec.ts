@@ -1,4 +1,5 @@
-import { test, expect, type Locator } from "@bgotink/playwright-coverage";
+import { test, expect } from "@bgotink/playwright-coverage";
+import type { Locator } from "@playwright/test";
 import { registerAndLogin } from "./helpers/auth";
 import { gotoAndWaitForHydration } from "./helpers/app";
 import { createCookbookWithRecipe } from "./helpers/cookbooks";
@@ -42,7 +43,7 @@ async function expectVisibleAgainstPrintBackground(
 ) {
   await expect(locator).toBeVisible();
 
-  const { backgroundColor, textColor } = await locator.evaluate((el) => {
+  const { backgroundColor, textColor } = await locator.evaluate((el: Element) => {
     let node: HTMLElement | null = el as HTMLElement;
     let bg = "";
     while (node) {

@@ -23,9 +23,9 @@ function renderDropdown({
   return render(
     <PaginatedSingleSelectDropdown
       value=""
-      onChange={onChange}
-      fetchPage={fetchPage}
-      fetchSearch={fetchSearch}
+      onChange={onChange as (id: string, name: string) => void}
+      fetchPage={fetchPage as (cursor: number) => Promise<PageResult>}
+      fetchSearch={fetchSearch as (query: string) => Promise<PaginatedOption[]>}
     />,
   )
 }

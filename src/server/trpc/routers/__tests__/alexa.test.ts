@@ -14,7 +14,7 @@ vi.mock("@/server/alexa/token-validation", () => ({
 
 async function getCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]) });
+  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]), sharedOwnerIds: [] });
 }
 
 /** Combines the standard clean-DB wrapper + anon caller setup shared by every test below. */

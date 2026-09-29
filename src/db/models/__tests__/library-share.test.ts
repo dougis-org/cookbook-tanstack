@@ -99,7 +99,7 @@ describe("LibraryShare model — indexes", () => {
   it("has an index on ownerId, on recipientId, and a unique index on the pair", async () => {
     await withCleanDb(async () => {
       await LibraryShare.init();
-      const indexes = await LibraryShare.collection.getIndexes({ full: true }) as { key: Record<string, number>; unique?: boolean }[];
+      const indexes = await LibraryShare.collection.listIndexes().toArray() as { key: Record<string, number>; unique?: boolean }[];
       const hasOwnerIndex = indexes.some((idx) => Object.keys(idx.key).length === 1 && "ownerId" in idx.key);
       const hasRecipientIndex = indexes.some((idx) => Object.keys(idx.key).length === 1 && "recipientId" in idx.key);
       const hasUniquePairIndex = indexes.some(

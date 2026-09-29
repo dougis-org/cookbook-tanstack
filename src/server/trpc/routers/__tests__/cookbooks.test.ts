@@ -334,7 +334,7 @@ describe("cookbooks.byId", () => {
       const { cb, r1, r2 } = await seedCookbookWithOrderedPair(owner.id);
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
-      expect(result!.recipes.map((r) => r.id)).toEqual([r2.id, r1.id]);
+      expect(result!.recipes.map((r) => (r as { id: string }).id)).toEqual([r2.id, r1.id]);
     });
   });
 
@@ -354,7 +354,7 @@ describe("cookbooks.byId", () => {
 
       const caller = await makeAnonCaller();
       const result = await caller.cookbooks.byId({ id: cb.id });
-      const ids = result!.recipes.map((r) => r.id);
+      const ids = result!.recipes.map((r) => (r as { id: string }).id);
       expect(ids).toContain(publicRecipe.id);
       expect(ids).not.toContain(privateRecipe.id);
     });
@@ -501,7 +501,7 @@ describe("cookbooks.addRecipe", () => {
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r1.id }); // duplicate
 
       const result = await caller.cookbooks.byId({ id: cb.id });
-      expect(result!.recipes.map((r) => r.id)).toEqual([r1.id, r2.id]);
+      expect(result!.recipes.map((r) => (r as { id: string }).id)).toEqual([r1.id, r2.id]);
     });
   });
 
@@ -523,7 +523,7 @@ describe("cookbooks.addRecipe", () => {
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r3.id });
 
       const result = await caller.cookbooks.byId({ id: cb.id });
-      const ids = result!.recipes.map((r) => r.id);
+      const ids = result!.recipes.map((r) => (r as { id: string }).id);
       expect(ids).toEqual([r2.id, r3.id]);
     });
   });
@@ -766,7 +766,7 @@ describe("cookbooks.reorderRecipes", () => {
       });
 
       const result = await caller.cookbooks.byId({ id: cb.id });
-      expect(result!.recipes.map((r) => r.id)).toEqual([r3.id, r1.id, r2.id]);
+      expect(result!.recipes.map((r) => (r as { id: string }).id)).toEqual([r3.id, r1.id, r2.id]);
     });
   });
 
@@ -791,7 +791,7 @@ describe("cookbooks.reorderRecipes", () => {
       const result = await caller.cookbooks.byId({ id: cb.id });
       // r1 retains orderIndex 0; r2 gets orderIndex 0 too (position in new list).
       // byId sorts by orderIndex then by insertion order, so both at 0 come back in stable order.
-      const ids = result!.recipes.map((r) => r.id);
+      const ids = result!.recipes.map((r) => (r as { id: string }).id);
       expect(ids).toContain(r1.id);
       expect(ids).toContain(r2.id);
     });
@@ -818,7 +818,7 @@ describe("cookbooks.reorderRecipes", () => {
       });
 
       const result = await caller.cookbooks.byId({ id: cb.id });
-      expect(result!.recipes.map((r) => r.id)).toEqual([r3.id, r1.id, r2.id]);
+      expect(result!.recipes.map((r) => (r as { id: string }).id)).toEqual([r3.id, r1.id, r2.id]);
     });
   });
 
@@ -847,7 +847,7 @@ describe("cookbooks.reorderRecipes", () => {
       });
 
       const result = await caller.cookbooks.byId({ id: cb.id });
-      const movedRecipe = result!.recipes.find((r) => r.id === r1.id);
+      const movedRecipe = result!.recipes.find((r) => (r as { id: string }).id === r1.id);
       expect(movedRecipe!.chapterId).toBe(ch2Id);
     });
   });
@@ -1065,7 +1065,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const { chapterId } = await caller.cookbooks.createChapter({ cookbookId: cb.id });
       await caller.cookbooks.addRecipe({ cookbookId: cb.id, recipeId: r.id, chapterId });
       const before = await caller.cookbooks.byId({ id: cb.id });
-      const beforeStub = before!.recipes.find((x) => x.id === r.id)!;
+      const beforeStub = before!.recipes.find((x) => (x as { id: string }).id === r.id)!;
 
       const unchapteredRecipe = await new Recipe({ name: "Extra", userId: cb.userId, isPublic: true }).save();
       await Cookbook.findByIdAndUpdate(cb.id, { $push: { recipes: { recipeId: unchapteredRecipe.id, orderIndex: 5 } } });
@@ -1073,7 +1073,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       await caller.cookbooks.buildChaptersByCategory({ cookbookId: cb.id });
 
       const after = await caller.cookbooks.byId({ id: cb.id });
-      const afterStub = after!.recipes.find((x) => x.id === r.id)!;
+      const afterStub = after!.recipes.find((x) => (x as { id: string }).id === r.id)!;
       expect(afterStub.chapterId).toBe(beforeStub.chapterId);
       expect(afterStub.orderIndex).toBe(beforeStub.orderIndex);
     });
@@ -1143,7 +1143,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       // The new stub must not be assigned orderIndex 0, since the legacy chaptered stub with no
       // orderIndex field sorts as 0 elsewhere in the codebase -- a collision would make ordering
       // ambiguous between the legacy stub and the newly-chaptered one.
-      expect(newlyChaptered.orderIndex).toBeGreaterThan(0);
+      expect(newlyChaptered!.orderIndex).toBeGreaterThan(0);
     });
   });
 
@@ -1213,7 +1213,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const privateStub = persisted!.recipes.find(
         (r: { recipeId: unknown }) => String(r.recipeId) === String(privateRecipe.id),
       );
-      expect(privateStub.chapterId).toBeUndefined();
+      expect(privateStub!.chapterId).toBeUndefined();
     });
   });
 
@@ -1237,7 +1237,7 @@ describe("cookbooks.buildChaptersByCategory", () => {
       const persisted = await Cookbook.findById(cb.id).lean();
       const stubFor = (id: string) =>
         persisted!.recipes.find((r: { recipeId: unknown }) => String(r.recipeId) === id);
-      expect(stubFor(String(recipeA.id)).orderIndex).toBeLessThan(stubFor(String(recipeB.id)).orderIndex);
+      expect(stubFor(String(recipeA.id))!.orderIndex!).toBeLessThan(stubFor(String(recipeB.id))!.orderIndex!);
     });
   });
 
@@ -2000,8 +2000,8 @@ describe("cookbooks - personalSourceName stripping", () => {
       expect(ownerResult).not.toBeNull();
       const ownerRecipes = ownerResult!.recipes;
 
-      const r1AsOwner = ownerRecipes.find((r) => r.id === r1.id);
-      const r2AsVisitor = ownerRecipes.find((r) => r.id === r2.id);
+      const r1AsOwner = ownerRecipes.find((r) => (r as { id: string }).id === r1.id) as { id: string; personalSourceName?: string } | undefined;
+      const r2AsVisitor = ownerRecipes.find((r) => (r as { id: string }).id === r2.id) as { id: string; personalSourceName?: string } | undefined;
 
       expect(r1AsOwner?.personalSourceName).toBe("Owner Recipe Source");
       expect(r2AsVisitor).toBeDefined();

@@ -91,12 +91,19 @@ export function uid() {
 
 export async function makeAnonCaller() {
   const { appRouter } = await import("@/server/trpc/router");
-  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]) });
+  return appRouter.createCaller({ session: null, user: null, getCollabCookbookIds: () => Promise.resolve([]), sharedOwnerIds: [] });
 }
 
 export async function makeAuthCaller(
   userId: string,
-  opts: { email?: string; tier?: string; isAdmin?: boolean; emailVerified?: boolean; collabCookbookIds?: string[] } = {},
+  opts: {
+    email?: string;
+    tier?: string;
+    isAdmin?: boolean;
+    emailVerified?: boolean;
+    collabCookbookIds?: string[];
+    sharedOwnerIds?: string[];
+  } = {},
 ) {
   const { appRouter } = await import("@/server/trpc/router");
   return appRouter.createCaller({
@@ -109,11 +116,89 @@ export async function makeAuthCaller(
       isAdmin: opts.isAdmin ?? false,
     } as never,
     getCollabCookbookIds: () => Promise.resolve(opts.collabCookbookIds ?? []),
+    sharedOwnerIds: opts.sharedOwnerIds ?? [],
   });
 }
 
 export async function makeTieredCaller(tier: UserTier, isAdmin = false) {
   return makeAuthCaller(new Types.ObjectId().toHexString(), { tier, isAdmin });
+}
+
+/** Sets a user's tier directly in the BetterAuth user collection (bypasses billing). */
+export async function setUserTier(userId: string, tier: string) {
+  const { getBetterAuthCollection } = await import("@/db");
+  await getBetterAuthCollection("user").updateOne(
+    { _id: new Types.ObjectId(userId) },
+    { $set: { tier } },
+  );
+}
+
+/** Seeds a grant and returns a recipient caller whose sharedOwnerIds reflects it live. */
+export async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
+  const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
+  return makeAuthCaller(recipientId, { tier: opts.tier ?? "home-cook", sharedOwnerIds });
+}
+
+
+/**
+ * Resolves the current `sharedOwnerIds` a recipient would see, via the same
+ * `sharingEligibleOwnerStages()` pipeline `ctx.sharedOwnerIds` uses (context.ts).
+ * Re-runs the real eligibility computation rather than assuming grants are always
+ * eligible, so tests exercise the same tier/admin gating production requests do.
+ */
+export async function resolveSharedOwnerIds(recipientId: string): Promise<string[]> {
+  const { sharingEligibleOwnerStages } = await import("../_helpers");
+  const { LibraryShare } = await import("@/db/models");
+  const rows = await LibraryShare.aggregate<{ ownerId: Types.ObjectId }>([
+    { $match: { recipientId: new Types.ObjectId(recipientId) } },
+    ...sharingEligibleOwnerStages(),
+    { $project: { ownerId: 1 } },
+  ]);
+  return rows.map((r) => r.ownerId.toString());
+}
+
+/** Seeds an owner + recipient pair with an active `LibraryShare` grant between them. */
+export async function seedLibraryShareGrant(opts: { ownerTier?: string } = {}) {
+  const { LibraryShare } = await import("@/db/models");
+  const owner = await seedUserWithBetterAuth();
+  await setUserTier(owner.id, opts.ownerTier ?? "executive-chef");
+  const recipient = await seedUserWithBetterAuth();
+  const grant = await LibraryShare.create({ ownerId: owner.id, recipientId: recipient.id, addedBy: owner.id });
+  return { owner, recipient, grant };
+}
+
+/**
+ * Seeds a grant plus a single private recipe owned by the grantor — the setup
+ * shared across most of the sharing-read-path test suites. `recipeFields`
+ * overrides/extends the default `{ name: "Secret Soup" }`.
+ */
+export async function seedGrantWithPrivateRecipe(recipeFields: Record<string, unknown> = {}) {
+  const { Recipe } = await import("@/db/models");
+  const { owner, recipient, grant } = await seedLibraryShareGrant();
+  const recipe = await new Recipe({ name: "Secret Soup", userId: owner.id, isPublic: false, ...recipeFields }).save();
+  return { owner, recipient, grant, recipe };
+}
+
+/** Seeds a grant plus a single private cookbook owned by the grantor. */
+export async function seedGrantWithPrivateCookbook(cookbookFields: Record<string, unknown> = {}) {
+  const { Cookbook } = await import("@/db/models");
+  const { owner, recipient, grant } = await seedLibraryShareGrant();
+  const cookbook = await new Cookbook({ name: "Secret Book", userId: owner.id, isPublic: false, recipes: [], ...cookbookFields }).save();
+  return { owner, recipient, grant, cookbook };
+}
+
+/**
+ * Seeds a grant, a private recipe owned by the grantor, and the recipient's own
+ * cookbook already containing that recipe as a cross-owner entry.
+ */
+export async function seedGrantWithCookbookEntry(recipeFields: Record<string, unknown> = {}) {
+  const { Cookbook } = await import("@/db/models");
+  const { owner, recipient, grant, recipe: sharedRecipe } = await seedGrantWithPrivateRecipe(recipeFields);
+  const ownCookbook = await new Cookbook({
+    name: "My Cookbook", userId: recipient.id, isPublic: false,
+    recipes: [{ recipeId: sharedRecipe.id, orderIndex: 0 }],
+  }).save();
+  return { owner, recipient, grant, sharedRecipe, ownCookbook };
 }
 
 export async function withSeededUser<TReturn>(

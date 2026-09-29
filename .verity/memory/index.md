@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (35)
+## decisions/ (75)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -76,6 +76,93 @@
   *decision* · 86%
 - [[n054-only-inject-analytics-ids-from-validated-productio]] — **Only inject analytics IDs from validated production env values**
   *decision* · 86%
+- [[n065-warm-production-and-authentication-endpoints-befor]] — **Warm production and authentication endpoints before production-mode E2E tests**
+  *decision* · 84%
+- [[n066-generate-better-auth-secrets-at-ci-job-runtime]] — **Generate Better Auth secrets at CI job runtime**
+  *decision* · 90% · scope: `.github/workflows/*test*.yml`
+- [[n067-warm-all-lazy-loaded-ssr-paths-before-production-s]] — **Warm all lazy-loaded SSR paths before production-server E2E tests**
+  *decision* · 84% · scope: `.github/workflows/**`
+- [[n068-use-one-bounded-bot-managed-pr-status-comment]] — **Use one bounded bot-managed PR status comment**
+  *decision* · 82% · scope: `.github/workflows/**`
+- [[n069-never-auto-commit-dependency-lockfile-changes-from]] — **Never auto-commit dependency lockfile changes from pull-request CI**
+  *decision* · 93% · scope: `.github/workflows/*`, `package-lock.json`
+- [[n070-preserve-legacy-account-routes-as-redirects-during]] — **Preserve legacy account routes as redirects during UX consolidation**
+  *decision* · 82% · scope: `**/account/**`
+- [[n071-allowlist-and-safely-escape-theme-ids-in-bootstrap]] — **Allowlist and safely escape theme IDs in bootstrap scripts**
+  *decision* · 91%
+- [[n072-require-both-shell-visibility-and-router-idle-befo]] — **Require both shell visibility and router idle before treating pages as hydrated**
+  *decision* · 86% · scope: `**/e2e/**`
+- [[n073-warm-both-the-application-root-and-auth-session-en]] — **Warm both the application root and auth session endpoint before E2E tests**
+  *decision* · 82% · scope: `.github/workflows/**`
+- [[n074-preserve-legacy-account-routes-as-authenticated-re]] — **Preserve legacy account routes as authenticated redirects**
+  *decision* · 88% · scope: `src/routes/**/account*.tsx`
+- [[n075-scope-public-recipe-ad-eligibility-with-explicit-p]] — **Scope public recipe ad eligibility with explicit PageLayout roles**
+  *decision* · 89%
+- [[n076-reject-external-avatar-urls-unless-an-image-provid]] — **Reject external avatar URLs unless an image provider is explicitly allowlisted**
+  *decision* · 91% · scope: `**/account/**`
+- [[n077-validate-session-objectids-before-constructing-aut]] — **Validate session ObjectIds before constructing authorization filters**
+  *decision* · 86% · scope: `**/account/**`
+- [[n078-use-the-shared-better-auth-collection-helper-for-u]] — **Use the shared Better Auth collection helper for user data access**
+  *decision* · 88%
+- [[n079-normalize-user-search-input-and-enforce-a-2-254-ch]] — **Normalize user search input and enforce a 2–254 character bound**
+  *decision* · 82% · scope: `**/routers/users.ts`
+- [[n080-bound-and-trim-users-router-search-input-before-qu]] — **Bound and trim users-router search input before querying**
+  *decision* · 86%
+- [[n081-escape-user-search-text-before-constructing-mongod]] — **Escape user search text before constructing MongoDB regex filters**
+  *decision* · 93%
+- [[n082-bound-and-normalize-user-search-input-before-query]] — **Bound and normalize user-search input before querying**
+  *decision* · 86%
+- [[n083-trim-and-bound-users-router-search-input-before-ex]] — **Trim and bound users-router search input before executing queries**
+  *decision* · 82%
+- [[n084-bound-and-normalize-user-search-input-before-datab]] — **Bound and normalize user-search input before database access**
+  *decision* · 86%
+- [[n085-enforce-bounded-trimmed-input-before-user-search-q]] — **Enforce bounded, trimmed input before user-search query construction**
+  *decision* · 86% · scope: `src/**/routers/users*`
+- [[n086-require-verified-executive-chef-authorization-for]] — **Require verified executive-chef authorization for authenticated user search**
+  *decision* · 87%
+- [[n087-model-account-wide-sharing-as-unique-owner-to-reci]] — **Model account-wide sharing as unique owner-to-recipient grants**
+  *decision* · 90% · scope: `**/*library*share*`, `**/models/*share*`
+- [[n088-represent-shared-cookbook-content-as-live-owner-re]] — **Represent shared cookbook content as live owner references**
+  *decision* · 92%
+- [[n089-resolve-shared-owner-access-in-request-context-and]] — **Resolve shared-owner access in request context and fail closed on tier lookup errors**
+  *decision* · 88%
+- [[n090-retain-sharing-grants-and-evaluate-tier-eligibilit]] — **Retain sharing grants and evaluate tier eligibility at read time**
+  *decision* · 86%
+- [[n091-retain-sharing-grants-across-owner-tier-changes]] — **Retain sharing grants across owner tier changes**
+  *decision* · 88% · scope: `**/share-my-library/**`
+- [[n092-exclude-pending-verification-content-from-shared-o]] — **Exclude pending-verification content from shared-owner visibility results**
+  *decision* · 88%
+- [[n093-use-the-database-singleton-as-the-sole-mongodb-con]] — **Use the database singleton as the sole MongoDB connection entry point**
+  *decision* · 73% · scope: `**/db/**`
+- [[n096-allow-list-fields-returned-by-sharing-list-endpoin]] — **Allow-list fields returned by sharing-list endpoints**
+  *decision* · 72%
+- [[n097-keep-collaborator-lookup-outages-retryable-without]] — **Keep collaborator lookup outages retryable without broadening shared access**
+  *decision* · 75%
+- [[n098-keep-alexa-integration-adapters-read-only]] — **Keep Alexa integration adapters read-only**
+  *decision* · 77% · scope: `**/alexa/**`
+- [[n099-fail-visibly-when-collaborator-cookbook-lookup-fai]] — **Fail visibly when collaborator cookbook lookup fails**
+  *decision* · 72% · scope: `**/trpc/**`
+- [[n100-fail-closed-when-resolving-shared-cookbook-access]] — **Fail closed when resolving shared cookbook access**
+  *decision* · 76%
+- [[n101-project-only-public-fields-from-joined-users-in-sh]] — **Project only public fields from joined users in sharing listings**
+  *decision* · 79%
+- [[n102-keep-personal-and-eligibility-data-out-of-sharing]] — **Keep personal and eligibility data out of sharing-grant results**
+  *decision* · 79% · scope: `**/library-sharing/**`
+- [[n103-resolve-shared-cookbook-entries-through-caller-vis]] — **Resolve shared cookbook entries through caller visibility at read time**
+  *decision* · 83%
+- [[n104-resolve-shared-cookbook-recipes-at-read-time]] — **Resolve shared cookbook recipes at read time**
+  *decision* · 79%
+- [[n105-keep-cross-owner-cookbook-entries-as-read-time-ref]] — **Keep cross-owner cookbook entries as read-time references**
+  *decision* · 82%
+- [[n106-derive-mutation-coverage-from-registered-router-pr]] — **Derive mutation coverage from registered router procedures**
+  *decision* · 78%
+
+## gotchas/ (2)
+
+- [[n094-the-design-md-prescribed-exists-then-aggregate-gua]] — **The design.md-prescribed exists()-then-aggregate() guard pattern for cheap query-count optimizations is a trap: an existence-check guard before a conditional query never actually reduces total round-t**
+  *gotcha* · 70% · scope: `src/server/trpc/context.ts`, `openspec/changes/archive/2026-09-25-share-my-library-foundation/design.md`, `openspec/changes/archive/2026-09-25-share-my-library-foundation/specs/library-sharing-foundation/spec.md`
+- [[n095-when-multiple-worktrees-checkouts-share-one-local]] — **When multiple worktrees/checkouts share one local MongoDB instance (mongodb://localhost:27017/cookbook, the Docker default), Better-Auth's JWKS keys are shared too. If a stale JWKS record exists (encr**
+  *gotcha* · 70% · scope: `docker-compose.yml`
 
 ## patterns/ (1)
 
