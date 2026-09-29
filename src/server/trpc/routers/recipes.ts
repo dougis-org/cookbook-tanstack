@@ -123,46 +123,48 @@ export const recipesRouter = router({
       // `filter.isPublic = ...` assignment would silently clobber it — combine both
       // under $and instead, the same pattern used for `search` below.
       Object.assign(filter, visibilityFilter(ctx.user, [], ctx.sharedOwnerIds));
-      if (input?.isPublic !== undefined) {
-        const visibilityIsPublic = filter.isPublic;
-        delete filter.isPublic;
-        filter.$and = [
-          ...(filter.$and ?? []),
-          ...(visibilityIsPublic !== undefined ? [{ isPublic: visibilityIsPublic }] : []),
-          { isPublic: input.isPublic },
-        ];
-      }
-
-      if (input?.classificationIds?.length)
-        filter.classificationId = { $in: input.classificationIds };
-      if (input?.sourceIds?.length)
-        filter.sourceId = { $in: input.sourceIds };
-      if (input?.userId) filter.userId = input.userId;
-
-      if (input?.search) {
-        const term = escapeRegex(input.search.trim());
-        if (term) {
-          const searchOr = [
-            { name: { $regex: term, $options: "i" } },
-            { ingredients: { $regex: term, $options: "i" } },
+      if (input) {
+        if (input.isPublic !== undefined) {
+          const visibilityIsPublic = filter.isPublic;
+          delete filter.isPublic;
+          filter.$and = [
+            ...(filter.$and ?? []),
+            ...(visibilityIsPublic !== undefined ? [{ isPublic: visibilityIsPublic }] : []),
+            { isPublic: input.isPublic },
           ];
-          // filter.$or may already hold the visibility clause (from visibilityFilter
-          // above) — a second `filter.$or =` here would silently discard it and bypass
-          // visibility entirely for any search query. Combine both under $and instead.
-          if (filter.$or) {
-            filter.$and = [...(filter.$and ?? []), { $or: filter.$or }, { $or: searchOr }];
-            delete filter.$or;
-          } else {
-            filter.$or = searchOr;
+        }
+
+        if (input.classificationIds?.length)
+          filter.classificationId = { $in: input.classificationIds };
+        if (input.sourceIds?.length)
+          filter.sourceId = { $in: input.sourceIds };
+        if (input.userId) filter.userId = input.userId;
+
+        if (input.search) {
+          const term = escapeRegex(input.search.trim());
+          if (term) {
+            const searchOr = [
+              { name: { $regex: term, $options: "i" } },
+              { ingredients: { $regex: term, $options: "i" } },
+            ];
+            // filter.$or may already hold the visibility clause (from visibilityFilter
+            // above) — a second `filter.$or =` here would silently discard it and bypass
+            // visibility entirely for any search query. Combine both under $and instead.
+            if (filter.$or) {
+              filter.$and = [...(filter.$and ?? []), { $or: filter.$or }, { $or: searchOr }];
+              delete filter.$or;
+            } else {
+              filter.$or = searchOr;
+            }
           }
         }
-      }
 
-      if (input?.hasImage) filter.imageUrl = { $exists: true, $ne: null };
-      if (input?.minServings !== undefined)
-        filter.servings = { ...filter.servings, $gte: input.minServings };
-      if (input?.maxServings !== undefined)
-        filter.servings = { ...filter.servings, $lte: input.maxServings };
+        if (input.hasImage) filter.imageUrl = { $exists: true, $ne: null };
+        if (input.minServings !== undefined)
+          filter.servings = { ...filter.servings, $gte: input.minServings };
+        if (input.maxServings !== undefined)
+          filter.servings = { ...filter.servings, $lte: input.maxServings };
+      }
 
       if (input?.mealIds?.length) filter.mealIds = { $in: input.mealIds };
       if (input?.courseIds?.length) filter.courseIds = { $in: input.courseIds };
