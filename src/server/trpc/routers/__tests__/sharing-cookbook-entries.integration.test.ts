@@ -15,14 +15,10 @@ import {
   seedGrantWithCookbookEntry,
   resolveSharedOwnerIds,
   setUserTier,
+  callerFor,
 } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
-
-async function callerFor(recipientId: string) {
-  const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
-  return makeAuthCaller(recipientId, { sharedOwnerIds });
-}
 
 describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
   it("adds the owner's shared recipe to the recipient's cookbook without creating a new Recipe document or touching quota", async () => {

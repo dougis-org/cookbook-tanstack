@@ -18,14 +18,10 @@ import {
   seedGrantWithPrivateRecipe,
   resolveSharedOwnerIds,
   setUserTier,
+  callerFor,
 } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
-
-async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
-  const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
-  return makeAuthCaller(recipientId, { tier: opts.tier ?? "home-cook", sharedOwnerIds });
-}
 
 interface Fixture {
   owner: { id: string; name: string };

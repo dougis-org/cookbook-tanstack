@@ -133,6 +133,13 @@ export async function setUserTier(userId: string, tier: string) {
   );
 }
 
+/** Seeds a grant and returns a recipient caller whose sharedOwnerIds reflects it live. */
+export async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
+  const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
+  return makeAuthCaller(recipientId, { tier: opts.tier ?? "home-cook", sharedOwnerIds });
+}
+
+
 /**
  * Resolves the current `sharedOwnerIds` a recipient would see, via the same
  * `sharingEligibleOwnerStages()` pipeline `ctx.sharedOwnerIds` uses (context.ts).

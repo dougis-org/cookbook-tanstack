@@ -15,15 +15,10 @@ import {
   seedGrantWithPrivateCookbook,
   resolveSharedOwnerIds,
   setUserTier,
+  callerFor,
 } from "./test-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
-
-/** Seeds a grant and returns a recipient caller whose sharedOwnerIds reflects it live. */
-async function callerFor(recipientId: string, opts: { tier?: string } = {}) {
-  const sharedOwnerIds = await resolveSharedOwnerIds(recipientId);
-  return makeAuthCaller(recipientId, { tier: opts.tier, sharedOwnerIds });
-}
 
 describe("Task 3.1 — recipient visibility via ctx.sharedOwnerIds", () => {
   it("recipes.list includes the owner's private recipe", async () => {
