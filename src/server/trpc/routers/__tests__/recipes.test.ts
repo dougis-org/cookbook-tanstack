@@ -1179,7 +1179,19 @@ describe("recipes.list — hasImage filter", () => {
 // ─── recipes.list — servings range filter ─────────────────────────────────────
 
 async function seedServingsRecipes() {
-  const { user } = await seedServingsRecipes();
+  const user = await seedUser();
+  await new Recipe({
+    name: "Small Batch",
+    userId: user.id,
+    isPublic: true,
+    servings: 2,
+  }).save();
+  await new Recipe({
+    name: "Large Batch",
+    userId: user.id,
+    isPublic: true,
+    servings: 8,
+  }).save();
   return { user };
 }
 
@@ -1569,7 +1581,13 @@ describe("recipes.list — marked field", () => {
 // ─── recipes.byId — marked field ─────────────────────────────────────────────
 
 async function seedPublicRecipeWithViewer() {
-  const { viewer, recipe } = await seedPublicRecipeWithViewer();
+  const owner = await seedUser();
+  const viewer = await seedUser();
+  const recipe = await new Recipe({
+    name: "Public Recipe",
+    userId: owner.id,
+    isPublic: true,
+  }).save();
   return { owner, viewer, recipe };
 }
 
