@@ -104,25 +104,23 @@ describe("Task 3.3 — adding shared recipes to own cookbooks", () => {
     });
   });
 
-  async function assertDegradesToUnavailable(action: (fixture: Awaited<ReturnType<typeof seedGrantWithCookbookEntry>>) => Promise<void>) {
+  it("degrades to unavailable: true after the owner's tier drops below executive-chef", async () => {
     await withCleanDb(async () => {
       const fixture = await seedGrantWithCookbookEntry();
-      await action(fixture);
+      await setUserTier(fixture.owner.id, "sous-chef");
       const caller = await callerFor(fixture.recipient.id);
       const result = await caller.cookbooks.byId({ id: fixture.ownCookbook.id });
       expect(result!.recipes[0]).toMatchObject({ unavailable: true });
     });
-  }
-
-  it("degrades to unavailable: true after the owner's tier drops below executive-chef", async () => {
-    await assertDegradesToUnavailable(async ({ owner }) => {
-      await setUserTier(owner.id, "sous-chef");
-    });
   });
 
   it("degrades to unavailable: true after the owner soft-deletes the recipe (grant still active)", async () => {
-    await assertDegradesToUnavailable(async ({ sharedRecipe }) => {
-      await Recipe.updateOne({ _id: sharedRecipe._id }, { $set: { deleted: true } });
+    await withCleanDb(async () => {
+      const fixture = await seedGrantWithCookbookEntry();
+      await Recipe.updateOne({ _id: fixture.sharedRecipe._id }, { $set: { deleted: true } });
+      const caller = await callerFor(fixture.recipient.id);
+      const result = await caller.cookbooks.byId({ id: fixture.ownCookbook.id });
+      expect(result!.recipes[0]).toMatchObject({ unavailable: true });
     });
   });
 
