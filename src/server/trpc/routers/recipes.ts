@@ -134,9 +134,9 @@ export const recipesRouter = router({
           ];
         }
 
-        if (input.classificationIds?.length)
+        if (input.classificationIds)
           filter.classificationId = { $in: input.classificationIds };
-        if (input.sourceIds?.length)
+        if (input.sourceIds)
           filter.sourceId = { $in: input.sourceIds };
         if (input.userId) filter.userId = input.userId;
 
@@ -166,9 +166,9 @@ export const recipesRouter = router({
           filter.servings = { ...filter.servings, $lte: input.maxServings };
       }
 
-      if (input?.mealIds?.length) filter.mealIds = { $in: input.mealIds };
-      if (input?.courseIds?.length) filter.courseIds = { $in: input.courseIds };
-      if (input?.preparationIds?.length)
+      if (input?.mealIds) filter.mealIds = { $in: input.mealIds };
+      if (input?.courseIds) filter.courseIds = { $in: input.courseIds };
+      if (input?.preparationIds)
         filter.preparationIds = { $in: input.preparationIds };
 
       let likedIds: Set<string> | null = null;
