@@ -178,10 +178,11 @@ export const recipesRouter = router({
           .select("recipeId -_id")
           .lean();
         likedIds = new Set(likedDocs.map((l) => l.recipeId.toString()));
-        if (input?.markedByMe) {
+        if (input && input.markedByMe) {
           if (likedIds.size === 0) {
-            const page = input?.cursor ?? input?.page ?? 1;
-            const pageSize = input?.pageSize ?? 20;
+            const safeInput = input || {};
+            const page = safeInput.cursor ?? safeInput.page ?? 1;
+            const pageSize = safeInput.pageSize ?? 20;
             return { items: [], total: 0, page, pageSize, nextCursor: undefined };
           }
           filter._id = { $in: [...likedIds] };
@@ -197,10 +198,10 @@ export const recipesRouter = router({
         servings_desc: { servings: -1 },
         updated_desc: { updatedAt: -1 },
       } as const;
-      const sort = sortMap[input?.sort ?? "newest"];
-
-      const page = input?.cursor ?? input?.page ?? 1;
-      const pageSize = input?.pageSize ?? 20;
+      const safeInput = input || {};
+      const sort = sortMap[safeInput.sort ?? "newest"];
+      const page = safeInput.cursor ?? safeInput.page ?? 1;
+      const pageSize = safeInput.pageSize ?? 20;
       const offset = (page - 1) * pageSize;
 
       const [rawItems, total] = await Promise.all([
