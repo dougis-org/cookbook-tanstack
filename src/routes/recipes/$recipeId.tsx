@@ -110,6 +110,10 @@ export function RecipeDetailPage() {
             role="img"
             aria-label="You own this"
           />
+        ) : recipe.sharedBy ? (
+          <span className="text-sm text-[var(--theme-fg-muted)] print:hidden">
+            Shared by {recipe.sharedBy.name}
+          </span>
         ) : (
           <span />
         )}

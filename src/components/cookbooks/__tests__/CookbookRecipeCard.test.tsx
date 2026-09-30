@@ -17,14 +17,14 @@ vi.mock('@tanstack/react-router', async () => {
 // ─── DnD mocks ───────────────────────────────────────────────────────────────
 
 vi.mock('@dnd-kit/sortable', () => ({
-  useSortable: () => ({
+  useSortable: vi.fn(() => ({
     attributes: {},
     listeners: {},
     setNodeRef: vi.fn(),
     transform: null,
     transition: undefined,
     isDragging: false,
-  }),
+  })),
 }))
 
 vi.mock('@dnd-kit/utilities', () => ({
@@ -157,5 +157,45 @@ describe('SortableRecipeCard', () => {
   it('renders metadata line when present', () => {
     render(<SortableRecipeCard recipe={baseRecipe} index={0} onRemove={vi.fn()} />)
     expect(screen.getByText('Prep 20m · Cook 35m · 4 servings')).toBeInTheDocument()
+  })
+})
+
+// ─── Unavailable entries (Task 4.3) ────────────────────────────────────────────
+
+const unavailableRecipe = { id: 'r-dead', unavailable: true as const }
+
+describe('SortableRecipeCard — unavailable entry', () => {
+  it('renders a placeholder in its original position with no recipe name or content', () => {
+    render(<SortableRecipeCard recipe={unavailableRecipe} index={0} onRemove={vi.fn()} />)
+    expect(screen.getByText('N/A')).toBeInTheDocument()
+    expect(screen.queryByText('Spaghetti Bolognese')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  })
+
+  it('does not render a drag handle', () => {
+    render(<SortableRecipeCard recipe={unavailableRecipe} index={0} onRemove={vi.fn()} />)
+    expect(screen.queryByLabelText('Drag to reorder')).not.toBeInTheDocument()
+  })
+
+  it('calls useSortable with disabled: true', async () => {
+    const { useSortable } = await import('@dnd-kit/sortable')
+    render(<SortableRecipeCard recipe={unavailableRecipe} index={0} onRemove={vi.fn()} />)
+    expect(useSortable).toHaveBeenCalledWith(expect.objectContaining({ id: 'r-dead', disabled: true }))
+  })
+
+  it('still renders an active remove control', () => {
+    const onRemove = vi.fn()
+    render(<SortableRecipeCard recipe={unavailableRecipe} index={0} onRemove={onRemove} />)
+    const removeBtn = screen.getByLabelText(/remove/i)
+    removeBtn.click()
+    expect(onRemove).toHaveBeenCalled()
+  })
+})
+
+describe('StaticRecipeCard — unavailable entry', () => {
+  it('renders a placeholder with N/A copy and no recipe content', () => {
+    render(<StaticRecipeCard recipe={unavailableRecipe} index={0} />)
+    expect(screen.getByText('N/A')).toBeInTheDocument()
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
   })
 })

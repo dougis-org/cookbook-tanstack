@@ -189,31 +189,31 @@ it fails for the expected reason, then implement until it passes.
 
 ### Phase 4 — Content UI (PR 4)
 
-- [ ] **4.1 — "Shared with me" badges**
-  - [ ] Write failing component tests for `RecipeCard` and `CookbookCard` rendering the
+- [x] **4.1 — "Shared with me" badges**
+  - [x] Write failing component tests for `RecipeCard` and `CookbookCard` rendering the
         badge when `sharedBy` is set and omitting it when `null`.
-  - [ ] Implement in `src/components/recipes/RecipeCard.tsx` and
+  - [x] Implement in `src/components/recipes/RecipeCard.tsx` and
         `src/components/cookbooks/CookbookCard.tsx`. Use a Lucide icon and
         `--theme-*` tokens only — no hard-coded colors, no emoji.
   - _Covers spec: ADDED Recipient visibility_
 
-- [ ] **4.2 — Gate edit affordances on shared content**
-  - [ ] Write failing tests asserting edit/delete controls are absent on recipe and
+- [x] **4.2 — Gate edit affordances on shared content**
+  - [x] Write failing tests asserting edit/delete controls are absent on recipe and
         cookbook detail views when `sharedBy` is set, and that owner attribution shows.
-  - [ ] Implement in the recipe and cookbook detail routes.
+  - [x] Implement in the recipe and cookbook detail routes.
   - _Covers spec: ADDED Read-only enforcement (UI half)_
 
-- [ ] **4.3 — Unavailable entry placeholder**
-  - [ ] Write a failing test asserting an entry with `unavailable: true` renders a
+- [x] **4.3 — Unavailable entry placeholder**
+  - [x] Write a failing test asserting an entry with `unavailable: true` renders a
         placeholder that preserves position and reveals no recipe content.
-  - [ ] Implement in the cookbook detail view. Copy must use the `N/A`-style empty
+  - [x] Implement in the cookbook detail view. Copy must use the `N/A`-style empty
         convention and sentence case.
   - _Covers spec: ADDED Unavailable shared entries (UI half)_
 
-- [ ] **4.4 — Quota displays exclude shared content**
-  - [ ] Write a failing test: a `home-cook` recipient owning 3 recipes with 50 shared
+- [x] **4.4 — Quota displays exclude shared content**
+  - [x] Write a failing test: a `home-cook` recipient owning 3 recipes with 50 shared
         recipes visible sees usage of 3, and can still create recipes.
-  - [ ] Audit every place recipe/cookbook counts are computed for display or limit
+  - [x] Audit every place recipe/cookbook counts are computed for display or limit
         enforcement; ensure each counts owned content only. Keep the entitlement
         decision itself in `src/lib/tier-entitlements.ts` rather than inlining it.
   - _Covers spec: ADDED Quota displays exclude shared content_

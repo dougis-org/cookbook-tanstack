@@ -109,6 +109,7 @@ export function CookbooksPage() {
               <CookbookCard
                 cookbook={{ ...cb, description: cb.description ?? null, imageUrl: cb.imageUrl ?? null }}
                 isOwner={isLoggedIn && cb.userId === userId}
+                sharedBy={cb.sharedBy}
               />
             </Link>
           ))}

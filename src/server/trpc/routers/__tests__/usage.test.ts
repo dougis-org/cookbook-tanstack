@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest"
 import mongoose from "mongoose"
 import { withCleanDb } from "@/test-helpers/with-clean-db"
 import { Recipe, Cookbook } from "@/db/models"
-import { makeAuthCaller, makeAnonCaller, seedUserWithBetterAuth } from "./test-helpers"
+import { makeAuthCaller, makeAnonCaller, seedUserWithBetterAuth, seedLibraryShareGrant, callerFor } from "./test-helpers"
 
 describe("usage.getOwned", () => {
   it("returns { recipeCount, cookbookCount } for authenticated user with content", async () => {
@@ -83,6 +83,21 @@ describe("usage.getOwned", () => {
       await new Recipe({ name: "Pending", userId: user.id, isPublic: true, pendingVerification: true }).save()
       const result = await caller.usage.getOwned()
       expect(result).toEqual({ recipeCount: 2, cookbookCount: 0 })
+    })
+  })
+
+  it("T4.4 — excludes shared content: recipient with 3 owned recipes and 50 shared recipes reports 3", async () => {
+    await withCleanDb(async () => {
+      const { owner, recipient } = await seedLibraryShareGrant()
+      for (let i = 0; i < 3; i++) {
+        await new Recipe({ name: `Mine ${i}`, userId: recipient.id, isPublic: false }).save()
+      }
+      for (let i = 0; i < 50; i++) {
+        await new Recipe({ name: `Owner's ${i}`, userId: owner.id, isPublic: false }).save()
+      }
+      const caller = await callerFor(recipient.id)
+      const result = await caller.usage.getOwned()
+      expect(result).toEqual({ recipeCount: 3, cookbookCount: 0 })
     })
   })
 })

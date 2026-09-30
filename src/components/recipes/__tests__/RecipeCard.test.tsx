@@ -122,4 +122,30 @@ describe("RecipeCard", () => {
       expect(icon).toHaveAttribute("aria-label", "You own this")
     })
   })
+
+  describe("sharedBy prop", () => {
+    it("renders the 'Shared with me' badge when sharedBy is set", () => {
+      render(<RecipeCard recipe={makeRecipe()} sharedBy={{ id: "u-1", name: "Alex" }} />)
+      expect(screen.getByText("Shared with me")).toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is null", () => {
+      render(<RecipeCard recipe={makeRecipe()} sharedBy={null} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is omitted", () => {
+      render(<RecipeCard recipe={makeRecipe()} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+
+    it("renders no hard-coded hex color and no emoji in the badge", () => {
+      const { container } = render(
+        <RecipeCard recipe={makeRecipe()} sharedBy={{ id: "u-1", name: "Alex" }} />,
+      )
+      expect(container.innerHTML).not.toMatch(/#[0-9a-fA-F]{3,6}/)
+      // eslint-disable-next-line no-misleading-character-class
+      expect(container.innerHTML).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u)
+    })
+  })
 })

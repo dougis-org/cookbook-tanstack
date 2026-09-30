@@ -330,4 +330,83 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
       expect(mockReorderMutate).not.toHaveBeenCalled()
     })
   })
+
+  describe('sharedBy attribution (Task 4.2)', () => {
+    it('shows "Shared by {name}" when cookbook.sharedBy is set', () => {
+      mockUseAuth.mockReturnValue({ userId: 'recipient' })
+      mockUseQuery.mockReturnValue({
+        data: { id: 'c1', name: 'My Cookbook', userId: 'owner_1', chapters: [], recipes: [], sharedBy: { id: 'owner_1', name: 'Alex' } },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      expect(screen.getByText('Shared by Alex')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^delete$/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^invite$/i })).not.toBeInTheDocument()
+    })
+
+    it('omits the attribution copy and keeps Edit/Delete/Invite for the owner (regression guard)', () => {
+      mockUseAuth.mockReturnValue({ userId: 'owner_1' })
+      mockUseQuery.mockReturnValue({
+        data: { id: 'c1', name: 'My Cookbook', userId: 'owner_1', chapters: [], recipes: [], sharedBy: null },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      expect(screen.queryByText(/Shared by/)).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^edit$/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^delete$/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^invite$/i })).toBeInTheDocument()
+    })
+  })
+
+  describe('unavailable cross-owner entries (Task 4.3)', () => {
+    it('renders an unavailable entry as a fixed-position placeholder among available recipes', () => {
+      mockUseAuth.mockReturnValue({ userId: 'recipient' })
+      mockUseQuery.mockReturnValue({
+        data: {
+          id: 'c1',
+          name: 'My Cookbook',
+          userId: 'owner_1',
+          chapters: [],
+          recipes: [
+            { id: 'r1', name: 'Apple Pie', orderIndex: 0 },
+            { recipeId: 'r-dead', unavailable: true, orderIndex: 1, chapterId: null },
+            { id: 'r3', name: 'Zebra Cake', orderIndex: 2 },
+          ],
+        },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      expect(screen.getByRole('link', { name: 'Apple Pie' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Zebra Cake' })).toBeInTheDocument()
+      expect(screen.getByText('N/A')).toBeInTheDocument()
+    })
+
+    it('still allows removing an unavailable entry', () => {
+      mockUseAuth.mockReturnValue({ userId: 'recipient' })
+      mockUseQuery.mockReturnValue({
+        data: {
+          id: 'c1',
+          name: 'My Cookbook',
+          userId: 'recipient',
+          chapters: [],
+          recipes: [{ recipeId: 'r-dead', unavailable: true, orderIndex: 0, chapterId: null }],
+        },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      fireEvent.click(screen.getByLabelText(/remove unavailable recipe/i))
+      confirmModal('Remove')
+
+      expect(mockReorderMutate).toHaveBeenCalledWith({ cookbookId: 'c1', recipeId: 'r-dead' })
+    })
+  })
 })

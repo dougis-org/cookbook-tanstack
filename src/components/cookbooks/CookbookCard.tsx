@@ -1,4 +1,4 @@
-import { BookOpen, User, Users } from 'lucide-react'
+import { BookOpen, Share2, User, Users } from 'lucide-react'
 import CardImage from '@/components/ui/CardImage'
 
 interface CookbookCardProps {
@@ -14,9 +14,10 @@ interface CookbookCardProps {
   }
   isOwner?: boolean
   isCollaborator?: boolean
+  sharedBy?: { id: string; name: string } | null
 }
 
-export default function CookbookCard({ cookbook, isOwner }: CookbookCardProps) {
+export default function CookbookCard({ cookbook, isOwner, sharedBy }: CookbookCardProps) {
   return (
     <div className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow cursor-pointer">
       <CardImage src={cookbook.imageUrl} alt={cookbook.name} className="h-40 bg-[var(--theme-surface-hover)]" />
@@ -25,6 +26,12 @@ export default function CookbookCard({ cookbook, isOwner }: CookbookCardProps) {
           {!cookbook.imageUrl && <BookOpen className="w-5 h-5 text-[var(--theme-fg-muted)] flex-shrink-0" />}
           <span className="truncate min-w-0 flex-1">{cookbook.name}</span>
         </h3>
+        {sharedBy && (
+          <span className="inline-flex items-center gap-1 mb-2 text-xs text-[var(--theme-fg-muted)]">
+            <Share2 className="w-3 h-3" aria-hidden="true" />
+            Shared with me
+          </span>
+        )}
         {cookbook.description && (
           <p className="text-[var(--theme-fg-muted)] text-sm line-clamp-2 mb-3">
             {cookbook.description}

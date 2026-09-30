@@ -29,7 +29,7 @@ import { trpc } from '@/lib/trpc'
 import PageLayout from '@/components/layout/PageLayout'
 import CardImage from '@/components/ui/CardImage'
 import CookbookFields from '@/components/cookbooks/CookbookFields'
-import { SortableRecipeCard, StaticRecipeCard } from '@/components/cookbooks/CookbookRecipeCard'
+import { SortableRecipeCard, StaticRecipeCard, type AvailableCookbookRecipe, type UnavailableCookbookRecipe } from '@/components/cookbooks/CookbookRecipeCard'
 import Breadcrumb from '@/components/ui/Breadcrumb'
 import { GripVertical, X, Plus, Pencil, Trash2, List, Printer, ChevronDown, ChevronRight, User, Users, ChevronUp, FolderTree, ArrowDownAZ } from 'lucide-react'
 import { useRecipeSearch } from '@/hooks/useRecipeSearch'
@@ -95,16 +95,42 @@ interface Chapter {
   orderIndex: number
 }
 
-interface CookbookRecipe {
-  id: string
-  name: string
-  imageUrl?: string | null
-  prepTime?: number | null
-  cookTime?: number | null
-  servings?: number | null
+// Extends CookbookRecipeCard's discriminated union with the fields this route
+// needs for chapter/ordering logic that the card component itself never reads.
+interface AvailableCookbookRecipeEntry extends AvailableCookbookRecipe {
   classificationName?: string | null
   orderIndex?: number | null
   chapterId?: string | null
+  sharedBy?: { id: string; name: string } | null
+}
+
+/** A cross-owner entry whose recipe is no longer visible to the caller — see
+ * design.md Decision 3. Keeps its `orderIndex`/`chapterId` so it renders as a
+ * fixed-position placeholder instead of disappearing from the cookbook. */
+interface UnavailableCookbookRecipeEntry extends UnavailableCookbookRecipe {
+  orderIndex?: number | null
+  chapterId?: string | null
+}
+
+type CookbookRecipeEntry = AvailableCookbookRecipeEntry | UnavailableCookbookRecipeEntry
+
+/** Raw shape of a `cookbook.recipes[]` entry as tRPC infers it — a union of the
+ * two server-side variants that doesn't narrow cleanly through `in`/discriminant
+ * checks, so this reads it defensively rather than relying on inference. */
+interface RawCookbookRecipeEntry {
+  id?: string
+  recipeId?: string
+  unavailable?: boolean
+  orderIndex?: number | null
+  chapterId?: string | null
+}
+
+function toCookbookRecipeEntry(raw: unknown): CookbookRecipeEntry {
+  const r = raw as RawCookbookRecipeEntry
+  if (r.unavailable && r.recipeId) {
+    return { unavailable: true, id: r.recipeId, orderIndex: r.orderIndex ?? undefined, chapterId: r.chapterId ?? undefined }
+  }
+  return raw as AvailableCookbookRecipeEntry
 }
 
 interface Collaborator {
@@ -128,7 +154,7 @@ type Modal =
   | { kind: 'addRecipe' }
   | { kind: 'editCookbook' }
   | { kind: 'deleteCookbook' }
-  | { kind: 'removeRecipe'; recipe: CookbookRecipe }
+  | { kind: 'removeRecipe'; recipe: CookbookRecipeEntry }
   | { kind: 'renameChapter'; chapter: Chapter }
   | { kind: 'deleteChapter'; chapter: Chapter }
   | { kind: 'inviteCollaborator' }
@@ -329,10 +355,11 @@ function CookbookDetailPage() {
     }),
   )
 
-  // Cross-owner entries the caller can no longer see resolve as { recipeId, unavailable: true }
-  // rather than a full recipe — filtered out here rather than rendered (PR4/#674 owns any
-  // "unavailable" UI treatment).
-  const recipes: CookbookRecipe[] = (cookbook?.recipes ?? []).filter((r) => "id" in r)
+  // Cross-owner entries the caller can no longer see resolve from the server as
+  // { recipeId, unavailable: true, orderIndex, chapterId } rather than a full recipe.
+  // Normalized to a uniform `id` (= recipeId) here so every existing lookup/sort/drag
+  // path below can key on `.id` unchanged; only rendering branches on `.unavailable`.
+  const recipes: CookbookRecipeEntry[] = (cookbook?.recipes ?? []).map(toCookbookRecipeEntry)
   const chapters: Chapter[] = (cookbook?.chapters ?? []).slice().sort((a, b) => a.orderIndex - b.orderIndex)
   const hasChapters = chapters.length > 0
   const hasUnchapteredRecipes = recipes.some((r) => !r.chapterId)
@@ -352,16 +379,16 @@ function CookbookDetailPage() {
       .map((r) => r.id)
   }
 
-  function getRecipesForChapter(chapterId: string): CookbookRecipe[] {
+  function getRecipesForChapter(chapterId: string): CookbookRecipeEntry[] {
     const ids = getRecipeIdsForChapter(chapterId)
-    return ids.map((id) => recipes.find((r) => r.id === id)).filter((r): r is CookbookRecipe => r !== undefined)
+    return ids.map((id) => recipes.find((r) => r.id === id)).filter((r): r is CookbookRecipeEntry => r !== undefined)
   }
 
   // Flat ordered recipes (for no-chapter case)
   const flatOrderedIds = localOrder?.get('flat') ?? recipes.map((r) => r.id)
   const flatOrderedRecipes = flatOrderedIds
     .map((id) => recipes.find((r) => r.id === id))
-    .filter((r): r is CookbookRecipe => r !== undefined)
+    .filter((r): r is CookbookRecipeEntry => r !== undefined)
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -491,6 +518,11 @@ function CookbookDetailPage() {
                 />
               )}
             </div>
+            {cookbook.sharedBy && (
+              <p className="text-sm text-[var(--theme-fg-muted)] mt-1 print:hidden">
+                Shared by {cookbook.sharedBy.name}
+              </p>
+            )}
             {cookbook.description && (
               <p className="text-[var(--theme-fg-muted)] mt-2 max-w-2xl">{cookbook.description}</p>
             )}
@@ -570,7 +602,7 @@ function CookbookDetailPage() {
       {modal.kind === 'removeRecipe' && (
         <ConfirmModal
           title="Remove Recipe"
-          body={<>Remove <strong className="text-[var(--theme-fg)]">{modal.recipe.name}</strong> from this cookbook?</>}
+          body={<>Remove <strong className="text-[var(--theme-fg)]">{modal.recipe.unavailable ? 'this recipe' : modal.recipe.name}</strong> from this cookbook?</>}
           confirmLabel="Remove"
           danger
           isPending={removeMutation.isPending}
@@ -660,7 +692,8 @@ function CookbookDetailPage() {
               closeModal()
               return
             }
-            const allRecipeIds = sortIdsByTitle(recipes, (r) => r.id, (r) => r.name)
+            // Unavailable entries have no title; '' sorts them to the front deterministically.
+            const allRecipeIds = sortIdsByTitle(recipes, (r) => r.id, (r) => (r.unavailable ? '' : r.name))
             reorderMutation.mutate(
               { cookbookId, recipeIds: allRecipeIds },
               { onSuccess: () => { invalidate(); closeModal() } }
@@ -683,7 +716,8 @@ function CookbookDetailPage() {
               closeModal()
               return
             }
-            const sortedIds = sortIdsByTitle(chapterRecipes, (r) => r.id, (r) => r.name)
+            // Unavailable entries have no title; '' sorts them to the front deterministically.
+            const sortedIds = sortIdsByTitle(chapterRecipes, (r) => r.id, (r) => (r.unavailable ? '' : r.name))
             reorderMutation.mutate(
               { cookbookId, recipeIds: sortedIds },
               { onSuccess: () => { invalidate(); closeModal() } }
