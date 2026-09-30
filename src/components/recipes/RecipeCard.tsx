@@ -1,15 +1,17 @@
-import { Heart, User } from 'lucide-react'
+import { Heart, Share2, User } from 'lucide-react'
 import type { Recipe } from '@/types/recipe'
 import ClassificationBadge from '@/components/ui/ClassificationBadge'
 import CardImage from '@/components/ui/CardImage'
 import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 
 interface RecipeCardProps {
-  recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
+  recipe: Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId' | 'sharedBy'> & {
     classificationName?: string | null
   }
   marked?: boolean
   isOwner?: boolean
+  /** Overrides `recipe.sharedBy` when the caller resolves it separately from the recipe payload. */
+  sharedBy?: { id: string; name: string } | null
 }
 
 // skipcq: JS-0067 -- ES module default export, not a global scope function; DeepSource's
@@ -17,7 +19,8 @@ interface RecipeCardProps {
 // skipcq: JS-R1005 -- pre-existing component complexity; this change replaces two
 // conditional `{recipe.prepTime && (...)}` blocks with unconditional formatMinutesOrNA()
 // calls, which removes JSX branches rather than adding to them.
-export default function RecipeCard({ recipe, marked, isOwner }: RecipeCardProps) {
+export default function RecipeCard({ recipe, marked, isOwner, sharedBy }: RecipeCardProps) {
+  const effectiveSharedBy = sharedBy !== undefined ? sharedBy : recipe.sharedBy
   return (
     <div data-testid="recipe-card" className="bg-[var(--theme-surface)] rounded-lg shadow-[var(--theme-shadow-sm)] overflow-hidden hover:shadow-[var(--theme-shadow-md)] transition-shadow">
       <CardImage src={recipe.imageUrl} alt={recipe.name} className="h-48 bg-[var(--theme-surface-hover)]" data-testid="recipe-card-image" />
@@ -35,6 +38,12 @@ export default function RecipeCard({ recipe, marked, isOwner }: RecipeCardProps)
             <h3 className="text-xl font-semibold text-[var(--theme-fg)]">
               {recipe.name}
             </h3>
+            {effectiveSharedBy && (
+              <span className="inline-flex items-center gap-1 mt-1 text-xs text-[var(--theme-fg-muted)]">
+                <Share2 className="w-3 h-3" aria-hidden="true" />
+                Shared with me
+              </span>
+            )}
           </div>
           <div className="flex items-center">
             {isOwner && (

@@ -85,6 +85,52 @@ const baseRecipe = {
   preparationIds: [],
 }
 
+describe('RecipeDetailPage sharedBy attribution', () => {
+  beforeEach(() => {
+    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseTierEntitlements.mockReturnValue({ canUsePrivateRecipeNotes: true })
+  })
+
+  it('shows "Shared by {name}" and hides Edit/Delete when sharedBy is set', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'recipient', isPending: false, session: { user: { id: 'recipient' } } })
+    mockUseQuery.mockReturnValue({
+      data: { ...baseRecipe, userId: 'owner1', sharedBy: { id: 'owner1', name: 'Alex' } },
+      isLoading: false,
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByText('Shared by Alex')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /edit recipe/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /delete recipe/i })).not.toBeInTheDocument()
+  })
+
+  it('omits the attribution copy when sharedBy is null', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'owner1', isPending: false, session: { user: { id: 'owner1' } } })
+    mockUseQuery.mockReturnValue({
+      data: { ...baseRecipe, userId: 'owner1', sharedBy: null },
+      isLoading: false,
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.queryByText(/Shared by/)).not.toBeInTheDocument()
+  })
+
+  it('keeps Edit/Delete controls present on the owner\'s own content (regression guard)', () => {
+    mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'owner1', isPending: false, session: { user: { id: 'owner1' } } })
+    mockUseQuery.mockReturnValue({
+      data: { ...baseRecipe, userId: 'owner1', sharedBy: null },
+      isLoading: false,
+    })
+
+    render(<RecipeDetailPage />)
+
+    expect(screen.getByRole('link', { name: /edit recipe/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete recipe/i })).toBeInTheDocument()
+  })
+})
+
 describe('RecipeDetailPage', () => {
   beforeEach(() => {
     mockUseAuth.mockReturnValue({ isLoggedIn: true, userId: 'user1', isPending: false, session: { user: { id: 'user1' } } })

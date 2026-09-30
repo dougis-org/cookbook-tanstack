@@ -31,6 +31,7 @@ export interface Recipe {
   preparationIds?: string[];
   createdAt: Date;
   updatedAt: Date;
+  sharedBy: { id: string; name: string } | null;
 }
 
 /** Full recipe detail as returned by the tRPC `recipes.byId` query (superset of Recipe). */

@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { GripVertical, X } from 'lucide-react'
+import { GripVertical, Lock, X } from 'lucide-react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import CardImage from '@/components/ui/CardImage'
 import { formatMinutesOrNA } from '@/lib/recipeDisplay'
 
-export interface CookbookRecipe {
+export interface AvailableCookbookRecipe {
+  unavailable?: false
   id: string
   name: string
   imageUrl?: string | null
@@ -14,7 +15,32 @@ export interface CookbookRecipe {
   servings?: number | null
 }
 
-function metaLine(recipe: CookbookRecipe): string {
+/** A cross-owner cookbook entry whose recipe is no longer visible to the caller
+ * (revoked share, owner downgrade, or soft delete) — see design.md Decision 3. */
+export interface UnavailableCookbookRecipe {
+  unavailable: true
+  id: string
+}
+
+export type CookbookRecipe = AvailableCookbookRecipe | UnavailableCookbookRecipe
+
+function UnavailableCardBody({ index }: { index: number }) {
+  return (
+    <>
+      <div className="h-32 w-full bg-[var(--theme-surface-hover)] flex items-center justify-center">
+        <Lock className="w-6 h-6 text-[var(--theme-fg-subtle)]" aria-hidden="true" />
+      </div>
+      <div className="flex items-start gap-2 p-3">
+        <span className="text-sm text-[var(--theme-fg-subtle)] flex-shrink-0 pt-0.5">{index + 1}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-[var(--theme-fg-subtle)]">N/A</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function metaLine(recipe: AvailableCookbookRecipe): string {
   return [
     `Prep ${formatMinutesOrNA(recipe.prepTime, 'm')}`,
     `Cook ${formatMinutesOrNA(recipe.cookTime, 'm')}`,
@@ -33,6 +59,9 @@ function CardBody({
   index: number
   dragHandle?: React.ReactNode
 }) {
+  if (recipe.unavailable) {
+    return <UnavailableCardBody index={index} />
+  }
   const meta = metaLine(recipe)
   return (
     <>
@@ -70,9 +99,10 @@ export function SortableRecipeCard({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: recipe.id,
+    disabled: recipe.unavailable,
   })
 
-  const dragHandle = (
+  const dragHandle = recipe.unavailable ? undefined : (
     <button
       {...attributes}
       {...listeners}
@@ -93,7 +123,7 @@ export function SortableRecipeCard({
       <button
         onClick={onRemove}
         className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 pointer-events-none group-hover:pointer-events-auto focus-visible:pointer-events-auto text-[var(--theme-fg-subtle)] hover:text-[var(--theme-error)] transition-opacity"
-        aria-label={`Remove ${recipe.name}`}
+        aria-label={recipe.unavailable ? 'Remove unavailable recipe' : `Remove ${recipe.name}`}
       >
         <X className="w-4 h-4" />
       </button>

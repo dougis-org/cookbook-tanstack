@@ -99,6 +99,7 @@ export function CookbookPrintPage() {
             personalSourceName: recipe.personalSourceName ?? null,
             imageUrl: null,
             marked: false, // print view hides interactive save controls; actual marked state is irrelevant here
+            sharedBy: null, // printById never resolves sharedBy (cross-owner attribution deferred to #669)
           }
 
           const pageNumber = pageMap.get(recipe.id)

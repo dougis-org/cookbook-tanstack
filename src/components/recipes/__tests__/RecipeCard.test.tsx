@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeCard from "@/components/recipes/RecipeCard"
 
-type RecipeCardRecipe = Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId'> & {
+type RecipeCardRecipe = Pick<Recipe, 'id' | 'name' | 'imageUrl' | 'prepTime' | 'cookTime' | 'difficulty' | 'notes' | 'classificationId' | 'sharedBy'> & {
   classificationName?: string | null
   marked?: boolean
 }
@@ -18,6 +18,7 @@ function makeRecipe(overrides: Partial<RecipeCardRecipe> = {}): RecipeCardRecipe
     difficulty: null,
     notes: null,
     classificationId: null,
+    sharedBy: null,
     ...overrides,
   }
 }
@@ -120,6 +121,47 @@ describe("RecipeCard", () => {
       render(<RecipeCard recipe={makeRecipe()} isOwner={true} />)
       const icon = screen.getByRole("img", { name: "You own this" })
       expect(icon).toHaveAttribute("aria-label", "You own this")
+    })
+  })
+
+  describe("sharedBy prop", () => {
+    it("renders the 'Shared with me' badge when sharedBy is set", () => {
+      render(<RecipeCard recipe={makeRecipe()} sharedBy={{ id: "u-1", name: "Alex" }} />)
+      expect(screen.getByText("Shared with me")).toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is null", () => {
+      render(<RecipeCard recipe={makeRecipe()} sharedBy={null} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is omitted", () => {
+      render(<RecipeCard recipe={makeRecipe()} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+
+    it("renders no hard-coded hex color and no emoji in the badge", () => {
+      const { container } = render(
+        <RecipeCard recipe={makeRecipe()} sharedBy={{ id: "u-1", name: "Alex" }} />,
+      )
+      expect(container.innerHTML).not.toMatch(/#[0-9a-fA-F]{3,6}/)
+      // eslint-disable-next-line no-misleading-character-class
+      expect(container.innerHTML).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u)
+    })
+
+    it("defaults to recipe.sharedBy when the sharedBy prop is omitted", () => {
+      render(<RecipeCard recipe={makeRecipe({ sharedBy: { id: "u-1", name: "Alex" } })} />)
+      expect(screen.getByText("Shared with me")).toBeInTheDocument()
+    })
+
+    it("prop overrides recipe.sharedBy when both are supplied", () => {
+      render(
+        <RecipeCard
+          recipe={makeRecipe({ sharedBy: { id: "u-1", name: "Alex" } })}
+          sharedBy={null}
+        />,
+      )
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
     })
   })
 })

@@ -137,4 +137,21 @@ describe("CookbookCard", () => {
       expect(screen.queryByRole("img", { name: /collaborator/ })).not.toBeInTheDocument()
     })
   })
+
+  describe("sharedBy prop", () => {
+    it("renders the 'Shared with me' badge when sharedBy is set", () => {
+      render(<CookbookCard cookbook={makeCookbook()} sharedBy={{ id: "u-1", name: "Alex" }} />)
+      expect(screen.getByText("Shared with me")).toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is null", () => {
+      render(<CookbookCard cookbook={makeCookbook()} sharedBy={null} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+
+    it("omits the badge when sharedBy is omitted", () => {
+      render(<CookbookCard cookbook={makeCookbook()} />)
+      expect(screen.queryByText("Shared with me")).not.toBeInTheDocument()
+    })
+  })
 })
