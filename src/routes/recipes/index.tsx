@@ -362,7 +362,6 @@ export function RecipesPage() {
                   recipe={recipe}
                   marked={isLoggedIn ? recipe.marked : undefined}
                   isOwner={isLoggedIn && recipe.userId === userId}
-                  sharedBy={recipe.sharedBy}
                 />
               </Link>
             ))}

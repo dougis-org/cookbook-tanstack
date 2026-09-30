@@ -408,5 +408,61 @@ describe('cookbooks.$cookbookId (CookbookDetailPage)', () => {
 
       expect(mockReorderMutate).toHaveBeenCalledWith({ cookbookId: 'c1', recipeId: 'r-dead' })
     })
+
+    it('renders a placeholder inside its chapter alongside available siblings (chapter-aware path)', () => {
+      mockUseAuth.mockReturnValue({ userId: 'recipient' })
+      mockUseQuery.mockReturnValue({
+        data: {
+          id: 'c1',
+          name: 'My Cookbook',
+          userId: 'recipient',
+          chapters: [{ id: 'ch1', name: 'Chapter 1', orderIndex: 0 }],
+          recipes: [
+            { id: 'r1', name: 'Apple Pie', chapterId: 'ch1', orderIndex: 0 },
+            { recipeId: 'r-dead', unavailable: true, orderIndex: 1, chapterId: 'ch1' },
+            { id: 'r3', name: 'Zebra Cake', chapterId: 'ch1', orderIndex: 2 },
+          ],
+        },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      const chapterSection = screen.getByTestId('chapter-section-ch1')
+      expect(within(chapterSection).getByRole('link', { name: 'Apple Pie' })).toBeInTheDocument()
+      expect(within(chapterSection).getByRole('link', { name: 'Zebra Cake' })).toBeInTheDocument()
+      expect(within(chapterSection).getByText('N/A')).toBeInTheDocument()
+    })
+
+    it('includes an unavailable entry\'s id when sorting its chapter by title', () => {
+      mockUseAuth.mockReturnValue({ userId: 'recipient' })
+      mockUseQuery.mockReturnValue({
+        data: {
+          id: 'c1',
+          name: 'My Cookbook',
+          userId: 'recipient',
+          chapters: [{ id: 'ch1', name: 'Chapter 1', orderIndex: 0 }],
+          recipes: [
+            { id: 'r1', name: 'Zebra Cake', chapterId: 'ch1', orderIndex: 0 },
+            { recipeId: 'r-dead', unavailable: true, orderIndex: 1, chapterId: 'ch1' },
+            { id: 'r3', name: 'Apple Pie', chapterId: 'ch1', orderIndex: 2 },
+          ],
+        },
+        isLoading: false,
+      })
+
+      render(<CookbookDetailPage />)
+
+      openConfirmModal('Sort Chapter 1 recipes by title')
+      confirmModal('Sort Chapter')
+
+      expect(mockReorderMutate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          cookbookId: 'c1',
+          recipeIds: expect.arrayContaining(['r1', 'r3', 'r-dead']),
+        }),
+        expect.anything(),
+      )
+    })
   })
 })

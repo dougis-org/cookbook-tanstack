@@ -127,8 +127,8 @@ interface RawCookbookRecipeEntry {
 
 function toCookbookRecipeEntry(raw: unknown): CookbookRecipeEntry {
   const r = raw as RawCookbookRecipeEntry
-  if (r.unavailable && r.recipeId) {
-    return { unavailable: true, id: r.recipeId, orderIndex: r.orderIndex ?? undefined, chapterId: r.chapterId ?? undefined }
+  if (r.unavailable) {
+    return { unavailable: true, id: String(r.recipeId), orderIndex: r.orderIndex ?? undefined, chapterId: r.chapterId ?? undefined }
   }
   return raw as AvailableCookbookRecipeEntry
 }
