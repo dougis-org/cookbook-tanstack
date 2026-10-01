@@ -4,14 +4,27 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Share2, Users, BookOpen, X } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { trpc } from "@/lib/trpc"
-import type { EntitlementTier } from "@/lib/tier-entitlements"
+import { hasAtLeastTier } from "@/types/user"
 
 const SCOPE_WARNING =
   "Sharing your library gives this person read access to your entire collection, including private recipes you create in the future."
 
-/** Defensive against a malformed (non-array) query response — never renders a crash. */
-function toArray<T>(value: unknown): T[] {
-  return Array.isArray(value) ? (value as T[]) : []
+// Mirrors users.search's input schema (src/server/trpc/routers/users.ts):
+// z.object({ query: z.string().trim().min(2).max(254) }).
+const USERS_SEARCH_MIN_LENGTH = 2
+const USERS_SEARCH_MAX_LENGTH = 254
+
+/**
+ * Defensive against a malformed query response: never renders a crash on a
+ * non-array value, and drops any row that isn't a plain object with a
+ * string `id` (every row shape this component consumes has one) rather than
+ * trusting the array's contents wholesale.
+ */
+function toArray<T extends { id: string }>(value: unknown): T[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(
+    (row): row is T => typeof row === "object" && row !== null && typeof (row as { id?: unknown }).id === "string",
+  )
 }
 
 function formatDate(value: Date | string | null | undefined): string {
@@ -52,16 +65,22 @@ function SharesIGiveList() {
   const [revokeError, setRevokeError] = useState<string | null>(null)
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchInput), 400)
+    // Mirror the server's users.search input schema (trim, 254-char max) so the
+    // client never issues a request the server would reject, and so "enabled"
+    // reflects the same length check the server applies.
+    const timer = setTimeout(
+      () => setDebouncedSearch(searchInput.trim().slice(0, USERS_SEARCH_MAX_LENGTH)),
+      400,
+    )
     return () => clearTimeout(timer)
   }, [searchInput])
 
   const { data: sharesData, isLoading } = useQuery(trpc.sharing.myLibraryShares.queryOptions())
   const shares = toArray<LibraryShareRow>(sharesData)
 
-  const { data: searchResultsData } = useQuery({
+  const { data: searchResultsData, isLoading: isSearchLoading } = useQuery({
     ...trpc.users.search.queryOptions({ query: debouncedSearch }),
-    enabled: debouncedSearch.length >= 2,
+    enabled: debouncedSearch.length >= USERS_SEARCH_MIN_LENGTH,
   })
   const searchResults = toArray<{ id: string; name: string; email: string }>(searchResultsData)
 
@@ -119,7 +138,7 @@ function SharesIGiveList() {
           disabled={inviteMutation.isPending}
           className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg bg-[var(--theme-surface-raised)] text-[var(--theme-fg)] focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent disabled:opacity-50"
         />
-        {debouncedSearch.length >= 2 && searchResults.length > 0 && (
+        {debouncedSearch.length >= USERS_SEARCH_MIN_LENGTH && searchResults.length > 0 && (
           <ul className="mt-1 border border-[var(--theme-border)] rounded-lg overflow-hidden">
             {searchResults.map((u: { id: string; name: string; email: string }) => (
               <li key={u.id}>
@@ -136,7 +155,7 @@ function SharesIGiveList() {
             ))}
           </ul>
         )}
-        {debouncedSearch.length >= 2 && searchResults.length === 0 && (
+        {debouncedSearch.length >= USERS_SEARCH_MIN_LENGTH && !isSearchLoading && searchResults.length === 0 && (
           <p className="mt-1 text-sm text-[var(--theme-fg-muted)]">No users found.</p>
         )}
         {inviteMutation.isPending && (
@@ -175,11 +194,11 @@ function SharesIGiveList() {
               <button
                 type="button"
                 onClick={() => revokeMutation.mutate({ shareId: share.id })}
-                disabled={revokeMutation.isPending}
+                disabled={revokeMutation.isPending && revokeMutation.variables?.shareId === share.id}
                 className="shrink-0 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] transition-colors disabled:opacity-50"
               >
                 <X size={14} aria-hidden="true" />
-                {revokeMutation.isPending ? "Revoking…" : "Revoke"}
+                {revokeMutation.isPending && revokeMutation.variables?.shareId === share.id ? "Revoking…" : "Revoke"}
               </button>
             </li>
           ))}
@@ -274,8 +293,10 @@ function MyCollaborationsList() {
 
 export default function SharingSection() {
   const { session } = useAuth()
-  const rawTier = session?.user?.tier as EntitlementTier | undefined
-  const isExecChef = rawTier === "executive-chef"
+  const isExecChef = hasAtLeastTier(
+    { tier: session?.user?.tier, isAdmin: session?.user?.isAdmin },
+    "executive-chef",
+  )
 
   const { data: sharedWithMeData } = useQuery(trpc.sharing.mySharedLibraries.queryOptions())
   const sharedWithMe = toArray<SharedLibraryRow>(sharedWithMeData)
