@@ -287,7 +287,7 @@ Blocking resolution flow:
       `openspec/changes/archive/YYYY-MM-DD-share-my-library-account-section/`
       **and stage both the new location and the deletion of the old location
       in a single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-share-my-library-account-section/`
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-share-my-library-account-section/`
       exists and `openspec/changes/share-my-library-account-section/` is gone
 - [ ] **Create a doc branch**:
       `git checkout -b doc/archive-YYYY-MM-DD-share-my-library-account-section`
