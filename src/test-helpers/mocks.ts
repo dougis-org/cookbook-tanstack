@@ -144,3 +144,39 @@ export function createRouterMockForHooks(useRouteContextFn: () => unknown) {
     getRouteApi: () => ({ useRouteContext: useRouteContextFn }),
   }
 }
+
+/**
+ * Shared `@/lib/trpc` mock shape for the sharing/collaboration procedures
+ * `SharingSection` consumes (`sharing.*`, `cookbooks.myCollaborations`,
+ * `users.search`). Used by both `SharingSection.test.tsx` and
+ * `-account.test.tsx` so the two don't duplicate the same mock literal.
+ */
+export function createSharingTrpcMock() {
+  return {
+    sharing: {
+      myLibraryShares: {
+        queryOptions: () => ({ queryKey: ['sharing', 'myLibraryShares'] }),
+        queryKey: () => ['sharing', 'myLibraryShares'],
+      },
+      mySharedLibraries: {
+        queryOptions: () => ({ queryKey: ['sharing', 'mySharedLibraries'] }),
+      },
+      shareLibrary: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'shareLibrary'], ...opts }),
+      },
+      revokeLibraryShare: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'revokeLibraryShare'], ...opts }),
+      },
+    },
+    cookbooks: {
+      myCollaborations: {
+        queryOptions: () => ({ queryKey: ['cookbooks', 'myCollaborations'] }),
+      },
+    },
+    users: {
+      search: {
+        queryOptions: (input: { query: string }) => ({ queryKey: ['users', 'search', input.query] }),
+      },
+    },
+  }
+}

@@ -20,35 +20,10 @@ vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
 }))
 
-vi.mock('@/lib/trpc', () => ({
-  trpc: {
-    sharing: {
-      myLibraryShares: {
-        queryOptions: () => ({ queryKey: ['sharing', 'myLibraryShares'] }),
-        queryKey: () => ['sharing', 'myLibraryShares'],
-      },
-      mySharedLibraries: {
-        queryOptions: () => ({ queryKey: ['sharing', 'mySharedLibraries'] }),
-      },
-      shareLibrary: {
-        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'shareLibrary'], ...opts }),
-      },
-      revokeLibraryShare: {
-        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'revokeLibraryShare'], ...opts }),
-      },
-    },
-    cookbooks: {
-      myCollaborations: {
-        queryOptions: () => ({ queryKey: ['cookbooks', 'myCollaborations'] }),
-      },
-    },
-    users: {
-      search: {
-        queryOptions: (input: { query: string }) => ({ queryKey: ['users', 'search', input.query] }),
-      },
-    },
-  },
-}))
+vi.mock('@/lib/trpc', async () => {
+  const { createSharingTrpcMock } = await import('@/test-helpers/mocks')
+  return { trpc: createSharingTrpcMock() }
+})
 
 import SharingSection from '@/components/account/SharingSection'
 
@@ -67,9 +42,26 @@ function wireQueries(map: Record<string, QueryStub>) {
   })
 }
 
+/** A no-op mutation stub for mockUseMutation, for tests not exercising a mutation's state. */
+function idleMutation() {
+  return { mutate: vi.fn(), isPending: false }
+}
+
+function shareRow(overrides: Partial<{ id: string; recipientId: string; recipientName: string }> = {}) {
+  return { id: 's1', recipientId: 'r1', recipientName: 'Alice', addedAt: '2026-01-01', ...overrides }
+}
+
+/** Wires mockUseMutation so revokeLibraryShare resolves to `revokeState`, every other mutation idle. */
+function wireRevokeMutation(revokeState: { mutate?: ReturnType<typeof vi.fn>; isPending: boolean; variables?: { shareId: string } }) {
+  mockUseMutation.mockImplementation((opts: { mutationKey?: string[] }) => {
+    if (opts.mutationKey?.[1] === 'revokeLibraryShare') return { mutate: vi.fn(), ...revokeState }
+    return idleMutation()
+  })
+}
+
 describe('SharingSection — list rendering', () => {
   beforeEach(() => {
-    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseMutation.mockReturnValue(idleMutation())
     mockUseAuth.mockReturnValue(session('executive-chef'))
   })
 
@@ -83,7 +75,7 @@ describe('SharingSection — list rendering', () => {
 
   it('renders seeded shares I give', () => {
     wireQueries({
-      'sharing.myLibraryShares': { data: [{ id: 's1', recipientId: 'r1', recipientName: 'Alice', addedAt: '2026-01-01' }] },
+      'sharing.myLibraryShares': { data: [shareRow()] },
     })
     render(<SharingSection />)
     expect(screen.getByText('Alice')).toBeInTheDocument()
@@ -109,7 +101,7 @@ describe('SharingSection — list rendering', () => {
 
 describe('SharingSection — gating matrix', () => {
   beforeEach(() => {
-    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseMutation.mockReturnValue(idleMutation())
   })
 
   it('Executive Chef sees everything, including the invite control', () => {
@@ -166,7 +158,7 @@ describe('SharingSection — invite flow', () => {
   })
 
   it('invokes users.search with the debounced query after typing ≥2 characters', async () => {
-    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseMutation.mockReturnValue(idleMutation())
     wireQueries({
       'users.search.al': { data: [{ id: 'u2', name: 'Alice', email: 'alice@example.com' }] },
     })
@@ -180,7 +172,7 @@ describe('SharingSection — invite flow', () => {
   })
 
   it('does not flash "No users found" while the search query is still loading', async () => {
-    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseMutation.mockReturnValue(idleMutation())
     wireQueries({
       'users.search.al': { data: [], isLoading: true },
     })
@@ -210,7 +202,7 @@ describe('SharingSection — invite flow', () => {
   })
 
   it('renders the scope-warning copy adjacent to the invite control', () => {
-    mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: false })
+    mockUseMutation.mockReturnValue(idleMutation())
     wireQueries({})
     render(<SharingSection />)
     expect(screen.getByText(/your entire collection, including private recipes/i)).toBeInTheDocument()
@@ -231,14 +223,10 @@ describe('SharingSection — revoke flow', () => {
   })
 
   it('activating revoke calls revokeLibraryShare with the grant id', () => {
-    const shareMutate = vi.fn()
     const revokeMutate = vi.fn()
-    mockUseMutation.mockImplementation((opts: { mutationKey?: string[] }) => {
-      if (opts.mutationKey?.[1] === 'revokeLibraryShare') return { mutate: revokeMutate, isPending: false }
-      return { mutate: shareMutate, isPending: false }
-    })
+    wireRevokeMutation({ mutate: revokeMutate, isPending: false })
     wireQueries({
-      'sharing.myLibraryShares': { data: [{ id: 's1', recipientId: 'r1', recipientName: 'Alice', addedAt: '2026-01-01' }] },
+      'sharing.myLibraryShares': { data: [shareRow()] },
     })
     render(<SharingSection />)
     fireEvent.click(screen.getByText('Revoke'))
@@ -246,31 +234,21 @@ describe('SharingSection — revoke flow', () => {
   })
 
   it('shows pending label on the revoke control while pending', () => {
-    mockUseMutation.mockImplementation((opts: { mutationKey?: string[] }) => {
-      if (opts.mutationKey?.[1] === 'revokeLibraryShare') {
-        return { mutate: vi.fn(), isPending: true, variables: { shareId: 's1' } }
-      }
-      return { mutate: vi.fn(), isPending: false }
-    })
+    wireRevokeMutation({ isPending: true, variables: { shareId: 's1' } })
     wireQueries({
-      'sharing.myLibraryShares': { data: [{ id: 's1', recipientId: 'r1', recipientName: 'Alice', addedAt: '2026-01-01' }] },
+      'sharing.myLibraryShares': { data: [shareRow()] },
     })
     render(<SharingSection />)
     expect(screen.getByText('Revoking…')).toBeInTheDocument()
   })
 
   it('only shows the pending label on the row being revoked, not every row', () => {
-    mockUseMutation.mockImplementation((opts: { mutationKey?: string[] }) => {
-      if (opts.mutationKey?.[1] === 'revokeLibraryShare') {
-        return { mutate: vi.fn(), isPending: true, variables: { shareId: 's1' } }
-      }
-      return { mutate: vi.fn(), isPending: false }
-    })
+    wireRevokeMutation({ isPending: true, variables: { shareId: 's1' } })
     wireQueries({
       'sharing.myLibraryShares': {
         data: [
-          { id: 's1', recipientId: 'r1', recipientName: 'Alice', addedAt: '2026-01-01' },
-          { id: 's2', recipientId: 'r2', recipientName: 'Bob', addedAt: '2026-01-01' },
+          shareRow(),
+          shareRow({ id: 's2', recipientId: 'r2', recipientName: 'Bob' }),
         ],
       },
     })
