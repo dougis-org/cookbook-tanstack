@@ -6,6 +6,7 @@ import PageLayout from "@/components/layout/PageLayout"
 import ProfileSection from "@/components/account/ProfileSection"
 import StatusSection from "@/components/account/StatusSection"
 import PreferencesSection from "@/components/account/PreferencesSection"
+import SharingSection from "@/components/account/SharingSection"
 
 export const Route = createFileRoute("/account")({
   beforeLoad: requireAuth(),
@@ -31,6 +32,7 @@ export function AccountPage() {
         <ProfileSection />
         <StatusSection reason={reason} />
         <PreferencesSection />
+        <SharingSection />
       </div>
     </PageLayout>
   )

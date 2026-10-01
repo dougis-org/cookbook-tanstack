@@ -18,17 +18,23 @@ vi.mock('@/hooks/useAuth', () => ({
 const mockUseQuery = vi.fn()
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
+  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }))
 
-vi.mock('@/lib/trpc', () => ({
-  trpc: {
-    usage: {
-      getOwned: {
-        queryOptions: () => ({ queryKey: ['usage', 'getOwned'] }),
+vi.mock('@/lib/trpc', async () => {
+  const { createSharingTrpcMock } = await import('@/test-helpers/mocks')
+  return {
+    trpc: {
+      usage: {
+        getOwned: {
+          queryOptions: () => ({ queryKey: ['usage', 'getOwned'] }),
+        },
       },
+      ...createSharingTrpcMock(),
     },
-  },
-}))
+  }
+})
 
 vi.mock('@/lib/auth-client', () => ({
   authClient: {
