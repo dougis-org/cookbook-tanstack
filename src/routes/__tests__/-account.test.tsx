@@ -18,6 +18,8 @@ vi.mock('@/hooks/useAuth', () => ({
 const mockUseQuery = vi.fn()
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
+  useMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }))
 
 vi.mock('@/lib/trpc', () => ({
@@ -25,6 +27,31 @@ vi.mock('@/lib/trpc', () => ({
     usage: {
       getOwned: {
         queryOptions: () => ({ queryKey: ['usage', 'getOwned'] }),
+      },
+    },
+    sharing: {
+      myLibraryShares: {
+        queryOptions: () => ({ queryKey: ['sharing', 'myLibraryShares'] }),
+        queryKey: () => ['sharing', 'myLibraryShares'],
+      },
+      mySharedLibraries: {
+        queryOptions: () => ({ queryKey: ['sharing', 'mySharedLibraries'] }),
+      },
+      shareLibrary: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'shareLibrary'], ...opts }),
+      },
+      revokeLibraryShare: {
+        mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'revokeLibraryShare'], ...opts }),
+      },
+    },
+    cookbooks: {
+      myCollaborations: {
+        queryOptions: () => ({ queryKey: ['cookbooks', 'myCollaborations'] }),
+      },
+    },
+    users: {
+      search: {
+        queryOptions: (input: { query: string }) => ({ queryKey: ['users', 'search', input.query] }),
       },
     },
   },

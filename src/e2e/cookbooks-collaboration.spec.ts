@@ -32,7 +32,6 @@ async function inviteCollaborator(
   role: "editor" | "viewer",
 ) {
   await gotoAndWaitForHydration(page, cookbookUrl);
-  await page.waitForLoadState("networkidle");
 
   await page.getByRole("button", { name: "Invite" }).click();
 
@@ -48,9 +47,9 @@ async function inviteCollaborator(
   await dialog.getByRole("radio", { name: role }).click();
   await dialog.getByRole("button", { name: "Invite" }).click();
 
-  // Modal closes after successful invite
+  // Modal closes after successful invite; downstream assertions at each call
+  // site retry until the invalidated collaborator data has been refetched.
   await dialog.waitFor({ state: "hidden" });
-  await page.waitForLoadState("networkidle");
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────

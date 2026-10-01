@@ -11,12 +11,12 @@
 
 ## Preflight
 
-- [ ] **Verify `pr-review-toolkit:review-pr` is available** — confirmed present in
+- [x] **Verify `pr-review-toolkit:review-pr` is available** — confirmed present in
       the current session's skill list. No installation action needed.
 
 ## Execution
 
-- [ ] **Issue lifecycle: mark in-progress** — run
+- [x] **Issue lifecycle: mark in-progress** — run
       `gh issue edit 675 --add-label "in-progress"`. Discover the GitHub Project
       linked to the repo (`gh project list --owner dougis-org --format json`),
       resolve the status field option semantically matching "In Progress"
@@ -28,91 +28,91 @@
 
 ### Phase 1 — `SharingSection` component scaffold (Decision 1)
 
-- [ ] **1.1 — Write failing component tests first** (TDD): three lists render
+- [x] **1.1 — Write failing component tests first** (TDD): three lists render
       given seeded `myLibraryShares` / `mySharedLibraries` / `myCollaborations`
       query responses; each list's empty state renders when its query returns
       `[]`; collaboration entries link to `/cookbooks/:id`.
       _Covers spec: ADDED Managing-shares gating by tier and received-share
       state (list rendering)._
-- [ ] **1.2 — Create `src/components/account/SharingSection.tsx`** following the
+- [x] **1.2 — Create `src/components/account/SharingSection.tsx`** following the
       structure of `src/components/account/ProfileSection.tsx` /
       `PreferencesSection.tsx`: default-exported section component, internal
       (non-exported) sub-views `SharesIGiveList`, `SharedWithMeList`,
       `MyCollaborationsList`, each with its own `useQuery` against
       `trpc.sharing.myLibraryShares`, `trpc.sharing.mySharedLibraries`, and
       `trpc.cookbooks.myCollaborations` respectively.
-- [ ] **1.3 — Wire into `src/routes/account.tsx`**: import and render
+- [x] **1.3 — Wire into `src/routes/account.tsx`**: import and render
       `SharingSection` after `PreferencesSection`.
-- [ ] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
+- [x] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
 
 ### Phase 2 — Gating matrix (Decision 2)
 
-- [ ] **2.1 — Write failing tests first**: one test per row of the Decision 2
+- [x] **2.1 — Write failing tests first**: one test per row of the Decision 2
       matrix in `design.md` — Executive Chef sees everything; non-Exec-Chef with
       a received share or a collaboration sees lists 2/3 but not list 1 or its
       invite control; non-Exec-Chef with both empty sees the upgrade affordance
       instead of all three lists.
       _Covers spec: ADDED Managing-shares gating by tier and received-share
       state._
-- [ ] **2.2 — Implement the gating logic** in `SharingSection.tsx`: read tier
+- [x] **2.2 — Implement the gating logic** in `SharingSection.tsx`: read tier
       from the same session/tier source `StatusSection`/`PreferencesSection`
       already use; derive "has anything shared" from
       `mySharedLibraries.length > 0 || myCollaborations.length > 0` (data
       already fetched in Phase 1 — no new query).
-- [ ] **2.3 — Build the upgrade affordance** using `.up-*` classnames (never
+- [x] **2.3 — Build the upgrade affordance** using `.up-*` classnames (never
       `.promo-*` / `.ad-*` / `.sponsor-*`), matching the design-system's existing
       upsell pattern (e.g. `RecipeNotesUpgradeNudge.tsx` for tone/structure
       reference, not for literal reuse).
-- [ ] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
+- [x] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
 
 ### Phase 3 — Invite flow (Decision 3)
 
-- [ ] **3.1 — Write failing tests first**: typing ≥2 characters in the invite
+- [x] **3.1 — Write failing tests first**: typing ≥2 characters in the invite
       field invokes `users.search` with the debounced query; selecting a result
       calls `sharing.shareLibrary` with the selected recipient id and the new
       grant appears in the "I share" list on success; scope-warning copy is
       present adjacent to the invite control.
       _Covers spec: ADDED Invite flow uses single-field search, no role
       selection._
-- [ ] **3.2 — Implement the inline (non-modal) search-and-select invite UI**,
+- [x] **3.2 — Implement the inline (non-modal) search-and-select invite UI**,
       modeled on the debounce/search/select interaction in
       `InviteCollaboratorModal` (`src/routes/cookbooks.$cookbookId.tsx`) but
       without the role `fieldset` — a library share has no role.
-- [ ] **3.3 — Add the scope-warning copy**: state that the grant covers the
+- [x] **3.3 — Add the scope-warning copy**: state that the grant covers the
       user's entire library, including private content created in the future.
       Sentence case, no emoji, brand name not applicable here.
-- [ ] **3.4 — Wire the `shareLibrary` mutation** with pending-state UI per
+- [x] **3.4 — Wire the `shareLibrary` mutation** with pending-state UI per
       Decision 4: `useMutation` + `onSuccess: invalidate` + `onError: show
       inline error`; invite control `disabled` + pending label while
       `mutation.isPending`; no `onMutate` cache write.
-- [ ] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
+- [x] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
 
 ### Phase 4 — Revoke flow (Decision 4)
 
-- [ ] **4.1 — Write failing tests first**: activating revoke on a listed grant
+- [x] **4.1 — Write failing tests first**: activating revoke on a listed grant
       calls `sharing.revokeLibraryShare` with that grant's id and removes it
       from the list on success; a failed revoke shows an inline error and
       leaves the grant listed (no optimistic removal to roll back).
       _Covers spec: ADDED Revoke flow updates the owner's list immediately on
       success._
-- [ ] **4.2 — Implement the revoke control** on each "I share" list row with
+- [x] **4.2 — Implement the revoke control** on each "I share" list row with
       the same pending-state pattern as 3.4.
-- [ ] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
+- [x] Run: `npx vitest run src/components/account/__tests__/SharingSection.test.tsx`
 
 ### Phase 5 — Theme and design-system pass
 
-- [ ] **5.1 — Toggle all four themes** (`dark`, `dark-greens`, `light-cool`,
+- [x] **5.1 — Toggle all four themes** (`dark`, `dark-greens`, `light-cool`,
       `light-warm`) on `/account` and confirm `SharingSection` is legible in
       each.
-- [ ] **5.2 — Grep for violations** in the new file: no hard-coded hex
+- [x] **5.2 — Grep for violations** in the new file: no hard-coded hex
       (`grep -nE '#[0-9a-fA-F]{3,6}'`), no emoji, no `.ad-*`/`.promo-*`/`.sponsor-*`
       classnames, Lucide-only icon imports.
-- [ ] **5.3 — Confirm Title Case CTAs / sentence-case body / brand name "My
+- [x] **5.3 — Confirm Title Case CTAs / sentence-case body / brand name "My
       CookBooks"** wherever it appears in new copy.
 
 ### Phase 6 — Fix the existing `networkidle` gap (Decision 5)
 
-- [ ] **6.1 — Replace both `page.waitForLoadState("networkidle")` calls** in
+- [x] **6.1 — Replace both `page.waitForLoadState("networkidle")` calls** in
       `src/e2e/cookbooks-collaboration.spec.ts`'s `inviteCollaborator()` helper
       with the appropriate helper(s) from `src/e2e/helpers/app.ts` (e.g.
       `waitForHydration`, or a retrying `expect(...)` scoped to the specific
@@ -120,14 +120,14 @@
       independently of hydration" convention).
       _Covers spec: ADDED Fix `networkidle` instance in
       `cookbooks-collaboration.spec.ts`._
-- [ ] **6.2 — Verify no behavior change**: run the existing collaboration spec
+- [x] **6.2 — Verify no behavior change**: run the existing collaboration spec
       and confirm TC-COL-1, TC-COL-2, and any other scenarios in the file still
       pass unmodified in assertions, only in waits.
-- [ ] Run: `npx playwright test cookbooks-collaboration`
+- [x] Run: `npx playwright test cookbooks-collaboration`
 
 ### Phase 7 — Two-browser-context E2E coverage (Decision 6)
 
-- [ ] **7.1 — Write the failing E2E spec first**: new file (e.g.
+- [x] **7.1 — Write the failing E2E spec first**: new file (e.g.
       `src/e2e/library-sharing-account.spec.ts`) using two real
       `browser.newContext()` instances (owner, recipient), each authenticated
       concurrently via existing `src/e2e/helpers/auth.ts` /
@@ -137,33 +137,33 @@
       tests; and the parent change's "Recipient visibility", "Adding shared
       recipes to own cookbooks", "Revoking a share", "Unavailable shared
       entries" scenarios._
-- [ ] **7.2 — Add the cross-context readiness helper** to
+- [x] **7.2 — Add the cross-context readiness helper** to
       `src/e2e/helpers/app.ts` (name TBD at implementation time, e.g.
       `waitForContextToReflect` or similar): a retrying Playwright expectation
       against the second context's page, never `networkidle` or
       `waitForTimeout`.
-- [ ] **7.3 — Implement the full round trip**: owner opens `/account`, invites
+- [x] **7.3 — Implement the full round trip**: owner opens `/account`, invites
       the recipient via `SharingSection` → recipient's recipe/cookbook list
       shows the "Shared with me" badge (using the cross-context helper from
       7.2, no reload) → recipient adds a shared recipe to their own cookbook →
       owner revokes the share from `/account` → recipient's next assertion
       shows the entry as unavailable.
-- [ ] **7.4 — Implement the tier-downgrade-suspends-shares scenario**: with an
+- [x] **7.4 — Implement the tier-downgrade-suspends-shares scenario**: with an
       active grant, mutate the owner's tier directly in the DB (per the parent
       change's existing test convention), then assert the recipient's next page
       load shows no shared content.
-- [ ] Run: `npx playwright test library-sharing-account`
+- [x] Run: `npx playwright test library-sharing-account`
 
 ## Confirm acceptance criteria are covered
 
-- [ ] Walk every requirement in
+- [x] Walk every requirement in
       `openspec/changes/share-my-library-account-section/specs/library-sharing/spec.md`
       and `openspec/changes/share-my-library-account-section/specs/e2e-test-reliability/spec.md`
       and confirm a test exercises each scenario.
-- [ ] Walk the parent change's `openspec/changes/share-my-library/specs/library-sharing/spec.md`
+- [x] Walk the parent change's `openspec/changes/share-my-library/specs/library-sharing/spec.md`
       "ADDED Managing shares" requirement and confirm this change's tests
       collectively satisfy it.
-- [ ] Look for existing tooling or functions in the codebase that can be reused
+- [x] Look for existing tooling or functions in the codebase that can be reused
       or extended before writing new logic from scratch (done during design:
       `InviteCollaboratorModal`'s search pattern, `ProfileSection`/
       `PreferencesSection` structure, `src/e2e/helpers/app.ts` hydration
@@ -172,7 +172,7 @@
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the
       `openspec-review-code` skill. The primary agent must automatically apply
       all clearly-correct findings directly to the code — without stopping,
       without presenting the findings list to the user, and without asking for
@@ -181,13 +181,13 @@
 
 ## Validation
 
-- [ ] Run unit tests: `npm run test:unit`
-- [ ] Run integration tests: `npm run test:integration`
-- [ ] Run E2E tests: `npm run test:e2e`
-- [ ] Run type checks: `npx tsc --noEmit` (strict mode with `noUnusedLocals` and
+- [x] Run unit tests: `npm run test:unit`
+- [x] Run integration tests: `npm run test:integration`
+- [x] Run E2E tests: `npm run test:e2e`
+- [x] Run type checks: `npx tsc --noEmit` (strict mode with `noUnusedLocals` and
       `noUnusedParameters`)
-- [ ] Run build: `npm run build`
-- [ ] Run route-outlet lint: `npm run lint:route-outlet`
+- [x] Run build: `npm run build`
+- [x] Run route-outlet lint: `npm run lint:route-outlet`
 - [ ] Run security/code quality checks required by project standards — Codacy
       and Snyk per `.github/instructions/`. Findings touching
       `SharingSection.tsx`, `account.tsx`, `cookbooks-collaboration.spec.ts`, or
