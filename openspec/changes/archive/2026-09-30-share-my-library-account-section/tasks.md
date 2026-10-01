@@ -188,12 +188,12 @@
       `noUnusedParameters`)
 - [x] Run build: `npm run build`
 - [x] Run route-outlet lint: `npm run lint:route-outlet`
-- [ ] Run security/code quality checks required by project standards — Codacy
+- [x] Run security/code quality checks required by project standards — Codacy
       and Snyk per `.github/instructions/`. Findings touching
       `SharingSection.tsx`, `account.tsx`, `cookbooks-collaboration.spec.ts`, or
       `src/e2e/helpers/app.ts` are blocking and must be fixed, never waived.
-- [ ] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] All completed tasks marked as complete
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -211,10 +211,10 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were
       automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `share-my-library-account-section` to `main`. PR body MUST
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `share-my-library-account-section` to `main`. PR body MUST
       include `Closes #668` (per the issue's own "On merge" instructions) and
       reference `Closes #675`.
 - [ ] **Issue lifecycle: mark in-review**: run
@@ -223,7 +223,7 @@ If **ANY** required step fails, iterate and address the failure before pushing.
       "In Review" via `gh project item-edit` (same project/field/option
       discovery as the in-progress lifecycle step above; warn and skip if not
       found).
-- [ ] Wait 60 seconds for CI to start
+- [x] Wait 60 seconds for CI to start
 - [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all
       findings (commit, push, re-run) until zero findings remain. If findings
       persist after three or more iterations with no progress, report the
@@ -232,7 +232,7 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 - [ ] **Enable auto-merge only after the review gate passes (zero findings):**
       `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the
       merge)
-- [ ] **Iterate until merged** — repeat the following priority loop
+- [x] **Iterate until merged** — repeat the following priority loop
       continuously until `gh pr view <PR-URL> --json state` returns `MERGED`;
       if it returns `CLOSED` exit and notify the user — never wait for a human
       to report the merge; never force-merge:
@@ -266,14 +266,14 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only` (from the primary checkout,
+- [x] `git checkout main` and `git pull --ff-only` (from the primary checkout,
       not the worktree)
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (none expected
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (none expected
       beyond this change's own artifacts — no README/CLAUDE.md changes
       anticipated)
-- [ ] Sync approved spec deltas into `openspec/specs/`:
+- [x] Sync approved spec deltas into `openspec/specs/`:
       `openspec/specs/library-sharing/spec.md` (create if the parent change
       hasn't already promoted it; otherwise merge this change's additions into
       it) and `openspec/specs/e2e-test-reliability/spec.md` (append this
@@ -282,7 +282,7 @@ Blocking resolution flow:
       from the archive location — replace `../../design.md` with
       `../../changes/archive/YYYY-MM-DD-share-my-library-account-section/design.md`,
       and similarly for `../../tasks.md`.
-- [ ] Archive the change: move
+- [x] Archive the change: move
       `openspec/changes/share-my-library-account-section/` to
       `openspec/changes/archive/YYYY-MM-DD-share-my-library-account-section/`
       **and stage both the new location and the deletion of the old location
