@@ -52,9 +52,12 @@ export async function waitForContextToReflect(
   timeout = 20000,
 ): Promise<void> {
   await page.bringToFront();
+  // TanStack Query v5's focusManager listens for `visibilitychange` and
+  // `focus` on `window` specifically — dispatching `visibilitychange` on
+  // `document` never reaches that listener.
   await page.evaluate(() => {
+    window.dispatchEvent(new Event("visibilitychange"));
     window.dispatchEvent(new Event("focus"));
-    document.dispatchEvent(new Event("visibilitychange"));
   });
   try {
     if (state === "visible") {
@@ -63,12 +66,15 @@ export async function waitForContextToReflect(
       await expect(locator).toBeHidden({ timeout: 3000 });
     }
     return;
-  } catch {
-    // Headless multi-context pages don't reliably dispatch the OS-level focus
-    // signal React Query's refetch-on-window-focus listens for, so the
-    // client-side cache never re-fetches on its own in this environment.
-    // Re-request the same route to force a fresh fetch, then retry the
-    // assertion with the full timeout budget.
+  } catch (firstAttemptError) {
+    // Headless multi-context pages don't reliably deliver a real OS-level
+    // focus signal even once dispatched on the right target, so the
+    // client-side cache may still not re-fetch on its own in this
+    // environment. Log the original failure before falling back, so CI logs
+    // can tell a headless-focus quirk apart from a genuine regression.
+    console.warn(
+      `waitForContextToReflect: synthetic focus dispatch didn't produce the expected state within 3s, falling back to a route reload. Original error: ${firstAttemptError}`,
+    );
     await page.reload({ waitUntil: "domcontentloaded" });
     await waitForHydration(page);
   }

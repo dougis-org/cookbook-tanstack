@@ -23,6 +23,7 @@ async function setupOwnerAndRecipient(browser: import("@playwright/test").Browse
 async function inviteFromAccountPage(
   ownerPage: import("@playwright/test").Page,
   recipientEmail: string,
+  recipientName: string,
 ) {
   await gotoAndWaitForHydration(ownerPage, "/account");
   const searchInput = ownerPage.getByLabel(/search by email or name/i);
@@ -30,6 +31,8 @@ async function inviteFromAccountPage(
   const resultOption = ownerPage.getByText(recipientEmail);
   await expect(resultOption).toBeVisible({ timeout: 3000 });
   await resultOption.click();
+  // Positive signal that the grant landed, not just that the empty state went away.
+  await expect(ownerPage.getByRole("list", { name: "Libraries you share" }).getByText(recipientName)).toBeVisible();
 }
 
 test.describe("Library sharing — account page", () => {
@@ -50,8 +53,7 @@ test.describe("Library sharing — account page", () => {
       await expect(recipientPage.getByText(recipeName)).not.toBeVisible();
 
       // Owner invites the recipient from the account page's SharingSection.
-      await inviteFromAccountPage(ownerPage, recipientCreds.email);
-      await expect(ownerPage.getByTestId("shares-i-give-empty")).not.toBeVisible();
+      await inviteFromAccountPage(ownerPage, recipientCreds.email, recipientCreds.name);
 
       // Recipient's already-open list reflects the new grant without a reload.
       await waitForContextToReflect(recipientPage, recipientPage.getByText(recipeName));
@@ -87,8 +89,7 @@ test.describe("Library sharing — account page", () => {
       await submitRecipeForm(ownerPage, { name: recipeName, isPublic: false });
       await ownerPage.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
 
-      await inviteFromAccountPage(ownerPage, recipientCreds.email);
-      await expect(ownerPage.getByTestId("shares-i-give-empty")).not.toBeVisible();
+      await inviteFromAccountPage(ownerPage, recipientCreds.email, recipientCreds.name);
 
       await gotoAndWaitForHydration(recipientPage, "/recipes");
       await expect(recipientPage.getByText(recipeName)).toBeVisible();
@@ -100,6 +101,17 @@ test.describe("Library sharing — account page", () => {
 
       await gotoAndWaitForHydration(recipientPage, "/recipes");
       await expect(recipientPage.getByText(recipeName)).not.toBeVisible();
+
+      // The account page itself reflects the downgrade: the owner (now
+      // non-Executive-Chef, with nothing shared with them) sees the upgrade
+      // affordance instead of the invite control, and the recipient (whose
+      // one received share was just suspended) sees the same.
+      await gotoAndWaitForHydration(ownerPage, "/account");
+      await expect(ownerPage.getByLabel(/search by email or name/i)).not.toBeVisible();
+      await expect(ownerPage.getByText(/upgrade to invite people to your collection/i)).toBeVisible();
+
+      await gotoAndWaitForHydration(recipientPage, "/account");
+      await expect(recipientPage.getByText(/upgrade to invite people to your collection/i)).toBeVisible();
     } finally {
       await ownerContext.close();
       await recipientContext.close();

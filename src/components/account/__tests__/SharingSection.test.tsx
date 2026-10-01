@@ -31,14 +31,14 @@ function session(tier: string, isAdmin = false) {
   return { session: { user: { id: 'u1', tier, isAdmin } } }
 }
 
-type QueryStub = { data?: unknown; isLoading?: boolean }
+type QueryStub = { data?: unknown; isLoading?: boolean; isError?: boolean }
 
 /** Maps mockUseQuery calls (in call order) to canned results keyed by queryKey[0:2] join. */
 function wireQueries(map: Record<string, QueryStub>) {
   mockUseQuery.mockImplementation((arg: { queryKey?: unknown[] }) => {
     const key = Array.isArray(arg?.queryKey) ? arg.queryKey.join('.') : ''
     const stub = map[key]
-    return { data: stub?.data ?? [], isLoading: stub?.isLoading ?? false, isError: false }
+    return { data: stub?.data ?? [], isLoading: stub?.isLoading ?? false, isError: stub?.isError ?? false }
   })
 }
 
@@ -149,6 +149,24 @@ describe('SharingSection — gating matrix', () => {
     expect(screen.queryByTestId('shared-with-me-empty')).not.toBeInTheDocument()
     expect(screen.queryByTestId('my-collaborations-empty')).not.toBeInTheDocument()
     expect(screen.getByText(/upgrade to invite people to your collection/i)).toBeInTheDocument()
+  })
+
+  it('does not flash the upgrade affordance while the gating queries are still loading', () => {
+    mockUseAuth.mockReturnValue(session('home-cook'))
+    wireQueries({
+      'sharing.mySharedLibraries': { data: [], isLoading: true },
+    })
+    render(<SharingSection />)
+    expect(screen.queryByText(/upgrade to invite people to your collection/i)).not.toBeInTheDocument()
+  })
+
+  it('fails open to the full section instead of the upgrade affordance when a gating query errors', () => {
+    mockUseAuth.mockReturnValue(session('home-cook'))
+    wireQueries({
+      'cookbooks.myCollaborations': { data: [], isError: true },
+    })
+    render(<SharingSection />)
+    expect(screen.queryByText(/upgrade to invite people to your collection/i)).not.toBeInTheDocument()
   })
 })
 

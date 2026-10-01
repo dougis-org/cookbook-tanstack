@@ -18,13 +18,25 @@ const USERS_SEARCH_MAX_LENGTH = 254
  * Defensive against a malformed query response: never renders a crash on a
  * non-array value, and drops any row that isn't a plain object with a
  * string `id` (every row shape this component consumes has one) rather than
- * trusting the array's contents wholesale.
+ * trusting the array's contents wholesale. Logs when it has to drop
+ * anything, so a real API-contract break doesn't look indistinguishable
+ * from "genuinely has nothing to show" in a bug report.
  */
 function toArray<T extends { id: string }>(value: unknown): T[] {
-  if (!Array.isArray(value)) return []
-  return value.filter(
+  if (value === undefined) return []
+  if (!Array.isArray(value)) {
+    console.error("SharingSection: expected an array from a sharing/collaboration query, got", value)
+    return []
+  }
+  const rows = value.filter(
     (row): row is T => typeof row === "object" && row !== null && typeof (row as { id?: unknown }).id === "string",
   )
+  if (rows.length !== value.length) {
+    console.error(
+      `SharingSection: dropped ${value.length - rows.length} malformed row(s) from a sharing/collaboration query response`,
+    )
+  }
+  return rows
 }
 
 function formatDate(value: Date | string | null | undefined): string {
@@ -298,13 +310,29 @@ export default function SharingSection() {
     "executive-chef",
   )
 
-  const { data: sharedWithMeData } = useQuery(trpc.sharing.mySharedLibraries.queryOptions())
+  const {
+    data: sharedWithMeData,
+    isLoading: isSharedWithMeLoading,
+    isError: isSharedWithMeError,
+  } = useQuery(trpc.sharing.mySharedLibraries.queryOptions())
   const sharedWithMe = toArray<SharedLibraryRow>(sharedWithMeData)
-  const { data: collaborationsData } = useQuery(trpc.cookbooks.myCollaborations.queryOptions())
+  const {
+    data: collaborationsData,
+    isLoading: isCollaborationsLoading,
+    isError: isCollaborationsError,
+  } = useQuery(trpc.cookbooks.myCollaborations.queryOptions())
   const collaborations = toArray<CollaborationRow>(collaborationsData)
 
   const hasReceived = sharedWithMe.length > 0 || collaborations.length > 0
-  const showSection = isExecChef || hasReceived
+  // Only collapse to the upgrade affordance once it's certain: a
+  // non-Executive-Chef user, both gating queries have settled without
+  // error, and both are confirmed empty. A still-loading or errored query
+  // fails open to the full section (whose own list components show their
+  // own loading/empty state) rather than flashing, or wrongly committing
+  // to, the upsell.
+  const gatingSettled = !isSharedWithMeLoading && !isCollaborationsLoading
+  const gatingErrored = isSharedWithMeError || isCollaborationsError
+  const showSection = isExecChef || hasReceived || !gatingSettled || gatingErrored
 
   if (!session) return null
 
