@@ -22,11 +22,10 @@ test.describe("Recipe Form Persistence", () => {
     
     // 2. Type something
     await page.getByLabel("Recipe Name").fill(recipeName);
-    await page.waitForTimeout(1000); // ensure state updates
-    
+
     // 3. Wait for autosave to localStorage (1s debounce)
-    await page.waitForTimeout(2000); 
-    
+    await expect(page.getByText("Saved")).toBeVisible({ timeout: 5000 });
+
     // 4. Reload page
     await page.reload();
     await gotoAndWaitForHydration(page, "/recipes/new");
@@ -48,19 +47,17 @@ test.describe("Recipe Form Persistence", () => {
     // 1. Create a recipe
     await gotoAndWaitForHydration(page, "/recipes/new");
     await page.getByLabel("Recipe Name").fill(recipeName);
-    await page.waitForTimeout(1000);
     await page.getByRole("button", { name: "Create Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-    
+
     // 2. Go to edit page
     await page.getByRole("link", { name: "Edit Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
-    
+
     // 3. Modify field and wait for server autosave (1s debounce + mutation)
     await page.getByLabel("Recipe Name").fill(recipeName + " Updated");
-    await page.waitForTimeout(1000);
-    
-    // Wait for the indicator 
+
+    // Wait for the indicator
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
     
     // 5. Navigate away - first open menu then click link
@@ -80,17 +77,15 @@ test.describe("Recipe Form Persistence", () => {
     // 1. Create a recipe
     await gotoAndWaitForHydration(page, "/recipes/new");
     await page.getByLabel("Recipe Name").fill(recipeName);
-    await page.waitForTimeout(1000);
     await page.getByRole("button", { name: "Create Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
-    
+
     // 2. Go to edit page
     await page.getByRole("link", { name: "Edit Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
-    
+
     // 3. Modify and wait for autosave
     await page.getByLabel("Recipe Name").fill(recipeName + " Dirty");
-    await page.waitForTimeout(1000);
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
     
     // 4. Click Revert

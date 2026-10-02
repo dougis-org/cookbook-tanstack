@@ -45,7 +45,6 @@ const textFieldLabels = {
  * Assumes the page is already on /recipes/new or /recipes/:id/edit.
  */
 export async function submitRecipeForm(page: Page, data: RecipeData) {
-  await page.waitForLoadState("networkidle");
   await page.getByLabel("Recipe Name").waitFor({ state: "visible" });
 
   await page.getByLabel("Recipe Name").fill(data.name);

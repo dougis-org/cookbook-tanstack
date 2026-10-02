@@ -25,7 +25,6 @@ test.describe("Auth session flows", () => {
     await expect(page.getByText(creds.email)).toBeVisible();
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
     await waitForHydration(page);
 
     await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();

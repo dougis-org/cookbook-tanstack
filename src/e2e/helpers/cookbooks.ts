@@ -22,7 +22,6 @@ export async function createCookbook(
     await page.getByLabel("Public (visible to everyone)").uncheck();
   }
   await page.getByRole("button", { name: "Create", exact: true }).click();
-  await page.waitForLoadState("networkidle");
 
   const cookbookLink = page
     .getByRole("link")
@@ -92,7 +91,6 @@ export async function createCookbookWithRecipe(page: Page, label: string) {
   const { cookbookId, cookbookUrl } = await createCookbook(page, cookbookName);
 
   await addRecipeToCookbook(page, recipeName);
-  await page.waitForLoadState("networkidle");
 
   return { cookbookId, cookbookUrl, cookbookName, recipeName };
 }

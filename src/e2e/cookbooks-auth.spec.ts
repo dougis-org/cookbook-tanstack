@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
-import { gotoAndWaitForHydration } from "./helpers/app";
+import { gotoAndWaitForHydration, waitForHydration } from "./helpers/app";
 import {
   createCookbook,
   createCookbookWithRecipe,
@@ -57,7 +57,7 @@ test.describe("Cookbook Detail Owner Controls", () => {
     await registerAndLogin(page);
     const cookbookName = getUniqueCookbookName("Edit Delete Owner");
     await createCookbook(page, cookbookName);
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
 
     await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Delete" })).toBeVisible();
@@ -102,7 +102,7 @@ test.describe("Cookbook Detail Owner Controls", () => {
     await registerAndLogin(page);
     const cookbookName = getUniqueCookbookName("Add Recipe Owner");
     await createCookbook(page, cookbookName);
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
 
     await expect(
       page.getByRole("button", { name: "Add Recipe" }),

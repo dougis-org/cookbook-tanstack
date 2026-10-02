@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
-import { gotoAndWaitForHydration } from "./helpers/app";
+import { gotoAndWaitForHydration, waitForHydration } from "./helpers/app";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
 test.describe("Recipe CRUD Operations", () => {
@@ -201,7 +201,7 @@ test.describe("Recipe CRUD Operations", () => {
     ]);
 
     // Verify the recipe is no longer in the list
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
     await expect(
       page.getByRole("heading", { name: recipeName }),
     ).not.toBeVisible();

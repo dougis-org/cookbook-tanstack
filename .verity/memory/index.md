@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (75)
+## decisions/ (76)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -156,6 +156,8 @@
   *decision* · 82%
 - [[n106-derive-mutation-coverage-from-registered-router-pr]] — **Derive mutation coverage from registered router procedures**
   *decision* · 78%
+- [[n107-account-page-sharingsection-pr-690-src-components]] — **Account-page SharingSection (PR #690, src/components/account/SharingSection.tsx): TanStack Query v5's focusManager listens for 'visibilitychange' and 'focus' on window specifically, not on document —**
+  *decision* · 70%
 
 ## gotchas/ (2)
 
