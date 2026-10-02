@@ -163,9 +163,11 @@ export function createSharingTrpcMock() {
       },
       shareLibrary: {
         mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'shareLibrary'], ...opts }),
+        mutationKey: () => ['sharing', 'shareLibrary'],
       },
       revokeLibraryShare: {
         mutationOptions: (opts: Record<string, unknown>) => ({ mutationKey: ['sharing', 'revokeLibraryShare'], ...opts }),
+        mutationKey: () => ['sharing', 'revokeLibraryShare'],
       },
     },
     cookbooks: {

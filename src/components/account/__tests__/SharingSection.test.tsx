@@ -17,7 +17,7 @@ const mockInvalidateQueries = vi.fn()
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
   useMutation: (...args: unknown[]) => mockUseMutation(...args),
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries, getQueryData: () => undefined }),
 }))
 
 vi.mock('@/lib/trpc', async () => {
@@ -226,12 +226,12 @@ describe('SharingSection — invite flow', () => {
     expect(screen.getByText(/your entire collection, including private recipes/i)).toBeInTheDocument()
   })
 
-  it('shows pending label and disables the field while sharing', () => {
+  it('keeps the field enabled and shows no standalone pending label while an invite is in flight', () => {
     mockUseMutation.mockReturnValue({ mutate: vi.fn(), isPending: true })
     wireQueries({})
     render(<SharingSection />)
-    expect(screen.getByText('Sharing…')).toBeInTheDocument()
-    expect(screen.getByLabelText(/search by email or name/i)).toBeDisabled()
+    expect(screen.queryByText('Sharing…')).not.toBeInTheDocument()
+    expect(screen.getByLabelText(/search by email or name/i)).not.toBeDisabled()
   })
 })
 
@@ -251,27 +251,29 @@ describe('SharingSection — revoke flow', () => {
     expect(revokeMutate).toHaveBeenCalledWith({ shareId: 's1' })
   })
 
-  it('shows pending label on the revoke control while pending', () => {
-    wireRevokeMutation({ isPending: true, variables: { shareId: 's1' } })
-    wireQueries({
-      'sharing.myLibraryShares': { data: [shareRow()] },
-    })
-    render(<SharingSection />)
-    expect(screen.getByText('Revoking…')).toBeInTheDocument()
-  })
-
-  it('only shows the pending label on the row being revoked, not every row', () => {
+  it('never renders a "Revoking…" label or disables a revoke control while a revoke is in flight', () => {
     wireRevokeMutation({ isPending: true, variables: { shareId: 's1' } })
     wireQueries({
       'sharing.myLibraryShares': {
-        data: [
-          shareRow(),
-          shareRow({ id: 's2', recipientId: 'r2', recipientName: 'Bob' }),
-        ],
+        data: [shareRow(), shareRow({ id: 's2', recipientId: 'r2', recipientName: 'Bob' })],
       },
     })
     render(<SharingSection />)
-    expect(screen.getAllByText('Revoking…')).toHaveLength(1)
+    expect(screen.queryByText('Revoking…')).not.toBeInTheDocument()
+    for (const button of screen.getAllByText('Revoke')) {
+      expect(button.closest('button')).not.toBeDisabled()
+    }
+  })
+
+  it('renders a pending share row without a Revoke control', () => {
+    wireRevokeMutation({ isPending: false })
+    wireQueries({
+      'sharing.myLibraryShares': {
+        data: [shareRow(), shareRow({ id: 'optimistic-r2', recipientId: 'r2', recipientName: 'Bob' })],
+      },
+    })
+    render(<SharingSection />)
     expect(screen.getAllByText('Revoke')).toHaveLength(1)
+    expect(screen.getByText('Sharing…')).toBeInTheDocument()
   })
 })
