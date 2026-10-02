@@ -17,7 +17,7 @@ const mockInvalidateQueries = vi.fn()
 vi.mock('@tanstack/react-query', () => ({
   useQuery: (...args: unknown[]) => mockUseQuery(...args),
   useMutation: (...args: unknown[]) => mockUseMutation(...args),
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries, getQueryData: () => undefined }),
 }))
 
 vi.mock('@/lib/trpc', async () => {

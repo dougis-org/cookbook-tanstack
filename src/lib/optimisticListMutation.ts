@@ -29,11 +29,15 @@ export function optimisticListMutation<TItem, TVars, TContext = undefined>({
   return {
     onMutate: async (vars: TVars): Promise<TContext | undefined> => {
       await queryClient.cancelQueries({ queryKey })
+      // Nothing cached yet (initial load): writing here would hide the real
+      // list behind a lone optimistic row. The settle-time refetch reconciles.
+      if (queryClient.getQueryData(queryKey) === undefined) return undefined
       const { list, context } = apply(readList(), vars)
       queryClient.setQueryData<TItem[]>(queryKey, list)
       return context
     },
     onError: (_error: unknown, vars: TVars, context: TContext | undefined) => {
+      if (queryClient.getQueryData(queryKey) === undefined) return
       queryClient.setQueryData<TItem[]>(queryKey, revert(readList(), vars, context))
     },
     onSettled: () => {

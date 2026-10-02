@@ -87,14 +87,15 @@ describe('optimisticListMutation', () => {
     expect(queryClient.getQueryData(queryKey)).toEqual(['a', 'b', 'd'])
   })
 
-  it('T6: apply and revert tolerate an empty cache entry', async () => {
+  it('T6: leaves an unloaded cache entry untouched on mutate and on error', async () => {
     const queryClient = makeClient()
     const helper = appendHelper(queryClient)
     const context = await helper.onMutate('c')
-    expect(queryClient.getQueryData(queryKey)).toEqual(['c'])
+    expect(context).toBeUndefined()
+    expect(queryClient.getQueryData(queryKey)).toBeUndefined()
 
     helper.onError(new Error('boom'), 'c', context)
-    expect(queryClient.getQueryData(queryKey)).toEqual([])
+    expect(queryClient.getQueryData(queryKey)).toBeUndefined()
   })
 
   it('T5: invalidates only once, when the last mutation of the key settles', async () => {

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { X } from "lucide-react"
 import { trpc } from "@/lib/trpc"
 import { optimisticListMutation } from "@/lib/optimisticListMutation"
-import { toArray, formatDate } from "@/components/account/sharingUtils"
+import { toArray, formatDate, isOptimisticShareId, optimisticShareId } from "@/components/account/sharingUtils"
 
 const SCOPE_WARNING =
   "Sharing your library gives this person read access to your entire collection, including private recipes you create in the future."
@@ -18,17 +18,6 @@ interface LibraryShareRow {
   recipientId: string
   recipientName: string
   addedAt: Date | string
-}
-
-const OPTIMISTIC_ID_PREFIX = "optimistic-"
-
-/** A share row is pending while it carries a client-made temp id (no server grant exists yet). */
-export function isOptimisticShareId(id: string): boolean {
-  return id.startsWith(OPTIMISTIC_ID_PREFIX)
-}
-
-function optimisticShareId(recipientId: string): string {
-  return `${OPTIMISTIC_ID_PREFIX}${recipientId}`
 }
 
 interface InviteContext {
@@ -145,12 +134,15 @@ export default function SharesIGiveList() {
 
   function handleSelect(user: { id: string; name: string; email: string }) {
     setInviteError(null)
-    recipientNames.current.set(user.id, user.name || user.email)
-    inviteMutation.mutate({ recipientId: user.id })
-    // Clear synchronously: the pending row carries the state, and the input
-    // stays free so further invites can be fired while this one is in flight.
     setSearchInput("")
     setDebouncedSearch("")
+    // Already listed (real or pending): a second request would only conflict.
+    const current = queryClient.getQueryData<LibraryShareRow[]>(sharesQueryKey) ?? []
+    if (current.some((share) => share.recipientId === user.id)) return
+    recipientNames.current.set(user.id, user.name || user.email)
+    // The input was cleared above: the pending row carries the state and the
+    // input stays free, so further invites can fire while this one is in flight.
+    inviteMutation.mutate({ recipientId: user.id })
   }
 
   function handleRevoke(shareId: string) {

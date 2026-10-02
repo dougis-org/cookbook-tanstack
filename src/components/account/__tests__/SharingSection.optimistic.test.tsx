@@ -84,7 +84,8 @@ vi.mock('@/lib/trpc', () => ({
   },
 }))
 
-import SharingSection, { isOptimisticShareId } from '@/components/account/SharingSection'
+import SharingSection from '@/components/account/SharingSection'
+import { isOptimisticShareId } from '@/components/account/sharingUtils'
 
 function row(name: string, id = `s-${name.toLowerCase()}`): Row {
   return { id, recipientId: `u-${name.toLowerCase()}`, recipientName: name, addedAt: '2026-01-01' }

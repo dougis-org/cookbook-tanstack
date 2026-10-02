@@ -28,3 +28,14 @@ export function formatDate(value: Date | string | null | undefined): string {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? "N/A" : date.toISOString().split("T")[0]
 }
+
+const OPTIMISTIC_ID_PREFIX = "optimistic-"
+
+/** A share row is pending while it carries a client-made temp id (no server grant exists yet). */
+export function isOptimisticShareId(id: string): boolean {
+  return id.startsWith(OPTIMISTIC_ID_PREFIX)
+}
+
+export function optimisticShareId(recipientId: string): string {
+  return `${OPTIMISTIC_ID_PREFIX}${recipientId}`
+}
