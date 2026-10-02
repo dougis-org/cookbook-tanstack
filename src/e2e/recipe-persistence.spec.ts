@@ -54,10 +54,12 @@ test.describe("Recipe Form Persistence", () => {
     await page.getByRole("link", { name: "Edit Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
 
-    // 3. Modify field and wait for server autosave (1s debounce + mutation)
+    // 3. Modify field and wait for server autosave (debounce + mutation).
+    // First confirm the indicator is back to idle (not a "Saved" left over
+    // from the initial form-data load) so the next assertion can't pass
+    // vacuously without this edit's own autosave cycle completing.
+    await expect(page.getByText("Saved")).not.toBeVisible();
     await page.getByLabel("Recipe Name").fill(recipeName + " Updated");
-
-    // Wait for the indicator
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
     
     // 5. Navigate away - first open menu then click link
@@ -84,7 +86,11 @@ test.describe("Recipe Form Persistence", () => {
     await page.getByRole("link", { name: "Edit Recipe" }).click();
     await page.waitForURL(/\/recipes\/[a-f0-9-]+\/edit$/);
 
-    // 3. Modify and wait for autosave
+    // 3. Modify and wait for autosave. First confirm the indicator is back to
+    // idle (not a "Saved" left over from the initial form-data load) so the
+    // next assertion can't pass vacuously without this edit's own autosave
+    // cycle completing.
+    await expect(page.getByText("Saved")).not.toBeVisible();
     await page.getByLabel("Recipe Name").fill(recipeName + " Dirty");
     await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
     

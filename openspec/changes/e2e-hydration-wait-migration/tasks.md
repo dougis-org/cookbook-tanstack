@@ -35,9 +35,9 @@
   - [x] Line 25 — delete (no-op gap between two sleeps)
   - [x] Line 28 — replace with `await expect(page.getByText("Saved")).toBeVisible({ timeout: 5000 })`
   - [x] Line 51 — delete (precedes a plain submit click, not autosave-gated)
-  - [x] Line 61 — delete (the existing `expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 })` a few lines later already covers it)
+  - [x] Line 61 — delete (the existing `expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 })` a few lines later already covers it). Codacy's automated PR review flagged this as a vacuous-pass risk: `edit page loads existing recipe data → reset() can itself trigger an autosave cycle`, so "Saved" could already be showing before this test's own edit. Fixed by adding `await expect(page.getByText("Saved")).not.toBeVisible()` before the fill, confirming the indicator is back to idle first.
   - [x] Line 83 — delete (same as line 51)
-  - [x] Line 93 — delete (same as line 61)
+  - [x] Line 93 — delete (same as line 61, same Codacy-flagged fix applied)
 - [x] **Full-suite grep confirmation:** `grep -rnE "networkidle|waitForTimeout" src/e2e --include=*.ts` returns zero code matches (one comment reference in `helpers/app.ts:46` is expected). Switched from the original double-quote-only pattern after PR review found it missed `theme.spec.ts`'s single-quoted calls.
 - [x] Confirm acceptance criteria in `specs/e2e-test-waits/spec.md` are covered by the edits above
 
@@ -76,8 +76,8 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 - [x] Open PR from `e2e-hydration-wait-migration` to `main`. PR body **must include `Closes #689`**. (PR #693)
 - [x] **Issue lifecycle: mark in-review**: run `gh issue edit 689 --repo dougis-org/cookbook-tanstack --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column matching "In Review" via `gh project item-edit` (same discovery as the in-progress step; warn and skip if not found).
 - [x] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing. (Ran code-reviewer + pr-test-analyzer in parallel; both independently found the same `recipes-crud.spec.ts:204` vacuous-pass gap plus a quote-matching blind spot in `theme.spec.ts`; fixed both, pushed, 3x full suite re-verified green.)
+- [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — never wait for a human to report the merge; never force-merge:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
