@@ -124,7 +124,12 @@ const flushOptimistic = () => act(async () => new Promise<void>((resolve) => set
 
 async function invite(name: string) {
   fireEvent.change(searchInput(), { target: { value: 'x.com' } })
-  const button = await screen.findByRole('button', { name: new RegExp(`${name}\\s*${name.toLowerCase()}@x\\.com`, 'i') }, { timeout: 2000 })
+  const email = `${name.toLowerCase()}@x.com`
+  const button = await screen.findByRole(
+    'button',
+    { name: (label) => label.includes(name) && label.includes(email) },
+    { timeout: 2000 },
+  )
   await act(async () => {
     fireEvent.click(button)
   })
