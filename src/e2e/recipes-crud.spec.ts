@@ -200,8 +200,16 @@ test.describe("Recipe CRUD Operations", () => {
       dialog.getByRole("button", { name: "Delete" }).click(),
     ]);
 
-    // Verify the recipe is no longer in the list
+    // Verify the recipe is no longer in the list. The list isn't scoped to
+    // this user (it can show hundreds of other recipes), so first assert a
+    // real recipe card heading is visible — proving the grid actually
+    // rendered with data, not just that the page shell is up — before the
+    // negative check. Otherwise the negative check could pass vacuously
+    // while the list is still loading.
     await waitForHydration(page);
+    await expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible({
+      timeout: 10000,
+    });
     await expect(
       page.getByRole("heading", { name: recipeName }),
     ).not.toBeVisible();

@@ -29,7 +29,8 @@
   - [x] `src/e2e/owner-icon.spec.ts:37`
   - [x] `src/e2e/owner-icon.spec.ts:58`
   - [x] `src/e2e/recipes-auth.spec.ts:127`
-  - [x] `src/e2e/recipes-crud.spec.ts:204`
+  - [x] `src/e2e/recipes-crud.spec.ts:204` (also added `expect(page.getByRole("heading", { level: 3 }).first()).toBeVisible()` before the negative heading check — `waitForHydration` alone doesn't guarantee the list query resolved, so the `not.toBeVisible()` could otherwise pass vacuously on a still-loading list; found in PR review. Two earlier attempts were rejected: "No recipes found" assumed the list is user-scoped (it isn't — it shows hundreds of other users' recipes), and `toBeHidden()` on the loading placeholder could pass trivially before the component even started loading. Asserting a real recipe-card heading is visible is the positive, user-agnostic signal that the grid actually rendered with data.)
+  - [x] `src/e2e/theme.spec.ts:78,203,370,516` — found in PR review: these use single-quoted `'networkidle'`, which task 40's double-quote-only grep missed. All four follow `page.reload()` with no other hydration wait.
 - [x] **Fix `src/e2e/recipe-persistence.spec.ts`** (6 `waitForTimeout` sites):
   - [x] Line 25 — delete (no-op gap between two sleeps)
   - [x] Line 28 — replace with `await expect(page.getByText("Saved")).toBeVisible({ timeout: 5000 })`
@@ -37,7 +38,7 @@
   - [x] Line 61 — delete (the existing `expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 })` a few lines later already covers it)
   - [x] Line 83 — delete (same as line 51)
   - [x] Line 93 — delete (same as line 61)
-- [x] **Full-suite grep confirmation:** `grep -rn 'waitForLoadState("networkidle"\|waitForTimeout' src/e2e/` returns zero matches (or, if `cookbooks-collaboration.spec.ts` lines were already removed by #675 before this task ran, zero matches regardless of which PR removed them)
+- [x] **Full-suite grep confirmation:** `grep -rnE "networkidle|waitForTimeout" src/e2e --include=*.ts` returns zero code matches (one comment reference in `helpers/app.ts:46` is expected). Switched from the original double-quote-only pattern after PR review found it missed `theme.spec.ts`'s single-quoted calls.
 - [x] Confirm acceptance criteria in `specs/e2e-test-waits/spec.md` are covered by the edits above
 
 ## Pre-Commit Code Review
@@ -71,10 +72,10 @@ If **ANY** required step fails, iterate and address the failure before pushing.
 ## PR and Merge
 
 - [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `e2e-hydration-wait-migration` to `main`. PR body **must include `Closes #689`**.
-- [ ] **Issue lifecycle: mark in-review**: run `gh issue edit 689 --repo dougis-org/cookbook-tanstack --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column matching "In Review" via `gh project item-edit` (same discovery as the in-progress step; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `e2e-hydration-wait-migration` to `main`. PR body **must include `Closes #689`**. (PR #693)
+- [x] **Issue lifecycle: mark in-review**: run `gh issue edit 689 --repo dougis-org/cookbook-tanstack --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column matching "In Review" via `gh project item-edit` (same discovery as the in-progress step; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
 - [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
 - [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
 - [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — never wait for a human to report the merge; never force-merge:
