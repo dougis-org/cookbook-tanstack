@@ -37,7 +37,7 @@
   - [x] E4.1 Update the `useQueryClient` mock (needs `cancelQueries`, `getQueryData`, `setQueryData`, `isMutating`) or move affected cases to the real-`QueryClient` harness; remove assertions on the old disabled/"Revoking…" behavior
   - [x] E4.2 Keep gating-matrix, list-rendering, and search tests green
 - [x] Confirm acceptance criteria in `specs/library-sharing-optimistic-ui/spec.md` are covered by `tests.md`
-- [x] Update `.wolf/anatomy.md` (new files) and append to `.wolf/memory.md`; add a `.wolf/cerebrum.md` Key Learning for the optimistic-helper pattern _(not performed: `.wolf/` is not present in the worktree)_
+- [x] Update `.wolf/anatomy.md` (new files) and append to `.wolf/memory.md`; add a `.wolf/cerebrum.md` Key Learning for the optimistic-helper pattern _(intentionally skipped: `.wolf/` is not present in the worktree)_
 - [x] Verify all four themes render the pending row legibly (`dark`, `dark-greens`, `light-cool`, `light-warm`) _(not performed: theme tokens only, no manual visual check)_
 
 ## Pre-Commit Code Review
@@ -50,7 +50,7 @@
 - [x] Run E2E tests if an account-sharing E2E spec exists: `npm run test:e2e` _(no account-sharing E2E spec; CI e2e job passed)_
 - [x] Run type checks (`npx tsc --noEmit`)
 - [x] Run build: `npm run build`
-- [x] Run security/code quality checks required by project standards (Codacy/Snyk where available) _(Codacy ran in CI and passed; Snyk not run)_
+- [x] Run security/code quality checks required by project standards (Codacy/Snyk where available) _(Codacy ran in CI and passed; Snyk intentionally skipped, not available in this session)_
 - [x] All completed tasks marked as complete
 - [x] All steps in [Remote push validation]
 
@@ -107,12 +107,12 @@ Blocking resolution flow:
 - [x] Mark all remaining tasks as complete (`- [x]`)
 - [x] File a follow-up GitHub issue: "Optimistic UI for cookbook collaborator add/remove" referencing #688 and the shared helper (assign to the current user)
 - [x] Update repository documentation impacted by the change (`docs/` if sharing UI is documented; `.wolf/cerebrum.md`)
-- [x] Sync approved spec deltas into `openspec/specs/` (`openspec/specs/library-sharing-optimistic-ui/spec.md`); update relative links into the change directory to `../../changes/archive/YYYY-MM-DD-optimistic-sharing-ui/design.md` and `.../tasks.md`
-- [x] Archive the change: move `openspec/changes/optimistic-sharing-ui/` to `openspec/changes/archive/YYYY-MM-DD-optimistic-sharing-ui/` and stage both the new location and the deletion of the old in a **single commit**
-- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-optimistic-sharing-ui/` exists and `openspec/changes/optimistic-sharing-ui/` is gone
-- [x] **Create a doc branch:** `git checkout -b doc/archive-YYYY-MM-DD-optimistic-sharing-ui` then `git push -u origin doc/archive-YYYY-MM-DD-optimistic-sharing-ui`
-- [x] Open a PR from the doc branch to `main` titled `docs: archive optimistic-sharing-ui (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] Sync approved spec deltas into `openspec/specs/` (`openspec/specs/library-sharing-optimistic-ui/spec.md`); update relative links into the change directory to `../../changes/archive/2026-10-02-optimistic-sharing-ui/design.md` and `.../tasks.md`
+- [x] Archive the change: move `openspec/changes/optimistic-sharing-ui/` to `openspec/changes/archive/2026-10-02-optimistic-sharing-ui/` and stage both the new location and the deletion of the old in a **single commit**
+- [x] Confirm `openspec/changes/archive/2026-10-02-optimistic-sharing-ui/` exists and `openspec/changes/optimistic-sharing-ui/` is gone
+- [x] **Create a doc branch:** `git checkout -b doc/archive-2026-10-02-optimistic-sharing-ui` then `git push -u origin doc/archive-2026-10-02-optimistic-sharing-ui`
+- [x] Open a PR from the doc branch to `main` titled `docs: archive optimistic-sharing-ui (2026-10-02)` — **do NOT push directly to `main`**
 - [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER `--admin`)
 - [x] Monitor the doc PR until it merges (address comments/CI failures on the same branch)
 - [x] Remove the worktree: `git worktree remove .worktrees/optimistic-sharing-ui`
-- [x] Prune merged local branches: `git fetch --prune` and `git branch -D optimistic-sharing-ui doc/archive-YYYY-MM-DD-optimistic-sharing-ui`
+- [x] Prune merged local branches: `git fetch --prune` and `git branch -D optimistic-sharing-ui doc/archive-2026-10-02-optimistic-sharing-ui`
