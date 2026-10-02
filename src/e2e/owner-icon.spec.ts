@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
-import { gotoAndWaitForHydration } from "./helpers/app";
+import { gotoAndWaitForHydration, waitForHydration } from "./helpers/app";
 import { getUniqueRecipeName, submitRecipeForm } from "./helpers/recipes";
 import { createCookbook, getUniqueCookbookName } from "./helpers/cookbooks";
 
@@ -19,7 +19,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
 
     const icon = page.getByRole("img", { name: OWN_THIS });
     await expect(icon).toBeVisible();
@@ -34,7 +34,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
     const recipeUrl = page.url();
 
     // Log in as a different user and navigate to the same recipe
@@ -55,7 +55,7 @@ test.describe("Owner icon — recipe detail page", () => {
     await gotoAndWaitForHydration(page, "/recipes/new");
     await submitRecipeForm(page, { name });
     await page.waitForURL(/\/recipes\/[a-f0-9]{24}$/i);
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
 
     await page.emulateMedia({ media: "print" });
 

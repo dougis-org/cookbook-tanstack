@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage"
 import { registerAndLogin } from "./helpers/auth"
-import { gotoAndWaitForHydration } from "./helpers/app"
+import { gotoAndWaitForHydration, waitForHydration } from "./helpers/app"
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes"
 
 test.describe("Recipe Share Flow", () => {
@@ -17,7 +17,7 @@ test.describe("Recipe Share Flow", () => {
     await gotoAndWaitForHydration(page, "/recipes/new")
     await submitRecipeForm(page, { name: recipeName })
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/)
-    await page.waitForLoadState("networkidle")
+    await waitForHydration(page)
 
     const expectedUrl = page.url()
 

@@ -1,6 +1,6 @@
 import { test, expect } from '@bgotink/playwright-coverage'
 import type { Page } from '@playwright/test'
-import { gotoAndWaitForHydration } from './helpers/app'
+import { gotoAndWaitForHydration, waitForHydration } from './helpers/app'
 import { registerAndLogin } from './helpers/auth'
 import { createCookbookWithRecipe } from './helpers/cookbooks'
 
@@ -75,7 +75,7 @@ test.describe('Theme system', () => {
 
     // Reload and verify theme is restored
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await waitForHydration(page)
 
     const htmlClassAfterReload = await page.evaluate(
       () => document.documentElement.className,
@@ -200,7 +200,7 @@ test.describe('Theme system', () => {
     await expect(page.locator('html')).toHaveClass(/dark-greens/)
 
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await waitForHydration(page)
 
     await expect(page.locator('html')).toHaveClass(/dark-greens/)
 
@@ -367,7 +367,7 @@ test.describe('Theme system', () => {
     expect(htmlClassAfterLoad).toContain('light-warm')
 
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await waitForHydration(page)
 
     const htmlClassAfterReload = await page.evaluate(
       () => document.documentElement.className,
@@ -513,7 +513,7 @@ test.describe('Theme system', () => {
     await expect(page.getByTestId('settings-success')).toBeVisible()
 
     await page.reload()
-    await page.waitForLoadState('networkidle')
+    await waitForHydration(page)
 
     await expect(page.getByRole('radio', { name: 'Dark (greens)' })).toHaveAttribute(
       'aria-checked',

@@ -88,7 +88,6 @@ test.describe("Cookbook collaboration", () => {
     await page.context().clearCookies();
     await login(page, collabCreds.email, collabCreds.password);
     await gotoAndWaitForHydration(page, cookbookUrl);
-    await page.waitForLoadState("networkidle");
 
     // Editor can see the cookbook and the Add Recipe button
     await expect(
@@ -129,7 +128,6 @@ test.describe("Cookbook collaboration", () => {
     await confirmDialog.waitFor({ state: "visible" });
     await confirmDialog.getByRole("button", { name: "Remove" }).click();
     await confirmDialog.waitFor({ state: "hidden" });
-    await page.waitForLoadState("networkidle");
 
     // Collaborator name should no longer appear anywhere on the page
     await panelToggle.click();

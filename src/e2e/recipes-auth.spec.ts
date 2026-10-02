@@ -1,6 +1,6 @@
 import { test, expect } from "@bgotink/playwright-coverage";
 import { registerAndLogin } from "./helpers/auth";
-import { gotoAndWaitForHydration } from "./helpers/app";
+import { gotoAndWaitForHydration, waitForHydration } from "./helpers/app";
 import { submitRecipeForm, getUniqueRecipeName } from "./helpers/recipes";
 
 test.describe("Recipe Auth-Gated Actions", () => {
@@ -124,7 +124,7 @@ test.describe("Recipe Auth-Gated Actions", () => {
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
 
     // Wait for the detail page to be fully hydrated
-    await page.waitForLoadState("networkidle");
+    await waitForHydration(page);
 
     // Owner should see Edit and Delete buttons
     await expect(page.getByRole("link", { name: "Edit Recipe" })).toBeVisible();
