@@ -1522,6 +1522,22 @@ describe("RecipeDetail — per-element print placement (PR 2)", () => {
     expect(row.parentElement?.lastElementChild).toBe(row)
   })
 
+  it("default preferences put the classification name in the footer row with no printFooter", () => {
+    render(<RecipeDetail recipe={full} />)
+    expect(screen.getByTestId("print-footer-row").textContent).toBe("Soups")
+    expect(screen.queryByTestId("print-footer-node")).not.toBeInTheDocument()
+  })
+
+  it("servings of 0 is valid and prints in the header", () => {
+    render(<RecipeDetail recipe={makeRecipe({ servings: 0 })} printPreferences={prefs({ printServings: "header" })} />)
+    expect(screen.getByTestId("print-meta-line").textContent).toBe("Serves: 0")
+  })
+
+  it("header Category with no classification renders no header line", () => {
+    render(<RecipeDetail recipe={makeRecipe()} printPreferences={prefs({ printCategory: "header" })} />)
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+  })
+
   it("screen grid labels remain", () => {
     render(<RecipeDetail recipe={full} printPreferences={prefs({})} />)
     for (const l of ["Prep Time", "Cook Time", "Servings", "Difficulty"]) {
