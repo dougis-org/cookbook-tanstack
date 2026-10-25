@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import type { Recipe } from "@/types/recipe"
 import RecipeDetail, { splitLines } from "@/components/recipes/RecipeDetail"
+import { DEFAULT_PRINT_PREFERENCES } from "@/lib/printPreferences"
 import PrintButton from "@/components/ui/PrintButton"
 import { PRINT_HEADING_DENSITY_PAGE, PRINT_HEADING_DENSITY_SECTION } from "@/components/printHeadingDensity"
 
@@ -39,6 +40,11 @@ function makeRecipe(overrides: Partial<Record<string, unknown>> = {}): Recipe {
     ...overrides,
   } as Recipe
 }
+
+// Placement helpers (PR 1 temporary mapping: meta line shows when any meta element is in the header)
+const META_HEADER = { printCategory: "footer", printDifficulty: "header", printServings: "header", printPrepTime: "header", printCookTime: "header" } as const
+const META_NONE = { printCategory: "footer", printDifficulty: "none", printServings: "none", printPrepTime: "none", printCookTime: "none" } as const
+const META_HEADER_PREFS = { ...DEFAULT_PRINT_PREFERENCES, ...META_HEADER }
 
 describe("RecipeDetail", () => {
   it("renders the recipe name", () => {
@@ -713,9 +719,9 @@ describe("RecipeDetail — printPreferences", () => {
     notes: "Season well",
   })
 
-  it("prop omitted: defaults to all-true (today's behavior)", () => {
+  it("prop omitted: new-account defaults (no meta element in the header), sections shown", () => {
     render(<RecipeDetail recipe={contentRecipe} personalNote="Secret" />)
-    expect(screen.getByTestId("print-meta-line")).toBeInTheDocument()
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Ingredients" }).closest("section")).not.toHaveClass("print:hidden")
     expect(screen.getByRole("heading", { name: "Instructions" }).closest("section")).not.toHaveClass("print:hidden")
     expect(screen.getByRole("heading", { name: "Notes" }).closest("section")).not.toHaveClass("print:hidden")
@@ -728,7 +734,7 @@ describe("RecipeDetail — printPreferences", () => {
         recipe={contentRecipe}
         personalNote="Secret"
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: true,
           printShowInstructions: true,
           printShowNotes: true,
@@ -745,7 +751,7 @@ describe("RecipeDetail — printPreferences", () => {
       <RecipeDetail
         recipe={contentRecipe}
         printPreferences={{
-          printShowMeta: false,
+          ...META_NONE,
           printShowIngredients: true,
           printShowInstructions: true,
           printShowNotes: true,
@@ -761,7 +767,7 @@ describe("RecipeDetail — printPreferences", () => {
       <RecipeDetail
         recipe={contentRecipe}
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: false,
           printShowInstructions: true,
           printShowNotes: true,
@@ -780,7 +786,7 @@ describe("RecipeDetail — printPreferences", () => {
       <RecipeDetail
         recipe={contentRecipe}
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: true,
           printShowInstructions: false,
           printShowNotes: true,
@@ -798,7 +804,7 @@ describe("RecipeDetail — printPreferences", () => {
       <RecipeDetail
         recipe={contentRecipe}
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: true,
           printShowInstructions: true,
           printShowNotes: false,
@@ -817,7 +823,7 @@ describe("RecipeDetail — printPreferences", () => {
         recipe={contentRecipe}
         personalNote="Secret"
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: true,
           printShowInstructions: true,
           printShowNotes: true,
@@ -834,7 +840,7 @@ describe("RecipeDetail — printPreferences", () => {
         recipe={contentRecipe}
         personalNote="Secret"
         printPreferences={{
-          printShowMeta: false,
+          ...META_NONE,
           printShowIngredients: false,
           printShowInstructions: false,
           printShowNotes: false,
@@ -858,7 +864,7 @@ describe("RecipeDetail — printPreferences", () => {
       <RecipeDetail
         recipe={makeRecipe({ notes: null })}
         printPreferences={{
-          printShowMeta: true,
+          ...META_HEADER,
           printShowIngredients: true,
           printShowInstructions: true,
           printShowNotes: true,
@@ -967,7 +973,7 @@ describe("RecipeDetail — print button in actions slot", () => {
 describe("RecipeDetail — compact print meta line", () => {
   describe("TC-1: meta grid has print:hidden class (FR1)", () => {
     it("meta grid container has the print:hidden class", () => {
-      const { container } = render(<RecipeDetail recipe={makeRecipe()} />)
+      const { container } = render(<RecipeDetail printPreferences={META_HEADER_PREFS} recipe={makeRecipe()} />)
       const grid = container.querySelector(".grid.grid-cols-2")
       expect(grid).not.toBeNull()
       expect(grid).toHaveClass("print:hidden")
@@ -976,7 +982,7 @@ describe("RecipeDetail — compact print meta line", () => {
 
   describe("TC-2: compact print line has hidden and print:block classes (FR2)", () => {
     it("print-meta-line element has hidden and print:block classes", () => {
-      render(<RecipeDetail recipe={makeRecipe({ difficulty: "easy" })} />)
+      render(<RecipeDetail printPreferences={META_HEADER_PREFS} recipe={makeRecipe({ difficulty: "easy" })} />)
       const line = screen.getByTestId("print-meta-line")
       expect(line).toHaveClass("hidden")
       expect(line).toHaveClass("print:block")
@@ -986,7 +992,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-3: compact line content, all fields present (FR3)", () => {
     it("shows all fields joined by · when all meta fields are set", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: 15, cookTime: 30, servings: 4, difficulty: "medium" })}
         />,
       )
@@ -998,7 +1004,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-4: compact line content, partial fields (FR3 edge)", () => {
     it("shows N/A for a null field and joins with the present fields", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: 20, cookTime: null, servings: null, difficulty: "easy" })}
         />,
       )
@@ -1011,7 +1017,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-5: all fields null (FR4)", () => {
     it("still renders print-meta-line showing N/A for prep/cook time when all meta fields are null", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: null, cookTime: null, servings: null, difficulty: null })}
         />,
       )
@@ -1023,7 +1029,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-6: single field present (FR4)", () => {
     it("shows N/A for the missing prep time alongside the present cook time", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: null, cookTime: 45, servings: null, difficulty: null })}
         />,
       )
@@ -1035,7 +1041,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-7: zero prepTime/cookTime is treated as N/A (0 == N/A)", () => {
     it("shows N/A for prepTime and cookTime when they are 0", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: 0, cookTime: 0, servings: 4, difficulty: "easy" })}
         />,
       )
@@ -1047,7 +1053,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-8: print meta line reflects currentServings after scaling", () => {
     it("shows scaled serving count after user increments servings", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ servings: 4, difficulty: "easy" })}
         />,
       )
@@ -1060,7 +1066,7 @@ describe("RecipeDetail — compact print meta line", () => {
   describe("TC-9: recipe attribution (addedByName) in print meta line", () => {
     it("renders Added by: [addedByName] when present", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ servings: 4, difficulty: "easy", addedByName: "Alice" })}
         />,
       )
@@ -1070,7 +1076,7 @@ describe("RecipeDetail — compact print meta line", () => {
 
     it("does not render Added by section when addedByName is absent/null", () => {
       render(
-        <RecipeDetail
+        <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ servings: 4, difficulty: "easy", addedByName: null })}
         />,
       )

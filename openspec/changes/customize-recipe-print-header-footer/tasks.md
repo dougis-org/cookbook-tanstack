@@ -13,19 +13,19 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 ## Execution
 
-- [ ] Confirm the dedicated worktree exists at `.worktrees/<name>` and `cd` into it; confirm the branch is pushed to remote.
-- [ ] **Issue lifecycle: mark in-progress** (#699): run `gh issue edit 699 --add-label "in-progress"`. Then discover the GitHub Project linked to the repo (`gh project list --owner dougis-org --format json`), resolve the status field option matching "In Progress" (`gh project field-list <project-number> --owner dougis-org --format json`), and move the item via `gh project item-edit`. If no project item is found, log a warning and continue. If the `gh` token lacks the `project` scope, tell the user to run `gh auth refresh -s project` and skip the project-item update.
-- [ ] Look for existing tooling or functions in the codebase to reuse before writing new logic (`resolveShown`, the theme radiogroup in `src/components/account/PreferencesSection.tsx`, `printFooter` slot)
+- [x] Confirm the dedicated worktree exists at `.worktrees/<name>` and `cd` into it; confirm the branch is pushed to remote.
+- [x] **Issue lifecycle: mark in-progress** (#699): run `gh issue edit 699 --add-label "in-progress"`. Then discover the GitHub Project linked to the repo (`gh project list --owner dougis-org --format json`), resolve the status field option matching "In Progress" (`gh project field-list <project-number> --owner dougis-org --format json`), and move the item via `gh project item-edit`. If no project item is found, log a warning and continue. If the `gh` token lacks the `project` scope, tell the user to run `gh auth refresh -s project` and skip the project-item update.
+- [x] Look for existing tooling or functions in the codebase to reuse before writing new logic (`resolveShown`, the theme radiogroup in `src/components/account/PreferencesSection.tsx`, `printFooter` slot)
 
 ### PR 1 — Preference model, resolver and settings UI
 
-- [ ] 1.1 Write failing tests for the resolver (`src/lib/__tests__/printPreferences.test.ts`): defaults, stored values, legacy migration, new-field-wins, invalid values, anonymous session (see `tests.md`)
-- [ ] 1.2 Extend `src/lib/printPreferences.ts`: `PrintPlacement` type, five placement keys, defaults, validation, legacy `printShowMeta` mapping; remove `printShowMeta` from the `PrintPreferences` public shape
-- [ ] 1.2a Write failing integration tests for server-side validation (invalid and non-string values rejected with nothing written; valid values accepted), then implement the mandatory allow-list check as `validator: { input: z.enum(["header", "footer", "none"]) }` on each of the five `additionalFields` in `src/lib/auth.ts`
-- [ ] 1.3 Add the five string `additionalFields` to `src/lib/auth.ts` with the new-account defaults (Category `footer`, others `none`); keep `printShowMeta` as legacy input; update the auth config shape test
-- [ ] 1.4 Write failing tests for the settings UI (`src/components/account/__tests__/PreferencesSection.test.tsx`)
-- [ ] 1.5 Update `src/components/account/PreferencesSection.tsx`: remove the Meta toggle, add the three-way control per element (radiogroup keyboard pattern), add the static layout sketch (theme tokens, no emoji, Sentence case), include placements in the `updateUser` payload
-- [ ] 1.6 Update any other consumer of `printShowMeta`/`PrintPreferences` so the build type-checks (temporary mapping in `RecipeDetail` is acceptable until PR 2)
+- [x] 1.1 Write failing tests for the resolver (`src/lib/__tests__/printPreferences.test.ts`): defaults, stored values, legacy migration, new-field-wins, invalid values, anonymous session (see `tests.md`)
+- [x] 1.2 Extend `src/lib/printPreferences.ts`: `PrintPlacement` type, five placement keys, defaults, validation, legacy `printShowMeta` mapping; remove `printShowMeta` from the `PrintPreferences` public shape
+- [x] 1.2a Write failing integration tests for server-side validation (invalid and non-string values rejected with nothing written; valid values accepted), then implement the mandatory allow-list check as `validator: { input: z.enum(["header", "footer", "none"]) }` on each of the five `additionalFields` in `src/lib/auth.ts`
+- [x] 1.3 Add the five string `additionalFields` to `src/lib/auth.ts` with the new-account defaults (Category `footer`, others `none`); keep `printShowMeta` as legacy input; update the auth config shape test
+- [x] 1.4 Write failing tests for the settings UI (`src/components/account/__tests__/PreferencesSection.test.tsx`)
+- [x] 1.5 Update `src/components/account/PreferencesSection.tsx`: remove the Meta toggle, add the three-way control per element (radiogroup keyboard pattern), add the static layout sketch (theme tokens, no emoji, Sentence case), include placements in the `updateUser` payload
+- [x] 1.6 Update any other consumer of `printShowMeta`/`PrintPreferences` so the build type-checks (temporary mapping in `RecipeDetail` is acceptable until PR 2)
 - [ ] 1.7 Open PR 1 per PR and Merge
 
 ### PR 2 — Single-recipe header and footer rendering

@@ -3,12 +3,30 @@ import { useAuth } from "@/hooks/useAuth"
 import { authClient } from "@/lib/auth-client"
 import { DEFAULT_THEME, isValidThemeId, THEMES } from "@/contexts/ThemeContext"
 import type { AuthErrorContext } from "@/components/auth/types"
-import { DEFAULT_PRINT_PREFERENCES, resolvePrintPreferences, type PrintPreferences } from "@/lib/printPreferences"
+import {
+  DEFAULT_PRINT_PREFERENCES,
+  PRINT_PLACEMENTS,
+  resolvePrintPreferences,
+  type PrintPlacement,
+  type PrintPlacementKey,
+  type PrintPreferences,
+} from "@/lib/printPreferences"
 
 const DEFAULT_ERROR_MESSAGE = "Unable to save. Try again."
 
-const PRINT_PREFERENCE_TOGGLES: { key: keyof PrintPreferences; label: string }[] = [
-  { key: "printShowMeta", label: "Prep/cook time, servings, difficulty" },
+type PrintToggleKey = Exclude<keyof PrintPreferences, PrintPlacementKey>
+
+const PLACEMENT_LABELS: Record<PrintPlacement, string> = { header: "Header", footer: "Footer", none: "None" }
+
+const PRINT_PLACEMENT_ELEMENTS: { key: PrintPlacementKey; label: string }[] = [
+  { key: "printCategory", label: "Category" },
+  { key: "printDifficulty", label: "Difficulty" },
+  { key: "printServings", label: "Servings" },
+  { key: "printPrepTime", label: "Prep time" },
+  { key: "printCookTime", label: "Cook time" },
+]
+
+const PRINT_PREFERENCE_TOGGLES: { key: PrintToggleKey; label: string }[] = [
   { key: "printShowIngredients", label: "Ingredients" },
   { key: "printShowInstructions", label: "Instructions" },
   { key: "printShowNotes", label: "Notes" },
@@ -40,7 +58,13 @@ export default function PreferencesSection() {
     setStatus("idle")
   }
 
-  function togglePrintPreference(key: keyof PrintPreferences) {
+  function selectPlacement(key: PrintPlacementKey, placement: PrintPlacement) {
+    setHasEdited(true)
+    setPrintPreferences((prev) => ({ ...prev, [key]: placement }))
+    setStatus("idle")
+  }
+
+  function togglePrintPreference(key: PrintToggleKey) {
     setHasEdited(true)
     setPrintPreferences((prev) => ({ ...prev, [key]: !prev[key] }))
     setStatus("idle")
@@ -133,6 +157,73 @@ export default function PreferencesSection() {
         <p className="text-sm text-[var(--theme-fg-muted)] mb-4">
           Choose which sections print with your recipes. Applies to both single-recipe and cookbook printing (Personal Notes only ever prints from a recipe's own page).
         </p>
+
+        <h4 className="text-base font-bold text-[var(--theme-fg)] mb-1">Recipe details</h4>
+        <p className="text-sm text-[var(--theme-fg-muted)] mb-3">
+          Choose where each detail prints: in the header under the title, in the footer at the end of the recipe, or not at all.
+        </p>
+        <div
+          data-testid="print-layout-sketch"
+          aria-hidden="true"
+          className="mb-4 max-w-xs rounded-lg border border-[var(--theme-border)] bg-[var(--theme-surface-raised)] p-3 space-y-2 text-xs text-[var(--theme-fg-muted)]"
+        >
+          <div data-testid="print-sketch-header" className="rounded border border-dashed border-[var(--theme-border)] px-2 py-1">
+            Header: under the title
+          </div>
+          <div data-testid="print-sketch-body" className="rounded border border-[var(--theme-border-muted)] px-2 py-4 text-center">
+            Ingredients and instructions
+          </div>
+          <div data-testid="print-sketch-footer" className="rounded border border-dashed border-[var(--theme-border)] px-2 py-1">
+            Footer: end of the recipe
+          </div>
+        </div>
+        <div className="space-y-3 mb-6">
+          {PRINT_PLACEMENT_ELEMENTS.map(({ key, label }) => (
+            <div
+              key={key}
+              className="flex flex-col gap-2 rounded-lg border border-[var(--theme-border)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <span className="text-sm font-medium text-[var(--theme-fg)]">{label}</span>
+              <div
+                role="radiogroup"
+                aria-label={`${label} placement`}
+                className="inline-flex gap-2"
+                onKeyDown={(e) => {
+                  if (e.key !== "ArrowRight" && e.key !== "ArrowDown" && e.key !== "ArrowLeft" && e.key !== "ArrowUp") {
+                    return
+                  }
+                  e.preventDefault()
+                  const currentIndex = PRINT_PLACEMENTS.indexOf(printPreferences[key])
+                  const delta = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1
+                  const nextIndex = (currentIndex + delta + PRINT_PLACEMENTS.length) % PRINT_PLACEMENTS.length
+                  selectPlacement(key, PRINT_PLACEMENTS[nextIndex])
+                  const buttons = e.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
+                  buttons[nextIndex]?.focus()
+                }}
+              >
+                {PRINT_PLACEMENTS.map((placement) => (
+                  <button
+                    key={placement}
+                    type="button"
+                    role="radio"
+                    aria-checked={printPreferences[key] === placement}
+                    tabIndex={printPreferences[key] === placement ? 0 : -1}
+                    onClick={() => selectPlacement(key, placement)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--theme-accent)] ${
+                      printPreferences[key] === placement
+                        ? "border-[var(--theme-accent)] bg-[var(--theme-surface-hover)] text-[var(--theme-fg)]"
+                        : "border-[var(--theme-border)] text-[var(--theme-fg-muted)]"
+                    }`}
+                  >
+                    {PLACEMENT_LABELS[placement]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h4 className="text-base font-bold text-[var(--theme-fg)] mb-3">Sections</h4>
         <div className="space-y-3">
           {PRINT_PREFERENCE_TOGGLES.map(({ key, label }) => (
             <label

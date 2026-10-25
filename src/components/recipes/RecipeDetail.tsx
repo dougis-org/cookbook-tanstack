@@ -294,7 +294,15 @@ export default function RecipeDetail({
               recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
               recipe.addedByName && `Added by: ${recipe.addedByName}`,
             ].filter(Boolean).join(' · ')
-            return printPreferences.printShowMeta && printMetaLine ? (
+            // Temporary mapping (PR 1): the meta line shows when any meta element is
+            // placed in the header. Per-element header/footer rendering lands in PR 2.
+            const showMeta = [
+              printPreferences.printDifficulty,
+              printPreferences.printServings,
+              printPreferences.printPrepTime,
+              printPreferences.printCookTime,
+            ].includes('header')
+            return showMeta && printMetaLine ? (
               <p
                 data-testid="print-meta-line"
                 className="hidden print:block text-sm text-[var(--theme-fg-muted)] mb-8"
