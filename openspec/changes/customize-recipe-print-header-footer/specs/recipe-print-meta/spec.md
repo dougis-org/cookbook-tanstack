@@ -96,7 +96,7 @@ The system SHALL include each present header-placed field (prepTime, cookTime, s
 - **When** `RecipeDetail` renders
 - **Then** the footer row does not contain a Category entry
 
-### Requirement: FR4 — Null fields are omitted; element absent when nothing to show
+### Requirement: FR4 — Null fields are omitted; element absent when all fields empty
 
 The system SHALL omit null/zero meta fields from the compact print line and the footer row (no "N/A"). When the header line has no header-placed values and no "Added by", the `print-meta-line` element SHALL NOT be rendered (to avoid a phantom margin on print).
 

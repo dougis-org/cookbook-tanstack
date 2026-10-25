@@ -347,3 +347,66 @@ test.describe("Legacy user with printShowMeta false prints no meta line", () => 
     await expect(section.getByTestId("print-meta-line")).toHaveCount(0);
   });
 });
+
+// Legacy user with meta shown (no new fields, printShowMeta absent): the four
+// meta items stay in the header; Category is the one addition, in the footer (#699).
+test.describe("Legacy user with meta shown keeps header items and gains Category in footer", () => {
+  let cookbookId: string;
+  let email: string;
+  let password: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    const creds = await registerAndLogin(page);
+    email = creds.email;
+    password = creds.password;
+
+    const recipeName = getUniqueRecipeName("LegacyShownRecipe");
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: recipeName,
+      ingredients: "Flour",
+      instructions: "Mix",
+      prepTime: "15",
+      servings: "4",
+      category: "Desserts",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+
+    const cookbook = await createCookbook(page, getUniqueCookbookName("LegacyShownCookbook"));
+    cookbookId = cookbook.cookbookId;
+    await addRecipeToCookbook(page, recipeName);
+
+    await withMongoDb((db) =>
+      db.collection("user").updateOne(
+        { email },
+        {
+          $unset: {
+            printShowMeta: "",
+            printCategory: "",
+            printDifficulty: "",
+            printServings: "",
+            printPrepTime: "",
+            printCookTime: "",
+          },
+        },
+      ),
+    );
+    await page.close();
+  });
+
+  test("header has Prep and Serves; footer has Category and #N", async ({ page }) => {
+    await login(page, email, password);
+    await gotoAndWaitForHydration(page, `/cookbooks/${cookbookId}/print?displayonly=1`);
+    await page.emulateMedia({ media: "print" });
+
+    const section = page.locator(".cookbook-recipe-section").first();
+    const header = section.getByTestId("print-meta-line");
+    await expect(header).toContainText("Prep: 15m");
+    await expect(header).toContainText("Serves: 4");
+    await expect(header).not.toContainText("Desserts");
+    const footer = section.getByTestId("print-footer-row");
+    await expect(footer).toContainText("Desserts");
+    await expect(footer.getByTestId("cookbook-recipe-position-label")).toHaveText("#1");
+  });
+});

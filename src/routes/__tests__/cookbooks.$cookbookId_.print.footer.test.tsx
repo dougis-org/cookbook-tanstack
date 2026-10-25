@@ -128,7 +128,7 @@ describe('CookbookPrintPage — footer row composition with the real RecipeDetai
     sections.forEach((section, i) => {
       const rows = section.querySelectorAll('[data-testid="print-footer-row"]')
       expect(rows).toHaveLength(1)
-      expect(rows[0]).toHaveTextContent(`#${i + 1}`)
+      expect(rows[0]).toHaveTextContent(new RegExp(`#${i + 1}$`))
     })
     expect(container.querySelectorAll('[data-testid="print-footer-row"]')).toHaveLength(3)
   })

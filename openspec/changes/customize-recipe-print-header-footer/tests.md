@@ -70,7 +70,7 @@ For each task in `tasks.md`:
 - [x] `CookbookPrintPage` renders footer items and `#N` in a single row per recipe (Footer items combined with cookbook page number)
 - [x] With all elements `none`, the row contains only `#N` (Cookbook with no footer items)
 - [x] Multiple recipes each get exactly one footer row
-- [x] E2E: cookbook print shows header items, footer items and `#N` for each recipe; nothing clipped within `@page cookbook-page` margins (Footer survives page breaks)
+- [x] E2E: cookbook print shows header items, footer items and `#N` for each recipe; footer row has `break-inside: avoid`, sits inside its section and does not overflow (screen-viewport proxy: real `@page cookbook-page` margin clipping is not machine-verified; check manually via browser print preview) (Footer survives page breaks)
 - [x] E2E: "Added by" still prints in a collaborative cookbook with all elements `none` (Added by with all elements set to none)
 - [x] Legacy-user check (manual or seeded E2E): a user with `printShowMeta: false` and no new fields prints no meta line (Legacy user with meta hidden)
 
