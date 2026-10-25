@@ -1,7 +1,7 @@
 # anatomy.md
 
 > Auto-maintained by OpenWolf. Last scanned: 2026-10-25T05:08:06.328Z
-> Files: 1542 tracked | Anatomy hits: 0 | Misses: 0
+> Files: 1680 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../../../tmp/
 
@@ -128,11 +128,11 @@
 - `.cta.json` (~76 tok)
 - `.deepsource.toml` (~36 tok)
 - `.dockerignore` — Docker ignore rules (~95 tok)
-- `.gitignore` — Git ignore rules (~364 tok)
+- `.gitignore` — Git ignore rules (~453 tok)
 - `.gitmodules` (~33 tok)
 - `AGENTS.md` — AGENTS.md (~1753 tok)
 - `AGENTS.original.md` — AGENTS.md (~2044 tok)
-- `CLAUDE.md` — OpenWolf (~2890 tok)
+- `CLAUDE.md` — OpenWolf (~2978 tok)
 - `CLAUDE.original.md` — CLAUDE.md (~1667 tok)
 - `comments.json` — Declares safety (~5343 tok)
 - `CONTRIBUTING.md` — Contributing to CookBook (~1828 tok)
@@ -320,7 +320,7 @@
 - `.gitignore` — Git ignore rules (~17 tok)
 - `cli-config.yaml` (~4 tok)
 - `cli.sh` (~1088 tok)
-- `codacy.config.json` (~2786 tok)
+- `codacy.config.json` (~711 tok)
 - `codacy.yaml` (~84 tok)
 
 ## .codacy/logs/
@@ -2275,6 +2275,318 @@
 - `.openspec.yaml` (~12 tok)
 - `design.md` — Context (~958 tok)
 - `proposal.md` — Why (~321 tok)
+- `tasks.md` — 1. Branch Setup (~373 tok)
+
+## openspec/changes/archive/2026-03-26-toc-print-2col-2026-03-26/specs/cookbook-toc-print-layout/
+
+- `spec.md` — ADDED Requirements (~629 tok)
+
+## openspec/changes/archive/2026-03-27-remove-dead-marked-field/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~876 tok)
+- `proposal.md` — Why (~708 tok)
+- `tasks.md` — 1. Execution (~480 tok)
+
+## openspec/changes/archive/2026-03-27-remove-dead-marked-field/specs/recipe-marked-field/
+
+- `spec.md` — REMOVED Requirements (~313 tok)
+
+## openspec/changes/archive/2026-03-27-unsaved-changes-guard-2026-03-26/
+
+- `design.md` — Context (~1754 tok)
+- `proposal.md` — Why (~872 tok)
+- `tasks.md` — Tasks — unsaved-changes-guard (~1011 tok)
+
+## openspec/changes/archive/2026-03-27-unsaved-changes-guard-2026-03-26/specs/confirm-dialog/
+
+- `spec.md` — ADDED Requirements (~310 tok)
+
+## openspec/changes/archive/2026-03-27-unsaved-changes-guard-2026-03-26/specs/unsaved-changes-guard/
+
+- `spec.md` — ADDED Requirements (~1034 tok)
+
+## openspec/changes/archive/2026-03-28-embed-marked-status/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1184 tok)
+- `proposal.md` — Why (~807 tok)
+- `tasks.md` — 1. Execution (~1004 tok)
+
+## openspec/changes/archive/2026-03-28-embed-marked-status/specs/recipe-marked-status/
+
+- `spec.md` — ADDED Requirements (~1046 tok)
+
+## openspec/changes/archive/2026-03-29-embed-marked-status/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1184 tok)
+- `proposal.md` — Why (~807 tok)
+- `tasks.md` — 1. Execution (~1004 tok)
+
+## openspec/changes/archive/2026-03-29-embed-marked-status/specs/recipe-marked-status/
+
+- `spec.md` — ADDED Requirements (~1046 tok)
+
+## openspec/changes/archive/2026-03-31-recipe-marked-ui/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~926 tok)
+- `proposal.md` — Why (~724 tok)
+- `tasks.md` — 1. Preparation (~847 tok)
+
+## openspec/changes/archive/2026-03-31-recipe-marked-ui/specs/recipe-card-marked-indicator/
+
+- `spec.md` — ADDED Requirements (~422 tok)
+
+## openspec/changes/archive/2026-03-31-recipe-marked-ui/specs/recipe-marked-status/
+
+- `spec.md` — MODIFIED Requirements (~338 tok)
+
+## openspec/changes/archive/2026-04-02-auto-trigger-cookbook-print/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1323 tok)
+- `proposal.md` — Why (~827 tok)
+- `tasks.md` — 1. Preparation (~882 tok)
+
+## openspec/changes/archive/2026-04-02-auto-trigger-cookbook-print/specs/cookbook-print-auto-trigger/
+
+- `spec.md` — ADDED Requirements (~328 tok)
+
+## openspec/changes/archive/2026-04-02-auto-trigger-cookbook-print/specs/cookbook-print-view/
+
+- `spec.md` — ADDED Requirements (~151 tok)
+
+## openspec/changes/archive/2026-04-02-recipe-form-persistence/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~884 tok)
+- `proposal.md` — Why (~794 tok)
+- `tasks.md` — 1. Preparation (~682 tok)
+
+## openspec/changes/archive/2026-04-02-recipe-form-persistence/specs/recipe-form-persistence/
+
+- `spec.md` — ADDED Requirements (~863 tok)
+
+## openspec/changes/archive/2026-04-02-recipe-form-persistence/specs/unsaved-changes-guard/
+
+- `spec.md` — MODIFIED Requirements (~709 tok)
+
+## openspec/changes/archive/2026-04-03-add-related-recipes-section/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1127 tok)
+- `proposal.md` — Why (~721 tok)
+- `tasks.md` — 1. Preparation (~906 tok)
+
+## openspec/changes/archive/2026-04-03-add-related-recipes-section/specs/related-recipes-section/
+
+- `spec.md` — ADDED Requirements (~646 tok)
+
+## openspec/changes/archive/2026-04-03-cookbook-recipe-search-infinite-scroll/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1720 tok)
+- `proposal.md` — Why (~1085 tok)
+- `tasks.md` — 1. Preparation (~1208 tok)
+
+## openspec/changes/archive/2026-04-03-cookbook-recipe-search-infinite-scroll/specs/recipe-infinite-search/
+
+- `spec.md` — ADDED Requirements (~1408 tok)
+
+## openspec/changes/archive/2026-04-03-importdropzone-drag-fix/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1236 tok)
+- `proposal.md` — Why (~932 tok)
+- `tasks.md` — 1. Preparation (~1373 tok)
+
+## openspec/changes/archive/2026-04-03-importdropzone-drag-fix/specs/importdropzone-drag-feedback/
+
+- `spec.md` — ADDED Requirements (~751 tok)
+
+## openspec/changes/archive/2026-04-03-issue-235-openspec-shared-main-sync/
+
+- `proposal.md` — Change Proposal: Issue #235 - Auto-sync `.github/openspec-shared` to `main` (~583 tok)
+- `tasks.md` — Tasks: Issue #235 - Auto-sync `.github/openspec-shared` to `main` (~552 tok)
+
+## openspec/changes/archive/2026-04-03-recipe-index-missing-fk-fields-2026-04-02/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1125 tok)
+- `proposal.md` — Why (~859 tok)
+- `tasks.md` — Ownership (~734 tok)
+
+## openspec/changes/archive/2026-04-03-recipe-index-missing-fk-fields-2026-04-02/specs/mongodb-data-layer/
+
+- `spec.md` — ADDED Requirements (~351 tok)
+
+## openspec/changes/archive/2026-04-04-delete-recipe-list-stub/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~362 tok)
+- `proposal.md` — Why (~489 tok)
+- `tasks.md` — 1. Preparation (~312 tok)
+
+## openspec/changes/archive/2026-04-04-delete-recipe-list-stub/specs/
+
+- `no-capability-changes.md` (~35 tok)
+
+## openspec/changes/archive/2026-04-04-fix-empty-chapter-drag-drop/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1206 tok)
+- `proposal.md` — Why (~812 tok)
+- `tasks.md` — 1. Preparation (~713 tok)
+
+## openspec/changes/archive/2026-04-04-fix-empty-chapter-drag-drop/specs/cookbook-chapters/
+
+- `spec.md` — MODIFIED Requirements (~311 tok)
+
+## openspec/changes/archive/2026-04-05-cookbook-alpha-index/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1551 tok)
+- `proposal.md` — Why (~786 tok)
+- `tasks.md` — Preparation (~1960 tok)
+
+## openspec/changes/archive/2026-04-05-cookbook-alpha-index/specs/cookbook-alpha-index/
+
+- `spec.md` — ADDED Requirements (~452 tok)
+
+## openspec/changes/archive/2026-04-05-cookbook-alpha-index/specs/cookbook-print-view/
+
+- `spec.md` — ADDED Requirements (~251 tok)
+
+## openspec/changes/archive/2026-04-05-cookbook-alpha-index/specs/cookbook-toc-print-layout/
+
+- `spec.md` — MODIFIED Requirements (~731 tok)
+
+## openspec/changes/archive/2026-04-05-upgrade-tanstack-ecosystem/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~1047 tok)
+- `proposal.md` — Why (~867 tok)
+- `tasks.md` — 1. Preparation (~573 tok)
+
+## openspec/changes/archive/2026-04-05-upgrade-tanstack-ecosystem/specs/dependency-upgrade/
+
+- `spec.md` — ADDED Requirements (~484 tok)
+
+## openspec/changes/archive/2026-04-05-use-auth-hook/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~882 tok)
+- `proposal.md` — Why (~883 tok)
+- `tasks.md` — 1. Preparation (~822 tok)
+
+## openspec/changes/archive/2026-04-05-use-auth-hook/specs/use-auth-hook/
+
+- `spec.md` — ADDED Requirements (~668 tok)
+
+## openspec/changes/archive/2026-04-06-cookbook-print-page-numbers/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~1616 tok)
+- `proposal.md` — GitHub Issues (~962 tok)
+- `tasks.md` — Tasks (~926 tok)
+- `tests.md` — Tests (~731 tok)
+
+## openspec/changes/archive/2026-04-06-cookbook-print-page-numbers/specs/
+
+- `print-page-numbers.md` — ADDED Requirements (~770 tok)
+
+## openspec/changes/archive/2026-04-06-toc-display-two-column/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~850 tok)
+- `proposal.md` — Why (~593 tok)
+- `tasks.md` — 1. Preparation (~714 tok)
+
+## openspec/changes/archive/2026-04-06-toc-display-two-column/specs/cookbook-alpha-index/
+
+- `spec.md` — MODIFIED Requirements (~737 tok)
+
+## openspec/changes/archive/2026-04-06-toc-display-two-column/specs/cookbook-toc-print-layout/
+
+- `spec.md` — MODIFIED Requirements (~468 tok)
+
+## openspec/changes/archive/2026-04-06-upgrade-tailwind-css-4-2/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~861 tok)
+- `proposal.md` — Why (~698 tok)
+- `tasks.md` — Preparation (~591 tok)
+
+## openspec/changes/archive/2026-04-06-upgrade-tailwind-css-4-2/specs/tailwind-dependency/
+
+- `spec.md` — tailwind-dependency Specification (~515 tok)
+
+## openspec/changes/archive/2026-04-06-upgrade-trpc-11-16/
+
+- `.openspec.yaml` (~12 tok)
+- `design.md` — Context (~569 tok)
+- `proposal.md` — Why (~439 tok)
+- `tasks.md` — 1. Preparation (~440 tok)
+
+## openspec/changes/archive/2026-04-06-upgrade-trpc-11-16/specs/dependency-upgrade/
+
+- `spec.md` — ADDED Requirements (~356 tok)
+
+## openspec/changes/archive/2026-04-07-move-serving-adjuster-to-meta/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~2519 tok)
+- `proposal.md` — GitHub Issues (~1264 tok)
+- `tasks.md` — Tasks (~1666 tok)
+- `tests.md` — Tests (~1351 tok)
+
+## openspec/changes/archive/2026-04-07-move-serving-adjuster-to-meta/specs/
+
+- `print-behavior.md` — Spec: Print Behavior (~756 tok)
+- `serving-controls-location.md` — Spec: Serving Controls Location (~1121 tok)
+
+## openspec/changes/archive/2026-04-07-suppress-print-chiclets/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~1307 tok)
+- `proposal.md` — GitHub Issues (~801 tok)
+- `tasks.md` — Tasks (~897 tok)
+- `tests.md` — Tests (~655 tok)
+
+## openspec/changes/archive/2026-04-07-suppress-print-chiclets/specs/
+
+- `print-suppression.md` — ADDED Requirements (~770 tok)
+
+## openspec/changes/archive/2026-04-08-improve-e2e-ci-performance/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~2803 tok)
+- `proposal.md` — GitHub Issues (~1558 tok)
+- `tasks.md` — Tasks (~1635 tok)
+- `tests.md` — Tests (~1678 tok)
+
+## openspec/changes/archive/2026-04-08-improve-e2e-ci-performance/specs/e2e-ci-performance/
+
+- `spec.md` — ADDED Requirements (~1441 tok)
+
+## openspec/changes/archive/2026-04-08-move-recipe-notes-after-instructions/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~2076 tok)
+- `proposal.md` — GitHub Issues (~964 tok)
+- `tasks.md` — Tasks (~1339 tok)
+- `tests.md` — Tests (~780 tok)
+
+## openspec/changes/archive/2026-04-08-move-recipe-notes-after-instructions/specs/recipe-detail-notes-placement/
+
+- `spec.md` — ADDED Requirements (~1055 tok)
+
+## openspec/changes/archive/2026-04-08-optimize-print-heading-density/
+
+- `.openspec.yaml` (~15 tok)
+- `design.md` — Context (~2596 tok)
 
 ## openspec/changes/archive/2026-04-24-build-tier-pricing-page/
 

@@ -68,7 +68,6 @@ src/e2e/e2e-coverage/lcov.info
 .verity/.last-pass-hash*
 .verity/.last-intent
 .verity/.memory-sync-state.json
-.verity/memory/log.md
 .verity/.snapshot/
 .verity/.conversation-buffer
 .verity/.last-reviewed-sha
@@ -79,3 +78,11 @@ src/e2e/e2e-coverage/lcov.info
 
 # OpenSpec change worktrees
 .worktrees/
+
+# Verity — machine-local state. Everything in .verity/ is ignored except the
+# shared standard, which is meant to be committed. The knowledge graph under
+# .verity/memory/ is machine-local too: the service rebuilds it, and committing
+# it puts generated notes in every diff and pull request.
+.verity/*
+!.verity/standard.yaml
+.claude/settings.local.json

@@ -10,20 +10,17 @@
             "timeout": 15
           }
         ]
-      }
-    ],
-    "PreToolUse": [
+      },
       {
-        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "verity guard --on commit,push",
-            "timeout": 300,
-            "statusMessage": "Running Verity git-moment review"
+            "command": "verity baseline capture"
           }
         ]
-      },
+      }
+    ],
+    "PreToolUse": [
       {
         "matcher": "Read",
         "hooks": [
@@ -51,6 +48,17 @@
             "type": "command",
             "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/pre-bash.js\"",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "verity guard --on commit,push",
+            "timeout": 300,
+            "statusMessage": "Running Verity git-moment review"
           }
         ]
       }
@@ -89,16 +97,6 @@
     ],
     "Stop": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "verity analyze",
-            "timeout": 120,
-            "statusMessage": "Running Verity analysis"
-          }
-        ]
-      },
-      {
         "matcher": "",
         "hooks": [
           {
@@ -107,17 +105,19 @@
             "timeout": 10
           }
         ]
-      }
-    ],
-    "UserPromptSubmit": [
+      },
       {
         "hooks": [
           {
             "type": "command",
-            "command": "verity intent capture"
+            "command": "verity analyze",
+            "timeout": 120,
+            "statusMessage": "Running Verity analysis"
           }
         ]
-      },
+      }
+    ],
+    "UserPromptSubmit": [
       {
         "matcher": "",
         "hooks": [
@@ -125,6 +125,14 @@
             "type": "command",
             "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/user-prompt-submit.js\"",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "verity intent capture"
           }
         ]
       }
@@ -161,6 +169,24 @@
             "type": "command",
             "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/session-end.js\"",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "verity session end"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "verity compact"
           }
         ]
       }
