@@ -4,7 +4,7 @@
 
 > If you are an AI coding agent reading this via CLAUDE.md: scan the catalog below for any node whose title, kind, or file scope is relevant to the task the user just asked you to do. Open the matching files via the Read tool before writing code. Most projects accumulate dozens to hundreds of nodes — do not read them all; pick the few that fit the current change.
 
-## decisions/ (76)
+## decisions/ (86)
 
 - [[n018-keep-tier-entitlement-checks-centralized-in-shared]] — **Keep tier entitlement checks centralized in shared policy code**
   *decision* · 90% · scope: `**/tier-entitlements/**`
@@ -76,6 +76,26 @@
   *decision* · 86%
 - [[n054-only-inject-analytics-ids-from-validated-productio]] — **Only inject analytics IDs from validated production env values**
   *decision* · 86%
+- [[n055-resolve-print-preferences-at-route-boundaries-befo]] — **Resolve print preferences at route boundaries before rendering recipe details**
+  *decision* · 84% · scope: `src/**/routes/**/*recipe*`, `src/**/components/**/*RecipeDetail*`
+- [[n056-use-print-css-visibility-to-exclude-screen-only-re]] — **Use print CSS visibility to exclude screen-only recipe sections from print**
+  *decision* · 78% · scope: `src/**/components/**/*RecipeDetail*`, `src/**/components/**/*print*`
+- [[n057-resolve-user-preferences-at-the-route-boundary]] — **Resolve user preferences at the route boundary**
+  *decision* · 82% · scope: `**/recipes/**`, `**/RecipeDetail.*`
+- [[n058-do-not-let-session-refreshes-overwrite-unsaved-set]] — **Do not let session refreshes overwrite unsaved settings edits**
+  *decision* · 90%
+- [[n059-fail-open-when-print-preference-session-fields-are]] — **Fail open when print-preference session fields are missing or malformed**
+  *decision* · 86%
+- [[n060-use-print-css-to-suppress-configured-sections-with]] — **Use print CSS to suppress configured sections without removing screen content**
+  *decision* · 84%
+- [[n061-resolve-user-scoped-print-preferences-outside-pres]] — **Resolve user-scoped print preferences outside presentational recipe-detail components**
+  *decision* · 84%
+- [[n062-suppress-print-only-sections-with-print-media-styl]] — **Suppress print-only sections with print-media styling, not conditional screen removal**
+  *decision* · 80%
+- [[n063-retry-assertions-for-data-fetched-independently-of]] — **Retry assertions for data fetched independently of hydration**
+  *decision* · 88% · scope: `**/*cookbook*.spec.ts`
+- [[n064-generate-ci-authentication-secrets-at-job-runtime]] — **Generate CI authentication secrets at job runtime**
+  *decision* · 84% · scope: `.github/workflows/**`
 - [[n065-warm-production-and-authentication-endpoints-befor]] — **Warm production and authentication endpoints before production-mode E2E tests**
   *decision* · 84%
 - [[n066-generate-better-auth-secrets-at-ci-job-runtime]] — **Generate Better Auth secrets at CI job runtime**

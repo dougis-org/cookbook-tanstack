@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/session-start.js\"",
-            "timeout": 5
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/session-start.js\"",
+            "timeout": 15
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/pre-read.js\"",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/pre-read.js\"",
             "timeout": 5
           }
         ]
@@ -39,7 +39,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/pre-write.js\"",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/pre-write.js\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/pre-bash.js\"",
             "timeout": 5
           }
         ]
@@ -51,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/post-read.js\"",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/post-read.js\"",
             "timeout": 5
           }
         ]
@@ -61,7 +71,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/post-write.js\"",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/post-write.js\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/post-bash.js\"",
             "timeout": 10
           }
         ]
@@ -83,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.wolf/hooks/stop.js\"",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/stop.js\"",
             "timeout": 10
           }
         ]
@@ -95,6 +115,52 @@
           {
             "type": "command",
             "command": "verity intent capture"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/user-prompt-submit.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolBatch": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/post-batch.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/precompact.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/home/doug/dev/cookbook-tanstack/.wolf/hooks/session-end.js\"",
+            "timeout": 10
           }
         ]
       }

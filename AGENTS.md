@@ -176,3 +176,9 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) quick reference.
 - **Build:** Vite 7
 - **Testing:** Vitest + React Testing Library (units) + Playwright (E2E)
 - **TypeScript:** Strict mode with `noUnusedLocals` and `noUnusedParameters`
+
+<!-- openwolf:begin -->
+# OpenWolf
+
+This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md at session start. Check .wolf/cerebrum.md before generating code. Grep .wolf/anatomy.md for a file's path before reading it (never read the whole index).
+<!-- openwolf:end -->
