@@ -8,11 +8,12 @@ Per-user preferences controlling which recipe sections print and where meta elem
 
 The system SHALL persist four independent boolean preferences per user — `printShowIngredients`, `printShowInstructions`, `printShowNotes`, `printShowPersonalNotes` — each defaulting to `true`, using the existing Better-Auth `additionalFields` mechanism. The former `printShowMeta` boolean is retained only as a legacy input to placement resolution (see "Legacy print meta preference migration"); the meta line is governed by the per-element placement preferences, not by `printShowMeta`.
 
-#### Scenario: New user has all preferences default to shown
+#### Scenario: New user has section preferences default to shown and placements to their defaults
 
 - **Given** a user account that has never modified print preferences
 - **When** the user's session/preferences are read
-- **Then** all four `printShow*` fields resolve to `true`
+- **Then** the four boolean section preferences (`printShowIngredients`, `printShowInstructions`, `printShowNotes`, `printShowPersonalNotes`) resolve to `true`
+- **And** the five placement preferences resolve to their defaults: Category `footer`; Difficulty, Servings, Prep time and Cook time `none`
 
 #### Scenario: User updates a single preference without affecting others
 
