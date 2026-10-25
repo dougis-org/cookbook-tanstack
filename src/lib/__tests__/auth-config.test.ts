@@ -119,7 +119,9 @@ describe("auth configuration", () => {
         required: false,
         defaultValue: DEFAULT_PRINT_PLACEMENTS[key],
       })
-      expect(typeof fields?.[key]?.validator?.input?.safeParse).toBe("function")
+      const schema = fields?.[key]?.validator?.input
+      expect(schema.safeParse("header").success).toBe(true)
+      expect(schema.safeParse("sideways").success).toBe(false)
     }
     expect(fields?.printCategory.defaultValue).toBe("footer")
   })

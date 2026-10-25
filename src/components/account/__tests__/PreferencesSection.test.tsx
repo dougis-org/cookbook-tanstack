@@ -393,6 +393,12 @@ describe('PreferencesSection — print placements', () => {
 
     fireEvent.keyDown(radios[0], { key: 'ArrowLeft' })
     expect(selectedIn('Category')).toEqual(['None'])
+
+    fireEvent.keyDown(radios[2], { key: 'ArrowUp' })
+    expect(selectedIn('Category')).toEqual(['Footer'])
+
+    fireEvent.keyDown(radios[1], { key: 'ArrowDown' })
+    expect(selectedIn('Category')).toEqual(['None'])
   })
 
   it('only the selected option in a group is in the tab order', () => {

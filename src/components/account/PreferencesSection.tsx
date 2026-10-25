@@ -88,7 +88,7 @@ export default function PreferencesSection() {
         {
           onSuccess: () => setStatus("success"),
           onError: (ctx: AuthErrorContext) => {
-            console.error("Failed to save theme preference:", ctx.error)
+            console.error("Failed to save preferences (theme and print):", ctx.error)
             setErrorMessage(ctx.error.message || DEFAULT_ERROR_MESSAGE)
             setStatus("error")
           },
@@ -99,7 +99,7 @@ export default function PreferencesSection() {
       // resolve-with-error contract. This catches the unexpected case where the
       // call itself rejects (e.g. a network-level exception), so the UI never
       // gets stuck on "saving" with no feedback.
-      console.error("Unexpected error saving theme preference:", error)
+      console.error("Unexpected error saving preferences (theme and print):", error)
       setErrorMessage(DEFAULT_ERROR_MESSAGE)
       setStatus("error")
     }
