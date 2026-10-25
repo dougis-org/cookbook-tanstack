@@ -9,11 +9,17 @@ const {
   mockUpdateMutationFn,
   mockImageUploadProps,
   mockFetch,
+  mockGetNote,
+  mockUpsertNote,
+  tierState,
 } = vi.hoisted(() => ({
   mockCreateMutationFn: vi.fn(),
   mockUpdateMutationFn: vi.fn(),
   mockImageUploadProps: vi.fn(),
   mockFetch: vi.fn(),
+  mockGetNote: vi.fn(),
+  mockUpsertNote: vi.fn(),
+  tierState: { canUsePrivateRecipeNotes: true },
 }))
 
 const mockUseAuth = vi.hoisted(() => vi.fn())
@@ -26,6 +32,7 @@ vi.mock('@/hooks/useTierEntitlements', () => ({
   useTierEntitlements: () => ({
     tier: 'sous-chef',
     canCreatePrivate: true,
+    canUsePrivateRecipeNotes: tierState.canUsePrivateRecipeNotes,
     canImport: true,
     recipeLimit: 500,
     cookbookLimit: 25,
@@ -60,6 +67,20 @@ vi.mock("@/lib/trpc", () => ({
     recipes: {
       create: { mutationOptions: () => ({ mutationFn: mockCreateMutationFn }) },
       update: { mutationOptions: () => ({ mutationFn: mockUpdateMutationFn }) },
+    },
+    privateRecipeNotes: {
+      get: {
+        queryOptions: ({ recipeId }: { recipeId: string }) => ({
+          queryKey: ["privateRecipeNotes", "get", recipeId],
+          queryFn: () => mockGetNote(),
+        }),
+      },
+      upsert: {
+        mutationOptions: (opts?: Record<string, unknown>) => ({
+          mutationFn: (input: { recipeId: string; body: string }) => mockUpsertNote(input),
+          ...(opts ?? {}),
+        }),
+      },
     },
     classifications: {
       list: { queryOptions: () => ({ queryKey: ["classifications"], queryFn: () => [{ id: "cls1", name: "Dessert" }] }) },
@@ -204,6 +225,9 @@ describe("RecipeForm", () => {
     capturedShouldBlockFn = undefined
     mockCreateMutationFn.mockResolvedValue({ id: "created-id" })
     mockUpdateMutationFn.mockResolvedValue({})
+    mockGetNote.mockResolvedValue({ hasNote: false, note: null })
+    mockUpsertNote.mockResolvedValue({ success: true })
+    tierState.canUsePrivateRecipeNotes = true
     mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
     vi.stubGlobal("fetch", mockFetch)
     // Default: verified user
@@ -1156,5 +1180,194 @@ describe("RecipeForm — unverified submit path", () => {
 
     // PostSubmitVerifyGate must NOT appear
     expect(screen.queryByTestId("post-submit-verify-gate")).not.toBeInTheDocument()
+  })
+})
+
+describe("RecipeForm — private notes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockBlocker.status = "idle"
+    capturedShouldBlockFn = undefined
+    mockUpdateMutationFn.mockResolvedValue({})
+    mockGetNote.mockResolvedValue({ hasNote: false, note: null })
+    mockUpsertNote.mockResolvedValue({ success: true })
+    tierState.canUsePrivateRecipeNotes = true
+    mockFetch.mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", mockFetch)
+    mockUseAuth.mockReturnValue({
+      session: { user: { emailVerified: true, email: "test@example.com" } },
+      isLoggedIn: true,
+      userId: "user-1",
+      isPending: false,
+    })
+  })
+
+  const moveButton = () => screen.queryByRole("button", { name: /move to private notes/i })
+
+  describe("panel and hint", () => {
+    it("shows the Private Notes panel in edit mode", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe()} />)
+      expect(await screen.findByTestId("private-notes-panel")).toBeInTheDocument()
+      expect(screen.getByRole("heading", { name: "Private Notes" })).toBeInTheDocument()
+    })
+
+    it("shows the save-first hint and issues no notes query in create mode", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(screen.getByText("Save this recipe first to add private notes.")).toBeInTheDocument()
+      expect(screen.queryByTestId("private-notes-panel")).not.toBeInTheDocument()
+      expect(mockGetNote).not.toHaveBeenCalled()
+    })
+
+    it("shows the below-tier nudge and no Move action", async () => {
+      tierState.canUsePrivateRecipeNotes = false
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Public text" })} />)
+      expect(await screen.findByText(/private notes are part of sous chef/i)).toBeInTheDocument()
+      expect(screen.queryByLabelText("Private note content")).not.toBeInTheDocument()
+      expect(moveButton()).not.toBeInTheDocument()
+    })
+
+    it("shows the hidden-by-downgrade nudge without the note body", async () => {
+      tierState.canUsePrivateRecipeNotes = false
+      mockGetNote.mockResolvedValue({ hasNote: true, note: null })
+      renderWithProviders(<RecipeForm initialData={makeRecipe()} />)
+      expect(await screen.findByText(/your notes are saved/i)).toBeInTheDocument()
+    })
+
+    it("saving a private note calls upsert and does not update the recipe", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe()} />)
+      await userEvent.click(await screen.findByRole("button", { name: /add a note/i }))
+      await userEvent.type(screen.getByLabelText("Private note content"), "Secret")
+      await userEvent.click(screen.getByRole("button", { name: /^save$/i }))
+
+      await waitFor(() =>
+        expect(mockUpsertNote).toHaveBeenCalledWith({ recipeId: "test-id", body: "Secret" }),
+      )
+      expect(mockUpdateMutationFn).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Move to Private Notes", () => {
+    it("moves public notes into an empty private note and clears the public field", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      await waitFor(() =>
+        expect(mockUpsertNote).toHaveBeenCalledWith({ recipeId: "test-id", body: "Use less salt" }),
+      )
+      await waitFor(() => expect(screen.getByLabelText(/^notes$/i)).toHaveValue(""))
+    })
+
+    it("appends to an existing private note with a blank line", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "Grandma's tip", updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByText("Grandma's tip")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      await waitFor(() =>
+        expect(mockUpsertNote).toHaveBeenCalledWith({
+          recipeId: "test-id",
+          body: "Grandma's tip\n\nUse less salt",
+        }),
+      )
+    })
+
+    it("keeps public notes and shows an error when the upsert fails", async () => {
+      mockUpsertNote.mockRejectedValue(new Error("boom"))
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/could not move your notes/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/^notes$/i)).toHaveValue("Use less salt")
+    })
+
+    it("does not upsert when the combined note would exceed 10000 characters", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "a".repeat(9990), updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "b".repeat(50) })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/10000 character limit/i)).toBeInTheDocument()
+      expect(mockUpsertNote).not.toHaveBeenCalled()
+      expect(screen.getByLabelText(/^notes$/i)).toHaveValue("b".repeat(50))
+    })
+
+    it("is not offered when the private note cannot be loaded, so nothing can be overwritten", async () => {
+      mockGetNote.mockRejectedValue(new Error("load failed"))
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await waitFor(() => expect(mockGetNote).toHaveBeenCalled())
+      await waitFor(() => expect(screen.queryByTestId("private-notes-panel")).not.toBeInTheDocument())
+      expect(moveButton()).not.toBeInTheDocument()
+      expect(mockUpsertNote).not.toHaveBeenCalled()
+      expect(await screen.findByText(/couldn't load your private notes/i)).toBeInTheDocument()
+    })
+
+    it("allows a combined note of exactly 10000 characters", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "a".repeat(9990), updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "b".repeat(8) })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      await waitFor(() => expect(mockUpsertNote).toHaveBeenCalled())
+      expect(mockUpsertNote.mock.calls[0][0].body).toHaveLength(10000)
+    })
+
+    it("rejects a combined note of 10001 characters", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "a".repeat(9990), updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "b".repeat(9) })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/10000 character limit/i)).toBeInTheDocument()
+      expect(mockUpsertNote).not.toHaveBeenCalled()
+    })
+
+    it("tells the user to save the recipe after a successful move", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/save the recipe to remove it from public notes/i)).toBeInTheDocument()
+    })
+
+    it("is hidden when public notes are empty or whitespace", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "   " })} />)
+      await screen.findByTestId("private-notes-panel")
+      expect(moveButton()).not.toBeInTheDocument()
+    })
+
+    it("is hidden in create mode", () => {
+      renderWithProviders(<RecipeForm />)
+      expect(moveButton()).not.toBeInTheDocument()
+    })
+
+    it("is disabled while the private note panel is being edited", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await userEvent.click(await screen.findByRole("button", { name: /add a note/i }))
+      expect(await screen.findByRole("button", { name: /move to private notes/i })).toBeDisabled()
+    })
+
+    it("persists the cleared public notes on the next recipe update", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+      await waitFor(() => expect(screen.getByLabelText(/^notes$/i)).toHaveValue(""))
+      await userEvent.click(screen.getByRole("button", { name: /update recipe/i }))
+
+      await waitFor(() => expect(mockUpdateMutationFn).toHaveBeenCalled())
+      expect(mockUpdateMutationFn.mock.calls[0][0].notes).toBe("")
+    })
+
+    it("shows the moved text in the panel after success", async () => {
+      mockGetNote
+        .mockResolvedValueOnce({ hasNote: false, note: null })
+        .mockResolvedValue({ hasNote: true, note: { body: "Use less salt", updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText("Use less salt", { selector: "p" })).toBeInTheDocument()
+    })
   })
 })

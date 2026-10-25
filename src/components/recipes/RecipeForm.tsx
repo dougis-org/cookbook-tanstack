@@ -18,6 +18,7 @@ import TierWall from "@/components/ui/TierWall"
 import StatusIndicator from "./StatusIndicator"
 import { useAuth } from "@/hooks/useAuth"
 import PostSubmitVerifyGate from "./PostSubmitVerifyGate"
+import RecipeFormPrivateNotes from "@/components/recipes/RecipeFormPrivateNotes"
 import { isTimeNA } from "@/lib/recipeDisplay"
 
 function sortedEqual(a: string[], b: string[]): boolean {
@@ -185,7 +186,8 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       ingredients: values.ingredients || undefined,
       imageUrl: values.imageUrl === null ? null : values.imageUrl || undefined,
       instructions: values.instructions || undefined,
-      notes: values.notes || undefined,
+      // Edit sends "" so clearing the field (e.g. Move to Private Notes) persists; $set ignores undefined.
+      notes: isEdit ? values.notes ?? "" : values.notes || undefined,
       prepTime: values.prepTimeNA ? null : toNum(values.prepTime),
       cookTime: values.cookTimeNA ? null : toNum(values.cookTime),
       servings: toNum(values.servings),
@@ -197,7 +199,7 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
       sodium: toNum(values.sodium),
       protein: toNum(values.protein),
     }
-  }, [selectedSourceId, personalSourceName])
+  }, [selectedSourceId, personalSourceName, isEdit])
 
   const autoSaveOnSave = useCallback(async (values: RecipeFormValues) => {
     if (isEdit && initialData?.id) {
@@ -490,6 +492,13 @@ export default function RecipeForm({ initialData }: RecipeFormProps) {
               className="w-full px-4 py-2 border border-[var(--theme-border)] rounded-lg focus:ring-2 focus:ring-[var(--theme-accent)] focus:border-transparent bg-[var(--theme-bg)] text-[var(--theme-fg)]"
             />
           </div>
+
+          {/* Private notes (panel in edit mode, hint in create mode) */}
+          <RecipeFormPrivateNotes
+            recipeId={initialData?.id}
+            publicNotes={watch("notes") ?? ""}
+            onMoved={() => setValue("notes", "", { shouldDirty: true })}
+          />
 
           {/* Timings & Servings */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
