@@ -56,6 +56,7 @@ const NoteBody = ({
         {saveError && <p className="text-[var(--theme-error)] text-sm mt-2">{saveError}</p>}
         <div className="flex gap-2 mt-3">
           <button
+            type="button"
             onClick={onSave}
             disabled={isPending || editBody === savedBody}
             className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--theme-accent)] hover:bg-[var(--theme-accent-hover)] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
@@ -64,6 +65,7 @@ const NoteBody = ({
             Save
           </button>
           <button
+            type="button"
             onClick={onCancel}
             disabled={isPending}
             className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors disabled:opacity-50"
@@ -82,6 +84,7 @@ const NoteBody = ({
 
   return (
     <button
+      type="button"
       onClick={onAddNote}
       className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors inline-flex items-center gap-2"
     >
@@ -100,6 +103,7 @@ const EditButton = ({ visible, onEdit }: EditButtonProps) => {
   if (!visible) return null
   return (
     <button
+      type="button"
       aria-label="Edit note"
       onClick={onEdit}
       className="text-[var(--theme-fg-muted)] hover:text-[var(--theme-fg)] transition-colors"
@@ -109,7 +113,19 @@ const EditButton = ({ visible, onEdit }: EditButtonProps) => {
   )
 }
 
-const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
+const WRAPPER_CLASSES = {
+  detail: 'max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden',
+  embedded: 'bg-[var(--theme-surface)] border border-[var(--theme-border)] rounded-lg p-4 print:hidden',
+} as const
+
+interface PrivateRecipeNotesProps {
+  recipeId: string
+  variant?: keyof typeof WRAPPER_CLASSES
+  onEditingChange?: (editing: boolean) => void
+}
+
+const PrivateRecipeNotes = ({ recipeId, variant = 'detail', onEditingChange }: PrivateRecipeNotesProps) => {
+  const wrapperClass = WRAPPER_CLASSES[variant]
   const { isLoggedIn } = useAuth()
   const { canUsePrivateRecipeNotes } = useTierEntitlements()
   const queryClient = useQueryClient()
@@ -129,6 +145,10 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   useEffect(() => {
     textareaRef.current?.focus()
   }, [isEditing])
+
+  useEffect(() => {
+    onEditingChange?.(isEditing)
+  }, [isEditing, onEditingChange])
 
   const upsertMutation = useMutation(
     trpc.privateRecipeNotes.upsert.mutationOptions({
@@ -154,7 +174,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
 
   if (!isLoggedIn)
     return (
-      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+      <div className={wrapperClass}>
         <RecipeNotesUpgradeNudge state="anonymous" />
       </div>
     )
@@ -164,12 +184,12 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     if (isLoading) return null
     if (data?.hasNote)
       return (
-        <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+        <div className={wrapperClass}>
           <RecipeNotesUpgradeNudge state="hidden-by-downgrade" />
         </div>
       )
     return (
-      <div className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden">
+      <div className={wrapperClass}>
         <RecipeNotesUpgradeNudge state="below-tier" />
       </div>
     )
@@ -179,7 +199,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
     return (
       <div
         data-testid="private-notes-skeleton"
-        className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden animate-pulse h-28"
+        className={`${wrapperClass} animate-pulse h-28`}
       />
     )
   }
@@ -205,7 +225,7 @@ const PrivateRecipeNotes = ({ recipeId }: { recipeId: string }) => {
   return (
     <div
       data-testid="private-notes-panel"
-      className="max-w-4xl mx-auto bg-[var(--theme-surface)] rounded-b-lg shadow-lg p-6 print:hidden"
+      className={wrapperClass}
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-2xl font-bold text-[var(--theme-fg)]">Private Notes</h2>

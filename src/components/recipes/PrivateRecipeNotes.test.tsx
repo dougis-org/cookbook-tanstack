@@ -372,4 +372,85 @@ describe('PrivateRecipeNotes', () => {
       expect(panel).not.toHaveClass('mt-8', 'rounded-xl', 'border')
     })
   })
+
+  describe('embedded in a form', () => {
+    function renderInForm(props: Partial<React.ComponentProps<typeof PrivateRecipeNotes>> = {}) {
+      const onSubmit = vi.fn((e: React.FormEvent) => e.preventDefault())
+      render(
+        <form onSubmit={onSubmit}>
+          <PrivateRecipeNotes recipeId={RECIPE_ID} {...props} />
+        </form>,
+        { wrapper },
+      )
+      return onSubmit
+    }
+
+    it('never submits the enclosing form from Add a note, Save, Cancel, or Edit', async () => {
+      mockUpsertFn = vi.fn().mockResolvedValue({ success: true })
+      mockGetFn = vi.fn().mockResolvedValue(makeNote('hello'))
+      seedQueryClient(emptyNoteData)
+      const onSubmit = renderInForm()
+
+      fireEvent.click(await screen.findByRole('button', { name: /add a note/i }))
+      fireEvent.change(screen.getByLabelText('Private note content'), { target: { value: 'hello' } })
+      fireEvent.click(screen.getByRole('button', { name: /save/i }))
+      fireEvent.click(await screen.findByRole('button', { name: /edit note/i }))
+      fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
+
+      await waitFor(() => expect(mockUpsertFn).toHaveBeenCalled())
+      expect(onSubmit).not.toHaveBeenCalled()
+    })
+
+    it('embedded variant omits detail-card chrome on the panel', async () => {
+      seedQueryClient(makeNote('Embedded note'))
+      renderInForm({ variant: 'embedded' })
+      const panel = await screen.findByTestId('private-notes-panel')
+      expect(panel).not.toHaveClass('max-w-4xl')
+      expect(panel).not.toHaveClass('rounded-b-lg')
+      expect(panel).not.toHaveClass('shadow-lg')
+    })
+
+    it('embedded variant omits detail-card chrome on the skeleton', () => {
+      mockGetFn = () => new Promise(() => {})
+      renderInForm({ variant: 'embedded' })
+      const skeleton = screen.getByTestId('private-notes-skeleton')
+      expect(skeleton).not.toHaveClass('max-w-4xl')
+      expect(skeleton).not.toHaveClass('rounded-b-lg')
+      expect(skeleton).not.toHaveClass('shadow-lg')
+    })
+
+    it('embedded variant omits detail-card chrome on nudges', () => {
+      canUseNotes = false
+      seedQueryClient(emptyNoteData)
+      renderInForm({ variant: 'embedded' })
+      const nudge = screen.getByTestId('nudge-below-tier')
+      expect(nudge.parentElement).not.toHaveClass('max-w-4xl')
+      expect(nudge.parentElement).not.toHaveClass('rounded-b-lg')
+      expect(nudge.parentElement).not.toHaveClass('shadow-lg')
+    })
+
+    it('reports editing state through onEditingChange', async () => {
+      seedQueryClient(emptyNoteData)
+      const onEditingChange = vi.fn()
+      renderInForm({ onEditingChange })
+
+      fireEvent.click(await screen.findByRole('button', { name: /add a note/i }))
+      expect(onEditingChange).toHaveBeenLastCalledWith(true)
+      fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
+      expect(onEditingChange).toHaveBeenLastCalledWith(false)
+    })
+
+    it('reports editing false after a successful save', async () => {
+      mockUpsertFn = vi.fn().mockResolvedValue({ success: true })
+      seedQueryClient(emptyNoteData)
+      const onEditingChange = vi.fn()
+      renderInForm({ onEditingChange })
+
+      fireEvent.click(await screen.findByRole('button', { name: /add a note/i }))
+      fireEvent.change(screen.getByLabelText('Private note content'), { target: { value: 'x' } })
+      fireEvent.click(screen.getByRole('button', { name: /save/i }))
+
+      await waitFor(() => expect(onEditingChange).toHaveBeenLastCalledWith(false))
+    })
+  })
 })
