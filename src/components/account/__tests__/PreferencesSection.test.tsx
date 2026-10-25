@@ -320,7 +320,7 @@ describe('PreferencesSection — print placements', () => {
   const ELEMENTS = ['Category', 'Difficulty', 'Servings', 'Prep time', 'Cook time']
 
   function group(label: string) {
-    return screen.getByRole('radiogroup', { name: new RegExp(`^${label} placement$`, 'i') })
+    return screen.getByRole('radiogroup', { name: `${label} placement` })
   }
 
   function selectedIn(label: string) {
