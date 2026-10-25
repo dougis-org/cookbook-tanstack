@@ -65,6 +65,12 @@ const printData = (recipes: ReturnType<typeof makeRecipe>[]) => ({
   recipes,
 })
 
+function renderPrint(user: Record<string, unknown>, recipes: ReturnType<typeof makeRecipe>[]) {
+  signedInWith(user)
+  mockUseQuery.mockReturnValue({ isLoading: false, data: printData(recipes) })
+  return render(<CookbookPrintPage />).container
+}
+
 function signedInWith(user: Record<string, unknown>) {
   mockUseAuth.mockReturnValue({
     session: { user: { id: 'u1', ...user } },
@@ -81,12 +87,7 @@ describe('CookbookPrintPage — footer row composition with the real RecipeDetai
   })
 
   it('puts footer items and #N in a single footer row', () => {
-    signedInWith({ printCategory: 'footer', printServings: 'footer' })
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      data: printData([makeRecipe('r1', 0)]),
-    })
-    const { container } = render(<CookbookPrintPage />)
+    const container = renderPrint({ printCategory: 'footer', printServings: 'footer' }, [makeRecipe('r1', 0)])
 
     const rows = container.querySelectorAll<HTMLElement>('[data-testid="print-footer-row"]')
     expect(rows).toHaveLength(1)
@@ -96,18 +97,13 @@ describe('CookbookPrintPage — footer row composition with the real RecipeDetai
   })
 
   it('renders only #N in the footer row when every element is none', () => {
-    signedInWith({
+    const container = renderPrint({
       printCategory: 'none',
       printDifficulty: 'none',
       printServings: 'none',
       printPrepTime: 'none',
       printCookTime: 'none',
-    })
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      data: printData([makeRecipe('r1', 0)]),
-    })
-    const { container } = render(<CookbookPrintPage />)
+    }, [makeRecipe('r1', 0)])
 
     const row = container.querySelector<HTMLElement>('[data-testid="print-footer-row"]')
     expect(row).not.toBeNull()
@@ -116,12 +112,7 @@ describe('CookbookPrintPage — footer row composition with the real RecipeDetai
   })
 
   it('renders exactly one footer row per recipe, each with its own #N', () => {
-    signedInWith({ printCategory: 'footer' })
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      data: printData([makeRecipe('r1', 0), makeRecipe('r2', 1), makeRecipe('r3', 2)]),
-    })
-    const { container } = render(<CookbookPrintPage />)
+    const container = renderPrint({ printCategory: 'footer' }, [makeRecipe('r1', 0), makeRecipe('r2', 1), makeRecipe('r3', 2)])
 
     const sections = Array.from(container.querySelectorAll<HTMLElement>('.cookbook-recipe-section'))
     expect(sections).toHaveLength(3)
@@ -134,12 +125,7 @@ describe('CookbookPrintPage — footer row composition with the real RecipeDetai
   })
 
   it('keeps header items out of the footer row', () => {
-    signedInWith({ printCategory: 'footer', printPrepTime: 'header' })
-    mockUseQuery.mockReturnValue({
-      isLoading: false,
-      data: printData([makeRecipe('r1', 0)]),
-    })
-    const { container } = render(<CookbookPrintPage />)
+    const container = renderPrint({ printCategory: 'footer', printPrepTime: 'header' }, [makeRecipe('r1', 0)])
 
     expect(container.querySelector('[data-testid="print-meta-line"]')).toHaveTextContent('Prep: 15m')
     expect(container.querySelector('[data-testid="print-footer-row"]')).not.toHaveTextContent('Prep:')
