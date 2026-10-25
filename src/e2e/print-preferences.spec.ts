@@ -71,3 +71,63 @@ test.describe("Print preferences suppress sections from print output", () => {
     await expect(heading).toBeVisible();
   });
 });
+
+// Covers per-element header/footer placement (#699): Prep in the header,
+// Category in the footer, both print-only.
+test.describe("Print placement puts elements in header line and footer row", () => {
+  let recipeId: string;
+  let email: string;
+  let password: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    const creds = await registerAndLogin(page);
+    email = creds.email;
+    password = creds.password;
+
+    await gotoAndWaitForHydration(page, "/recipes/new");
+    await submitRecipeForm(page, {
+      name: getUniqueRecipeName("PlacementRecipe"),
+      ingredients: "Flour",
+      instructions: "Mix",
+      prepTime: "15",
+      category: "Desserts",
+    });
+    await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
+    recipeId = page.url().split("/recipes/")[1];
+
+    await withMongoDb((db) =>
+      db.collection("user").updateOne(
+        { email },
+        {
+          $set: {
+            printCategory: "footer",
+            printPrepTime: "header",
+            printServings: "none",
+            printCookTime: "none",
+            printDifficulty: "none",
+          },
+        },
+      ),
+    );
+    await page.close();
+  });
+
+  test("print shows Prep in header and category in footer; screen shows neither extra element", async ({ page }) => {
+    await login(page, email, password);
+    await gotoAndWaitForHydration(page, `/recipes/${recipeId}`);
+
+    const header = page.getByTestId("print-meta-line");
+    const footer = page.getByTestId("print-footer-row");
+
+    await page.emulateMedia({ media: "print" });
+    await expect(header).toBeVisible();
+    await expect(header).toContainText("Prep: 15m");
+    await expect(footer).toBeVisible();
+    await expect(footer).toContainText("Desserts");
+
+    await page.emulateMedia({ media: "screen" });
+    await expect(header).toBeHidden();
+    await expect(footer).toBeHidden();
+  });
+});

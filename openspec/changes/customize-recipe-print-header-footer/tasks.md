@@ -30,11 +30,11 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 ### PR 2 — Single-recipe header and footer rendering
 
-- [ ] 2.1 Write failing `RecipeDetail` tests (`src/components/recipes/__tests__/RecipeDetail.test.tsx`): header elements, exclusions, NA suppression, empty line not rendered, scaled servings, Category in header and footer, "Added by" independent of placement, footer row alone, footer row with `printFooter`, no footer row when empty, print-only classes
-- [ ] 2.2 Implement the header line in `src/components/recipes/RecipeDetail.tsx` (keep `data-testid="print-meta-line"`)
-- [ ] 2.3 Implement the footer row (left items, right `printFooter`, `break-inside: avoid`, print tokens, new test ID) and add any needed rules to `src/styles/print.css`
-- [ ] 2.4 Verify `src/routes/recipes/$recipeId.tsx` passes the resolved preferences unchanged; update `src/routes/recipes/__tests__/-$recipeId.test.tsx` as needed
-- [ ] 2.5 Add Playwright coverage for single-recipe print emulation (header and footer placement)
+- [x] 2.1 Write failing `RecipeDetail` tests (`src/components/recipes/__tests__/RecipeDetail.test.tsx`): header elements, exclusions, NA suppression, empty line not rendered, scaled servings, Category in header and footer, "Added by" independent of placement, footer row alone, footer row with `printFooter`, no footer row when empty, print-only classes
+- [x] 2.2 Implement the header line in `src/components/recipes/RecipeDetail.tsx` (keep `data-testid="print-meta-line"`)
+- [x] 2.3 Implement the footer row (left items, right `printFooter`, `break-inside: avoid`, print tokens, new test ID) and add any needed rules to `src/styles/print.css`
+- [x] 2.4 Verify `src/routes/recipes/$recipeId.tsx` passes the resolved preferences unchanged; update `src/routes/recipes/__tests__/-$recipeId.test.tsx` as needed
+- [x] 2.5 Add Playwright coverage for single-recipe print emulation (header and footer placement)
 - [ ] 2.6 Open PR 2 per PR and Merge
 
 ### PR 3 — Cookbook print verification and E2E
