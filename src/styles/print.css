@@ -88,4 +88,10 @@
   .cookbook-toc-page {
     page: cookbook-page;
   }
+
+  /* Per-recipe footer row (footer-placed items + printFooter); never split across pages. */
+  .print-footer-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }

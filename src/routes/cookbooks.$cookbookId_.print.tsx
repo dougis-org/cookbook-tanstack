@@ -111,12 +111,12 @@ export function CookbookPrintPage() {
                 printPreferences={printPreferences}
                 printFooter={
                   pageNumber !== undefined && (
-                    <div
-                      className="cookbook-recipe-position-label mt-4 pt-2 border-t border-[color:var(--theme-print-border)] text-right text-xs text-[var(--theme-print-fg-subtle)] tabular-nums"
+                    <span
+                      className="cookbook-recipe-position-label text-xs text-[var(--theme-print-fg-subtle)] tabular-nums"
                       data-testid="cookbook-recipe-position-label"
                     >
                       #{pageNumber}
-                    </div>
+                    </span>
                   )
                 }
               />

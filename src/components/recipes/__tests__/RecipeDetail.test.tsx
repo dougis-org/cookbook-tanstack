@@ -307,6 +307,7 @@ describe("RecipeDetail", () => {
     render(
       <RecipeDetail
         recipe={{ ...makeRecipe({ classificationId: "cat-1" }), classificationName: classificationName ?? undefined }}
+        printPreferences={{ ...DEFAULT_PRINT_PREFERENCES, printCategory: "none" }}
       />,
     )
     const el = screen.queryByText("Italian")
@@ -1002,51 +1003,50 @@ describe("RecipeDetail — compact print meta line", () => {
   })
 
   describe("TC-4: compact line content, partial fields (FR3 edge)", () => {
-    it("shows N/A for a null field and joins with the present fields", () => {
+    it("omits null fields and joins the present ones", () => {
       render(
         <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: 20, cookTime: null, servings: null, difficulty: "easy" })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: 20m · Cook: N/A · Easy")
+      expect(line.textContent).toBe("Prep: 20m · Easy")
       expect(line.textContent).not.toContain("Serves:")
     })
   })
 
   describe("TC-5: all fields null (FR4)", () => {
-    it("still renders print-meta-line showing N/A for prep/cook time when all meta fields are null", () => {
+    it("does not render print-meta-line when all header meta fields are null", () => {
       render(
         <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: null, cookTime: null, servings: null, difficulty: null })}
         />,
       )
-      const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: N/A · Cook: N/A")
+      expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
     })
   })
 
   describe("TC-6: single field present (FR4)", () => {
-    it("shows N/A for the missing prep time alongside the present cook time", () => {
+    it("omits the missing prep time alongside the present cook time", () => {
       render(
         <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: null, cookTime: 45, servings: null, difficulty: null })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: N/A · Cook: 45m")
+      expect(line.textContent).toBe("Cook: 45m")
     })
   })
 
   describe("TC-7: zero prepTime/cookTime is treated as N/A (0 == N/A)", () => {
-    it("shows N/A for prepTime and cookTime when they are 0", () => {
+    it("omits prepTime and cookTime when they are 0", () => {
       render(
         <RecipeDetail printPreferences={META_HEADER_PREFS}
           recipe={makeRecipe({ prepTime: 0, cookTime: 0, servings: 4, difficulty: "easy" })}
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy")
+      expect(line.textContent).toBe("Serves: 4 · Easy")
     })
   })
 
@@ -1071,7 +1071,7 @@ describe("RecipeDetail — compact print meta line", () => {
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy · Added by: Alice")
+      expect(line.textContent).toBe("Serves: 4 · Easy · Added by: Alice")
     })
 
     it("does not render Added by section when addedByName is absent/null", () => {
@@ -1081,7 +1081,7 @@ describe("RecipeDetail — compact print meta line", () => {
         />,
       )
       const line = screen.getByTestId("print-meta-line")
-      expect(line.textContent).toBe("Prep: N/A · Cook: N/A · Serves: 4 · Easy")
+      expect(line.textContent).toBe("Serves: 4 · Easy")
       expect(line.textContent).not.toContain("Added by:")
     })
   })
@@ -1434,5 +1434,114 @@ describe("RecipeDetail — shared print list item marker (unify-print-list-item-
     const li = container.querySelector("li.recipe-instruction-step")
     expect(li).not.toBeNull()
     expect(li).toHaveClass("flex", "gap-4", "print:block", "text-[var(--theme-fg-muted)]")
+  })
+})
+
+describe("RecipeDetail — per-element print placement (PR 2)", () => {
+  const prefs = (over: Record<string, string>) =>
+    ({ ...DEFAULT_PRINT_PREFERENCES, ...META_NONE, printCategory: "none", ...over }) as typeof DEFAULT_PRINT_PREFERENCES
+  const full = makeRecipe({
+    prepTime: 15, cookTime: 30, servings: 4, difficulty: "medium",
+    classificationId: "c1", classificationName: "Soups",
+  })
+
+  it("excludes elements placed in footer or none from the header line", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printPrepTime: "footer", printServings: "header" })} />)
+    const text = screen.getByTestId("print-meta-line").textContent
+    expect(text).toBe("Serves: 4")
+  })
+
+  it("header Category prints the plain classification name", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printCategory: "header", printDifficulty: "header" })} />)
+    expect(screen.getByTestId("print-meta-line").textContent).toBe("Medium · Soups")
+  })
+
+  it("Added by prints with all elements none, line is the only content", () => {
+    render(<RecipeDetail recipe={makeRecipe({ addedByName: "Alice" })} printPreferences={prefs({})} />)
+    expect(screen.getByTestId("print-meta-line").textContent).toBe("Added by: Alice")
+  })
+
+  it("no header line when nothing in header and no Added by", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printCategory: "footer" })} />)
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+  })
+
+  it("scaled servings appear in the footer too", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printServings: "footer" })} />)
+    fireEvent.click(screen.getByRole("button", { name: /increase servings/i }))
+    expect(screen.getByTestId("print-footer-row").textContent).toContain("Serves: 5")
+  })
+
+  it("footer row holds footer items joined by ' · ' with no printFooter", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printCategory: "footer", printDifficulty: "footer" })} />)
+    const row = screen.getByTestId("print-footer-row")
+    expect(row.textContent).toBe("Medium · Soups")
+    expect(screen.queryByTestId("print-footer-node")).not.toBeInTheDocument()
+  })
+
+  it("footer row renders items left and printFooter right, once", () => {
+    render(
+      <RecipeDetail
+        recipe={full}
+        printPreferences={prefs({ printCategory: "footer", printServings: "footer" })}
+        printFooter={<span data-testid="recipe-footer">#12</span>}
+      />,
+    )
+    const rows = screen.getAllByTestId("print-footer-row")
+    expect(rows).toHaveLength(1)
+    const items = screen.getByTestId("print-footer-items")
+    const node = screen.getByTestId("print-footer-node")
+    expect(items.textContent).toBe("Serves: 4 · Soups")
+    expect(node).toHaveTextContent("#12")
+    expect(items.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(rows[0]).toContainElement(screen.getByTestId("recipe-footer"))
+  })
+
+  it("footer row with only printFooter renders just that node", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({})} printFooter={<span>#3</span>} />)
+    expect(screen.getByTestId("print-footer-row").textContent).toBe("#3")
+    expect(screen.queryByTestId("print-footer-items")).not.toBeInTheDocument()
+  })
+
+  it("no footer row when no footer items and no printFooter", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({ printServings: "header" })} />)
+    expect(screen.queryByTestId("print-footer-row")).not.toBeInTheDocument()
+  })
+
+  it("no footer row when footer elements have no values (no classification)", () => {
+    render(<RecipeDetail recipe={makeRecipe()} printPreferences={prefs({ printCategory: "footer" })} />)
+    expect(screen.queryByTestId("print-footer-row")).not.toBeInTheDocument()
+  })
+
+  it("footer row is print-only, avoids breaks, uses print tokens, and is last in the content", () => {
+    render(<RecipeDetail recipe={full} personalNote="x" printPreferences={prefs({ printCategory: "footer" })} />)
+    const row = screen.getByTestId("print-footer-row")
+    expect(row).toHaveClass("hidden", "print:flex")
+    expect(row.className).toContain("print-footer-row")
+    expect(row.className).toContain("--theme-print-")
+    expect(row.parentElement?.lastElementChild).toBe(row)
+  })
+
+  it("default preferences put the classification name in the footer row with no printFooter", () => {
+    render(<RecipeDetail recipe={full} />)
+    expect(screen.getByTestId("print-footer-row").textContent).toBe("Soups")
+    expect(screen.queryByTestId("print-footer-node")).not.toBeInTheDocument()
+  })
+
+  it("servings of 0 is valid and prints in the header", () => {
+    render(<RecipeDetail recipe={makeRecipe({ servings: 0 })} printPreferences={prefs({ printServings: "header" })} />)
+    expect(screen.getByTestId("print-meta-line").textContent).toBe("Serves: 0")
+  })
+
+  it("header Category with no classification renders no header line", () => {
+    render(<RecipeDetail recipe={makeRecipe()} printPreferences={prefs({ printCategory: "header" })} />)
+    expect(screen.queryByTestId("print-meta-line")).not.toBeInTheDocument()
+  })
+
+  it("screen grid labels remain", () => {
+    render(<RecipeDetail recipe={full} printPreferences={prefs({})} />)
+    for (const l of ["Prep Time", "Cook Time", "Servings", "Difficulty"]) {
+      expect(screen.getByText(l)).toBeInTheDocument()
+    }
   })
 })

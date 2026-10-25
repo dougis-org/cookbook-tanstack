@@ -106,6 +106,47 @@ function isSafeUrl(url: string): boolean {
   }
 }
 
+const PRINT_META_SEPARATOR = ' · '
+
+type PrintMetaKey = 'printCategory' | 'printDifficulty' | 'printServings' | 'printPrepTime' | 'printCookTime'
+
+/** Text for one placeable print element, or null when the recipe has no value for it. */
+function printMetaText(key: PrintMetaKey, recipe: Recipe, servings: number): string | null {
+  switch (key) {
+    case 'printPrepTime':
+      return recipe.prepTime ? `Prep: ${recipe.prepTime}m` : null
+    case 'printCookTime':
+      return recipe.cookTime ? `Cook: ${recipe.cookTime}m` : null
+    case 'printServings':
+      return recipe.servings != null ? `Serves: ${servings}` : null
+    case 'printDifficulty':
+      return recipe.difficulty != null
+        ? recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1)
+        : null
+    case 'printCategory':
+      return recipe.classificationName || null
+  }
+}
+
+const PRINT_META_ORDER: PrintMetaKey[] = [
+  'printPrepTime',
+  'printCookTime',
+  'printServings',
+  'printDifficulty',
+  'printCategory',
+]
+
+function printMetaItems(
+  zone: 'header' | 'footer',
+  prefs: PrintPreferences,
+  recipe: Recipe,
+  servings: number,
+): string[] {
+  return PRINT_META_ORDER.filter((key) => prefs[key] === zone)
+    .map((key) => printMetaText(key, recipe, servings))
+    .filter((text): text is string => text !== null)
+}
+
 // skipcq: JS-R1005 -- pre-existing component-wide complexity from its many conditional
 // sections. The personalNote print section adds one more conditional branch;
 // prior changes replaced inline prepTime/cookTime ternaries with formatMinutesOrNA()
@@ -125,6 +166,10 @@ export default function RecipeDetail({
     const factor = currentServings / recipe.servings
     return ingredientLines.map((line) => (line === '' ? line : scaleQuantity(line, factor)))
   }, [currentServings, ingredientLines, recipe.servings])
+  const headerItems = printMetaItems('header', printPreferences, recipe, currentServings)
+  if (recipe.addedByName) headerItems.push(`Added by: ${recipe.addedByName}`)
+  const headerLine = headerItems.join(PRINT_META_SEPARATOR)
+  const footerItems = printMetaItems('footer', printPreferences, recipe, currentServings)
   const instructionLines = useMemo(() => splitLines(recipe.instructions), [recipe.instructions])
   const instructionSteps = useMemo(() => {
     let stepNumber = 0
@@ -286,31 +331,14 @@ export default function RecipeDetail({
             />
           </div>
 
-          {(() => {
-            const printMetaLine = [
-              `Prep: ${formatMinutesOrNA(recipe.prepTime, "m")}`,
-              `Cook: ${formatMinutesOrNA(recipe.cookTime, "m")}`,
-              recipe.servings != null && `Serves: ${currentServings}`,
-              recipe.difficulty != null && recipe.difficulty.charAt(0).toUpperCase() + recipe.difficulty.slice(1),
-              recipe.addedByName && `Added by: ${recipe.addedByName}`,
-            ].filter(Boolean).join(' · ')
-            // Temporary mapping (PR 1): the meta line shows when any meta element is
-            // placed in the header. Per-element header/footer rendering lands in PR 2.
-            const showMeta = [
-              printPreferences.printDifficulty,
-              printPreferences.printServings,
-              printPreferences.printPrepTime,
-              printPreferences.printCookTime,
-            ].includes('header')
-            return showMeta && printMetaLine ? (
-              <p
-                data-testid="print-meta-line"
-                className="hidden print:block text-sm text-[var(--theme-fg-muted)] mb-8"
-              >
-                {printMetaLine}
-              </p>
-            ) : null
-          })()}
+          {headerLine && (
+            <p
+              data-testid="print-meta-line"
+              className="hidden print:block text-sm text-[var(--theme-fg-muted)] mb-8"
+            >
+              {headerLine}
+            </p>
+          )}
 
           {/* Ingredients Section */}
           <section
@@ -458,7 +486,21 @@ export default function RecipeDetail({
             </section>
           )}
 
-          {printFooter}
+          {(footerItems.length > 0 || printFooter) && (
+            <div
+              data-testid="print-footer-row"
+              className="print-footer-row hidden print:flex items-baseline justify-between gap-4 mt-4 pt-2 border-t border-[var(--theme-print-border)] text-sm text-[var(--theme-print-fg-muted)] print:break-inside-avoid"
+            >
+              {footerItems.length > 0 && (
+                <span data-testid="print-footer-items">{footerItems.join(PRINT_META_SEPARATOR)}</span>
+              )}
+              {printFooter && (
+                <span data-testid="print-footer-node" className="ml-auto">
+                  {printFooter}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
