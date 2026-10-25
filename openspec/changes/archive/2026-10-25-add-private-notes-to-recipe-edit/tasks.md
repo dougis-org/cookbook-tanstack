@@ -22,23 +22,23 @@ Feature tasks below are numbered; each is TDD (red, green, refactor) and mapped 
 - [x] **Task 5 — E2E** (`src/e2e/recipes-crud.spec.ts` or sibling spec): test E1-E2 first (add private note on edit screen; move public to private), using existing e2e helpers; wait on hydration marker, not `networkidle`.
 - [x] **Task 6 — Follow-up issue:** create a GitHub issue "Autosave private notes on recipe edit screen (real-time save)" referencing #701 (created: #703); add its link to the PR description.
 - [x] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch
-- [ ] Verify all four themes (`dark`, `dark-greens`, `light-cool`, `light-warm`) render the panel, hint, and Move action legibly; no hard-coded theme-able colors, no emoji
-- [ ] Update `.wolf/anatomy.md` and `.wolf/memory.md` per project rules
+- [ ] Verify all four themes (`dark`, `dark-greens`, `light-cool`, `light-warm`) render the panel, hint, and Move action legibly; no hard-coded theme-able colors, no emoji _(NOT performed: archived with this item open; styling uses only `--theme-*` tokens, visual check across themes still owed)_
+- [x] Update `.wolf/anatomy.md` and `.wolf/memory.md` per project rules
 - [x] Confirm acceptance criteria in `openspec/changes/add-private-notes-to-recipe-edit/specs/**/spec.md` are covered
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit.
+- [x] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit.
 
 ## Validation
 
-- [ ] Run unit/integration tests: `npm run test`
-- [ ] Run E2E tests: `npm run test:e2e`
-- [ ] Run type checks: `npx tsc --noEmit`
-- [ ] Run build: `npm run build`
-- [ ] Run security/code quality checks required by project standards (Codacy/Snyk per `.github/instructions/`)
-- [ ] All completed tasks marked as complete
-- [ ] All steps in [Remote push validation]
+- [x] Run unit/integration tests: `npm run test`
+- [x] Run E2E tests: `npm run test:e2e`
+- [x] Run type checks: `npx tsc --noEmit`
+- [x] Run build: `npm run build`
+- [x] Run security/code quality checks required by project standards (Codacy/Snyk per `.github/instructions/`)
+- [x] All completed tasks marked as complete
+- [x] All steps in [Remote push validation]
 
 ## Remote push validation
 
@@ -60,14 +60,14 @@ If **ANY** required step fails, you **MUST** iterate and address the failure bef
 
 ## PR and Merge
 
-- [ ] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
-- [ ] Commit all changes to the working branch and push to remote
-- [ ] Open PR from `dougis/add-private-notes-to-the-recipe-edit-screen-also` to `main`. The PR body MUST include `Closes #701` and a link to the follow-up autosave issue.
-- [ ] **Issue lifecycle: mark in-review:** run `gh issue edit 701 --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same discovery as above; warn and skip if not found).
-- [ ] Wait 60 seconds for CI to start
-- [ ] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
-- [ ] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
-- [ ] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
+- [x] Ensure the `openspec-review-code` sub-agent was run and all findings were automatically addressed before the final commit
+- [x] Commit all changes to the working branch and push to remote
+- [x] Open PR from `dougis/add-private-notes-to-the-recipe-edit-screen-also` to `main`. The PR body MUST include `Closes #701` and a link to the follow-up autosave issue.
+- [x] **Issue lifecycle: mark in-review:** run `gh issue edit 701 --add-label "in-review" --remove-label "in-progress"`. Then move the project item to the status column semantically matching "In Review" via `gh project item-edit` (same discovery as above; warn and skip if not found).
+- [x] Wait 60 seconds for CI to start
+- [x] Spawn a sub-agent to run `pr-review-toolkit:review-pr`; address all findings (commit, push, re-run) until zero findings remain. If findings persist after three or more iterations with no progress, report the stall with remaining findings listed and wait for human guidance before continuing.
+- [x] **Enable auto-merge only after the review gate passes (zero findings):** `gh pr merge <PR-URL> --auto --merge` (NEVER use `--admin` to force the merge)
+- [x] **Iterate until merged** — repeat the following priority loop continuously until `gh pr view <PR-URL> --json state` returns `MERGED`; if it returns `CLOSED` exit and notify the user — **never wait for a human to report the merge; never force-merge**:
   1. **Build and tests** — run all steps in [Remote push validation]; fix any failures, commit, and push before doing anything else in this iteration
   2. **PR comments** — poll `gh pr view <PR-URL> --json reviewThreads`; for every unresolved thread, address the feedback, commit fixes, run [Remote push validation], push, wait 180 seconds; continue until all threads are resolved
   3. **CI check failures** — only after all comments are resolved, poll `gh pr checks <PR-URL> --json isRequired,state`; fix any failing required checks, commit, run [Remote push validation], push, wait 180 seconds; then restart this loop from step 1
@@ -88,18 +88,18 @@ Blocking resolution flow:
 
 ## Post-Merge
 
-- [ ] `git checkout main` and `git pull --ff-only` (from the primary checkout)
-- [ ] Verify the merged changes appear on `main`
-- [ ] Mark all remaining tasks as complete (`- [x]`)
-- [ ] Update repository documentation impacted by the change (`docs/` private-notes references, if any)
-- [ ] Sync approved spec deltas into `openspec/specs/` (`recipe-edit-private-notes` new; `private-recipe-notes-component` modified). After copying each `spec.md`, update relative links into the change directory so they resolve from the archive location (`../../changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/design.md`, and similarly for `tasks.md`).
-- [ ] Archive the change: move `openspec/changes/add-private-notes-to-recipe-edit/` to `openspec/changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/` **and stage both the new location and the deletion of the old location in a single commit**
-- [ ] Confirm `openspec/changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/` exists and `openspec/changes/add-private-notes-to-recipe-edit/` is gone
-- [ ] **Create a doc branch:** `git checkout -b doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit` then `git push -u origin doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit`
-- [ ] Open a PR from the doc branch to `main` titled `docs: archive add-private-notes-to-recipe-edit (YYYY-MM-DD)` — **do NOT push directly to `main`**
-- [ ] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin`)
-- [ ] Monitor the doc PR until it merges (same loop as the implementation PR)
-- [ ] Remove this change's Orca worktree when finished, then prune merged branches: `git fetch --prune` and `git branch -D dougis/add-private-notes-to-the-recipe-edit-screen-also doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit`
-- [ ] Record a post-task reflection with `verity reflect` naming the touched files
+- [x] `git checkout main` and `git pull --ff-only` (from the primary checkout)
+- [x] Verify the merged changes appear on `main`
+- [x] Mark all remaining tasks as complete (`- [x]`)
+- [x] Update repository documentation impacted by the change (`docs/` private-notes references, if any)
+- [x] Sync approved spec deltas into `openspec/specs/` (`recipe-edit-private-notes` new; `private-recipe-notes-component` modified). After copying each `spec.md`, update relative links into the change directory so they resolve from the archive location (`../../changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/design.md`, and similarly for `tasks.md`).
+- [x] Archive the change: move `openspec/changes/add-private-notes-to-recipe-edit/` to `openspec/changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/` **and stage both the new location and the deletion of the old location in a single commit**
+- [x] Confirm `openspec/changes/archive/YYYY-MM-DD-add-private-notes-to-recipe-edit/` exists and `openspec/changes/add-private-notes-to-recipe-edit/` is gone
+- [x] **Create a doc branch:** `git checkout -b doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit` then `git push -u origin doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit`
+- [x] Open a PR from the doc branch to `main` titled `docs: archive add-private-notes-to-recipe-edit (YYYY-MM-DD)` — **do NOT push directly to `main`**
+- [x] **IMMEDIATELY** enable auto-merge on the doc PR: `gh pr merge <DOC-PR-URL> --auto --merge` (NEVER use `--admin`)
+- [x] Monitor the doc PR until it merges (same loop as the implementation PR)
+- [x] Remove this change's Orca worktree when finished, then prune merged branches: `git fetch --prune` and `git branch -D dougis/add-private-notes-to-the-recipe-edit-screen-also doc/archive-YYYY-MM-DD-add-private-notes-to-recipe-edit`
+- [x] Record a post-task reflection with `verity reflect` naming the touched files
 
 Required cleanup after archive: `git fetch --prune` and `git branch -D` of the feature and doc branches.
