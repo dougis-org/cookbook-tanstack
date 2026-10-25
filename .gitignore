@@ -49,7 +49,7 @@ data/legacy-migration/reports/*
 .worktrees/
 
 # OpenWolf 
-.wolf/
+# .wolf/ removed as the .gitignore in .wolf suppresses the work files
 
 src/e2e/e2e-coverage/lcov.info
 
