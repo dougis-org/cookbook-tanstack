@@ -22,7 +22,7 @@ Feature tasks below are numbered; each is TDD (red, green, refactor) and mapped 
 - [x] **Task 5 — E2E** (`src/e2e/recipes-crud.spec.ts` or sibling spec): test E1-E2 first (add private note on edit screen; move public to private), using existing e2e helpers; wait on hydration marker, not `networkidle`.
 - [x] **Task 6 — Follow-up issue:** create a GitHub issue "Autosave private notes on recipe edit screen (real-time save)" referencing #701 (created: #703); add its link to the PR description.
 - [x] Look for existing tooling or functions in the codebase that can be reused or extended before writing new logic from scratch
-- [x] Verify all four themes (`dark`, `dark-greens`, `light-cool`, `light-warm`) render the panel, hint, and Move action legibly; no hard-coded theme-able colors, no emoji
+- [ ] Verify all four themes (`dark`, `dark-greens`, `light-cool`, `light-warm`) render the panel, hint, and Move action legibly; no hard-coded theme-able colors, no emoji _(NOT performed: archived with this item open; styling uses only `--theme-*` tokens, visual check across themes still owed)_
 - [x] Update `.wolf/anatomy.md` and `.wolf/memory.md` per project rules
 - [x] Confirm acceptance criteria in `openspec/changes/add-private-notes-to-recipe-edit/specs/**/spec.md` are covered
 
