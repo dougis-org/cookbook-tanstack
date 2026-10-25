@@ -39,12 +39,12 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 ### PR 3 — Cookbook print verification and E2E
 
-- [ ] 3.1 Write failing cookbook tests (`src/components/cookbooks/__tests__/CookbookPrintPage.test.tsx`, `src/routes/__tests__/cookbooks.$cookbookId_.print.test.tsx`): footer items with `#N` in one row, `#N` alone when all `none`, one footer row per recipe
-- [ ] 3.2 Adjust `src/routes/cookbooks.$cookbookId_.print.tsx` only if needed so `printFooter` composes with the footer row (expected: no change)
-- [ ] 3.3 Extend the cookbook print E2E (`e2e/cookbook-print-e2e-validation.md` scenarios and the matching Playwright spec) for header, footer and page number; confirm no clipping with `@page cookbook-page` margins
-- [ ] 3.4 Update `docs/` where print preferences are documented, if present
+- [x] 3.1 Write cookbook tests (`src/routes/__tests__/cookbooks.$cookbookId_.print.footer.test.tsx`, rendering the real `RecipeDetail` inside the route because the existing cookbook tests mock it): footer items with `#N` in one row, `#N` alone when all `none`, one footer row per recipe
+- [x] 3.2 Done in PR 2: `src/routes/cookbooks.$cookbookId_.print.tsx` passes `#N` (same `cookbook-recipe-position-label` testid, now a span) as `printFooter` inside the `RecipeDetail` footer row. The footer row is print-only, so the `?displayonly=1` screen preview no longer shows `#N`; the matching e2e test now asserts hidden on screen and visible under print emulation
+- [x] 3.3 Extend the cookbook print E2E (`src/e2e/print-preferences.spec.ts`; `openspec/specs/cookbook-print-e2e-validation.md` covers only private-cookbook access and needed no change) for header, footer and page number, "Added by" with all elements `none`, and the legacy `printShowMeta: false` user; no-clipping is asserted as the footer row sitting inside its recipe section, not overflowing, with `break-inside: avoid` (Playwright cannot apply `@page` margins to a screen viewport)
+- [x] 3.4 Update `docs/` where print preferences are documented, if present (searched: no `docs/` file documents print preferences, so no change)
 - [ ] 3.5 Open PR 3 per PR and Merge
-- [ ] Create the follow-up ticket for the settings live preview and the later `printShowMeta` field cleanup; assign to the current user
+- [x] Create the follow-up ticket for the settings live preview and the later `printShowMeta` field cleanup; assign to the current user (#708)
 
 - [ ] Confirm acceptance criteria in `specs/print-preferences/spec.md` and `specs/recipe-print-meta/spec.md` are covered
 

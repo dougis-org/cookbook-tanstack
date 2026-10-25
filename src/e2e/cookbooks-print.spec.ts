@@ -106,7 +106,7 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     await expect(toc.getByText("N/A prep, N/A cook").first()).toBeVisible();
   });
 
-  test("displayonly mode shows #N labels for recipe sections and no pg-prefixed labels", async ({
+  test("print emulation shows visible #N labels for recipe sections and no pg-prefixed labels; hidden on screen", async ({
     page,
   }) => {
     await gotoAndWaitForHydration(
@@ -118,9 +118,16 @@ test.describe("Cookbook Print Route — public cookbook", () => {
     const labels = page.locator(".cookbook-recipe-position-label");
     await expect(sections).toHaveCount(2);
     await expect(labels).toHaveCount(2);
+
+    // The footer row holding #N is print-only (hidden on screen).
+    await expect(labels.nth(0)).toBeHidden();
+    await page.emulateMedia({ media: "print" });
+    await expect(labels.nth(0)).toBeVisible();
+    await expect(labels.nth(1)).toBeVisible();
     await expect(labels.nth(0)).toHaveText("#1");
     await expect(labels.nth(1)).toHaveText("#2");
     await expect(page.getByText(/^pg \d+$/)).toHaveCount(0);
+    await page.emulateMedia({ media: "screen" });
   });
 
   // 4.4

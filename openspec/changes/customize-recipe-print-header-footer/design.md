@@ -18,7 +18,7 @@
 - Let a user place Category, Difficulty, Servings, Prep time and Cook time in the printed header, footer, or nowhere.
 - Persist the choice per user and edit it on the account settings screen.
 - Apply it to single-recipe and cookbook print with one rendering path.
-- Preserve existing users' behavior without a data migration.
+- Preserve existing users' header behavior (Prep, Cook, Servings, Difficulty) without a data migration. Category is the one deliberate difference: a legacy user now gets Category in the footer (the Category default), which printed nowhere before.
 
 ### Non-Goals
 
@@ -46,7 +46,7 @@
 - Chosen: Category `footer`; Difficulty, Servings, Prep time and Cook time `none`. These are the `defaultValue`s in `auth.ts` and the resolver's anonymous/missing-session fallback.
 - Alternatives considered: Defaulting the four meta items to `header` for everyone, matching today's meta line.
 - Rationale: Decided in exploration; new users opt in to extra print content.
-- Trade-offs: Existing users keep today's header via Decision 2, while new users start sparser.
+- Trade-offs: Existing users keep today's header via Decision 2 (plus Category in the footer, a deliberate addition), while new users start sparser.
 
 ### Decision 4: Header line reuses the meta line element
 
@@ -155,7 +155,7 @@
 
 - Rollback trigger: Print output regresses or settings fail to save after release.
 - Rollback steps: Revert the relevant PR(s) with `git revert`; PR 2 and 3 revert independently of PR 1.
-- Data migration considerations: None. Stored values are additive fields that older code ignores, and `printShowMeta` is untouched, so a revert restores the previous behavior for every user.
+- Data migration considerations: None. Stored values are additive fields that older code ignores, and `printShowMeta` is untouched, so a revert restores the previous behavior for every user (including dropping the Category footer line that legacy users gain from the new defaults).
 - Verification after rollback: Print a recipe and a cookbook; confirm the meta line follows `printShowMeta` and the settings screen saves.
 
 ## Operational Blocking Policy
