@@ -342,7 +342,11 @@ describe('RecipeDetailPage printPreferences wiring', () => {
 
     expect(mockRecipeDetail).toHaveBeenCalledTimes(1)
     expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
-      printShowMeta: true,
+      printCategory: 'footer',
+      printDifficulty: 'header',
+      printServings: 'header',
+      printPrepTime: 'header',
+      printCookTime: 'header',
       printShowIngredients: true,
       printShowInstructions: false,
       printShowNotes: true,
@@ -350,13 +354,17 @@ describe('RecipeDetailPage printPreferences wiring', () => {
     })
   })
 
-  it('defaults printPreferences to all-true for an anonymous/logged-out viewer', () => {
+  it('defaults printPreferences to the new-account defaults for an anonymous/logged-out viewer', () => {
     mockUseAuth.mockReturnValue({ isLoggedIn: false, userId: undefined, isPending: false, session: null })
 
     render(<RecipeDetailPage />)
 
     expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
-      printShowMeta: true,
+      printCategory: 'footer',
+      printDifficulty: 'none',
+      printServings: 'none',
+      printPrepTime: 'none',
+      printCookTime: 'none',
       printShowIngredients: true,
       printShowInstructions: true,
       printShowNotes: true,

@@ -7,6 +7,8 @@ import { getMongoClient } from "@/db";
 import { sendEmail } from "@/lib/mail";
 import { publishPendingRecipes } from "@/server/recipes/pendingRecipes";
 import React from "react";
+import { z } from "zod";
+import { DEFAULT_PRINT_PLACEMENTS, PRINT_PLACEMENTS, PRINT_PLACEMENT_KEYS } from "@/lib/printPreferences";
 import { VerificationEmail } from "@/emails/VerificationEmail";
 import { PasswordResetEmail } from "@/emails/PasswordResetEmail";
 
@@ -17,6 +19,30 @@ function requiredBetterAuthUrl(): string {
   }
   return url;
 }
+
+// Server-side allow-list: Better-Auth runs `validator.input` in the updateUser
+// request path before the adapter write, so out-of-range or non-string values
+// are rejected and nothing is persisted.
+const placementSchema = z.enum(PRINT_PLACEMENTS);
+const printPlacementFields = Object.fromEntries(
+  PRINT_PLACEMENT_KEYS.map((key) => [
+    key,
+    {
+      type: "string" as const,
+      defaultValue: DEFAULT_PRINT_PLACEMENTS[key],
+      required: false,
+      validator: { input: placementSchema },
+    },
+  ]),
+) as Record<
+  (typeof PRINT_PLACEMENT_KEYS)[number],
+  {
+    type: "string";
+    defaultValue: string;
+    required: false;
+    validator: { input: typeof placementSchema };
+  }
+>;
 
 export const auth = betterAuth({
   trustedOrigins:
@@ -75,6 +101,9 @@ export const auth = betterAuth({
         defaultValue: "dark",
         required: false,
       },
+      ...printPlacementFields,
+      // Legacy input: no longer exposed in PrintPreferences. Read only by
+      // resolvePrintPreferences when a placement field is absent.
       printShowMeta: {
         type: "boolean" as const,
         defaultValue: true,

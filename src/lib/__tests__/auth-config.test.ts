@@ -106,6 +106,32 @@ describe("auth configuration", () => {
     })
   })
 
+  it("defines the five print placement fields as strings with defaults matching the resolver", async () => {
+    await import("@/lib/auth")
+    const { DEFAULT_PRINT_PLACEMENTS, PRINT_PLACEMENT_KEYS } = await import("@/lib/printPreferences")
+
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+    const fields = config.user?.additionalFields
+
+    for (const key of PRINT_PLACEMENT_KEYS) {
+      expect(fields?.[key]).toMatchObject({
+        type: "string",
+        required: false,
+        defaultValue: DEFAULT_PRINT_PLACEMENTS[key],
+      })
+      const schema = fields?.[key]?.validator?.input
+      expect(schema.safeParse("header").success).toBe(true)
+      expect(schema.safeParse("sideways").success).toBe(false)
+    }
+    expect(fields?.printCategory.defaultValue).toBe("footer")
+  })
+
+  it("keeps printShowMeta as a legacy boolean input", async () => {
+    await import("@/lib/auth")
+    const config = mockBetterAuth.mock.calls[0]?.[0]
+    expect(config.user?.additionalFields?.printShowMeta).toMatchObject({ type: "boolean" })
+  })
+
   it("preserves existing config keys (emailAndPassword, session, plugins)", async () => {
     await import("@/lib/auth")
 

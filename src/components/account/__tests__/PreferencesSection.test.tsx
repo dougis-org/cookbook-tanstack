@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { render, screen, act, within, fireEvent } from '@testing-library/react'
 
 const mockUseAuth = vi.fn()
 vi.mock('@/hooks/useAuth', () => ({
@@ -19,7 +19,7 @@ import PreferencesSection from '@/components/account/PreferencesSection'
 function authState(
   theme: string | undefined,
   isPending = false,
-  printPrefs: Partial<Record<string, boolean>> = {},
+  printPrefs: Partial<Record<string, boolean | string>> = {},
 ) {
   return {
     session: { user: { id: 'u1', theme, ...printPrefs } },
@@ -115,7 +115,12 @@ describe('PreferencesSection — theme selection', () => {
     expect(mockUpdateUser).toHaveBeenCalledWith(
       {
         theme: 'light-warm',
-        printShowMeta: true,
+        // session has no placement fields: legacy resolution (meta shown => header)
+        printCategory: 'footer',
+        printDifficulty: 'header',
+        printServings: 'header',
+        printPrepTime: 'header',
+        printCookTime: 'header',
         printShowIngredients: true,
         printShowInstructions: true,
         printShowNotes: true,
@@ -237,10 +242,9 @@ describe('PreferencesSection — print preferences', () => {
     mockUpdateUser.mockReset()
   })
 
-  it('renders a switch for each print preference, defaulting to on', () => {
+  it('renders a switch for each section toggle, defaulting to on', () => {
     renderPreferencesWithTheme('dark')
     for (const name of [
-      /prep\/cook time, servings, difficulty/i,
       /ingredients/i,
       /instructions/i,
       /^notes$/i,
@@ -292,5 +296,143 @@ describe('PreferencesSection — print preferences', () => {
 
     expect(screen.getByTestId('settings-error')).toBeInTheDocument()
     expect(screen.getByRole('checkbox', { name: /^notes$/i })).not.toBeChecked()
+  })
+})
+
+describe('PreferencesSection — print placements', () => {
+  beforeEach(() => {
+    mockUpdateUser.mockReset()
+  })
+
+  function renderNewAccount() {
+    mockUseAuth.mockReturnValue(
+      authState('dark', false, {
+        printCategory: 'footer',
+        printDifficulty: 'none',
+        printServings: 'none',
+        printPrepTime: 'none',
+        printCookTime: 'none',
+      }),
+    )
+    return render(<PreferencesSection />)
+  }
+
+  const ELEMENTS = ['Category', 'Difficulty', 'Servings', 'Prep time', 'Cook time']
+
+  function group(label: string) {
+    return screen.getByRole('radiogroup', { name: `${label} placement` })
+  }
+
+  function selectedIn(label: string) {
+    const radios = within(group(label)).getAllByRole('radio')
+    return radios.filter((r) => r.getAttribute('aria-checked') === 'true').map((r) => r.textContent)
+  }
+
+  it('renders a Header / Footer / None radiogroup for each of the five elements', () => {
+    renderNewAccount()
+    for (const label of ELEMENTS) {
+      expect(within(group(label)).getAllByRole('radio').map((r) => r.textContent)).toEqual(['Header', 'Footer', 'None'])
+    }
+  })
+
+  it('shows exactly one selected option per element reflecting the session', () => {
+    mockUseAuth.mockReturnValue(authState('dark', false, { printCategory: 'footer', printServings: 'header' }))
+    render(<PreferencesSection />)
+    expect(selectedIn('Category')).toEqual(['Footer'])
+    expect(selectedIn('Servings')).toEqual(['Header'])
+    for (const label of ELEMENTS) expect(selectedIn(label)).toHaveLength(1)
+  })
+
+  it('resolves a legacy session (printShowMeta false, no placements) to None for the four meta elements', () => {
+    mockUseAuth.mockReturnValue(authState('dark', false, { printShowMeta: false }))
+    render(<PreferencesSection />)
+    expect(selectedIn('Category')).toEqual(['Footer'])
+    expect(selectedIn('Difficulty')).toEqual(['None'])
+    expect(selectedIn('Cook time')).toEqual(['None'])
+  })
+
+  it('no longer renders the Meta toggle but keeps the other four section toggles', () => {
+    renderNewAccount()
+    expect(screen.queryByRole('checkbox', { name: /prep\/cook time, servings, difficulty/i })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('checkbox')).toHaveLength(4)
+  })
+
+  it('saves a changed placement with the other four placements and shows success', async () => {
+    mockUpdateUserSuccess()
+    renderNewAccount()
+
+    act(() => {
+      within(group('Difficulty')).getByRole('radio', { name: 'Footer' }).click()
+    })
+    await clickSave()
+
+    expect(mockUpdateUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        printCategory: 'footer',
+        printDifficulty: 'footer',
+        printServings: 'none',
+        printPrepTime: 'none',
+        printCookTime: 'none',
+      }),
+      expect.anything(),
+    )
+    expect(mockUpdateUser.mock.calls[0][0]).not.toHaveProperty('printShowMeta')
+    expect(screen.getByTestId('settings-success')).toBeInTheDocument()
+  })
+
+  it('arrow keys move selection and focus to the adjacent option, wrapping around', () => {
+    renderNewAccount()
+    const radios = within(group('Category')).getAllByRole('radio')
+    // Category starts on Footer (index 1)
+    fireEvent.keyDown(radios[1], { key: 'ArrowRight' })
+    expect(selectedIn('Category')).toEqual(['None'])
+    expect(within(group('Category')).getByRole('radio', { name: 'None' })).toHaveFocus()
+
+    fireEvent.keyDown(radios[2], { key: 'ArrowRight' })
+    expect(selectedIn('Category')).toEqual(['Header'])
+
+    fireEvent.keyDown(radios[0], { key: 'ArrowLeft' })
+    expect(selectedIn('Category')).toEqual(['None'])
+
+    fireEvent.keyDown(radios[2], { key: 'ArrowUp' })
+    expect(selectedIn('Category')).toEqual(['Footer'])
+
+    fireEvent.keyDown(radios[1], { key: 'ArrowDown' })
+    expect(selectedIn('Category')).toEqual(['None'])
+  })
+
+  it('only the selected option in a group is in the tab order', () => {
+    renderNewAccount()
+    const radios = within(group('Servings')).getAllByRole('radio')
+    expect(radios.map((r) => r.getAttribute('tabindex'))).toEqual(['-1', '-1', '0'])
+  })
+
+  it('renders the static layout sketch with header, body and footer zones', () => {
+    renderNewAccount()
+    const sketch = screen.getByTestId('print-layout-sketch')
+    expect(within(sketch).getByTestId('print-sketch-header')).toBeInTheDocument()
+    expect(within(sketch).getByTestId('print-sketch-body')).toBeInTheDocument()
+    expect(within(sketch).getByTestId('print-sketch-footer')).toBeInTheDocument()
+  })
+
+  it('does not overwrite an unsaved placement edit when the session refreshes', () => {
+    const { rerender } = renderNewAccount()
+    act(() => {
+      within(group('Category')).getByRole('radio', { name: 'Header' }).click()
+    })
+    mockUseAuth.mockReturnValue(authState('dark', false, { printCategory: 'none' }))
+    rerender(<PreferencesSection />)
+    expect(selectedIn('Category')).toEqual(['Header'])
+  })
+
+  it('a failed save shows the error and keeps the placement as the user left it', async () => {
+    mockUpdateUserError('Invalid placement')
+    renderNewAccount()
+    act(() => {
+      within(group('Cook time')).getByRole('radio', { name: 'Header' }).click()
+    })
+    await clickSave()
+    expect(screen.getByTestId('settings-error').textContent).toBe('Invalid placement')
+    expect(selectedIn('Cook time')).toEqual(['Header'])
   })
 })

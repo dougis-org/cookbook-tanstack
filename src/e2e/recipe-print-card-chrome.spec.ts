@@ -57,7 +57,10 @@ test.describe("Recipe detail print card chrome suppression", () => {
     await submitRecipeForm(page, {
       name: recipeName,
       ingredients: "Flour\nSugar",
-      instructions: "Mix and bake",
+      // Enough body content that the card is taller than the 4:3 header image
+      // in print, independent of whether a print meta line renders (new
+      // accounts and anonymous viewers default every meta element to "none").
+      instructions: "Mix the dry ingredients\nAdd the wet ingredients\nStir until smooth\nPour into a pan\nBake until golden",
     });
     await page.waitForURL(/\/recipes\/[a-f0-9-]+$/);
     recipeId = page.url().split("/recipes/")[1];

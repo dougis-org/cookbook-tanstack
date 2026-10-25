@@ -97,7 +97,11 @@ describe('CookbookPrintPage — printPreferences wiring', () => {
     expect(mockRecipeDetail).toHaveBeenCalledTimes(3)
     for (const call of mockRecipeDetail.mock.calls) {
       expect(call[0].printPreferences).toMatchObject({
-        printShowMeta: true,
+        printCategory: 'footer',
+        printDifficulty: 'header',
+        printServings: 'header',
+        printPrepTime: 'header',
+        printCookTime: 'header',
         printShowIngredients: true,
         printShowInstructions: false,
         printShowNotes: true,
@@ -106,7 +110,7 @@ describe('CookbookPrintPage — printPreferences wiring', () => {
     }
   })
 
-  it('defaults printPreferences to all-true for a logged-out/anonymous session', () => {
+  it('defaults printPreferences to the new-account defaults for a logged-out/anonymous session', () => {
     mockUseQuery.mockReturnValue({
       isLoading: false,
       data: { ...baseData, recipes: threeRecipes },
@@ -114,7 +118,11 @@ describe('CookbookPrintPage — printPreferences wiring', () => {
     render(<CookbookPrintPage />)
 
     expect(mockRecipeDetail.mock.calls[0][0].printPreferences).toMatchObject({
-      printShowMeta: true,
+      printCategory: 'footer',
+      printDifficulty: 'none',
+      printServings: 'none',
+      printPrepTime: 'none',
+      printCookTime: 'none',
       printShowIngredients: true,
       printShowInstructions: true,
       printShowNotes: true,
