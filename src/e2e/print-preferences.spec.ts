@@ -99,7 +99,7 @@ test.describe("Print placement puts elements in header line and footer row", () 
 
     await withMongoDb((db) =>
       db.collection("user").updateOne(
-        { email },
+        { email: { $eq: email } },
         {
           $set: {
             printCategory: "footer",
@@ -173,7 +173,7 @@ test.describe("Cookbook print shows header, footer and #N per recipe", () => {
 
     await withMongoDb((db) =>
       db.collection("user").updateOne(
-        { email },
+        { email: { $eq: email } },
         {
           $set: {
             printCategory: "footer",
@@ -253,8 +253,8 @@ test.describe("Added by prints in a collaborative cookbook with every element no
     await collab.close();
 
     await withMongoDb(async (db) => {
-      const owner = await db.collection("user").findOne({ email });
-      const collabUser = await db.collection("user").findOne({ email: collabCreds.email });
+      const owner = await db.collection("user").findOne({ email: { $eq: email } });
+      const collabUser = await db.collection("user").findOne({ email: { $eq: String(collabCreds.email) } });
       await db.collection("collaborators").insertOne({
         cookbookId: new ObjectId(cookbookId),
         userId: collabUser!._id,
@@ -264,7 +264,7 @@ test.describe("Added by prints in a collaborative cookbook with every element no
         onboarded: true,
       });
       await db.collection("user").updateOne(
-        { email },
+        { email: { $eq: email } },
         {
           $set: {
             printCategory: "none",
@@ -321,7 +321,7 @@ test.describe("Legacy user with printShowMeta false prints no meta line", () => 
 
     await withMongoDb((db) =>
       db.collection("user").updateOne(
-        { email },
+        { email: { $eq: email } },
         {
           $set: { printShowMeta: false },
           $unset: {
@@ -379,7 +379,7 @@ test.describe("Legacy user with meta shown keeps header items and gains Category
 
     await withMongoDb((db) =>
       db.collection("user").updateOne(
-        { email },
+        { email: { $eq: email } },
         {
           $unset: {
             printShowMeta: "",
