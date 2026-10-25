@@ -96,6 +96,22 @@ The system SHALL include each present header-placed field (prepTime, cookTime, s
 - **When** `RecipeDetail` renders
 - **Then** the footer row does not contain a Category entry
 
+### Requirement: FR4 — Null fields are omitted; element absent when nothing to show
+
+The system SHALL omit null/zero meta fields from the compact print line and the footer row (no "N/A"). When the header line has no header-placed values and no "Added by", the `print-meta-line` element SHALL NOT be rendered (to avoid a phantom margin on print).
+
+#### Scenario: All fields null
+
+- **Given** a recipe with `prepTime: null`, `cookTime: null`, `servings: null`, `difficulty: null` and all placed in `header`
+- **When** `RecipeDetail` renders without "Added by"
+- **Then** no element with `data-testid="print-meta-line"` exists in the DOM
+
+#### Scenario: Single field present
+
+- **Given** a recipe with `cookTime: 45` and the other fields null, all placed in `header`
+- **When** `RecipeDetail` renders
+- **Then** `print-meta-line` contains `Cook: 45m` and no other field
+
 ### Requirement: FR5 — Recipe Print Metadata Line
 
 The system SHALL display the name of the collaborator who added the recipe in collaborative cookbooks, in the header line, regardless of the user's placement preferences.

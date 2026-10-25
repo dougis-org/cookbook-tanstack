@@ -139,4 +139,5 @@ See functional scenarios: Server rejects invalid placement values (write path) a
 
 - **Given** a production user document with none of the new fields
 - **When** the new code is deployed
-- **Then** that user's printed output matches their prior behavior with no script run
+- **Then** that user's Prep, Cook, Servings and Difficulty print exactly as before, with no script run
+- **And** Category prints in the footer (the Category default), which is the only difference from prior output
