@@ -21,7 +21,7 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 - [ ] 1.1 Write failing tests for the resolver (`src/lib/__tests__/printPreferences.test.ts`): defaults, stored values, legacy migration, new-field-wins, invalid values, anonymous session (see `tests.md`)
 - [ ] 1.2 Extend `src/lib/printPreferences.ts`: `PrintPlacement` type, five placement keys, defaults, validation, legacy `printShowMeta` mapping; remove `printShowMeta` from the `PrintPreferences` public shape
-- [ ] 1.2a Write failing integration tests for server-side validation (invalid and non-string values rejected with nothing written; valid values accepted), then implement the mandatory allow-list check via the Better-Auth input validator or a user-update hook
+- [ ] 1.2a Write failing integration tests for server-side validation (invalid and non-string values rejected with nothing written; valid values accepted), then implement the mandatory allow-list check as `validator: { input: z.enum(["header", "footer", "none"]) }` on each of the five `additionalFields` in `src/lib/auth.ts`
 - [ ] 1.3 Add the five string `additionalFields` to `src/lib/auth.ts` with the new-account defaults (Category `footer`, others `none`); keep `printShowMeta` as legacy input; update the auth config shape test
 - [ ] 1.4 Write failing tests for the settings UI (`src/components/account/__tests__/PreferencesSection.test.tsx`)
 - [ ] 1.5 Update `src/components/account/PreferencesSection.tsx`: remove the Meta toggle, add the three-way control per element (radiogroup keyboard pattern), add the static layout sketch (theme tokens, no emoji, Sentence case), include placements in the `updateUser` payload
@@ -50,7 +50,7 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 ## Pre-Commit Code Review
 
-- [ ] **Before every commit**, spawn a dedicated sub-agent to run the `openspec-review-code` skill. The primary agent must automatically apply all clearly-correct findings directly to the code — without stopping, without presenting the findings list to the user, and without asking for confirmation. Apply fixes, re-run tests to confirm they pass, then proceed to commit.
+- [ ] **Before every commit**, an `openspec-review-code` review of the staged changes has been run and every clearly-correct finding is applied and re-tested before the commit is made.
 
 ## Validation
 
@@ -64,16 +64,16 @@ Delivered as three sequential PRs (see `design.md` Decision 7). Each PR repeats 
 
 ## Remote push validation
 
-Before running, determine whether the current change is **docs-only**: run `git diff --name-only HEAD` (or compare the working branch against the base branch) and check whether every changed file ends in `.md`. If yes, apply the docs-only path; otherwise apply the full path.
+Before running, determine whether the current change is **docs-only**: run `git diff --name-only origin/main...HEAD` (the branch compared against its base) and check whether every changed file is documentation: ends in `.md`, or is under `openspec/changes/` (including `.openspec.yaml`). If yes, apply the docs-only path; otherwise apply the full path.
 
-**Full path** (any non-`.md` file changed):
+**Full path** (any file changed outside the documentation set above):
 
 - **Unit tests** — `npm run test`; all tests must pass
 - **Integration tests** — included in `npm run test`; all tests must pass
 - **Regression / E2E tests** — `npm run test:e2e`; all tests must pass
 - **Build** — `npm run build`; build must succeed with no errors
 
-**Docs-only path** (every changed file is `.md`):
+**Docs-only path** (every changed file is documentation):
 
 - **Build** — `npm run build`; build must succeed with no errors
 - Skip integration and regression/E2E tests

@@ -31,7 +31,7 @@
 - Chosen: Five `additionalFields` strings (`printCategory`, `printDifficulty`, `printServings`, `printPrepTime`, `printCookTime`), each `"header" | "footer" | "none"`.
 - Alternatives considered: One JSON-serialized string field; a nested object (not supported by Better-Auth additionalFields).
 - Rationale: Matches the existing `printShow*` pattern, needs no custom parsing, and each field validates independently.
-- Server-side validation (required, not optional): each field is validated against the `header | footer | none` allow-list before Better-Auth persists it. Invalid or non-string values are rejected with an error and nothing is written. Implemented with the Better-Auth `additionalFields` input validator where the installed version supports it, otherwise a user-update hook; either way the check is mandatory and ships in PR 1 with a test. The resolver fallback (Decision 2) is only a read-path backstop for legacy or corrupted records.
+- Server-side validation (required, not optional): each field is validated against the `header | footer | none` allow-list before Better-Auth persists it. Invalid or non-string values are rejected with an error and nothing is written. Implemented with the Better-Auth `additionalFields` `validator.input` option (supported by the installed `better-auth` 1.6.24, `@better-auth/core` `DBFieldAttribute.validator`): each of the five fields in `src/lib/auth.ts` gets `validator: { input: z.enum(["header", "footer", "none"]) }`. Better-Auth runs the input schema in the `updateUser` request path before the adapter write, so a failing value returns a validation error and nothing is persisted. No user-update hook is used. Ships in PR 1 with a test. The resolver fallback (Decision 2) is only a read-path backstop for legacy or corrupted records.
 - Trade-offs: More fields on the user document and session payload (short enum values, negligible).
 
 ### Decision 2: Lazy migration in the resolver, no DB migration
@@ -144,9 +144,9 @@
 - Risk/trade-off: Footer clipped or orphaned in cookbook print near `@page cookbook-page` margins.
   - Impact: Missing `#N` or items on a page.
   - Mitigation: `break-inside: avoid` on the row; cookbook print E2E asserts both are present.
-- Risk/trade-off: The installed Better-Auth version lacks a field-level input validator.
-  - Impact: Without a hook, an arbitrary string could be stored through a crafted update.
-  - Mitigation: Server-side allow-list validation is required (Decision 1); use a user-update hook if the validator is unavailable. The resolver fallback is only a backstop.
+- Risk/trade-off: `validator.input` does not run on the update path as expected.
+  - Impact: An arbitrary string could be stored through a crafted `updateUser` call.
+  - Mitigation: The PR 1 integration test asserts rejection and no write against the real update path; if it fails, the PR does not merge until validation is enforced. The resolver fallback is only a read-path backstop.
 - Risk/trade-off: Existing tests reference `printShowMeta` and `print-meta-line`.
   - Impact: Test churn.
   - Mitigation: Keep the test ID; update tests in the PR that changes the behavior.
@@ -167,4 +167,4 @@
 
 ## Open Questions
 
-- None unresolved. PR 1 picks the validation mechanism (field validator or update hook) the installed Better-Auth version supports; the validation itself is required either way.
+- None unresolved. The validation mechanism is `additionalFields` `validator.input` with a `z.enum` schema (Decision 1).

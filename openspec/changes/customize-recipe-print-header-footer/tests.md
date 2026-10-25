@@ -29,7 +29,7 @@ For each task in `tasks.md`:
 - [ ] Invalid values (`"sideways"`, `7`, `null`, `{}`) fall back as if absent (Invalid placement value; NFAC Out-of-range stored value)
 - [ ] `session.user` null, non-object, or fields wrong type never throws and returns a complete object (NFAC Malformed session data)
 - [ ] Resolver given a session with none of the new fields requires no stored-data change (NFAC No data migration needed)
-- [ ] Update with an invalid string (`"sideways"`) or non-string for each placement field is rejected and the stored value is unchanged (Server rejects invalid placement values; NFAC Security)
+- [ ] Update with an invalid string (`"sideways"`) or non-string for each placement field is rejected by the `validator.input` schema through the real `updateUser` path and the stored value is unchanged (Server rejects invalid placement values; NFAC Security)
 - [ ] Update with each allowed value succeeds and persists (Valid values are accepted)
 - [ ] Auth config shape test: five new fields are `string` with the expected `defaultValue`s, and those defaults equal the resolver's new-account defaults (New account defaults)
 
