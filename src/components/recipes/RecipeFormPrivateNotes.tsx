@@ -24,17 +24,20 @@ export default function RecipeFormPrivateNotes({ recipeId, publicNotes, onMoved 
   const queryClient = useQueryClient()
   const [isPanelEditing, setIsPanelEditing] = useState(false)
   const [moveError, setMoveError] = useState('')
+  const [moved, setMoved] = useState(false)
 
   const queryOptions = trpc.privateRecipeNotes.get.queryOptions({ recipeId: recipeId ?? '' })
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isFetching, isError } = useQuery({
     ...queryOptions,
     enabled: Boolean(recipeId) && isLoggedIn && canUsePrivateRecipeNotes,
   })
 
   const moveMutation = useMutation(
     trpc.privateRecipeNotes.upsert.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (_result, { body }) => {
+        queryClient.setQueryData(queryOptions.queryKey, { hasNote: true, note: { body, updatedAt: new Date() } })
         queryClient.invalidateQueries({ queryKey: queryOptions.queryKey })
+        setMoved(true)
         onMoved()
       },
       onError: () => setMoveError('Could not move your notes. Please try again.'),
@@ -57,6 +60,7 @@ export default function RecipeFormPrivateNotes({ recipeId, publicNotes, onMoved 
       return
     }
     setMoveError('')
+    setMoved(false)
     moveMutation.mutate({ recipeId, body })
   }
 
@@ -67,7 +71,7 @@ export default function RecipeFormPrivateNotes({ recipeId, publicNotes, onMoved 
           <button
             type="button"
             onClick={handleMove}
-            disabled={isLoading || isPanelEditing || moveMutation.isPending}
+            disabled={isLoading || isFetching || data === undefined || isPanelEditing || moveMutation.isPending}
             className="inline-flex items-center gap-2 px-3 py-1.5 border border-[var(--theme-border)] text-[var(--theme-fg-muted)] hover:bg-[var(--theme-surface-hover)] rounded-lg text-sm transition-colors disabled:opacity-50"
           >
             <ArrowDownToLine className="w-4 h-4" />
@@ -75,6 +79,16 @@ export default function RecipeFormPrivateNotes({ recipeId, publicNotes, onMoved 
           </button>
           {moveError && <p className="text-[var(--theme-error)] text-sm mt-2">{moveError}</p>}
         </div>
+      )}
+      {moved && !moveError && (
+        <p className="text-sm text-[var(--theme-fg-muted)]">
+          Moved to your private notes. Save the recipe to remove it from public notes.
+        </p>
+      )}
+      {canUsePrivateRecipeNotes && isError && (
+        <p className="text-sm text-[var(--theme-fg-muted)]">
+          Couldn't load your private notes. Reload the page to try again.
+        </p>
       )}
       <PrivateRecipeNotes recipeId={recipeId} variant="embedded" onEditingChange={setIsPanelEditing} />
     </div>

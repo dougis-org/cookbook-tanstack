@@ -1300,6 +1300,35 @@ describe("RecipeForm — private notes", () => {
       await waitFor(() => expect(screen.queryByTestId("private-notes-panel")).not.toBeInTheDocument())
       expect(moveButton()).not.toBeInTheDocument()
       expect(mockUpsertNote).not.toHaveBeenCalled()
+      expect(await screen.findByText(/couldn't load your private notes/i)).toBeInTheDocument()
+    })
+
+    it("allows a combined note of exactly 10000 characters", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "a".repeat(9990), updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "b".repeat(8) })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      await waitFor(() => expect(mockUpsertNote).toHaveBeenCalled())
+      expect(mockUpsertNote.mock.calls[0][0].body).toHaveLength(10000)
+    })
+
+    it("rejects a combined note of 10001 characters", async () => {
+      mockGetNote.mockResolvedValue({ hasNote: true, note: { body: "a".repeat(9990), updatedAt: new Date() } })
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "b".repeat(9) })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/10000 character limit/i)).toBeInTheDocument()
+      expect(mockUpsertNote).not.toHaveBeenCalled()
+    })
+
+    it("tells the user to save the recipe after a successful move", async () => {
+      renderWithProviders(<RecipeForm initialData={makeRecipe({ notes: "Use less salt" })} />)
+      await screen.findByTestId("private-notes-panel")
+      await userEvent.click(await screen.findByRole("button", { name: /move to private notes/i }))
+
+      expect(await screen.findByText(/save the recipe to remove it from public notes/i)).toBeInTheDocument()
     })
 
     it("is hidden when public notes are empty or whitespace", async () => {
